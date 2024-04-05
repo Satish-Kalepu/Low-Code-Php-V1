@@ -334,7 +334,7 @@ if( $config_param3 == "importdump" ){
 		}
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", [
 			'app_id'=>$config_param1,
-			'name'=>$_POST['table']['table']
+			'table'=>$_POST['table']['table']
 		]);
 		if( $res['data'] ){
 			json_response("fail", "Table with same name already exists");
@@ -343,10 +343,24 @@ if( $config_param3 == "importdump" ){
 		if( $_POST['upload_type'] == "CSV" ){
 			$schema = [];
 			$cnt = 0;
+			$f = false;
 			foreach( $_POST['schema'] as $i=>$j ){if( $j['use'] ){
-				$schema[ $i ] = [
-			        "name"=> $i,
-			        "key"=> $i,
+				if( $j['targetf'] == "_id" ){
+					$f = true;
+				}
+			}}
+			if( !$f ){
+				json_response("fail", "Primary field _id is required");
+			}
+			//print_r( $_POST['schema'] );exit;
+			foreach( $_POST['schema'] as $i=>$j ){if( $j['use'] ){
+				$k = $j['targetf'];
+				if( $i == "_default_id" ){
+					$k = "_id";
+				}
+				$schema[ $k ] = [
+			        "name"=> $k,
+			        "key"=> $k,
 			        "type"=> $j['type'],
 			        "m"=> $j['m'],
 			        "order"=> $cnt++,

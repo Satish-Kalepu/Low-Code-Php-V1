@@ -48,14 +48,14 @@ var app = s2_ssssssssss({
 			current_ip: '<?=$_SERVER['REMOTE_ADDR'] ?>',
 			path: '<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/',
 			s2_atad_labolg: {"s":"sss"},
-			s2_ggggggggsm: "",
-			s2_rrrrrrrrre: "",
-			s2_gggggggsmc: "",
-			s2_rrrrrrrrec: "",
+			s2_ggggggggsm: "", s2_rrrrrrrrre: "", s2_gggggggsmc: "", s2_rrrrrrrrec: "", s2_gggggggsmi:"", s2_rrrrrrrrei:"",
+			s2_ladom_tropmi: false, "s2_drowssap_tropmi": "", "s2_elif_tropmi": "", "s2_noisrev_tropmi": "create",
+			s2_ladom_noisrev: false,
 			s2_pppppppppa: <?=json_encode($app) ?>,
 			s2_iiiiiiiipa: <?=json_encode($api) ?>,
 			s2_snoisrev_ipa: <?=json_encode($api_versions) ?>,
 			s2_di_noisrev: "<?=$api['_id'] ?>",
+			s2_di_noisrev_tnerruc: "<?=$main_api['version_id'] ?>",
 			s2_iiipa_tide: {},
 			s2_ladom_tide: false,
 			s2_nnnnnnekot: "",
@@ -215,7 +215,7 @@ var app = s2_ssssssssss({
 					"sub": [
 						"SetResponseStatus", "SetResponseHeader", "SetCookie",
 						"RespondStatus",
-						"RespondJSON", "RespondVar", "RespondVars", "RespondXML", "AddHTML", "RenderHTML",
+						"RespondJSON", "RespondVar", "RespondVars", "RespondGlobals", "RespondXML", "AddHTML", "RenderHTML",
 						"Log",
 					]
 				},
@@ -286,7 +286,7 @@ var app = s2_ssssssssss({
 			s2_ycnedneped_txetnoc: "",
 			s2_kcabllac_txetnoc: "",
 			s2_le_txetnoc: false,
-			s2_elyts_txetnoc: "top:50px;left:50px;",
+			s2_elyts_txetnoc: "display:none;",
 			s2_di_egats_txetnoc: -1,
 			s2_tsil_txetnoc: [],
 			s2_retlif_tsil_txetnoc: [],
@@ -312,6 +312,7 @@ var app = s2_ssssssssss({
 			s2_tsil_tseggus_pupop: [],
 			s2_ffer_pupop: "",
 			s2_ladom_pupop: false,
+			s2_deyalpsid_ladom_pupop: false,
 			s2_ladom_lmth_pupop: false,
 			s2_tropmi_pupop: false,
 			s2_rts_tropmi_pupop: `{}`,
@@ -365,6 +366,204 @@ var app = s2_ssssssssss({
 		window.addEventListener("paste", this.s2_etsap_tneve, true);
 	},
 	methods: {
+		s2_eton_noisrev_teg: function(){
+			return "Version: "+ this.s2_iiiiiiiipa['version'] + " " + (this.s2_di_noisrev_tnerruc==this.s2_di_noisrev?"<span class='text-success'>(Active)</span>":"<span class='text-danger'>(NotActive)</span>");
+		},
+		s2_ipa_tropxe: function(){
+			var p = prompt("Password:");
+			if( p.trim()=="" ){
+				alert("password is must");return;
+			}
+			axios.post( "?", {
+				"action": "app_api_export",
+				"password": p,
+			}).then(response=>{
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								var vblob = new Blob([response.data['content']], { type: 'text/plain' });
+								var vurl = window.URL.createObjectURL(vblob);
+								var a1 = document.createElement('a');
+								a1.style.display = 'none';
+								a1.href = vurl;
+								a1.download = response.data['filename'];
+								document.body.appendChild(a1);
+								a1.click();
+								window.URL.revokeObjectURL(vurl);
+								a1.remove();
+							}else{
+								alert( "Export Error: " + response.data['error'] );
+							}
+						}else{
+							alert("Incorrect response");
+						}
+					}else{
+						alert("Incorrect response Type");
+					}
+				}else{
+					alert("Response Error: " + response.status );
+				}
+			}).catch(error=>{
+				console.log( error );
+				alert( "Error Exporting" );
+			});
+		},
+		s2_ipa_tropmi_wohs: function(){
+			this.s2_ladom_tropmi = new bootstrap.Modal(document.getElementById('s2_ladom_tropmi'));
+			this.s2_ladom_tropmi.show();
+			this.s2_gggggggsmi = ""; this.s2_rrrrrrrrei = "";
+		},
+		s2_detceles_tropmi: function(){
+			this.s2_elif_tropmi = "";
+			this.s2_rrrrrrrrei = "";
+			var vf = document.getElementById("s2_elif_tropmi").files[0];
+			if( vf.name.match(/\.[a-f0-9]{24}\.api$/) == null ){
+				this.s2_rrrrrrrrei = "Please select a proper file";
+				document.getElementById("s2_elif_tropmi").value = "";
+			}
+			this.s2_elif_tropmi = vf.name+'';
+		},
+		s2_ipa_tropmi: function(){
+			this.s2_rrrrrrrrei = "";
+			this.s2_gggggggsmi = "";
+			if( this.s2_drowssap_tropmi.trim()=="" ){
+				this.s2_rrrrrrrrei = "password is must";return;
+			}
+			if( document.getElementById("s2_elif_tropmi").value == "" ){
+				this.s2_rrrrrrrrei = "select file";return;
+			}
+
+			var vpost = new FormData();
+			var vf = document.getElementById("s2_elif_tropmi").files[0];
+			vpost.append("action", "app_api_import");vpost.append("file", vf);
+			vpost.append("password", this.s2_drowssap_tropmi );
+			vpost.append("version", this.s2_noisrev_tropmi );
+			this.s2_gggggggsmi = "Importing...";
+			axios.post("?", vpost).then(response=>{
+				this.s2_gggggggsmi = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								if( this.s2_noisrev_tropmi == "create" ){
+									this.s2_gggggggsmi = "Imported successfully. Redirecting to new version...";
+									setTimeout(function(){document.location = "<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/apis/<?=$config_param3 ?>/"+response.data['new_version_id']; },1000);
+								}else{
+									this.s2_gggggggsmi = "Imported successfully. Reloading page";
+									setTimeout(function(){document.location.reload();},1000);
+								}
+							}else{
+								this.s2_rrrrrrrrei = ( "Export Error: " + response.data['error'] );
+							}
+						}else{
+							this.s2_rrrrrrrrei = ("Incorrect response");
+						}
+					}else{
+						this.s2_rrrrrrrrei = ("Incorrect response Type");
+					}
+				}else{
+					this.s2_rrrrrrrrei = ("Response Error: " + response.status );
+				}
+			}).catch(error=>{
+				console.log( error );
+				this.s2_rrrrrrrrei = ( "Error Exporting" );
+			});
+		},
+		s2_snoisrev_wohs: function(){
+			this.s2_ladom_noisrev = new bootstrap.Modal(document.getElementById('s2_ladom_noisrev'));
+			this.s2_ladom_noisrev.show();
+		},
+		s2_enolc_noisrev: function(vid){
+			if( confirm("Are you sure?\nIt will create a new version") ){
+				this.s2_gggggggsmv = "Creating new version";
+				axios.post("?", {
+					"action": "app_api_clone", 
+					"from_version_id": vid
+				}).then(response=>{
+					this.s2_gggggggsmv = "";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.s2_ofni_snoisrev_daol();
+								}else{
+									this.s2_rrrrrrrrev = ( "Error: " + response.data['error'] );
+								}
+							}else{
+								this.s2_rrrrrrrrev = ("Incorrect response");
+							}
+						}else{
+							this.s2_rrrrrrrrev = ("Incorrect response Type");
+						}
+					}else{
+						this.s2_rrrrrrrrev = ("Response Error: " + response.status );
+					}
+				}).catch(error=>{
+					console.log( error );
+					this.s2_rrrrrrrrev = ( "Error Exporting" );
+				});
+			}
+		},
+		s2_hctiws_noisrev: function(vi,vid){
+			if( confirm("Do you want to make Version: " + vi + " as active version" ) ){
+				this.s2_gggggggsmv = "Updating...";
+				axios.post("?", {
+					"action": "app_api_switch", 
+					"version_id": vid
+				}).then(response=>{
+					this.s2_gggggggsmv = "Successfully updated";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.s2_ofni_snoisrev_daol();
+								}else{
+									this.s2_rrrrrrrrev = ( "Error: " + response.data['error'] );
+								}
+							}else{
+								this.s2_rrrrrrrrev = ("Incorrect response");
+							}
+						}else{
+							this.s2_rrrrrrrrev = ("Incorrect response Type");
+						}
+					}else{
+						this.s2_rrrrrrrrev = ("Response Error: " + response.status );
+					}
+				}).catch(error=>{
+					console.log( error );
+					this.s2_rrrrrrrrev = ( "Error Exporting" );
+				});
+			}
+		},
+		s2_ofni_snoisrev_daol: function(vid){
+				axios.post("?", {
+					"action": "app_api_load_versions_info", 
+				}).then(response=>{
+					this.s2_gggggggsmv = "";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.s2_snoisrev_ipa = response.data['versions'];
+									this.s2_di_noisrev_tnerruc = response.data['current_version'];
+								}else{
+									this.s2_rrrrrrrrev = ( "Error: " + response.data['error'] );
+								}
+							}else{
+								this.s2_rrrrrrrrev = ("Incorrect response");
+							}
+						}else{
+							this.s2_rrrrrrrrev = ("Incorrect response Type");
+						}
+					}else{
+						this.s2_rrrrrrrrev = ("Response Error: " + response.status );
+					}
+				}).catch(error=>{
+					console.log( error );
+					this.s2_rrrrrrrrev = ( "Error Exporting" );
+				});
+		},
 		s2_stnemnorivne_tset_tes: function(){
 			var e = [];
 			for( var d in this.s2_pppppppppa['settings']['domains'] ){
@@ -417,13 +616,14 @@ var app = s2_ssssssssss({
 			}
 		},
 		s2_llorcs_tneve: function(e){
-			if( e.target.className == "codeeditor_block_a" ){
-				if( this.s2_unem_txetnoc ){
-					this.s2_elyts_unem_txetnoc_tes();
-				}else if( this.s2_ladom_pupop_elpmis ){
-					this.s2_elyts_pupop_elpmis_tes();
-				}
+			if( this.s2_unem_txetnoc ){
+				this.s2_elyts_unem_txetnoc_tes();
+			}else if( this.s2_ladom_pupop_elpmis ){
+				this.s2_elyts_pupop_elpmis_tes();
 			}
+			// if( e.target.className == "codeeditor_block_a" ){
+			// }else if( e.target.className == "codeeditor_block_a" ){
+			// }
 		},
 		s2_puyek_tneve: function(e){
 			if( e.target.hasAttribute("data-type") ){
@@ -532,7 +732,7 @@ var app = s2_ssssssssss({
 			}
 			if( e.keyCode == 27 ){
 				if( this.s2_unem_txetnoc ){
-					this.s2_unem_txetnoc = false;
+					this.s2_unem_txetnoc_edih();
 				}
 				if( this.s2_ladom_pupop_elpmis ){
 					this.s2_ladom_pupop_elpmis = false;
@@ -662,11 +862,9 @@ var app = s2_ssssssssss({
 						this.ace_editor2.setValue( html_beautify(this.s2_atad_pupop) );
 
 					}else{
-						if( this.s2_ladom_pupop == false ){
-							this.s2_ladom_pupop = new bootstrap.Modal( document.getElementById('s2_ladom_pupop') );
-						}
-						this.s2_ladom_pupop.show();
+						this.s2_nepo_ladom_pupop();
 					}
+
 				}else if( t == "popupeditable" ){
 					this.s2_le_pupop_elpmis = el_data_type;
 					this.s2_di_egats_pupop_elpmis = stage_id;
@@ -680,6 +878,7 @@ var app = s2_ssssssssss({
 					this.s2_ladom_pupop_elpmis = true;
 					//this.s2_unem_txetnoc_sucof_dna_wohs();
 					this.s2_elyts_pupop_elpmis_tes();
+
 				}else if( t == "payloadeditable" ){
 					this.s2_di_egats_pupop = stage_id;
 					this.s2_ravatad_pupop = data_var;
@@ -690,10 +889,7 @@ var app = s2_ssssssssss({
 					this.s2_atad_pupop = v;
 					this.s2_epyt_pupop = 'PayLoad';
 					this.s2_eltit_pupop = "Request Payload Editor";
-					if( this.s2_ladom_pupop == false ){
-						this.s2_ladom_pupop = new bootstrap.Modal( document.getElementById('s2_ladom_pupop') );
-					}
-					this.s2_ladom_pupop.show();
+					this.s2_nepo_ladom_pupop();
 
 				}else if( t == "dropdown" || t == "dropdown2" || t == "dropdown3" || t == "dropdown4" ){
 					this.s2_le_txetnoc = el_data_type;
@@ -769,12 +965,23 @@ var app = s2_ssssssssss({
 				console.log("Element Data-Context");
 			}else{
 				if( this.s2_unem_txetnoc ){
-					this.s2_unem_txetnoc = false;
+					this.s2_unem_txetnoc_edih();
 				}
 				if( this.s2_ladom_pupop_elpmis ){
 					this.s2_ladom_pupop_elpmis = false;
 				}
 			}
+		},
+		s2_nepo_ladom_pupop: function(){
+			if( this.s2_ladom_pupop == false ){
+				this.s2_ladom_pupop = new bootstrap.Modal(document.getElementById('s2_ladom_pupop'));
+					document.getElementById('s2_ladom_pupop').addEventListener('hide.bs.modal', event => {
+					console.log("Popup closed");
+					this.s2_deyalpsid_ladom_pupop = false;
+				});
+			}
+			this.s2_ladom_pupop.show();
+			this.s2_deyalpsid_ladom_pupop = true;
 		},
 		s2_kcehc_daol_tsil_gniht_txetnoc: function(){
 			if( this.s2_gniht_txetnoc in this.s2_tsil_gniht_txetnoc == false ){
@@ -811,7 +1018,7 @@ var app = s2_ssssssssss({
 							this.s2_rre_gniht_txetnoc = "Incorrect response Type";
 						}
 					}else{
-						this.s2_rre_gniht_txetnoc = "Response Error: " . response.status;
+						this.s2_rre_gniht_txetnoc = "Response Error: " + response.status;
 					}
 				}).catch(error=>{
 					this.s2_rre_gniht_txetnoc = "Error Loading";
@@ -966,15 +1173,33 @@ var app = s2_ssssssssss({
 			}
 			return v;
 		},
+		s2_unem_txetnoc_edih: function(){
+			this.s2_unem_txetnoc = false;
+			this.s2_elyts_txetnoc = "display:none;";
+			if( document.getElementById("s2_unem_txetnoc").parentNode.nodeName != "BODY" ){
+				console.log("moving context menu back to body ");
+				document.body.appendChild( document.getElementById("s2_unem_txetnoc") );
+			}
+		},
 		s2_unem_txetnoc_sucof_dna_wohs: function(){
 			setTimeout(function(){try{document.getElementById("contextmenu_key1").focus();}catch(e){}},300);
 			this.s2_unem_txetnoc = true;
+			if( this.s2_deyalpsid_ladom_pupop ){
+				document.getElementById("s2_ydob_ladom_pupop").appendChild( document.getElementById("s2_unem_txetnoc") );
+				//this.s2_elyts_unem_txetnoc_tes();
+			}
 			this.s2_yek_dnapxe_txetnoc = '';
 		},
 		s2_elyts_unem_txetnoc_tes: function(){
 			var s = this.s2_le_txetnoc.getBoundingClientRect();
 			//this.finx_zindex(this.s2_le_txetnoc);
-			this.s2_elyts_txetnoc = "top: "+s.top+"px;left: "+s.left+"px;";
+			if( this.s2_deyalpsid_ladom_pupop ){
+				var s2 = document.getElementById("s2_ydob_ladom_pupop").getBoundingClientRect();
+				console.log( s2 );
+				this.s2_elyts_txetnoc = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+			}else{
+				this.s2_elyts_txetnoc = "display:block;top: "+s.top+"px;left: "+s.left+"px;";
+			}
 		},
 		s2_elyts_pupop_elpmis_tes: function(){
 			var s = this.s2_le_pupop_elpmis.getBoundingClientRect();
@@ -1210,10 +1435,10 @@ var app = s2_ssssssssss({
 			}else{
 				console.error("context_select error: data_for unknown: "+ this.s2_rof_txetnoc );
 			}
+			this.s2_unem_txetnoc_edih();
 			setTimeout(this.s2_noitpo_detadpu,100);
-			this.s2_unem_txetnoc = false;
 		},
-		s2_stupni_noitcnuf_tes: function(v,p,r,s){
+		s2_stupni_noitcnuf_tes: function(v, p, r, s){
 			var vt = v+":inputs";
 			this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, vt, p );
 			var vt = v+":return";
@@ -1372,7 +1597,7 @@ var app = s2_ssssssssss({
 						this.s2_rrrrrrrrre = "Incorrect response Type";
 					}
 				}else{
-					this.s2_rrrrrrrrre = "Response Error: " . response.status;
+					this.s2_rrrrrrrrre = "Response Error: " + response.status;
 				}
 			});
 		},
@@ -1397,7 +1622,7 @@ var app = s2_ssssssssss({
 						this.s2_rrrrrrrrre = "Incorrect response Type";
 					}
 				}else{
-					this.s2_rrrrrrrrre = "Response Error: " . response.status;
+					this.s2_rrrrrrrrre = "Response Error: " + response.status;
 				}
 			});
 		},
@@ -1457,7 +1682,7 @@ var app = s2_ssssssssss({
 												this.s2_rrrrrrrrec = "Incorrect response Type";
 											}
 										}else{
-											this.s2_rrrrrrrrec = "Response Error: " . response.status;
+											this.s2_rrrrrrrrec = "Response Error: " + response.status;
 										}
 									});
 								}
@@ -1472,7 +1697,7 @@ var app = s2_ssssssssss({
 						this.s2_rrrrrrrrre = "Incorrect response Type";
 					}
 				}else{
-					this.s2_rrrrrrrrre = "Response Error: " . response.status;
+					this.s2_rrrrrrrrre = "Response Error: " + response.status;
 				}
 			});
 		},
@@ -1715,8 +1940,6 @@ var app = s2_ssssssssss({
 			return Object.fromEntries(Object.entries(vv).sort());
 		},
 		s2_noitaton_tsil_teg( v ){
-			//this.s2_ooooooohce( "get object notation" );
-			//this.s2_ooooooohce( v );
 			var vv = [];
 			if( typeof(v)=="object" ){
 				if( "length" in v ){
@@ -1832,6 +2055,7 @@ var app = s2_ssssssssss({
 					wr = wr + sub_wr;
 				}
 
+				console.log( s2_iiiiiegats + ": " + s2_dddddegats['t'] );
 				if( s2_dddddegats['t'] != 'c' && s2_dddddegats['t'] != 'n' ){
 					if( this.s2_rav_bus_o_dnif(o, s2_dddddegats['k']['v']) == false ){
 						er = er + " Variable `" + s2_dddddegats['k']['v'] +"` not available;";
@@ -1843,11 +2067,33 @@ var app = s2_ssssssssss({
 					}}}
 					er = er + this.s2_egasu_elbairav_dnif( o, s2_dddddegats['k']['vs'] );
 					wr = wr + this.s2_ytpme_elbairav_dnif( s2_dddddegats['k']['vs'] );
+					if( s2_dddddegats['t'] == "L" && s2_dddddegats['k']['t'] == "L" ){
+						if( s2_dddddegats['k']['vs']['v'] == "setTemplate" ){
+							var s = s2_dddddegats['k']['vs']['d']['inputs']['p2']['v'];
+							var s = this.s2_tupni_sa_mrof_lanif_elbairav_teg(s);
+							o[ s2_dddddegats['k']['v']+'' ] = s;
+						}
+					}
+					if( s2_dddddegats['t'] == "O" && s2_dddddegats['k']['t'] == "O" ){
+						if( s2_dddddegats['k']['vs']['v'] == "setTemplate" ){
+							var s = s2_dddddegats['k']['vs']['d']['inputs']['p2']['v'];
+							var s = this.s2_tupni_sa_mrof_lanif_elbairav_teg(s);
+							o[ s2_dddddegats['k']['v']+'' ] = s;
+						}
+					}
 				}else{
 					er = er + this.s2_egasu_elbairav_dnif( o, s2_dddddegats['d'] );
-					wr = wr + this.s2_ytpme_elbairav_dnif( s2_dddddegats['d'] );
+					if( s2_dddddegats['t'] == "c" && s2_dddddegats['k']['v'] == "Function" ){
+						if( s2_dddddegats['d']['return'] ){
+							wr = wr + this.s2_ytpme_elbairav_dnif( s2_dddddegats['d']['lhs'] );
+						}
+						if( wr.trim() == "" ){
+							wr = wr + this.s2_ytpme_elbairav_dnif( s2_dddddegats['d']['inputs'] );
+						}
+					}else{
+						wr = wr + this.s2_ytpme_elbairav_dnif( s2_dddddegats['d'] );
+					}
 				}
-
 				if( s2_dddddegats['k']['v'] == "LetComponent" ){
 					//o[ s2_dddddegats['d']['lhs']+'' ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( this.s2_nnnnnnnosj( d ) );
 					//o[ s2_dddddegats['d']['lhs']+'' ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( this.s2_nnnnnnnosj( s2_dddddegats['d']['rhs'] ) );
@@ -1857,16 +2103,12 @@ var app = s2_ssssssssss({
 						wr = wr + " Warning variable `" + s2_dddddegats['d']['lhs'] + "` override;";
 					}
 					var comp = s2_dddddegats['d']['rhs']['v']['i']['v']+'';
-					// this.s2_ooooooohce("LetComponent: " );
-					// this.s2_ooooooohce( this.s2_nnnnnnnosj( this.s2_atad_nigulp[ comp ]['data'] ) );
 					if( comp in this.s2_atad_nigulp ){
 						o[ s2_dddddegats['d']['lhs']+'' ] = {
 							"t": comp, 
 							"_": {}
 						};
 						//this.s2_srav_egats_ot_erutcurts_yarra_trevnoc( this.s2_nnnnnnnosj( this.s2_atad_nigulp[ comp ]['data'] ) )
-						// this.s2_ooooooohce("LetComponent: " );
-						// this.s2_ooooooohce( o[ s2_dddddegats['d']['lhs']+'' ] );
 					}
 					//o[ s2_dddddegats['d']['lhs']+'' ]["PLG"] = 
 				}else if( s2_dddddegats['k']['v'] == "Let" ){
@@ -1878,8 +2120,6 @@ var app = s2_ssssssssss({
 					if( s2_dddddegats['d']['rhs']['t'] == "V" ){
 						if( s2_dddddegats['d']['rhs']['v']['v'] != "" ){
 							var d = this.s2_rav_bus_o_teg( o, s2_dddddegats['d']['rhs']['v']['v'] );
-							//this.s2_ooooooohce( d );
-							//this.s2_ooooooohce( s2_dddddegats['d']['rhs'] );
 							if( d ){
 								if( 'vs' in s2_dddddegats['d']['rhs']['v'] ){
 									if( s2_dddddegats['d']['rhs']['v']['vs'] != false ){
@@ -2301,7 +2541,6 @@ var app = s2_ssssssssss({
 				if( 't' in vd && 'v' in vd ){
 					if( vd['t'] == "V" ){
 						if( vd['v']['v'] == "" ){
-							//er = er + " Variable selection missing;";
 						}else if( this.s2_rav_bus_o_dnif(vars, vd['v']['v']) == false ){
 							er = er + " Variable `" + vd['v']['v'] + "` is not available;";
 						}
@@ -2324,7 +2563,6 @@ var app = s2_ssssssssss({
 						if( 't' in vd[i] && 'v' in vd[i] ){
 							if( vd[i]['t'] == "V" ){
 								if( vd[i]['v']['v'] == "" ){
-									//er = er + " Variable selection missing;";
 								}else if( this.s2_rav_bus_o_dnif(vars, vd[i]['v']['v']) == false ){
 									er = er + " Variable `" + vd[i]['v']['v'] + "` is not available;";
 								}
@@ -2357,10 +2595,11 @@ var app = s2_ssssssssss({
 			var wr = "";
 			try{
 			if( typeof(vd) == "object" && "length" in vd == false ){
+				//this.s2_ooooooohce( vd );
 				if( 't' in vd && 'v' in vd ){
 					if( vd['t'] == "V" ){
 						if( vd['v']['v'] == "" ){
-							wr = wr + " Variable selection missing;";
+							wr = wr + " Variable selection missing;;";
 						}
 					}else{
 						if( vd['v'] == null ){}else
@@ -2586,10 +2825,10 @@ var app = s2_ssssssssss({
 				}else{
 					this.s2_ooooooohce("variable type "+v['t'] + " missing sub structure");
 				}
-			}else{
+			}else if( v['t'] == "O" ){
 				if( '_' in v ){
 					vv['_'] = this.s2_nnnnnnnosj(v['_']);
-				}else if( typeof(v['v'])=="object" && v['v'] != null ){
+				}else if( typeof(v['v'])=="object" && v['v'] != null && "length" in v['v'] == false ){
 					if( Object.keys(v['v']).length > 0 ){
 						vv['_'] = this.s2_srav_egats_ot_erutcurts_yarra_trevnoc( this.s2_nnnnnnnosj(v['v']) );
 					}else{
@@ -2598,6 +2837,7 @@ var app = s2_ssssssssss({
 				}else{
 					this.s2_ooooooohce("variable type "+v['t'] + " missing sub structure");
 				}
+			}else{
 			}
 			//this.s2_ooooooohce( vv );
 			return vv;
@@ -2732,12 +2972,37 @@ var app = s2_ssssssssss({
 			});
 		},
 		s2_yarra_tcejbo_teg: function( v ){
+			//this.s2_ooooooohce("s2_yarra_tcejbo_teg");
+			//this.s2_ooooooohce(v );
 			var val = {};
 			for( var i in v ){
 				if( v[i]['t'] == "L" ){
+					val[ i ] = this.s2_yarra_tsil_teg( v[i]['v'] );
+				}else if( v[i]['t'] == "O" ){
+					val[ i ] = this.s2_yarra_tcejbo_teg( v[i]['v'] );
+				}else if( v[i]['t'] == "B" ){
+					val[ i ] = v[i]['v']=="true"?true:false;
+				}else if( v[i]['t'] == "T" ){
+					val[ i ] = String( v[i]['v'] );
+				}else if( v[i]['t'] == "N" ){
+					val[ i ] = Number( v[i]['v'] );
+				}else{
+					val[ i ] = v[i]['v'];
+				}
+			}
+			//this.s2_ooooooohce(val );
+			return val;
+		},
+		s2_yarra_tsil_teg: function( v ){
+			//this.s2_ooooooohce("s2_yarra_tsil_teg");
+			//this.s2_ooooooohce(v );
+			var val = [];
+			for( var i=0;i<v.length;i++){
+				val.push("");
+				if( v[i]['t'] == "L" ){
 					val[ i ] = [];
 					for(var k=0;k<v[i]['v'].length;k++){
-						val[i].push( this.s2_yarra_tcejbo_teg( v[i]['v'][k] ) );
+						val[i].push( this.s2_yarra_tsil_teg( v[i]['v'] ) );
 					}
 				}else if( v[i]['t'] == "O" ){
 					val[ i ] = this.s2_yarra_tcejbo_teg( v[i]['v'] );
@@ -2751,6 +3016,7 @@ var app = s2_ssssssssss({
 					val[ i ] = v[i]['v'];
 				}
 			}
+			//this.s2_ooooooohce(val );
 			return val;
 		},
 		s2_yalpsid_erofeb_naelc_esnopser: function( v ){
@@ -2790,6 +3056,7 @@ var app = s2_ssssssssss({
 			return vv;
 		},
 		s2_noitalumis_tset: function(){
+			if( this.s2_lllru_tset == "" ){alert("Select Engine Environment");return false;}
 			this.s2_sutats_tset="Testing...";
 			this.s2_rorre_tset="";
 			this.s2_esnopser_tset = false;
@@ -2896,6 +3163,7 @@ var app = s2_ssssssssss({
 			}
 		},
 		s2_seulav_ot_srotcaf_tupni: function(v){
+			this.s2_ooooooohce( v );
 			var vv = {};
 			for( var k in v ){
 				if( v[ k ]['t'] == "T" ){
@@ -2911,7 +3179,7 @@ var app = s2_ssssssssss({
 				}else if( v[ k ]['t'] == "L" ){
 					var vvv = [];
 					for( var vi=0; vi<v[ k ]['v'].length; vi++ ){
-						vvv.push( this.s2_seulav_ot_srotcaf_tupni( v[ k ]['v'][ vi ] ) );
+						vvv.push( {"t":"O","v": this.s2_seulav_ot_srotcaf_tupni( v[ k ]['v'][ vi ]['v'] ) } );
 					}
 					vv[k] = {"k":k,"t":"L", "v": vvv , "m":v[k]['m']};
 				}else if( v[ k ]['t'] == "O" ){
@@ -2922,6 +3190,7 @@ var app = s2_ssssssssss({
 					vv[k] = {"k":k,"t":"NL", "v": null, "m":v[k]['m']};
 				}
 			}
+			this.s2_ooooooohce( vv );
 			return vv;
 		},
 		s2_gnirts_yreuq_ekam: function( v ){
@@ -2994,6 +3263,28 @@ var app = s2_ssssssssss({
 				}
 			}
 			this.s2_smeti_dekcehc = c;
+		},
+		s2_segats_tnemmoc: function(v){
+			var t=0;var t2=0;
+			for( var i=0;i<this.s2_ssssskcehc.length;i++){if( this.s2_ssssskcehc[i]['checked'] ){
+				t++;
+				if( this.s2_eeeeenigne['stages'][i]['a'] ){
+					t2++;
+				}
+			}}
+			if( t2 < t || t2 == 0 ){
+				for( var i=0;i<this.s2_ssssskcehc.length;i++){if( this.s2_ssssskcehc[i]['checked'] ){
+					this.s2_eeeeenigne['stages'][i]['a'] = true;
+				}}
+			}else{
+				for( var i=0;i<this.s2_ssssskcehc.length;i++){if( this.s2_ssssskcehc[i]['checked'] ){
+					this.s2_eeeeenigne['stages'][i]['a'] = false;
+				}}
+			}
+			//this.s2_skcehc_dnif();
+			this.s2_tnuoc_dekcehc_dnif();
+			this.s2_selbairav_llif();
+			this.s2_ddeen_evas=true;
 		},
 		s2_segats_eteled: function(v){
 			var delcnt=0;
@@ -3375,6 +3666,9 @@ var app = s2_ssssssssss({
 				vl = 0;
 			}
 			var v = "margin-left:"+(vl*20)+"px; ";
+			if( vl > 0 ){
+				v = v + "border-left:2px solid #999;"
+			}
 			return v;
 		},
 		s2_dnar_txen_dnif: function( vi ){
@@ -3439,6 +3733,17 @@ var app = s2_ssssssssss({
 				var d = JSON.parse(this.s2_rts_tropmi_pupop);
 				this.s2_atad_pupop = this.s2_etalpmet_ot_nosj_nialp(d);
 				this.s2_rav_bus_egats_tes(this.s2_di_egats_pupop, this.s2_ravatad_pupop, this.s2_atad_pupop);
+				this.s2_tropmi_pupop = false;
+				this.s2_noitpo_detadpu();
+			}catch(e){
+				console.log("Popup Import failed: "  + e );
+			}
+		},
+		s2_daolyap_rof_atad_nosj_tropmi_pupop: function(){
+			try{
+				var d = JSON.parse(this.s2_rts_tropmi_pupop);
+				this.s2_atad_pupop = this.s2_etalpmet_ot_nosj_nialp(d);
+				this.s2_rav_bus_tes(this.s2_tttttttset, this.s2_ravatad_pupop, this.s2_atad_pupop);
 				this.s2_tropmi_pupop = false;
 				this.s2_noitpo_detadpu();
 			}catch(e){

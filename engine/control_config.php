@@ -4,7 +4,7 @@ if( !is_dir( "/tmp/apimaker" ) ){
 	mkdir( "/tmp/apimaker", 0755 );
 }
 
-$engine_cache_path = "/tmp/apimaker/engine_" . $config_engine_app_id . ".php";
+$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
 if( file_exists($engine_cache_path) ){
 	$cache_refresh = false;
 	require_once($engine_cache_path);
@@ -61,6 +61,11 @@ if( $cache_refresh ){
 	$config_global_engine = $res['configs'];
 	//if( $cache_refresh === "yes" ){ echo "Cache Refreshed successfully!" . $cache_refresh;exit; }
 	//echo "engine updated";	exit;
+}
+
+//print_r( $config_global_engine );
+if( $config_global_engine['timezone'] ){
+	date_default_timezone_set($config_global_engine['timezone']);
 }
 
 /* Mongo DB connection */

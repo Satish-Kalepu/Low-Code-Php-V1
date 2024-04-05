@@ -1,6 +1,8 @@
 <?php
 
 function input_factors_to_values($v){
+	//echo "input_factors_to_values\n";
+	//print_r( $v );
 	$vv = [];
 	foreach( $v as $k=>$val ){
 		if( $val['t'] == "T" ){
@@ -16,7 +18,7 @@ function input_factors_to_values($v){
 		}else if( $val['t'] == "L" ){
 			$vvv = [];
 			foreach( $val['v'] as $li=>$lv ){
-				$vvv[] = input_factors_to_values( $lv );
+				$vvv[] = input_factors_to_values( $lv['v'] );
 			}
 			$vv[$k] = $vvv;
 		}else if( $val['t'] == "O" ){
@@ -81,9 +83,8 @@ if( $_POST['action'] == "get_global_apis" ){
 			]
 		]);
 
-		//print_r( $res2['data'] );
-
 		if( isset( $res2['data']['engine']['input_factors'] ) ){
+			//print_r( $res2['data']['engine']['input_factors'] );
 			$j['vpost'] = json_encode(input_factors_to_values($res2['data']['engine']['input_factors']),JSON_PRETTY_PRINT);
 		}else{
 			$j['vpost'] = '{}';

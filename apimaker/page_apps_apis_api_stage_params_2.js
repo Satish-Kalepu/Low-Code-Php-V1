@@ -126,6 +126,7 @@ const s2_smarap_egats_gifnoc = {
 	"RespondVar": {
 		"p": {
 			"output":{"t":"V","v":{"v":"","t":"","vs":false} },
+			"raw":{"t":"B","v":"false" },
 		},
 	},
 	"RespondVars": {
@@ -134,6 +135,9 @@ const s2_smarap_egats_gifnoc = {
 				{"t":"V", "v":{"v":"","t":"","vs":false} }
 			],
 		},
+	},
+	"RespondGlobals": {
+		"p": false
 	},
 	"RespondXML": {
 		"p": {

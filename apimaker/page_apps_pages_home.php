@@ -189,7 +189,7 @@ var app = Vue.createApp({
 			v = v.replace( /\-/g, "DASH" );
 			v = v.replace( /\_/g, "UDASH" );
 			v = v.replace( /\W/g, "-" );
-			v = v.replace( /DASH/g, "-" );v = v.replace( /UDASH/g, "_" );
+			v = v.replace( /UDASH/g, "_" );v = v.replace( /DASH/g, "-" );
 			v = v.replace( /[\-]{2,5}/g, "-" );
 			v = v.replace( /[\_]{2,5}/g, "_" );
 			return v;

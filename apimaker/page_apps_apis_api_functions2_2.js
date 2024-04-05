@@ -41,7 +41,7 @@ var s2_seitreporp_tcejbo_gifnoc = {
 		"replace": {"self": true, "replace": true, "return":"T", "inputs": {
 			"p2": {"n": "Find Word", "types": ["V", "T"], "m": true, "v": {"t":"T","v":"foo"}},
 			"p3": {"n": "Replace With", "types": ["V", "T"], "m": true, "v": {"t":"T","v":"bar"}},
-		}}
+		}},
 	},
 	"N": {
 		"get": {"self":false,"return":"self"},
@@ -88,6 +88,13 @@ var s2_seitreporp_tcejbo_gifnoc = {
 		"set": {"self":true,"return":"B","inputs":{
 			"p2": {"n": "Value", "m": true, "types": ["V", "L"], "v":{"t": "L", "v": ""}},
 		}},
+		"setItem":{"self": true,"return":"B", "inputs":{
+			"p2": {"n": "Index", "types": ["V", "N"], "m": true, "v":{"t": "N", "v": "0"}},
+			"p3": {"n": "Item", "types": ["V", "O", "T", "N"], "m": true, "v":{"t": "V", "v": {"v":"", "t":""} }},
+		}},
+		"setTemplate":{"self": true,"return":"B", "inputs":{
+			"p2": {"n": "Template", "types": ["L"], "m": true, "v":{"t": "L", "v": [{"t":"O","v":{"key":{"k":"key","t":"T","v":""}}}] }},
+		}},
 		"length":{"self": false,"return":"N"},
 		"getItem":{"self": false,"return":"O", "inputs":{
 			"p2": {"n": "Item", "types": ["V", "N"], "m": true, "v":{"t": "N", "v": "0"}},
@@ -111,6 +118,9 @@ var s2_seitreporp_tcejbo_gifnoc = {
 		"pop":{"self": true, "replace": false, "return":"O"},
 	},
 	"O": {
+		"hasKey":{"self": false,"return":"O", "inputs":{
+			"p2": {"n": "Key", "types": ["V", "T"], "m": true, "v":{"t": "T", "v": ""}},
+		}},
 		"getKey":{"self": false,"return":"O", "inputs":{
 			"p2": {"n": "Key", "types": ["V", "T"], "m": true, "v":{"t": "T", "v": ""}},
 		}},
@@ -118,6 +128,12 @@ var s2_seitreporp_tcejbo_gifnoc = {
 		"setKey":{"self": true, "replace": false, "return":"B", "inputs":{
 			"p2": {"n": "Key", "types": ["V", "T"], "m": true, "v":{"t": "T", "v": ""}},
 			"p3": {"n": "Value", "types": ["V", "T", "N", "L", "O", "B"], "m": true, "v":{"t": "T", "v": ""}},
+		}},
+		"setTemplate":{"self": true,"return":"B", "inputs":{
+			"p2": {"n": "Template", "types": ["L"], "m": true, "v":{"t":"O", "v":{"key":{"k":"key","t":"T","v":"sample"}} }},
+		}},
+		"setTemplate":{"self": true,"return":"B", "inputs":{
+			"p2": {"n": "Template", "types": ["O"], "m": true, "v":{"t":"O", "v":{"key":{"k":"key","t":"T","v":""}} }},
 		}},
 		"removeKey":{"self": true, "replace": false, "return":"B", "inputs":{
 			"p2": {"n": "Key", "types": ["V", "T"], "m": true, "v":{"t": "T", "v": ""}},

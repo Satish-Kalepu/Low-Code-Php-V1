@@ -197,7 +197,7 @@
 		background-color: #f8f8f0; color:#666; border:1px solid #f0f0e8; padding:0px 5px;
 	}
 
-	.code_row{ display:flex; gap:5px; align-items:flex-start; white-space:nowrap; }
+	.code_row{ display:flex; gap:5px; align-items:flex-start; white-space:nowrap; min-width: max-content; }
 	.code_line [data-type=dropdown]:empty:before{content: "\feff";}
 	.code_line [data-type=dropdown]{
 		display: inline-block; position: relative;
@@ -259,7 +259,7 @@
 
 	.code_line pre[data-type=objecteditable]{
 		cursor:pointer; min-height:50px; max-height:300px;
-		min-width:200px; max-width:300px; overflow:auto; background-color:#fffced; 
+		min-width:200px; max-width:500px; overflow:auto; background-color:#fffced; 
 		border:1px solid #eae0ad; padding-left:10px; padding-right:20px; resize:both;
 	}
 	.code_line pre[data-type=objecteditable]:empty:before{content: "\feff";}

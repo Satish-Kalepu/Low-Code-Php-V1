@@ -120,14 +120,40 @@ if( $_POST['action'] == "create_app" ){
 	if( $res['data'] ){
 		json_response("fail", "Already exists");
 	}
-	$version_id = $mongodb_con->generate_id();
+
+	require_once("config_default_app_settings.php");
+
+	$app_id = $mongodb_con->generate_id();
 	$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
+		"_id"=>$app_id,
 		"app"=>$_POST['new_app']['app'],
 		"des"=>$_POST['new_app']['des'],
 		"created"=>date("Y-m-d H:i:s"),
 		"updated"=>date("Y-m-d H:i:s"),
 		"active"=>true,
 	]);
+
+	$page_id = $mongodb_con->generate_id();
+	$page_version_id = $mongodb_con->generate_id();
+
+	//print_r( $config_page_record );print_r( $config_page_version_record );exit;
+
+	$config_page_record['_id'] = $page_id;
+	$config_page_record['version_id'] = $page_version_id;
+	$config_page_record['app_id'] = $app_id;
+	$config_page_record['created'] = date("Y-m-d H:i:s");
+	$config_page_record['updated'] = date("Y-m-d H:i:s");
+
+	$res2 = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_pages", $config_page_record );
+
+	$config_page_version_record['_id'] = $page_version_id;
+	$config_page_version_record['page_id'] = $page_id;
+	$config_page_version_record['app_id'] = $app_id;
+	$config_page_version_record['created'] = date("Y-m-d H:i:s");
+	$config_page_version_record['updated'] = date("Y-m-d H:i:s");
+
+	$res2 = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", $config_page_version_record );
+
 	//http_response(500, "something wrong");
 	json_response([
 		"status"=>"success",

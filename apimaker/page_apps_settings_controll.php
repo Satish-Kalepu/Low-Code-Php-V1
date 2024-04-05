@@ -23,7 +23,7 @@ if( $_POST['action'] == "app_update_name" ){
 	}
 	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
 		'app'=>$name,
-		'_id'=>['!=', $config_param1]
+		'_id'=>['$ne'=>$config_param1]
 	]);
 	if( $res['data'] ){
 		json_response(['status'=>"fail", "error"=>"An app already exists with same name"]);
@@ -67,7 +67,9 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 	}
 	if( $settings['host'] ){
 		if( !isset($settings['domains']) ){
-			json_response("fail", "Incorrect data. Domain settings missing.");
+			json_response("fail", "Incorrect data. URL settings missing.");
+		}else if( sizeof($settings['domains']) == 0 ){
+			json_response("fail", "Incorrect data. URL settings missing.");
 		}
 		foreach( $settings['domains'] as $i=>$j ){
 			if( !preg_match("/^(https\:\/\/www\.|http\:\/\/www\.|https\:\/\/|http\:\/\/)(localhost|[0-9\.]{7,15}|[a-z0-9\-\.]{3,200}\.[a-z\.]{2,10})[\:0-9]*\/[a-z0-9\.\-\_\.\/]*/i", $j['url']) ){
@@ -82,6 +84,8 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 			$settings['domains'][ $i ]['path'] = $v['path'];
 		}
 		if( !isset($settings['keys']) ){
+			json_response("fail", "Incorrect data. Key settings missing.");
+		}else if( sizeof($settings['keys']) == 0 ){
 			json_response("fail", "Incorrect data. Key settings missing.");
 		}
 		foreach( $settings['keys'] as $i=>$j ){
@@ -309,9 +313,9 @@ if( !$app['settings'] ){
 		"host"=>false,
 		"domains"=>[
 			[
-				"domain"=>$_SERVER['HTTP_HOST'],
-				"url"=>"http://".$_SERVER['HTTP_HOST']."/engine/",
-				"path"=>"/engine/"
+				"domain"=>"www.example.com",
+				"url"=>"http://www.example.com/path/",
+				"path"=>"/path/"
 			]
 		],
 		"keys"=>[
@@ -347,10 +351,14 @@ $loc = [
 
 $engined = "";
 $enginep = "";
+$default_app = false;
 foreach( $loc as $i=>$j ){
 	if( file_exists($j) ){
 		$enginep = $j;
 		$engined = file_get_contents($j);
+		if( preg_match("/". $config_param1 . "/", $engined) ){
+			$default_app = true;
+		}
 		break;
 	}
 }

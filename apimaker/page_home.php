@@ -11,7 +11,7 @@
 			<div style="float:right;" ><div class="btn btn-outline-dark btn-sm" v-on:click="show_create_app()" >Create App</div></div>
 			<div style="float:right;" ><div class="btn btn-outline-dark btn-sm me-2" v-on:click="importnow()" >Import</div></div>
 			<div class="h3 mb-3">APPs</div>
-			<div style="height: calc( 100% - 100px ); overflow: auto;">
+			<div style="height: calc( 100% - 100px ); padding-right:20px; overflow: auto;">
 				<div v-for="v,vi in apps" style="padding:5px; border-radius:5px; margin-bottom: 10px; border:1px solid #999;" >
 					<div style="float:right;">
 						<div class="btn btn-outline-dark btn-sm me-2" v-on:click="clone_app__(v['_id'])" >Clone</div>

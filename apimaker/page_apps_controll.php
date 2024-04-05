@@ -11,7 +11,15 @@ if( !$res['data'] ){
 }
 $app = $res['data'];
 
-if( !isset($app['settings']) || !isset($app['settings']['domains']) ){
+$take_to_settings = false;
+if( !isset($app['settings']) ){
+	$take_to_settings = true;
+}else if( !isset($app['settings']['custom']) && !isset($app['settings']['cloud']) ){
+	$take_to_settings = true;
+}else if( $app['settings']['custom'] === false && $app['settings']['cloud'] === false ){
+	$take_to_settings = true;
+}
+if( $take_to_settings ){
 	if( $config_param2 != "settings" ){
 		header("Location: " . $config_global_apimaker_path . "apps/" . $config_param1 . "/settings");
 		exit;

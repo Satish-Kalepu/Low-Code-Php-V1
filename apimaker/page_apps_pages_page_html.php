@@ -146,6 +146,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
+          	<template v-if="typeof(vurls)=='object'" >
               <template v-if="'cloud' in vurls" >
                 <p>Cloud Hosting: </p>
                 <p>
@@ -164,6 +165,7 @@
                   <a target="_blank" v-bind:href="u" >{{ u }}</a>
                 </p>
               </template>
+            </template>
           </div>
         </div>
       </div>

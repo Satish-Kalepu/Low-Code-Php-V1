@@ -1,6 +1,6 @@
 		<div style="margin-bottom:5px; padding:5px;background-color:#f8f8f8; line-height:30px; border-bottom:1px solid #cdcdcd; font-size:16px;" >
 			Simulation Test 
-			<div class="btn btn-dark btn-sm pull-right" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true">X</div>
+			<div class="btn btn-outline-dark btn-sm pull-right" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true">X</div>
 		</div>
 		<div class="test_menu_sub_div" style="padding: 5px; height: calc( 100% - 80px ); overflow: auto;">
 			<div>
@@ -31,10 +31,10 @@
 						<input_values v-else v-bind:v="s2_tttttttset['factors']['v']" datafor="s2_tttttttset" datavar="factors:v" viewas="payload" allowsub="no" v-on:edited="s2_detide_srotcaf_tset"></input_values>
 					</div>
 				</div>
-				<input type="button" style="float:right;" value="SAVE TEST" v-on:click.stop="s2_ttset_evas">
+				<input type="button" class="btn btn-outline-dark btn-sm" style="float:right;" value="SAVE TEST" v-on:click.stop="s2_ttset_evas">
 				<div v-if="s2_desu_cnysa"><input type="checkbox" id="vskip_async" v-model="s2_piks_cnysa" value="yes" > <label style="cursor:pointer;" for="vskip_async" >Skip Async! Execute all stages.</label></div>
 				<div><input type="checkbox" id="test_debug" v-model="s2_gubed_tset" v-on:click="s2_tnemnorivne_tset_tceles" title="Note: it would fetch too much data!" value="yes" > <label style="cursor:pointer;" for="test_debug" title="Note: it would fetch too much data!" >Retrieve debugging log!</label></div>
-				<div><input class="btn btn-dark btn-sm" type="button" value="TEST" v-on:click.stop="s2_noitalumis_tset"></div>
+				<div><input class="btn btn-outline-dark btn-sm" type="button" value="TEST" v-on:click.stop="s2_noitalumis_tset"></div>
 				<div align='center' v-if="s2_gnitiaw_tset"><span class="test_loader"></span><span class="test_loader2"></span></div>
 				<div v-if="s2_esnopser_tset!=false">
 					<template v-if="typeof(s2_esnopser_tset)=='object'" >

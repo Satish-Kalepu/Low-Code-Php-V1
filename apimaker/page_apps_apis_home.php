@@ -10,6 +10,7 @@
 	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
+				<button class="btn btn-outline-dark btn-sm me-1" v-on:click="api_show_import_form()" >Import</button>
 				<button class="btn btn-outline-dark btn-sm" v-on:click="api_show_create_form()" >Create API</button>
 			</div>
 			<div style="float:right;" >
@@ -19,7 +20,7 @@
 
 			<div class="h3 mb-3">APIs</div>
 			<div style="clear:both;"></div>
-			<div style="height: calc( 100% - 100px ); overflow: auto;" >
+			<div style="height: calc( 100% - 100px ); padding-right:20px; overflow: auto;" >
 			<table class="table table-striped table-bordered table-sm" >
 				<tr>
 					<td>ID</td>
@@ -75,6 +76,36 @@
 		    </div>
 		  </div>
 		</div>
+
+		<div class="modal fade" id="import_modal" tabindex="-1" >
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Import API</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+		        	<div>Password</div>
+		        	<input spellcheck="false" type="text" class="form-control form-control-sm" v-model="import_password__" placeholder="Password" >
+		        	<div>File</div>
+		        	<input type="file" spellcheck="false" class="form-control form-control-sm" id="import_file__" v-on:change="import_selected__" >
+		        	<div>&nbsp;---&nbsp;</div>
+		        	<template v-if="import_check__" >
+			        	<div>Name</div>
+			        	<input type="text" spellcheck="false" class="form-control form-control-sm" v-model="import_name__" placeholder="Default from import" >
+			        	<div>Description</div>
+			        	<input type="text" spellcheck="false" class="form-control form-control-sm" v-model="import_des__" placeholder="Default from import" >
+			        	<div>&nbsp;</div>
+			        </template>
+
+		        	<input type="button" spellcheck="false" class="btn btn-outline-dark btn-sm" v-on:click="import_api__" value="Import" >
+		        	<div v-if="imsg__" class="alert alert-success" >{{ imsg__ }}</div>
+		        	<div v-if="ierr__" class="alert alert-danger"  >{{ ierr__ }}</div>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
 </div>
 <script>
 var app = Vue.createApp({
@@ -83,10 +114,8 @@ var app = Vue.createApp({
 			path: "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
 			app_id: "<?=$app['_id'] ?>",
 			app__: <?=json_encode($app) ?>,
-			msg: "",
-			err: "",
-			cmsg: "",
-			cerr: "",
+			msg: "",err: "",cmsg: "",cerr: "",imsg__: "",ierr__: "",
+			import_modal__: false, "import_password__": "", "import_file__": "", "import_version__": "create", "import_name__": "", "import_des__": "", "import_check__": false,
 			apis: [],
 			show_create_api: false,
 			new_api: {
@@ -184,14 +213,98 @@ var app = Vue.createApp({
 			this.create_app_modal.show();
 			this.cmsg = ""; this.cerr = "";
 		},
+		api_show_import_form(){
+			this.import_check__ = false;
+			this.import_name__ = "";this.import_des__ = "";
+			this.import_modal__ = new bootstrap.Modal(document.getElementById('import_modal'));
+			this.import_modal__.show();
+			this.imsg = ""; this.ierr = "";
+		},
 		cleanit(v){
 			v = v.replace( /\-/g, "DASH" );
 			v = v.replace( /\_/g, "UDASH" );
 			v = v.replace( /\W/g, "-" );
-			v = v.replace( /DASH/g, "-" );v = v.replace( /UDASH/g, "_" );
+			v = v.replace( /UDASH/g, "_" );v = v.replace( /DASH/g, "-" );
 			v = v.replace( /[\-]{2,5}/g, "-" );
 			v = v.replace( /[\_]{2,5}/g, "_" );
 			return v;
+		},
+		import_selected__: function(){
+			this.import_file__ = "";
+			this.ierr__ = "";
+			var vf = document.getElementById("import_file__").files[0];
+			if( vf.name.match(/\.[a-f0-9]{24}\.api$/) == null ){
+				this.ierr__ = "Please select a proper file";
+				document.getElementById("import_file__").value = "";
+			}
+			this.import_file__ = vf.name+'';
+		},
+		import_api__: function(){
+			this.ierr__ = "";
+			this.imsg__ = "";
+			if( this.import_password__.trim()=="" ){
+				this.ierr__ = "password is must";return;
+			}
+			if( document.getElementById("import_file__").value == "" ){
+				this.ierr__ = "select file";return;
+			}
+
+			if( this.import_name__.trim() != "" ){
+				this.import_name__ = this.cleanit(this.import_name__);
+				if( this.import_name__.match(/^[a-z0-9\.\-\_\ ]{3,100}$/i) == null ){
+					this.ierr = "Name incorrect. Special chars not allowed. Length minimum 3 max 100";
+					return false;
+				}
+			}
+			if( this.import_des__.trim() != "" ){
+				if( this.import_des__.match(/^[a-z0-9\.\-\_\&\,\!\@\'\"\ \r\n]{5,200}$/i) == null ){
+					this.ierr = "Description incorrect. Special chars not allowed. Length minimum 5 max 200";
+					return false;
+				}
+			}
+
+			var vpost = new FormData();
+			var vf = document.getElementById("import_file__").files[0];
+			vpost.append( "action", "app_api_import_create" );
+			vpost.append( "file", vf);
+			vpost.append( "password", this.import_password__ );
+			vpost.append( "app_id", this.app_id );
+			vpost.append( "name", this.import_name__ );
+			vpost.append( "des", this.import_des__ );
+			this.imsg__ = "Importing...";
+			axios.post("?", vpost).then(response=>{
+				this.imsg__ = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.imsg__ = "Imported successfully. Redirecting ...";
+								setTimeout(function(){document.location = "<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/apis/"+response.data['api_id']+"/"+response.data['version_id']; },1000);
+							}else{
+								this.ierr__ = ( "Export Error: " + response.data['error'] );
+								if( 'name' in response.data ){
+									this.import_check__ = true;
+								}
+								if( 'name' in response.data && this.import_name__ == "" ){
+									this.import_name__ = response.data['name'];
+								}
+								if( 'des' in response.data && this.import_des__ == "" ){
+									this.import_des__ = response.data['des'];
+								}
+							}
+						}else{
+							this.ierr__ = ("Incorrect response");
+						}
+					}else{
+						this.ierr__ = ("Incorrect response Type");
+					}
+				}else{
+					this.ierr__ = ("Response Error: " + response.status );
+				}
+			}).catch(error=>{
+				console.log( error );
+				this.ierr__ = ( "Error Exporting" );
+			});
 		},
 		createnow(){
 			this.cerr = "";

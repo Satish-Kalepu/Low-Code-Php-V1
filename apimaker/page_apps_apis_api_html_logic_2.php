@@ -1,3 +1,8 @@
+
+
+	<div class="btn btn-outline-dark btn-sm w-auto me-1" style="float: right;" v-on:click="s2_ipa_tropxe" >Export</div>
+	<div class="btn btn-outline-dark btn-sm w-auto me-1" style="float: right;" v-on:click="s2_ipa_tropmi_wohs" >Import</div>
+
 	<div class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
 		<div>
 			<div>Method</div>
@@ -19,6 +24,7 @@
 			<div>Authentication</div>
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="auth-type" data-list-values="auth-type" >{{ s2_iiiiiiiipa['auth-type'] }}</div>
 		</div>
+
 	</div>
 	<!-- <div class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
 		<div>
@@ -47,6 +53,7 @@
 	<div v-if="s2_rrrrrorrev" class="alert alert-danger" v-html="s2_rrrrrorrev" ></div>
 
 	<div style="background-color:white;" v-if="s2_segats_wohs" >
+		<a href="<?=$config_global_apimaker_path ?>docs/api_designer.thml" target="_blank" style="float:right">Help</a>
 		<div style="font-size:14px; border-bottom:1px solid #cdcdcd; margin-bottom:5px; ">Stages of Execution: Develop & derive logical result</div>
 		<div style="position:sticky;top:0px;z-index:50;background-color: white; margin-bottom:5px;border-bottom:1px solid #cdcdcd;  " >
 			<div id="div_stages_menu" ref="div_stages_menu" style="padding:5px;" >
@@ -57,6 +64,7 @@
 					<button class="btn btn-outline-dark btn-sm ms-5" type="button" style="line-height: 1.2;" v-on:click="s2_segats_etacilpud" >Copy</button>
 					<button class="btn btn-default btn-sm ms-2" type="button" style=" width:30px;line-height: 1.2;line-height: 1;font-weight:bold;color:black;" v-on:click="s2_ppppu_evom" >&#8673;</button>
 					<button class="btn btn-default btn-sm ms-2" type="button" style=" width:30px;line-height: 1.2;font-weight:bold;color:black;" v-on:click="s2_nnwod_evom" >&#8675;</button>
+					<button class="btn btn-outline-secondary btn-sm ms-2" type="button"  style="line-height: 1.2;" v-on:click="s2_segats_tnemmoc" >Comment</button>
 					<button class="btn btn-outline-danger btn-sm ms-2" type="button"  style="line-height: 1.2;" v-on:click="s2_segats_eteled" >Delete</button>
 					<button class="btn btn-outline-secondary btn-sm ms-2" type="button"  style="line-height: 1.2;" v-on:click="s2_lla_kcehcnu" >Reset</button>
 				</template>
@@ -295,6 +303,15 @@
 									<div>Variable</div>
 									<div title="Variable" data-type="dropdown" data-for="stages" data-var="d:output:v:v" data-list="vars"  style="margin-bottom:5px;" >{{ s2_dddddegats['d']['output']['v']['v'] }}</div>
 								</div>
+								<div v-if="'raw' in s2_dddddegats['d']" style="display:flex; column-gap:5px;">
+									<div>Raw</div>
+									<div title="Raw" data-type="dropdown" data-for="stages" data-var="d:raw:v" data-list="boolean"  style="margin-bottom:5px;" >{{ s2_dddddegats['d']['raw']['v'] }}</div>
+								</div>
+								<div>End Execution</div>
+							</div>
+						</template>
+						<template v-if="s2_dddddegats['k']['v']=='RespondGlobals'" >
+							<div>
 								<div>End Execution</div>
 							</div>
 						</template>

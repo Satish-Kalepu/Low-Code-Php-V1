@@ -517,6 +517,7 @@ var app = Vue.createApp({
 			this.test_type__ = t;
 			this.test_thing_id__ = this.apis[ t ][ ti ]['_id'];
 			this.test_api_type__ = at;
+			this.test_api_method__ = "POST";
 			// console.log( this.apis[ t ][ ti ][ at ] );
 			this.test_path__ = this.apis['tables_dynamic'][ ti ]['path']+'';
 			this.test_data__ = JSON.stringify( this.apis[ t ][ ti ][ at ], null, 4 );

@@ -240,6 +240,19 @@ var s2_snoitcnuf_gifnoc = {
 			"p1": {"n": "Text", "t": "T", "v": "", "m": true, "types": ["V", "T"],},
 		}
 	},
+	"Set Timezone": {
+		"t": "Date",
+		"self": true,
+		"return": false,
+		"inputs": {
+			"p1": {"n": "Timezone", "types": ["TimeZone"], "t": "TimeZone", "m": true, "v": "UTC"},
+		}
+	},
+	"Get Timezone": {
+		"t": "Date",
+		"self": false,
+		"return": "T",
+	},
 	"Date To Timestamp": {
 		"t": "Date",
 		"self": false,
@@ -248,7 +261,7 @@ var s2_snoitcnuf_gifnoc = {
 			"p1": {"n": "Date", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
 		}
 	},
-	"Timestamp to Date": {
+	"Timestamp To Date": {
 		"t": "Date",
 		"self": false,
 		"return": "D",
@@ -256,7 +269,7 @@ var s2_snoitcnuf_gifnoc = {
 			"p1": {"n": "Date", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
 		}
 	},
-	"Timestamp to DateTime": {
+	"Timestamp To DateTime": {
 		"t": "Date",
 		"self": false,
 		"return": "TS",
@@ -361,7 +374,7 @@ var s2_snoitcnuf_gifnoc = {
 	},
 	"List Append": {
 		"t": "List",
-		"self": true,
+		"self": false,
 		"return": false,
 		"inputs": {
 			"p1": {"n": "Data", "types": ["V"], "t": "V", "m": true, "v": {"v":"","t":""}},
@@ -379,8 +392,8 @@ var s2_snoitcnuf_gifnoc = {
 	},
 	"List Item Remove": {
 		"t": "List",
-		"self": true,
-		"return": "T",
+		"self": false,
+		"return": "O",
 		"inputs": {
 			"p1": {"n": "Data", "types": ["V"], "t": "V", "m": true, "v": {"v":"","t":""}},
 			"p2": {"n": "Index", "types": ["V", "N"], "t": "N", "m": true, "v": "0",},
@@ -469,7 +482,8 @@ var s2_snoitcnuf_gifnoc = {
 		"inputs": {
 			"p1": {"n": "Text", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
 			"p2": {"n": "RSA Public Key", "types": ["TT", "V"], "t": "TT", "m": true, "v": "", "encrypt": true},
-			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_PKCS1_PADDING",},
+			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_NO_PADDING",},
+			"p4": {"n": "Base64Encode", "types": ["B"], "t": "B", "m": true, "v": true },
 		}
 	},
 	"OpenSSL Public Decrypt": {
@@ -477,9 +491,9 @@ var s2_snoitcnuf_gifnoc = {
 		"self": false,
 		"return": "B64",
 		"inputs": {
-			"p1": {"n": "Encrypted", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
+			"p1": {"n": "Encrypted", "types": ["V", "T", "B64"], "t": "V", "m": true, "v": {"v":"","t":""}},
 			"p2": {"n": "RSA Public Key", "types": ["TT", "V"], "t": "TT", "m": true, "v": "", "encrypt": true},
-			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_PKCS1_PADDING",},
+			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_NO_PADDING",},
 		}
 	},
 	"OpenSSL Private Encrypt": {
@@ -489,7 +503,8 @@ var s2_snoitcnuf_gifnoc = {
 		"inputs": {
 			"p1": {"n": "Text", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
 			"p2": {"n": "RSA Private Key", "types": ["TT", "V"], "t": "TT", "m": true, "v": "", "encrypt": true},
-			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_PKCS1_PADDING",},
+			"p3": {"n": "Padding", "types": ["Padding2"], "t": "Padding2", "m": true, "v": "OPENSSL_NO_PADDING",},
+			"p4": {"n": "Base64Encode", "types": ["B"], "t": "B", "m": true, "v": true },
 		}
 	},
 	"OpenSSL Private Decrypt": {
@@ -497,9 +512,9 @@ var s2_snoitcnuf_gifnoc = {
 		"self": false,
 		"return": "B64",
 		"inputs": {
-			"p1": {"n": "Encrypted", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
+			"p1": {"n": "Encrypted", "types": ["V", "T", "TT", "B64"], "t": "V", "m": true, "v": {"v":"","t":""}},
 			"p2": {"n": "RSA Private Key", "types": ["TT", "V"], "t": "TT", "m": true, "v": "", "encrypt": true },
-			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_PKCS1_PADDING",},
+			"p3": {"n": "Padding", "types": ["Padding"], "t": "Padding", "m": true, "v": "OPENSSL_NO_PADDING",},
 		}
 	},
 };
@@ -601,6 +616,10 @@ var s2_atad_snoitcnuf_gifnoc = {
 		"OPENSSL_PKCS1_OAEP_PADDING",
 		"OPENSSL_NO_PADDING"
 	],
+	"Padding2": [
+		"OPENSSL_PKCS1_PADDING",
+		"OPENSSL_NO_PADDING"
+	],
 	"RoundMode": [
 		"Default",
 		"Upper",
@@ -640,7 +659,7 @@ var s2_atad_snoitcnuf_gifnoc = {
 	],
 	"SortOrder": ["a-z","z-a"],
 	"BasicTypes": ["T", "N", "B", "O", "L", "BIN", "B64"],
-	"TimeZone": ["UTC-12:00","UTC-11:00","UTC-10:00","UTC-09:30","UTC-09:00","UTC-08:00","UTC-07:00","UTC-06:00","UTC-05:00","UTC-04:00","UTC-03:30","UTC-03:00","UTC-02:00","UTC-01:00","UTC +00:00","UTC +01:00","UTC +02:00","UTC +03:00","UTC +03:30","UTC +04:00","UTC +04:30","UTC +05:00","UTC +05:30","UTC +05:45","UTC +06:00","UTC +06:30","UTC +07:00","UTC +08:00","UTC +08:45","UTC +09:00","UTC +09:30","UTC +10:00","UTC +10:30","UTC +11:00","UTC +12:00","UTC +12:45","UTC +13:00","UTC +14:00"],
+	"TimeZone": ["UTC-12:00","UTC-11:00","UTC-10:00","UTC-09:30","UTC-09:00","UTC-08:00","UTC-07:00","UTC-06:00","UTC-05:00","UTC-04:00","UTC-03:30","UTC-03:00","UTC-02:00","UTC-01:00","UTC+00:00","UTC+01:00","UTC+02:00","UTC+03:00","UTC+03:30","UTC+04:00","UTC+04:30","UTC+05:00","UTC+05:30","UTC+05:45","UTC+06:00","UTC+06:30","UTC+07:00","UTC+08:00","UTC+08:45","UTC+09:00","UTC+09:30","UTC+10:00","UTC+10:30","UTC+11:00","UTC+12:00","UTC+12:45","UTC+13:00","UTC+14:00"],
 	"HttpMethod": ["GET", "POST", "PUT", "OPTIONS", "HEAD"],
 	"DFormat": ["yyyy-mm-dd","dd-mm-yyyy","dd/mm/yyyy","yyyy/mm/dd","mm/dd/yyyy", "yyyy/dd/mm", "yyyy-M-dd", "yyyy M dd", "dd-M-yyyy", "dd M yyyy", "yyyy-MM-dd", "yyyy MM dd", "dd-MM-yyyy", "dd MM yyyy", "dd DD MM yyyy", "yyyy DD dd MM"],
 	"ContentType": ["application/json","application/x-www-form-urlencoded","application/xml", "text/plain", "multipart/form-data"],
