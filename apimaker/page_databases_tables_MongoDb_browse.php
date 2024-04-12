@@ -1,3 +1,7 @@
+<script  src="<?=$config_global_apimaker_path ?>js/beautify-html.js" ></script>
+<script  src="<?=$config_global_apimaker_path ?>js/beautify-css.js" ></script>
+<script  src="<?=$config_global_apimaker_path ?>js/beautify.js" ></script>
+
 <div id="app" >
 	<div class="leftbar" >
 		<?php require("page_apps_leftbar.php"); ?>
@@ -92,7 +96,7 @@
 								</div>
 							</td>
 							<td>
-								<button class="btn btn-sm btn-success" v-on:click="search_filter_cond">Search</button>
+								<button class="btn btn-sm btn-outline-dark" v-on:click="search_filter_cond">Search</button>
 							</td>
 						</tr>
 					</table>
@@ -103,7 +107,7 @@
 					</select>
 				</td>
 				<td width="100">
-					<button class="btn btn-sm btn-success" v-on:click="add_record_now">Add Record</button>
+					<button class="btn btn-sm btn-outline-dark" v-on:click="add_record_now">Add Record</button>
 				</td>
 				</tr>
 			</table>
@@ -125,7 +129,7 @@
 					<tbody>
 						<tr v-for="dd,di in data_list" class="content" >
 							<td>
-								<input type="checkbox" :value="di" v-model="D_Rs" >
+								<input type="checkbox" :value="dd['_id']" v-model="delete_ids" >
 							</td>
 							<td>
 								<i class="fa fa-edit text-success"  v-on:click="edit_record( di )" title="Edit"></i>
@@ -138,14 +142,40 @@
 					</tbody>
 				</table>
 			</div>
-			<button v-if="found_more" class="btn btn-info btn-sm float-end" v-on:click="load_more" >Load More</button>
+			<button v-if="found_more" class="btn btn-outline-dark btn-sm float-end" v-on:click="load_more" >Load More</button>
 			<div>Records: {{ total_cnt }} </div>
 
 		</div>
 	</div>
 
 
-	<div v-if="show_add" class="importpopup" >
+	<div class="modal fade" id="edit_record_popup" tabindex="-1" >
+	  <div class="modal-dialog modal-lg modal-xl">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title">Edit Record</h5>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <div class="modal-body">
+
+	      	<div id="editorblock" style="display: relative; width:100%; min-height: 350px; height: 100%;" ></div>
+
+	      </div>
+	      <div class="modal-footer">
+	        	<div class="text-secondary">Note: if _id is unspecified, an unique id will be generated</div> 
+				<div><button v-if="edit_mode=='new'"  class="btn btn-sm btn-outline-dark mt-2" v-on:click="save_data('new')"  >Insert</button></div>
+				<div><button v-if="edit_mode=='edit'" class="btn btn-sm btn-outline-dark mt-2" v-on:click="save_data('edit')" >Update</button></div>
+				<div v-if="permission_to_update" >Record already exists! Do you want to update? <button class="btn btn-sm btn-outline-dark mt-2" v-on:click="edit_mode='edit';permission_to_update=false;error=''">Yes</button> </div>
+				<div v-if="error" class="alert alert-danger py-1" >{{ error }}</div>
+				<div v-if="edit_status" class="alert alert-success py-1" >{{ edit_status }}</div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+
+
+<!-- 	<div v-if="show_add" class="importpopup" >
 		<div class="importhead clearfix">
 			<h4 class="float-start m-1">{{edit_mode == "new"?"Add Data":"Edit Data"}}</h4>
 			<button type="button" class="btn btn-sm btn-danger float-end " v-on:click="show_add = false" >&times;</button>
@@ -160,7 +190,7 @@
 				</li>
 			</ul>
 			<textarea v-if="Edit_Tab=='json'" v-model="add_record2" style="width:100%; height: 300px;"></textarea>
-                        <table_mongodb_edit_record v-if="Edit_Tab=='schema'" v-bind:schema="add_record"></table_mongodb_edit_record>
+			<table_mongodb_edit_record v-if="Edit_Tab=='schema'" v-bind:schema="add_record"></table_mongodb_edit_record>
 		</div>
 		<div class="importfooter" >
 			<div class="mb-1 text-center">
@@ -171,10 +201,25 @@
 				<div v-if="edit_status" class="alert alert-success" >{{ edit_status }}</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 
 
 </div>
+
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ace.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-language_tools.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-beautify.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-modelist.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-options.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-searchbox.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-statusbar.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-themelist.js" ></script>
+<script defer src="<?=$config_global_apimaker_path ?>ace/src/ext-searchbox.js" ></script>
+
+<style>
+  .ace_editor{ font-size:1rem; }
+</style>
+
 
 <script type="text/javascript">
 <?php
@@ -191,6 +236,7 @@ var app = Vue.createApp({
 			"table_id": "<?=$config_param5 ?>",
 			"table": <?=json_encode($table,JSON_PRETTY_PRINT) ?>,
 			"data_list"		: [],
+			"ace": false,
 			"selected_schema"	: "default",
 			"search_index"		: "primary",
 			"primary_search"	: {"c":"=","v":"", "v2":"", "sort":"asc"},
@@ -201,7 +247,6 @@ var app = Vue.createApp({
 			"bv2"			: false,
 			"limit"			: 1000,
 			"error"			: "",
-			"SuccessMsg"		: "",
 			"show_add"		: false,
 			"add_record"		: {},
 			"add_record2"		: {},
@@ -221,14 +266,14 @@ var app = Vue.createApp({
 			"Edit_Tab"		: 'schema',
 			"total_cnt"		: "<?=$total_cnt?$total_cnt:0 ?>",
 			"selected_all"		: "",
-			"D_Rs"			: [],
+			"delete_ids"			: [],
 			"show_delete"		: "",
 			"filters"	  	: {"="	: "=","!=": "!=","<" : "<","<="	: "<=",">": ">",">=": ">=","><"	: "><","^." : "^..."},
 			};
 		},
 		watch:{
-		  	D_Rs:function(){
-				if( this.D_Rs.length > 0 ){
+		  	delete_ids:function(){
+				if( this.delete_ids.length > 0 ){
 					this.show_delete = true;
 				}
 			}
@@ -248,73 +293,64 @@ var app = Vue.createApp({
 				return 3+(Object.keys(this.table['schema'][this.selected_schema]['fields']).length);
 			},
 			Select_all:function(){
-				if(this.selected_all == false){
+				if( this.selected_all == false ){
 					this.selected_all = true;
 					this.show_delete = true;
 					v = [];
 					for(i in this.data_list){
-						v.push(i);
+						v.push( this.data_list[i]['_id'] );
 					}
-					this.D_Rs = v;
+					this.delete_ids = v;
 				}else{
 					this.selected_all = false;
 					this.show_delete = false;
-					this.D_Rs =[];
+					this.delete_ids = [];
 				}
 			},
 			delete_record:function( vi ){
 				this.delete_record_index = vi;
 				if(confirm("Are you sure you want to delete")){
-					var rk = {};
-					var rec = this.data_list[ this.delete_record_index ];
-					rk = rec["_id"];
 					var vd__ = {
-							"action"		: "delete_record",
-							"db_id"			: this.table['db_id'], 
-							"table_id"		: this.table['_id'] ,
-							"record_id"		: rk,
-						};
+						"action"		: "database_mongodb_delete_record",
+						"record_id"		: this.data_list[ this.delete_record_index ]['_id'],
+					};
 					axios.post( "?", vd__ ).then(response=>{
-						if(response.data.hasOwnProperty("status")){
+						if( response.data.hasOwnProperty("status") ){
 							var vdata = response.data;
 							if(vdata['status'] == "success"){
 								this.data_list.splice(this.delete_record_index,1);
 								this.delete_record_index = -1;
-								this.SuccessMsg = "Deleted Succesfully";
-								setTimeout( function(v){v.SuccessMsg = ''},1000,this );
+								alert("Record deleted");
 							}else{
-								this.error = vdata['data'];
+								alert( vdata['error'] );
 							}
 						}else{
-						        console.log("error");
-						        console.log(response.data);
+							console.log( "error" );
+							console.log( response.data );
+							alert("incorrect resposne");
 						}
 					});
 				}
 			},
 			Delete_Record_Multi:function(){
 				if( confirm("Are You Sure To Delete This Record") ){
-					var d = {};
-					for( i in this.D_Rs){
-						d[i] = this.data_list[i];
-					}
 					var vd__ = {
-							"action"		: "delete_record_multiple",
-							"table_id"		: this.table['_id'],
-							"record"		: d,
-						};
+						"action"		: "database_mongodb_delete_record_multiple",
+						"delete_ids"		: this.delete_ids,
+					};
 					axios.post( "?", vd__ ).then(response=>{
-						if(response.data.hasOwnProperty("status")){
+						if( "status" in response.data ){
 							var vdata = response.data;
-							if(vdata['status'] == "success"){
-								this.Successmsg = "deleted Successfully"; 
-								document.location.reload();	
+							if( vdata['status'] == "success" ){
+								this.search_filter_cond();
+								alert("Success");
 							}else{
-								this.ErrorMsg = vdata['data'];
+								alert("Error: " + vdata['error'] );
 							}
 						}else{
-						        console.log("error");
-						        console.log(response.data);
+					        console.log("error");
+					        console.log(response.data);
+					        alert("incorrect response");
 						}
 					});
 				}
@@ -426,52 +462,62 @@ var app = Vue.createApp({
 				var vdata__ =  JSON.parse(JSON.stringify(this.data_list[vid__]));
 				this.edit_record_index = vid__;
 				this.edit_mode = "edit";
-				this.add_record2 = JSON.stringify(this.create_json_template(vfield__,vdata__),null,4).replace(/[\ ]{4}/g, "\t");
-				this.add_record = JSON.parse( JSON.stringify( this.create_field_template_edit(vfield__,vdata__) ) );
-				this.show_add = true;
+				this.add_record2 = JSON.stringify(this.data_list[vid__],null,4);
+				this.show_add = new bootstrap.Modal(document.getElementById('edit_record_popup'));
+				this.show_add.show();
+				setTimeout(this.init_ace,500);
 			},
 			add_record_now: function(){
 				this.edit_record_index = -1;
 				this.edit_mode = "new";
 				var vfield__ =  JSON.parse(JSON.stringify(this.table['schema'][ this.selected_schema ]['fields']));
 				this.add_record2 = JSON.stringify(this.create_json_template( vfield__ ,{} ),null,4).replace(/[\ ]{4}/g, "\t");
-				this.add_record = JSON.parse( JSON.stringify( this.create_field_template_edit(vfield__, {} ) ) );
-				this.show_add = true;
+				this.show_add = new bootstrap.Modal(document.getElementById('edit_record_popup'));
+				this.show_add.show();
+				setTimeout(this.init_ace,500);
 			},
-			create_json_template( vfields__,vdata__ ){
+			init_ace: function(){
+				if( typeof(ace) == "undefined" ){
+					console.log("Waiting");
+					setTimeout(this.init_ace,100);
+				}else{
+					try{
+						this.ace = ace.edit("editorblock");
+						this.ace.setOptions({
+							enableAutoIndent: true,
+							behavioursEnabled: true,
+							useSoftTabs: true,
+							showPrintMargin: false,
+							printMargin: false,
+							showFoldWidgets: true,
+							showLineNumbers: true,
+							customScrollbar: true,
+							//fontSize: "12px", //fontFamily: "Arial", // theme: // mode: // tabSize: number// wrap: "off"|"free"|"printmargin"|boolean|number //readOnly: false,
+						});
+						this.ace.session.setMode("ace/mode/javascript");
+						this.ace.setValue( this.add_record2 );
+					}catch(e){
+						console.log("ACe init error");
+					}
+				}
+			},
+			create_json_template( vfields__ ){
 				var d = {};
 				for( var field__ in vfields__ ){
-					if( vfields__[field__]['type'] == "dict" ){
+					if( vfields__[field__]['type'] == "list" ){
 						v1 = [];
-						for( i__ in vdata__[field__] ){
-							v1.push(this.create_json_template( vfields__[field__]['sub'] ,vdata__[field__][i__] ) );
-						}
+						v1.push( this.create_json_template(vfields__[field__]['sub'][0]) );
 						d[field__+''] = v1 ;
-					}else if( vfields__[field__]['type'] == "list" ){
-						d[field__+''] = this.create_json_template( vfields__[field__]['sub'] ,vdata__[field__] );
+					}else if( vfields__[field__]['type'] == "dict" ){
+						d[field__+''] = this.create_json_template( vfields__[field__]['sub'] );
 					}else if( vfields__[field__]['type'] == "text" ){
-						d[field__+''] =( vdata__[field__] != "" && vdata__[field__] != undefined)?vdata__[field__]:'';
+						d[field__+''] = "";
+					}else if( vfields__[field__]['type'] == "UniqueId" ){
+						d[field__+''] = "(UniqueId)";
 					}else if( vfields__[field__]['type'] == "number" ){
-						if( vdata__[field__] != "" && vdata__[field__] != undefined){
-							try{
-								if( typeof(vdata__[field__]) == "string" ){
-									if( vdata__[field__].match(/^[0-9\.]+$/)){
-										vdata__[field__] = Number(vdata__[field__]);
-									}else{
-										vdata__[field__] = 0;
-									}
-								}else{
-									vdata__[field__] = vdata__[field__];
-								}
-							}catch(e){
-								console.log("errro : " +  e);
-							}
-						}else{
-							vdata__[field__] = 0;
-						}
-						d[field__+''] = vdata__[field__];
+						d[field__+''] = 0;
 					}else if( vfields__[field__]['type'] == "boolean" ){
-						d[field__+''] =( vdata__[field__] != "" && vdata__[field__] != undefined)?vdata__[field__]:'';
+						d[field__+''] =false;
 					}
 				}
 				return d;
@@ -556,32 +602,34 @@ var app = Vue.createApp({
 				}
 				return vdata__;
 			},
-			validate_json: function(tf, jf, p = ""){
-				for(var f in tf ){
-					if( f in jf == false && tf[f]['m'] == true ){
-						if( p == "" ){
-
-						}else{
-							this.error = "Field `" + p+f + "` is required!";
-							return true;
-						}
-					}else if( f in jf ){
-						var vt = typeof( jf[f] );
+			validate_json: function(template, data, p = ""){
+				for( var f in template ){
+					if( f in data == false && template[f]['m'] == true ){
+						this.error = "Field `" + p+f + "` is required!";
+						return true;
+					}else if( f in data ){
+						var vt = typeof( data[f] );
 						if( vt == "string" ){ vt = "text";}
 						if( vt == "number" ){ vt = "number";}
-						if( vt == "object" && 'length' in jf[f] ){ vt = "list";}
-						if( vt == "object" && 'length' in jf[f] == false ){ vt = "dict";}
-						if( vt != tf[f]['type'] ){
-							this.error = "Field `"+ p+f +"` should be " + tf[f]['type'];
-							return true;
+						if( vt == "object" && 'length' in data[f] ){ vt = "list";}
+						if( vt == "object" && 'length' in data[f] == false ){ vt = "dict";}
+						console.log( template[f]['type'] + ":" + vt + ":" + data[f]);
+						if( template[f]['type'] == "UniqueId" && vt != "text" ){
+							this.error = "Field `"+ p+f +"` should be " + template[f]['type'];return true;
+						}else if( template[f]['type'] == "UniqueId"){
+							if( data[f] != "(UniqueId)" ){
+								this.error = "Field `"+ p+f +"` value should be (UniqueId)";return true;
+							}
+						}else if( vt != template[f]['type'] ){
+							this.error = "Field `"+ p+f +"` should be " + template[f]['type'];return true;
 						}
 						if( vt == "dict" ){
-							if( this.validate_json( tf[f]['sub'], jf[f], p+f+"." ) ){
+							if( this.validate_json( template[f]['sub'], data[f], p+f+"." ) ){
 								return true;
 							}
 						}else if( vt == "list" ){
-							for(var i=0;i<jf[f].length;i++){
-								if( this.validate_json( tf[f]['sub'][0], jf[f][i], p+f+"["+i+"]." ) ){
+							for(var i=0;i<data[f].length;i++){
+								if( this.validate_json( template[f]['sub'][0], data[f][i], p+f+"["+i+"]." ) ){
 									return true;
 								}
 							}
@@ -593,69 +641,58 @@ var app = Vue.createApp({
 			save_data: function(){
 				this.error = "";
 				this.edit_status = "";
-				if( this.Edit_Tab == "json" ){
-					var v = this.add_record2+''
-					v = v.replace(/\,[\r\n\ \t]*\}/g, "}");
-					v = v.replace(/\,[\r\n\ \t]*\]/g, "]");
-					try{
-						var new_record = JSON.parse( v );
-						var v = this.validate_json(this.table['schema'][ this.selected_schema ]['fields'],new_record);
-						this.new_record = new_record;
-						if( v ){
-							this.SuccessMsg = "";
-							return false;
-						}
-					}catch(e){
-						this.error = "Error in json: " + e
+
+				var d = this.ace.getValue();
+				d = d.replace(/\,[\r\n\ \t]*\}/g, "}");
+				d = d.replace(/\,[\r\n\ \t]*\]/g, "]");
+				try{
+					var data = JSON.parse( d );
+					var v = this.validate_json(this.table['schema'][ this.selected_schema ]['fields'],data);
+					if( v ){
 						return false;
 					}
-				}else{
-					this.new_record = this.create_data_template( JSON.parse(JSON.stringify(this.add_record)) );
+				}catch(e){
+					this.error = "Error in json: " + e
+					return false;
 				}
-				console.log( this.new_record );
-				if( 1 == 1){
-					if(this.edit_mode == "edit"){
-						var record_id = this.data_list[ this.edit_record_index ]["_id"];
-					}else{
-						var record_id = "new";
-					}
-					vpost_data = {
-						"action"		: "update_record",
-						'record'		: this.new_record,
-						'record_id'		: record_id,
-						"db_id"			: this.table['db_id'],
-						"table_id"		: this.table['_id'],
-						"record_index" 		: this.edit_record_index,
-						"edit_mode"		: this.edit_mode,
-					};
-					axios.post("?",vpost_data ).then(response => {
-						if( response.data.hasOwnProperty("status") ){
-							vdata = response.data;
-							if( vdata["status"] == "success" ){
-								//this.show_add = false;
-								if( this.edit_mode == "new" ){
-									this.data_list.splice(0, 0, JSON.parse( JSON.stringify( vdata["details"] ) ) );
-									this.edit_status = "Record Inserted";
-								}else{
-									this.$set( this.data_list, this.edit_record_index, JSON.parse( JSON.stringify( vdata["details"] ) ) );
-									this.edit_status = "Record Updated";
-								}
-								this.SuccessMsg = this.edit_status;
-								setTimeout( function(v){v.SuccessMsg = ''},500,this );
-							}else if( vdata['data'] == "Record already Exists" ){
-								this.error = response.data['data'];
-								if( this.edit_mode == "new" ){
-									this.permission_to_update = true;
-								}
+				console.log( data );
+				if( this.edit_mode == "edit" ){
+					var record_id = data['_id'];
+				}else{
+					var record_id = "new";
+				}
+				vpost_data = {
+					"action"		: "database_mongodb_update_record",
+					'record'		: data,
+					'record_id'		: record_id,
+					"record_index" 	: this.edit_record_index,
+					"edit_mode"		: this.edit_mode,
+				};
+				axios.post( "?", vpost_data ).then(response => {
+					if( response.data.hasOwnProperty("status") ){
+						vdata = response.data;
+						if( vdata["status"] == "success" ){
+							//this.show_add = false;
+							if( this.edit_mode == "new" ){
+								this.data_list.splice(0, 0, JSON.parse( JSON.stringify( vdata["data"] ) ) );
+								this.edit_status = "Record Inserted";
 							}else{
-								this.error = response.data['data'];
+								this.data_list[ this.edit_record_index ] = JSON.parse( JSON.stringify( vdata["data"] ) );
+								this.edit_status = "Record Updated";
+							}
+						}else if( vdata['error'].match(/duplicate/i) ){
+							this.error = "Record already exists";
+							if( this.edit_mode == "new" ){
+								this.permission_to_update = true;
 							}
 						}else{
-							console.log("error");
-							console.log(response.data);
+							this.error = response.data['error'];
 						}
-					});
-				}
+					}else{
+						console.log("error");
+						console.log(response.data);
+					}
+				});
 			},
 			ucwords( v ){
 				if( v != '' ){

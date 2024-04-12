@@ -1,7 +1,7 @@
 const table_mongodb_edit_record = {
 	data: function(){
 		return {
-			"schema": {}
+			//"schema": {}
 		}
 	},
 	props: [ "schema" ],

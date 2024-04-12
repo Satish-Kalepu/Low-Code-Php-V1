@@ -9,62 +9,89 @@
 
 			<h4>Database - <span class="small" style="color:#999;" ><?=ucwords($db['engine']) ?></span>: <?=htmlspecialchars($db['des']) ?> &nbsp;&nbsp;&nbsp;<span class="small" style="color:#999;" >Table:</span> {{ table['des'] }} </h4>
 
-			<div style=" height: calc( 100% - 100px ); overflow: auto; " >
+			<ul class="nav nav-tabs mb-2" >
+				<li class="nav-item">
+					<a class="nav-link<?=$config_param6=='records'||$config_param6==''?" active":"" ?>" v-bind:href="tablepath+'records'">Records</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link<?=$config_param6=='manage'?" active":"" ?>" v-bind:href="tablepath+'manage'">Manage</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link<?=$config_param6=='structure'?" active":"" ?>" v-bind:href="tablepath+'structure'">Structure</a>
+				</li>				
+				<li class="nav-item">
+					<a class="nav-link<?=$config_param6=='import'?" active":"" ?>" v-bind:href="tablepath+'import'">Import</a>
+				</li>
+				<li class="nav-item">
+					<a disabled class="nav-link<?=$config_param6=='export'?" active":"" ?>" v-bind:href="tablepath+'export'">Export</a>
+				</li>
+			</ul>
 
-			<div v-if="con_error" class="alert alert-warning" >Database connectivity issue {{ con_error }}</div>
+			<div style=" height: calc( 100% - 110px ); border-bottom:1px solid #ccc; overflow: auto; " >
 
-			<table class="table table-sm" >
-				<tr>
-					<td width="100" align="right">Description</td>
-					<td><input class="form-control form-control-sm" type="text" v-model="table['des']" placeholder="Description/purpose"></td>
-				</tr>
-				<tr>
-					<td align="right">Table</td>
-					<td>
-						<select class="form-select form-select-sm" v-model="table['table']" placeholder="Table/Collection" v-on:change="check_source_database">
-							<option v-if="tables_loading" value="" >Loading tables</option>
-							<option v-for="t in source_tables" v-bind:value="t" >{{ t }}</option>
-							<option v-bind:value="table['table']" >{{ table['table'] }}</option>
-						</select>
-						<div v-if="load_tables_error" class="text-danger" >{{ load_tables_error }}</div>
-						<div v-if="load_tables_msg" class="text-success" >{{ load_tables_msg }}</div>
-						<div v-if="source_tables.length > 0 && table['table']" >
-							<div><input class="btn btn-link btn-sm" type="button" value="Reload source table schema" v-on:click="check_source_database" ></div>
-							<div>
-								<div>{{ check_msg }}</div>
-								<div v-if="check_error" class="text-danger" >{{check_error}}</div>
-								<template v-if="'source_schema' in table">
-									<div class="small text-secondary">Last checked: {{ table['source_schema']['last_checked'] }}</div>
-								</template>
-							</div>
-						</div>
-					</td>
-				</tr>
-				<template v-if="source_tables.length>0&&'source_schema' in table" >
-				<template v-if="Object.keys(table['source_schema']['fields']).length>0" >
-				<tr>
-					<td align="right">Schema</td>
-					<td>
-						<div v-for="sd,si in table['schema']" style="border: 1px solid #999; margin-bottom: 10px;" >
+				<div style="padding:5px;">
+			
+					<div style="border:1px solid #ccc; margin-bottom: 10px; ">
+
+						<div style="padding: 10px; background-color: #f8f8f8; border-bottom: 1px solid #ccc;"><b>Schema</b></div>
+						<div style="padding: 10px;">
+
+						<div v-for="sd,si in table['schema']" style="border: 1px solid #ccc; margin-bottom: 10px;" >
 							<div style="padding: 5px; background-color: #f0f0f0;" >
-								<span v-if="si=='default'" >Default Schema</span>
-								<div v-else >
-									<div v-if="'e' in sd==false" > {{ sd['name'] }}  <input type="button" class="pull-right" value="i" v-on:click="show_edit_schema_name(si)" ><input type="button" class="pull-right" value="X" v-on:click="delete_schema(si)" ></div>
-									<div v-else ><input type="text" v-model="sd['name']" placeholder="Schema Name" ><input v-if="sd['name']!=sd['e']" type="button" value="Update" v-on:click="edit_schema_name(si)" ></div>
+								<span v-if="si=='default'" style="height: 30px;" >Default Schema</span>
+								<div v-else style="height:30px; " >
+									<div class="row">
+										<div class="col-6">
+											<div v-if="'e' in sd == false" >{{ sd['name'] }}</div>
+											<div v-else >
+												<input type="text" v-model="sd['name']" placeholder="Schema Name" >
+												<input v-if="sd['name']!=sd['e']" type="button" value="Update" v-on:click="edit_schema_name(si)" >
+											</div>
+										</div>
+										<div class="col-6">
+											<div v-if="'e' in sd==false" >
+												<input type="button" class="btn btn-outline-dark btn-sm pull-right" value="i" v-on:click="show_edit_schema_name(si)" >
+												<input type="button" class="btn btn-outline-danger btn-sm pull-right" value="X" v-on:click="delete_schema(si)" >
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 							<div style="padding: 5px;" >
-								<div style="float:right;"><input type="button" value="Import" style="padding:2px;" v-on:click="show_import(si)" ></div>
-								<dbobject_table_mysql v-if="vshow" v-bind:engine="table['engine']" v-bind:level="1" v-bind:items="sd['fields']" v-bind:source_fields="table['source_schema']['fields']" v-on:edited="table_fields_edited(si, $event)" ></dbobject_table_mysql>
+								<div v-if="si=='default'" >
+									<table class="table table-bordered table-sm w-auto">
+									<thead>
+									<tr>
+										<td>Name</td>
+										<td>Type</td>
+										<td>Mapped</td>
+										<td>Mandatory</td>
+									</tr>
+									</thead>
+									<tbody>
+									<tr v-for="vd,vf in sd['fields']" >
+										<td>{{ vf }}</td>
+										<td>{{ vd['mapped_type'] }}</td>
+										<td>{{ vd['type'] }}</td>
+										<td><input type="checkbox" v-model="vd['m']" ></td>
+									</tr>
+									</tbody>
+									</table>
+								</div>
+								<dbobject_table_mysql v-else v-bind:engine="table['engine']" v-bind:level="1" v-bind:items="sd['fields']" v-bind:source_fields="table['all_fields']" v-on:edited="table_fields_edited(si, $event)" ></dbobject_table_mysql>
 							</div>
 						</div>
-						<div><input type="button" value="Add Schema" v-on:click="show_add_schema=true" ></div>
-						<div v-if="show_add_schema"><input type="text" v-model="new_schema" placeholder="New Schema"><input type="button" value="Add" v-on:click="add_schema" ></div>
-					</td>
-				</tr>
-				<tr>
-					<td align="right">Indexes</td>
-					<td>
+						<p><input type="button" class="btn btn-outline-dark btn-sm" value="Add Schema" v-on:click="show_add_schema=true" ></p>
+						<p v-if="show_add_schema"><input type="text" v-model="new_schema" placeholder="New Schema"><input type="button" class="btn btn-outline-dark btn-sm" value="Add" v-on:click="add_schema" ></p>
+						<p><button type="button" v-on:click="save_now" class="btn btn-outline-dark btn-sm">Save</button></p>
+
+						</div>
+					</div>
+
+					<div style="border:1px solid #ccc; ">
+						<div style="padding: 10px; background-color: #f8f8f8; border-bottom: 1px solid #ccc;"><b>Indexes:</b></div>
+						<div style="padding: 10px;">
+						
 						<table class="table table-bordered table-sm w-auto">
 							<tr class="bg-light">
 								<td>IndexName</td>
@@ -76,34 +103,27 @@
 									{{ ki }}
 								</td>
 								<td>
-									<div v-for="fd,fi in kd['keys']" >
-										{{ fi }} - {{ fd['type'] }}
+									<div v-for="fd,fi in kd['keys']" style="display:flex; column-gap: 10px;" >
+										<div style="min-width: 100px;">{{ fd['name'] }}</div>
+										<div style="min-width: 100px;"><select class="form-select form-select-sm w-auto" v-model="fd['type']" >
+											<option value="text" >Text</option>
+											<option value="number" >Number</option>
+										</select>
+										</div>
 									</div>
 								</td>
 								<td>
-									{{ kd['type'] }}
+									{{ (kd['unique']?"Unique":"") }}
 								</td>
 							</tr>
 						</table>
-					</td>
-				</tr>
-				<tr>
-					<td align="right">&nbsp;</td>
-					<td>
-						<button type="button" v-on:click="save_now" class="btn btn-primary btn-sm">Save</button>
-					</td>
-				</tr>
-				</template>
-				</template>
-			</table>
+						</div>
+					</div>
 
+					<p>&nbsp;</p>
 
-			<?php if( $_GET['debug'] ){ ?>
-				<pre>{{ schema }}</pre>
-				<pre>{{ table }}</pre>
-
-			<?php } ?>
-
+					<!-- <pre>{{ table }}</pre> -->
+				</div>
 
 			</div>
 		</div>
@@ -141,7 +161,8 @@ var app = Vue.createApp({
 			"db_id": "<?=$config_param3 ?>",
 			"table_id": "<?=$config_param5 ?>",
 			"path": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
-			"dbpath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/databases/<?=$config_param3 ?>/",
+			"dbpath":    "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/databases/<?=$config_param3 ?>/",
+			"tablepath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/databases/<?=$config_param3 ?>/table/<?=$config_param5 ?>/",
 			"db": <?=json_encode($db) ?>,
 			"table": <?=json_encode($table,JSON_PRETTY_PRINT) ?>,
 			"table_checked": false,
@@ -156,7 +177,6 @@ var app = Vue.createApp({
 			"importfields_msg": "",
 			"show_import_popup": false,
 			"error": "",
-			"vshow": true,
 			"show_add_schema": false,
 			"new_schema": "",
 			"tables_loading": true,
@@ -211,47 +231,7 @@ var app = Vue.createApp({
 				console.log( v );
 			}
 		},
-		show_import: function( vsi ){
-			this.import_schema_id = vsi+'';
-			this.import_modal = new bootstrap.Modal(document.getElementById('import_modal'));
-			this.import_modal.show();
-		},
-		import_fields: function(){
-			this.importfields_msg = "";
-			var v = this.importfields;
-			console.log( v );
-			this.echo__( this.table['source_schema']['fields'] );
-			if( v.length < 2 ){
-				alert("Select minimum two fields\nOne primary key is compulsory!");
-				return false;
-			}
-			var is_prime = false;
-			for(var i=0;i<v.length;i++){
-				if( this.table['source_schema']['fields'][ v[i] ]['index'] == "primary" ){
-					is_prime = true;
-				}
-			}
-			if( !is_prime ){
-				alert("Select minimum two fields\nOne primary key is compulsory!");
-				return false;
-			}
-			this.vshow = false;
-			var f = {};
-			var ord = 1;
-			for(var i=0;i<v.length;i++){
-				f[ v[i]+'' ] = {
-					"key": v[i]+'',
-					"type": this.table['source_schema']['fields'][ v[i] ]['type']+'',
-					"order": ord,
-					"m": true,
-					"index": this.table['source_schema']['fields'][ v[i] ]['index']+''
-				};
-				ord++;
-			}
-			this.table['schema'][ this.import_schema_id ]['fields'] = f;
-			setTimeout(function(v){v.vshow=true;},300,this);
-			this.import_modal.hide();
-		},
+		
 		make_fields_schema: function( j ){
 			var k = {};
 			var cnt = 1;
@@ -299,9 +279,8 @@ var app = Vue.createApp({
 			}
 		},
 		delete_schema: function(si){
-
 			if( confirm("Are you sure to delete `" + si + "` schema" ) ){
-				this.$delete( this.table['schema'], si );
+				delete( this.table['schema'][si] );
 			}
 		},
 		show_edit_schema_name: function( si ){
@@ -313,10 +292,9 @@ var app = Vue.createApp({
 			if( k != si ){
 				var t =JSON.parse( JSON.stringify( this.table['schema'][ si ] ));
 				t['name'] = n;
-				this.$delete(this.table['schema'], si);
+				delete(this.table['schema'][si]);
 				this.table['schema'][k]= t;
-				this.$delete(this.table['schema'][k], 'e');
-
+				delete(this.table['schema'][k]['e']);
 			}
 		},
 		table_fields_edited: function( si, vf ){
@@ -335,49 +313,24 @@ var app = Vue.createApp({
 			this.table['schema'][si]['fields'] = vf;
 		},
 		save_now: function(){
-			this.table['table'] = (this.table['table']+"").trim();
-			this.table['des']   = (this.table['des']+"").trim();
-			if( this.table['des']== "" ){
-				alert("Enter Table Description");
-				return false;
-			}else if( this.table['des'].match( /^[A-Za-z0-9\-\_\s\.\ ]{5,50}$/ ) == null ){
-				alert("Table description From 5 to 50 characters in length, A-Z a-z 0-9 _ - . and spaces allowed.");
-				return false;
-			}else if( this.table['table']== "" ){
-				alert("Enter Table Name");
-				return false;
-			}else if( this.table['table'].match( /^[a-z0-9\-\_\.]{2,25}$/ ) == null ){
-				alert("Table name From 5 to 25 characters in length, lowercase a-z 0-9 _ - . allowed. space is not allowed");
-				return false;
-			}else{
-				this.echo__( this.table['schema'] );
-				this.echo__( this.table['source_schema']['fields'] );
-				for( var sch in this.table['schema'] ){
-					for(var fi in this.table['schema'][ sch ]['fields'] ){
-						if( fi in this.table['source_schema']['fields'] == false ){
-							alert("Field `" + fi + "` in Schema `" +  this.table['schema'][ sch ]['name'] + "` not found!");return false;
-						}
+			for( var sch in this.table['schema'] ){
+				for(var fi in this.table['schema'][ sch ]['fields'] ){
+					if( fi in this.table['all_fields'] == false ){
+						alert("Field `" + fi + "` in Schema `" +  this.table['schema'][ sch ]['name'] + "` not found!");return false;
 					}
 				}
-				vd__ =  {
-					"action"	: "save_table_mysql", 
-					"table"		: this.table, 
-					"db_id"		: this.db_id, 
-					"table_id"	: this.table['_id'],
-					"app_id"	: "<?=$config_param1 ?>",
-				};
-				axios.post( "?", vd__ ).then(response=>{
-					if( response.data['status'] == "success" ){
-						if( this.table['_id'] == "new" ){
-							document.location = this.dbpath+"tables/" + response.data['data'] + "/manage";
-						}else{
-							alert("Successfully saved");
-						}
-					}else{
-						alert( response.data['error'] );
-					}
-				});
 			}
+			vd__ =  {
+				"action"	: "database_mysql_save_schema", 
+				"schema"		: this.table['schema'], 
+			};
+			axios.post( "?", vd__ ).then(response=>{
+				if( response.data['status'] == "success" ){
+					alert("Successfully saved");
+				}else{
+					alert( response.data['error'] );
+				}
+			});
 		},
 		compare_schema: function(){
 			var ve = true;

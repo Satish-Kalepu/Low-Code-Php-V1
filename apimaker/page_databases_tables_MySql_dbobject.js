@@ -27,6 +27,9 @@ const dbobject_table_mysql = {
 	},
 	methods: {
 		informparent: function(){
+			setTimeout(this.informparent2,100);
+		},
+		informparent2: function(){
 			var v = {};
 			for(var i=0;i<this.items2.length;i++){
 				this.items2[i]['order'] = i;
@@ -70,19 +73,16 @@ const dbobject_table_mysql = {
 			}
 			setTimeout(function(v){v.showit = true;},200,this);
 		},
-		edited_name: function( vi ){
-			this.items2[ vi ]['index'] = this.source_fields[ this.items2[ vi ]['key'] ]['index']+'';
-			this.informparent();
-		},
 		addit: function(){
 			if( this.new_item_name.trim() ){
 				this.items2.push({
 					"key": this.new_item_name+"",
-					"type": this.source_fields[ this.new_item_name ]['type'],
+					"type": this.source_fields[ this.new_item_name ]['type']+'',
+					"mapped_type": this.source_fields[ this.new_item_name ]['mapped_type']+'',
 					"m": true,
-					"index": this.source_fields[ this.new_item_name ]['index'],
+					"order": -1,
 				});
-				//this.$set( this.items2[ this.items2.length-1 ], "order" )
+				this.items2[ this.items2.length-1 ]["order"] = this.items2.length;
 				this.new_item_name = "";
 				this.add_new_item = false;
 				this.informparent();
@@ -90,9 +90,17 @@ const dbobject_table_mysql = {
 		},
 		deletenode: function(vkey){
 			this.items2.splice( Number( vkey ), 1 );
-			this.informparent( );
+			this.informparent();
 		},
 		change_field_type: function( vkey ){
+			this.informparent();
+		},
+		field_change: function(vf){
+			var k = this.items2[ vf ]['key'];
+			if( k in this.source_fields ){
+				this.items2[ vf ]['mapped_type'] = this.source_fields[ k ]['mapped_type']+'';
+				this.items2[ vf ]['type'] = this.source_fields[ k ]['type']+'';
+			}
 			this.informparent();
 		},
 		moveu: function( vi, vkey ){
@@ -123,52 +131,39 @@ const dbobject_table_mysql = {
 		}
 	},
 	template: `<div v-if="showit">
-		<div>{</div>
-		<div style="margin-left:30px;">
-			<template v-for="vitem,vi in items2"  >
-			<div style="white-space:nowrap; display:flex; column-gap:5px; margin-bottom:5px;">
-					<select class="form-select form-select-sm" style=" display:inline; width:200px; " v-model="vitem['key']" v-on:change="edited_name(vi)" >
-						<option value="" >-</option>
-						<template v-if="typeof(source_fields)=='object'&&source_fields!=null" >
-						<template v-if="Object.keys(source_fields).length>0" >
-						<option v-for="vd,vf in source_fields" v-bind:value="vf" >{{ vf }} - {{ vd['type'] }} - {{ vd['index'] }}</option>
-						</template>
-						</template>
-					</select>
-					<select class="form-select form-select-sm" style=" display:inline; width:100px; " v-model="vitem['type']" v-on:change="change_field_type(vi)" >
-						<option value='text'>Text</option>
-						<option value='number'>Number</option>
-						<option value='boolean'>Boolean</option>
-						<option value='date'>Date</option>
-						<option value='datetime'>Datetime</option>
-					</select>
-					<input v-if="vitem['type']!='primary'" type="checkbox" v-model="vitem['m']" title="Mandatory" >
-					<div>
-						<span>
-						<button class="btn btn-default btn-sm" style="padding:2px;" v-on:click="moveu(vi)" >&#8593;</button>
-						<button class="btn btn-default btn-sm" style="padding:2px;" v-on:click="moved(vi)" >&darr;</button>
-						</span>
-					</div>
-					<div>
-						<input v-if="vitem['index']!='primary'" class="btn btn-outline-danger btn-sm" style="padding:0px 3px;" type='button' v-on:click="deletenode(vi)" value='X' >
-					</div>
-			</div>
-			</template>
+				<table class="table table-bordered table-sm w-auto">
+				<thead>
+				<tr>
+					<td>Name</td>
+					<td>Type</td>
+					<td>Mapped</td>
+					<td>Mandatory</td>
+					<td>-</td>
+				</tr>
+				</thead>
+				<tbody>
+				<tr v-for="vd,vf in items2"  >
+					<td>
+						<select class="form-select form-select-sm w-auto" v-model="vd['key']" v-on:change="field_change(vf)" >
+							<option v-for="fd,fi in source_fields" v-bind:value="fi" >{{ fi }}</option>
+						</select>
+					</td>
+					<td>{{ vd['mapped_type'] }}</td>
+					<td>{{ vd['type'] }}</td>
+					<td><input type="checkbox" v-model="vd['m']" v-on:click="informparent()" ></td>
+					<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="deletenode(vf)" ></td>
+				</tr>
+				</tbody>
+				</table>
 			<div v-if="add_new_item==false">
 				<input class="btn btn-outline-dark btn-sm" style="padding:0px 3px;" type='button' v-on:click="add_new_item=true" value='+'>
 			</div>
 			<div v-if="add_new_item" style="display:flex; column-gap:5px; margin-bottom:5px;">
 				<select class="form-select form-select-sm" style="display:inline;width:150px;" v-model="new_item_name">
 					<option value="" >-</option>
-					<template v-if="typeof(source_fields)=='object'&&source_fields!=null" >
-						<template v-if="Object.keys(source_fields).length>0" >
-							<option v-for="vd,vf in source_fields" v-bind:value="vf" >{{ vf }} - {{ vd['type'] }} - {{ vd['index'] }}</option>
-						</template>
-					</template>
+					<option v-for="vd,vf in source_fields" v-bind:value="vf" >{{ vf }}</option>
 				</select>
 				<input class="btn btn-outline-dark btn-sm"  style="padding:0px 3px;" type='button' v-on:click="addit" value='+'>
 			</div>
-		</div>
-		<div>}</div>
 	</div>`
 };

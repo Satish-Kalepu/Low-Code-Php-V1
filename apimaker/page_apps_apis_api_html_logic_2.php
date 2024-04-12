@@ -3,7 +3,7 @@
 	<div class="btn btn-outline-dark btn-sm w-auto me-1" style="float: right;" v-on:click="s2_ipa_tropxe" >Export</div>
 	<div class="btn btn-outline-dark btn-sm w-auto me-1" style="float: right;" v-on:click="s2_ipa_tropmi_wohs" >Import</div>
 
-	<div class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
+	<div v-if="property_type=='api'" class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
 		<div>
 			<div>Method</div>
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="input-method" data-list-values="input-method" >{{ s2_iiiiiiiipa['input-method'] }}</div>
@@ -26,7 +26,7 @@
 		</div>
 
 	</div>
-	<!-- <div class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
+	<!-- <div  v-if="property_type=='api'"  class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
 		<div>
 			<div>Authentication</div>
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="auth-type" data-list-values="auth-type" >{{ s2_iiiiiiiipa['auth-type'] }}</div>
@@ -36,7 +36,7 @@
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="auth-type" data-list-values="auth-type" >{{ s2_iiiiiiiipa['auth-type'] }}</div>
 		</div>
 	</div> -->
-	<div class="code_line" style="border-bottom:1px solid #bbcccc; margin-bottom:10px;" >
+	<div v-if="property_type=='api'"  class="code_line" style="border-bottom:1px solid #bbcccc; margin-bottom:10px;" >
 		<div v-if="s2_iiiiiiiipa['input-type']=='application/json'">
 			<div style="font-size:14px; ">Input JSON: </div>
 			<input_object v-bind:v="s2_eeeeenigne['input_factors']" datafor="engine" datavar="input_factors" viewas="json" allowsub="yes" v-on:edited="s2_detide_srotcaf_tupni"></input_object>
@@ -49,6 +49,10 @@
 			<div style="font-size:14px; ">Input Post Fields: </div>
 			<input_object v-bind:v="s2_eeeeenigne['input_factors']" datafor="engine" datavar="input_factors" viewas="payload" allowsub="no" ></input_object>
 		</div>
+	</div>
+	<div v-if="property_type=='function'"  class="code_line" style="border-bottom:1px solid #bbcccc; margin-bottom:10px;" >
+		<div style="font-size:14px; ">Input JSON: </div>
+		<input_object v-bind:v="s2_eeeeenigne['input_factors']" datafor="engine" datavar="input_factors" viewas="json" allowsub="yes" v-on:edited="s2_detide_srotcaf_tupni"></input_object>
 	</div>
 	<div v-if="s2_rrrrrorrev" class="alert alert-danger" v-html="s2_rrrrrorrev" ></div>
 
@@ -311,6 +315,10 @@
 							</div>
 						</template>
 						<template v-if="s2_dddddegats['k']['v']=='RespondGlobals'" >
+							<div v-if="'raw' in s2_dddddegats['d']" style="display:flex; column-gap:5px;">
+								<div>Raw</div>
+								<div title="Raw" data-type="dropdown" data-for="stages" data-var="d:raw:v" data-list="boolean"  style="margin-bottom:5px;" >{{ s2_dddddegats['d']['raw']['v'] }}</div>
+							</div>
 							<div>
 								<div>End Execution</div>
 							</div>

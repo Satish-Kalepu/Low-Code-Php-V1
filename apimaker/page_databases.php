@@ -10,6 +10,9 @@
 			}else if( $config_param6 == "import" ){
 				require("page_databases_tables_".$db['engine']."_import.php");
 
+			}else if( $config_param6 == "structure" ){
+				require("page_databases_tables_".$db['engine']."_structure.php");
+
 			}else if( $config_param6 == "export" ){
 				require("page_databases_tables_".$db['engine']."_export.php");
 
@@ -18,8 +21,7 @@
 
 			}
 		}else{
-			require("page_databases_database.php");
-
+			require("page_databases_database_".$db['engine'].".php");
 		}
 	}else{
 		require("page_databases_home.php");

@@ -274,7 +274,7 @@ if( $_POST['action'] == "exports_restore_upload" ){
 	exit;
 }
 
-if( $_POST['action'] == "exports_restore_upload_confirm" ){
+if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 	if( !file_exists($_SESSION['restore_file']) || $_SESSION['restore_rand'] != $_POST['rand'] ){
 		json_response(['status'=>"fail","error"=>"Incorrect confirm parameters"]);
 	}

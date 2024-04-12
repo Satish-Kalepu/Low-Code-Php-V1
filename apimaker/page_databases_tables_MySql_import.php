@@ -45,6 +45,9 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				<a class="nav-link<?=$config_param6=='manage'?" active":"" ?>" v-bind:href="tablepath+'manage'">Manage</a>
 			</li>
 			<li class="nav-item">
+				<a class="nav-link<?=$config_param6=='structure'?" active":"" ?>" v-bind:href="tablepath+'structure'">Structure</a>
+			</li>
+			<li class="nav-item">
 				<a class="nav-link<?=$config_param6=='import'?" active":"" ?>" v-bind:href="tablepath+'import'">Import</a>
 			</li>
 			<li class="nav-item">
@@ -143,7 +146,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 							<tbody>
 								<tr v-for="fd,f in sch_keys" >
 									<td>{{ f }}</td>
-									<td>{{ fd['type'] }}<span v-if="f=='_id'" > Key</span></td>
+									<td>{{ fd['type'] }}<span v-if="f==primary_field" > (PrimaryKey)</span></td>
 									<td>=</td>
 									<td>
 										<select class="form-select form-select-sm w-auto" v-model="sch_keys[ f ]['map']" v-on:change="import2_check" >
@@ -242,6 +245,7 @@ var app = Vue.createApp({
 			"db_id": "<?=$config_param3 ?>",
 			"table_id": "<?=$config_param5 ?>",
 			"table": <?=json_encode($table,JSON_PRETTY_PRINT) ?>,
+			"primary_field": "",
 
 			"token": "",
 			"vshow": true,
@@ -253,7 +257,7 @@ var app = Vue.createApp({
 			"head_record": [],
 			"step": 1,
 			"tot_cnt": 0,
-			"sch_keys": {}, "sch_ikeys": {},
+			"sch_keys": {}, 
 			"fields_match": {}, "keys_match": {},
 			"sample_data": "",
 			"upload_progress": 0,
@@ -263,34 +267,25 @@ var app = Vue.createApp({
 			"csv_batch_limit": 500,
 			"json_batch_limit": 100,
 			"upload_create": false,
-			"schema_1": {},
-			"schema_2": {},
 			"analyzing": false,
 		};
 	},
 	mounted : function(){
-		//this.load_source_tables();
-		this.echo__( this.table );
 
 		var sch_keys  = {};
-		for(var sch in this.table['schema'] ){
-			for( var fi in this.table['schema'][sch]['fields'] ){
-				sch_keys[ fi ] = {
-					"type": this.table['schema'][sch]['fields'][ fi ]['type'],
-					"map": "-1"
-				}
-			}
-		}
-		this.echo__(sch_keys);
-		var sch_ikeys = {};
-		for(var idx in this.table['keys'] ){
-			var k = Object.keys(this.table['keys'][ idx ]['keys']);
-			for( var i=0;i<k.length;i++){
-				sch_ikeys[ k[i] ] = 1;
+		for(var fi in this.table['all_fields'] ){
+			sch_keys[ fi ] = {
+				"type": this.table['all_fields'][ fi ]['type'],
+				"mapped_type": this.table['all_fields'][ fi ]['mapped_type'],
+				"map": "-1"
 			}
 		}
 		this.sch_keys = sch_keys;
-		this.sch_ikeys = sch_ikeys;
+		for(var key in this.table['keys'] ){
+			if( key == "PRIMARY" ){
+				this.primary_field = this.table['keys'][ key ]['keys'][0]['name'];
+			}
+		}
 	},
 	methods: {
 		echo__: function(v){
@@ -425,15 +420,24 @@ var app = Vue.createApp({
 		checkfile: function(){
 			this.analyzing = true;
 			if( this.upload_type == "CSV" ){
-				var d = this.filedata.substr(this.fpos,1024);
-				var line = d.split("\n")[0];
-				var fields = line.split(",");
-				if( fields.length < 3 ){
+				var d = this.readcsvline();
+				if( d.length < 3 ){
 					alert("File is not in CSV Format");
 					this.err = "File is not in CSV Format";
 					//console.log( d );
 					this.sample_data = d;
 				}else{
+
+					for(var fi in this.sch_keys ){
+						for(var i=0;i<d.length;i++){
+							if( fi.toLowerCase() == d[i].toLowerCase() ){
+								this.sch_keys[ fi ]['map'] = i;
+							}else if( d[i].toLowerCase().indexOf( fi.toLowerCase() ) > -1 || fi.toLowerCase().indexOf( d[i].toLowerCase() ) > -1 ){
+								this.sch_keys[ fi ]['map'] = i;
+							}
+						}
+					}
+
 					this.checkfile_csv();
 				}
 			}else if( this.upload_type == "JSON" ){
@@ -443,7 +447,6 @@ var app = Vue.createApp({
 			}
 		},
 		checkfile_json: function(){
-			this.schema_1 = {};
 			if( this.filedata.substr(0,1) == "[" && this.filedata.substr( this.filedata.length-1, 1) == "]" ){
 				console.log("ys");
 				try{
@@ -462,7 +465,7 @@ var app = Vue.createApp({
 				this.fpos = 0;
 				var recs = [];
 				this.tot_cnt = 0;
-				for(var i=0;i<20;i++){if( this.fpos < this.filedata.length-1 ){
+				for(var i=0;i<100;i++){ if( this.fpos < this.filedata.length-1 ){
 					var ipos = this.filedata.indexOf("\n", this.fpos+1);
 					//console.log( this.fpos +  " : " + ipos );
 					if( ipos == -1 ){
@@ -484,20 +487,27 @@ var app = Vue.createApp({
 						this.tot_cnt++;
 						this.fpos=ipos;	
 
-						if( '_id' in this.fields_match == false ){
-							this.fields_match = rec;
-						}
-
 					}
 				}}
-				if( i == 20 ){
+				if( i == 100 ){
 					setTimeout(this.checkfile_json_continue,500);
 				}else{
 					this.analyzing = false;
 				}
-				this.echo__( this.schema_1 );
 				this.sample_records = recs;
 				this.step = 2;
+
+				this.fields_match = recs[0];
+				for(var fi in this.sch_keys ){
+					for( var fi_ in recs[0] ){
+						if( fi.toLowerCase() == fi_.toLowerCase() ){
+							this.sch_keys[ fi ]['map'] = fi_+'';
+						}else if( fi.toLowerCase().indexOf( fi_.toLowerCase() ) > -1 || fi_.toLowerCase().indexOf( fi.toLowerCase() ) > -1 ){
+							this.sch_keys[ fi ]['map'] = fi_+'';
+						}
+					}
+				}
+				this.import3_check();
 			}
 		},
 		checkfile_json_continue: function(){
@@ -546,18 +556,6 @@ var app = Vue.createApp({
 			}else{
  				alert("Failed reading csv " + d); return false; 
 			}
-
-			// this.fields_match = {};
-			// this.keys_match = {};
-			// for(var fi=0;fi<d.length;d++){
-			// 	var field = d[fi];
-			// 	if( field in this.sch_keys == false ){
-			// 		this.fields_match[ field ] = false;
-			// 	}else{
-			// 		this.fields_match[ field ] = true;
-			// 	}
-			// 	this.keys_match[ field ] = true;
-			// }
 
 			var c_cnt = Object.keys(this.head_record).length;
 			var r_cnt = 0;var or_cnt = c_cnt;var issue_cnt = 0;
@@ -711,7 +709,7 @@ var app = Vue.createApp({
 			this.fpos =0;
 			axios.post("?", {
 				"action":"get_token",
-				"event":"database_mongodb_import_batch."+this.app_id + "." + this.table['_id'],
+				"event":"database_mysql_import_batch."+this.app_id + "." + this.table['_id'],
 				"expire":10,
 				"max_hits": 1000,
 			}).then(response=>{
@@ -778,7 +776,7 @@ var app = Vue.createApp({
 			if( recs.length ){
 				this.upload_batch_cnt = recs.length;
 				axios.post( "?", {
-					"action": "database_mongodb_import_batch",
+					"action": "database_mysql_import_batch",
 					"data": recs,
 					"token": this.token
 				}).then(response=>{
@@ -817,6 +815,8 @@ var app = Vue.createApp({
 				if( d=="end" ){
 					break;
 				}
+				// this.echo__( this.sch_keys );
+				// this.echo__( d );
 				var rec = {};
 				for( fi in this.sch_keys ){
 					var fd = this.sch_keys[ fi ];
@@ -825,7 +825,12 @@ var app = Vue.createApp({
 							var v  = d[ fd['map'] ];
 							if( fd['type'] == "number" ){
 								if( typeof(v) == "string" ){
-									rec[ fi ] = Number(v);
+									if( v.match(/^[0-9\.]+$/) ){
+										rec[ fi ] = Number(v);
+									}else{
+										this.err3 = "Field `" + fi + "` is not numeric";
+										//return;
+									}
 								}else if( typeof(v) == "number" ){
 									rec[ fi ] = v;
 								}else{
@@ -837,12 +842,13 @@ var app = Vue.createApp({
 						}
 					}
 				}
+			//	this.echo__(rec);return;
 				recs.push(rec);
 			}
 			if( recs.length ){
 				this.upload_batch_cnt = recs.length;
 				axios.post( "?", {
-					"action": "database_mongodb_import_batch",
+					"action": "database_mysql_import_batch",
 					"data": recs,
 					"token": this.token,
 					"upload_type": this.upload_type,

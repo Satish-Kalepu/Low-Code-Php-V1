@@ -193,6 +193,7 @@
         	header("http/1.1 500 Error");
         	header("Content-Type: text/plain");
             echo "There was an error in output json encode: " . json_last_error_msg();
+            print_r( $param1 );print_r( $param2 );
             exit;
         }else{
         	header("Content-Type: application/json");
@@ -350,13 +351,15 @@
 			$pages['home'] = ['version_id'=>$home_version_id, 't'=>'page'];
 			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
 				"app_id"=>$app_id,
+				"vt"=>"api",
 			], ['projection'=>[
-				'name'=>1, "version_id"=>1, 'input-method'=>1,
+				'name'=>1, "version_id"=>1, 'input-method'=>1, 'path'=>1, 'vt'=>1,
 			]]);
 			if( $res['data'] ){
 				foreach( $res['data'] as $i=>$j ){if( !isset( $pages[ $j['name'] ] ) ){if( $j['name'] ){
 					$j['t'] = "api";
-					$pages[ $j['name'] ] = $j;
+					$p = ltrim($j['path'], "/");
+					$pages[ $p.$j['name'] ] = $j;
 				}}}
 			}
 			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_files", [

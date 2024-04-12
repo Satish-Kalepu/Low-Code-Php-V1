@@ -3,7 +3,6 @@
 $db['details']['username'] = pass_decrypt($db['details']['username']);
 $db['details']['password'] = pass_decrypt($db['details']['password']);
 
-
 $con = new mongodb_connection( $db['details']['host'], $db['details']['port'], $db['details']['database'], $db['details']['username'], $db['details']['password'],$db['details']['authSource'], ($db['details']['tls']?true:false) );
 function find_field_type( $fn, $v, $fields ){
 	if( $fields[ $fn ] ){
@@ -56,113 +55,201 @@ function find_mongodb_fields_structure( $recs ){
 }
 /*Manage*/
 
-if( $_POST['action'] == "create_mongodb_collection" ){
-	if( $_POST['app_id'] != $config_param1 ){
-		json_response("fail", "Incorrect APP id");exit;
-	}else if( $_POST['db_id'] != $config_param3 ){
-		json_response("fail", "Incorrect DB id");exit;
+if( $_POST['action'] == "database_mongodb_load_tables" ){
+
+	$collections = [];
+
+	$res = $con->database->listCollectionNames();
+
+	foreach( $res as $i=>$j ){
+		$d = [];
+		$d['collection'] = $j;
+		$stats_res = $con->database->command( ["collStats"=>$j ] )->toArray();
+		//print_pre( $stats_res );exit;
+		$d['size'] = $stats_res['0']['size'];
+		$d['count'] = $stats_res['0']['count'];
+		$d['avgObjSize'] = (isset($stats_res['0']['avgObjSize'])?$stats_res['0']['avgObjSize']:'');
+		$d['storageSize'] = $stats_res['0']['storageSize'];
+		$d['freeStorageSize'] = $stats_res['0']['freeStorageSize'];
+		$d['capped'] = $stats_res['0']['capped'];
+		$d['totalIndexSize'] = $stats_res['0']['totalIndexSize'];
+		$d['totalSize'] = $stats_res['0']['totalSize'];
+		$d['indexSizes'] = $stats_res['0']['indexSizes'];
+		//$d['indexDetails'] = $stats_res['0']['capped'];
+		$d['nindexes'] = $stats_res['0']['nindexes'];
+		$collections[ $j ] = $d;
+	}
+	//print_pre( $databases );
+	//ksort($collections);
+
+	$total_objects = 0;
+	$total_datasize = 0;
+	$total_storageSize = 0;
+	$total_indexSize = 0;
+	$total_views = 0;
+	foreach( $collections as $collection=>$d ){
+		$total_objects += $d['count'];
+		$total_datasize += $d['size'];
+		$total_storageSize += $d['storageSize'];
+		$total_indexSize += $d['totalIndexSize'];
+		$total_views += (isset($d['views'])?$d['views']:0);
 	}
 
-	if( $_POST['collection']== "" ){
+	//print_r( $collections );
+
+	// $res = $con->list_collections();
+	// print_r( $res );exit;
+
+	$tables = [];
+	$tables_res = $mongodb_con->find( $config_api_tables, [
+		"app_id"=>$config_param1, 
+		"db_id"=>$config_param3
+	], [
+		'projection'=>["table"=>1,"des"=>1] 
+	]);
+	if( !isset($tables_res['data']) ){
+		json_response("fail", "Table Details Missing!");
+	}else{
+		foreach( $tables_res['data'] as $i=>$j ){
+			$tables[ $j['table'] ] = $j;
+		}
+	}
+	foreach( $collections as $collection=>$cd ){
+		if( isset( $tables[ $collection ] ) ){
+			$tables[ $collection ]['f'] = true;
+			$collections[ $collection ]['_id'] = $tables[ $collection ]['_id'];
+		}else{
+			$tables[ $collection ]['f'] = true;
+			$insert_data = [
+				"table"=>$collection,
+				"des"=>$collection,
+				"app_id"=>$config_param1,
+				"db_id"=>$config_param3,
+			];
+
+			$res = $con->list_indexes_raw( $collection );
+			if( $res['status'] == 'fail' ){
+				json_response( "fail", $res['error'] );
+			}
+			$res2 	= $con->find( $collection, [], ["limit"=>10] );
+			if( !isset($res2['data']) || sizeof($res2['data']) == 0 ){
+				$fields = [ '_id'=>[ "key"=>'_id', "name"=>'_id', "type"=>'text', "m"=>true, "order"=>1, "sub"=>[] ] ];
+			}else{
+				$fields = find_mongodb_fields_structure( $res2['data'] );
+			}
+			$insert_data[ "source_schema" ] = [
+				"keys" => $res['data'],
+				"fields" => $fields,
+				"last_checked" => date("Y-m-d H:i:s")
+			];
+			$insert_data["keys"] = $res['data'];
+			$insert_data["f_n" ] = array_keys($fields);
+			$insert_data["schema"] = [
+				"default"=> [
+					"name"		=> "Default",
+					"fields" 	=> $fields,
+				]
+			];
+			$res_insert = $mongodb_con->insert( $config_api_tables, $insert_data );
+			if( $res_insert['status'] != "success" ){
+				json_response($res_insert);
+			}
+			$collections[ $ci ]['_id']= $res_insert['inserted_id'];
+		}
+	}
+	//print_r( $tables );
+	foreach( $tables as $collection=>$j ){
+		if( !isset($j['f']) ){
+			$collections[ $collection ] = [
+				"_id"=>$j['_id'],
+				"collection"=>$collection,
+				'size' => 0,
+				'count' => 0,
+				'avgObjSize' => 0,
+				'storageSize' => 0,
+				'freeStorageSize' => 0,
+				'capped' => 0,
+				'totalIndexSize' => 0,
+				'totalSize' => 0,
+				'indexSizes' => 0,
+				'nindexes' => 0,
+			];
+		}
+	}
+	ksort($collections);
+	json_response([
+		'status'=>"success", 
+		"tables"=>$collections,
+		"tot"=>[
+			'objects'=> $total_objects,
+			'datasize'=> $total_datasize,
+			'storageSize'=> $total_storageSize,
+			'indexSize'=> $total_indexSize,
+			'views'=> $total_views,
+		]
+	]);
+}
+
+if( $_POST['action'] == "database_mongodb_create_collection" ){
+	if( !isset($_POST['collection']) ){
 		json_response("fail", "Need collection name");
-	}else if( !preg_match("/^[a-z][a-z0-9]{3,35}$/", $_POST['collection'] ) ){
+	}else if( !preg_match("/^[a-z][a-z0-9\-\_]{2,50}$/", $_POST['collection'] ) ){
 		json_response("fail","Collection name should be lowercase. no special chars and spaces");
 	}
-	$res = $con->create_index($_POST['collection'], ['t'=>1], ['sparse'=>true]);
+
+	$res = $mongodb_con->find_one($config_api_tables, [
+		"app_id"=>$config_param1,
+		"db_id"=>$config_param3, 
+		"table"=>$_POST['collection']
+	]);
+	if( $res['data'] ){
+		json_response([
+			"status"=>"fail", "error"=>"Collection already exists"
+		]);
+	}
+
+	$res = $con->database->listCollectionNames();
+	$f = false;
+	foreach( $res as $i=>$j ){
+		if( $j == $_POST['collection'] ){
+			$f = true;
+		}
+	}
+	if( $f ){
+		$cres = $con->create_collection($_POST['collection']);
+		if( $cres['status'] != "success" ){
+			json_response($cres);
+		}
+	}
+
+	$insert_data = [
+		"table"=> $_POST['collection'],
+		"des"  => $_POST['collection'],
+		"app_id"=> $config_param1,
+		"db_id" => $config_param3,
+	];
+
+	$fields = [ 
+		'_id'=>[ "key"=>'_id', "name"=>'_id', "type"=>'text', "m"=>true, "order"=>1, "sub"=>[] ],
+		'f1'=>[ "key"=>'f1', "name"=>'f1', "type"=>'text', "m"=>true, "order"=>2, "sub"=>[] ],
+		'f2'=>[ "key"=>'f2', "name"=>'f2', "type"=>'text', "m"=>true, "order"=>3, "sub"=>[] ] 
+	];
+	//$insert_data[ "source_schema" ] = ;
+	$insert_data["keys"] = [];
+	$insert_data["f_n" ] = array_keys($fields);
+	$insert_data["schema"] = [
+		"default"=> [
+			"name"		=> "Default",
+			"fields" 	=> $fields,
+		]
+	];
+	$res = $mongodb_con->insert( $config_api_tables, $insert_data );
 	json_response($res);
 }
 
-if( $_POST['action'] == "save_table_mongodb" ){
-	$config_debug = false;
 
-	if( $_POST['app_id'] != $config_param1 ){
-		json_response("fail", "Incorrect APP id");exit;
-	}else if( $_POST['db_id'] != $config_param3 ){
-		json_response("fail", "Incorrect DB id");exit;
-	}
 
-	if( $_POST['table']['db_id']== ""){
-		json_response("fail", "Database id missing");exit;
-	}else{
-		$db_res = $mongodb_con->find_one($config_api_databases, ["_id"=>$_POST['table']['db_id']]);
-		if( !$db_res['data'] ){
-			json_response("fail","Database not found!");
-		}else{
-			$db = $db_res;
-			if( $_POST['table']['table']== "" ){
-				json_response("fail", "Enter Table Name");
-			}else if( !preg_match("/^[A-Za-z0-9\-\_\.]{3,25}$/i", $_POST['table']['table'] ) ){
-				json_response("fail","Table name From 5 to 25 characters in length, lowercase a-z 0-9 _ - . allowed. space is not allowed");
-			}else if( $_POST['table']['des']== "" ){
-				json_response("fail", "Enter Table Description");
-			}else if( !preg_match("/^[A-Za-z0-9\-\_\s\.\ ]{3,50}$/i", $_POST['table']['des'] ) ){
-				json_response("fail", "Table description From 5 to 50 characters in length, A-Z a-z 0-9 _ - . and spaces allowed.");
-			}else{
-				if( $_POST['table']['_id'] == "new" ){
-					$cond = [
-						"app_id"=>$_POST['app_id'], 
-						"des" => $_POST['table']['table'], 
-						"db_id"=>$_POST['table']['db_id'] 
-					];
-					$tables_res = $mongodb_con->find_one($config_api_tables, $cond);
-					if( $tables_res['data'] ){
-						json_response("fail", "Table already exists!");
-					}else{
-						unset($_POST['table']['_id']);
-						$insert_data = [];
-						$insert_data = $_POST['table'];
-						$insert_data['app_id'] = $_POST['app_id'];
-						$insert_data['des'] = ucwords($insert_data['des']);
-						$insert_res = $mongodb_con->insert( $config_api_tables, $insert_data );
-						if( $insert_res['status'] == "fail" ){
-							json_response("fail", "Server Error.Please Try After Sometime");
-						}else{
-							json_response($insert_res);
-						}
-					}
-				}else{
-					$maintables_res = $mongodb_con->find_one($config_api_tables,[
-						"app_id"=>$_POST['app_id'],
-						"db_id"=>$_POST['db_id'],
-						"_id"=>$_POST['table_id'] 
-					]);
-					if( !$maintables_res['data'] ){
-						json_response("fail", "Table Details Missing!");
-					}else{
-						$table = $maintables_res['data'];
-						$cond = [ 
-							"_id"=> ["\$ne" =>$mongodb_con->get_id($table["_id"] ) ], 
-							"des"=>$_POST['table']['table'], 
-							"db_id"=>$_POST['table']['db_id'] 
-						];
-						$tables_res = $mongodb_con->find_one($config_api_tables, $cond);
-						if( !$tables_res['data'] ){
-							$data = [
-								"table"		=> $_POST['table']['table'],
-								"des"		=> ucwords($_POST['table']['des']),
-								"schema" 	=> $_POST['table']['schema'],
-								"keys" 		=> $_POST['table']['keys'],
-								"pk"  		=> $_POST['table']['pk'],
-								"sk" 		=> $_POST['table']['sk'],
-							];
-							$insert_res = $mongodb_con->update_one($config_api_tables, [
-								"db_id"=>$_POST['db_id'],
-								"_id"=> $_POST['table_id']
-							], $data );
-							if( $insert_res['status'] == "fail" ){
-								json_response("fail", "Server Error.Please Try After Sometime");
-							}else{
-								json_response("success", $table["_id"] );
-							}
-						}else{
-							json_response("fail", "Table with same description already exists!");
-						}
-					}
-				}
-			}
-		}
-	}
-}
+
 
 if( $_POST['action'] == "check_mongodb_source_collection_list" ){
 	$res = $con->list_collections();
@@ -327,8 +414,9 @@ if( $_POST["action"] == "import_mongodb_data" ){
 		}
 	}
 }
+
 /*Export*/
-if($_POST["action"] == "export_mongodb_data"){
+if( $_POST["action"] == "export_mongodb_data" ){
 	$config_debug = false;
 	
 	if( $config_param4 != $_POST['table_id'] ){
@@ -599,120 +687,7 @@ if( $_POST['action'] == "load_mongodb_records" ){
 	exit;
 }
 
-if( $_POST['action'] == "update_record" ){
-	$config_debug = false;
-	if( $config_param1 != $_POST['app_id'] ){
-		json_response("fail", "Incorrect App Id");
-	}
-	if( $config_param3 != $_POST['db_id'] ){
-		json_response("fail", "Incorrect Db Id");
-	}
-	if( $config_param5 != $_POST['table_id'] ){
-		json_response("fail", "Incorrect credentials");
-	}else{
-		$main_table_res = $mongodb_con->find_one( $config_api_tables, [
-			"db_id"=> $_POST['db_id'],
-			"_id" => $_POST['table_id'] 
-		] );
-		if( !$main_table_res['data'] ){
-			json_response("fail","Table not found!");
-		}else{
-			$main_table = $main_table_res['data'];
-			if($_POST['record_id']  == "new"){
-				if( $_POST["record"]["_id"]){
-					if(!preg_match("/^[a-f0-9]{24}$/", $_POST["record"]["_id"] ) ){
-						json_response("fail", "_id is not mongodb format" );
-					}
-				}else{
-					unset($_POST["record"]["_id"] );
-				}
-				$res = $con->insert( $main_table["table"], $_POST['record'],"check" );
-				if( $res['status'] == "fail" ){
-					json_response("fail", $res['error'] );
-				}else{
-					$record_id = $res["inserted_id"];
-					$res = $mongodb_con->increment($config_api_tables, $main_table['_id'], "count", 1);
-					if( $res['status']=="fail" ){
-						json_response("fail", $res['error'] );
-					}
-				}
-			}else{
-				$record_id = $_POST['record_id'];
-				$main_rec = $con->find_one( $main_table["table"],["_id"=> $record_id ] );
-				if( !$main_rec['data'] ){
-					json_response("fail", $main_rec["error"] );
-				}else{
-					unset($_POST["record"]["_id"] );
-					$rec2 = $con->update_one( $main_table["table"], ["_id"=>$record_id ], $_POST['record'] );
-					if( $rec2['status'] == "fail" ){
-						json_response("fail", $rec2["error"] );
-					}
-				}
-			}
-			$rec = $con->find_one( $main_table["table"],["_id"=> $record_id ] );
-			if( $rec['status'] == "fail" ){
-				json_response( "fail", $rec["error"] );
-			}else{
-				json_response( "success", $rec["data"] );
-			}
-		}
-	}
-}
-if($_POST['action'] == "delete_record_multiple"){
-	$config_debug = false;
-	if( $config_param1 != $_POST['app_id'] ){
-		json_response("fail", "Incorrect App Id");
-	}
-	if( $config_param3 != $_POST['db_id'] ){
-		json_response("fail", "Incorrect Db Id");
-	}
-	if( $config_param5 != $_POST['table_id'] ){
-		json_response("fail", "Incorrect credentials");
-	}
-	$table_res = $mongodb_con->find_one($config_api_tables, ["_id"=>$_POST['table_id'] ]);
-	if( !$table_res['data'] ){
-		json_response("fail","Table not found!");
-	}
-	$table = $table_res['data'];
-	$tablename  = $table['table'];
-	foreach($_POST["record"] as $index => $rec){
-		$res = $con->delete_one( $table['table'], ["_id"=>$rec["_id"] ] );
-		if( $res['status'] == "fail" ){
-			json_response("fail", "Server Error ".$res["error"]);
-		}
-		$increment_res = $mongodb_con->increment($config_api_tables, $table['_id'], "count", -1);
-		if( !$increment_res ){
-			json_response("fail", "Server Error ".$increment_res["error"]);
-		}
-	}
-	json_response("success","ok");
-}
-if( $_POST['action'] == "delete_record" ){
-	$config_debug = false;
-	if( $config_param1 != $_POST['app_id'] ){
-		json_response("fail", "Incorrect App Id");
-	}
-	if( $config_param3 != $_POST['db_id'] ){
-		json_response("fail", "Incorrect Db Id");
-	}
-	if( $config_param5 != $_POST['table_id'] ){
-		json_response("fail", "Incorrect credentials");
-	}
-	$table_res = $mongodb_con->find_one($config_api_tables,["_id"=>$_POST['table_id'] ]);
-	if( !$table_res['data'] ){
-		json_response("fail","Table not found!");
-	}
-	$table = $table_res['data'];
-	$res = $con->delete_one( $table['table'], ["_id"=>$_POST['record_id'] ] );
-	if( $res['status']=="fail" ){
-		json_response("fail", "Server Error ".$res["error"]);
-	}
-	$increment_res = $mongodb_con->increment($config_api_tables, $table['_id'], "count", -1);
-	if( $increment_res['status'] == "fail" ){
-		json_response("fail", "Server Error ".$increment_res["error"]);
-	}
-	json_response("success","ok");
-}
+
 if( $config_param4 == "table" && $config_param5 == "new" ){
 	$table = [
 		"_id"    => "new",
@@ -748,5 +723,316 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 		}else{
 			$total_cnt = (int)$table_rec_cnt['data'];
 		}
+
+		$ires = $con->list_indexes_raw( $table['table'] );
+		//print_r( $ires );print_r( $table['keys'] );
+		foreach( $ires['data'] as $name=>$j ){
+			if( !isset($table['keys'][ $name ]) ){
+				$j['type'] = "text";
+				$table['keys'][ $name ] = $j;
+				$ures = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5], [
+					'keys.'. $name => $j
+				]);
+				if( $ures['status'] != "success" ){
+					json_response($ures);
+				}
+			}
+		}
+		//exit;
+
+		if( $_POST['action'] == "database_table_schema_update" ){
+			//print_r( $_POST );	exit;
+			$res = $mongodb_con->update_one($config_api_tables, [
+				"_id"=> $config_param5
+			], [
+				'schema'=>$_POST['schema']
+			]);
+			json_response($res);
+		}
+
+		if( $_POST['action'] == "database_mongodb_drop_index" ){
+			if( !isset($_POST['name']) ){
+				json_response(['status'=>"fail", "error"=>"incorrect payload"]);
+			}
+			$dres = $con->drop_index( $table['table'], $_POST['name']);
+			if( $dres['status'] !="success"){ 
+				if( !preg_match("/not found/i", $dres['error']) ){
+					json_response($dres);
+				}
+			}
+			$res = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5],[
+				'$unset'=>["keys." . $_POST['name']=>true]
+			]);
+			json_response($res);
+			exit;
+		}
+
+		if( $_POST['action'] == "database_mongodb_update_index_type" ){
+			if( !isset($_POST['index']) || !isset($_POST['keys']) ){
+				json_response(['status'=>"fail", "error"=>"incorrect payload"]);
+			}
+			if( !isset($table['keys'][ $_POST['index'] ]) ){
+				json_response(['status'=>"fail", "error"=>"Index not found"]);
+			}
+			$res = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5],[
+				"keys." . $_POST['index'] . ".keys"=>$_POST['keys']
+			]);
+			json_response($res);
+			exit;
+		}
+
+		if( $_POST['action'] == "database_mongodb_create_index" ){
+		//	print_r( $_POST );exit;
+			if( !isset($_POST['new_index']) ){
+				json_response(['status'=>"fail", "error"=>"incorrect payload"]);
+			}
+			if( !isset($_POST['new_index']['name']) ){
+				json_response(['status'=>"fail", "error"=>"incorrect indexname"]);
+			}else if( !preg_match( "/^[a-z0-9\-\_\.]{2,100}$/i", $_POST['new_index']['name']) ){
+				json_response(['status'=>"fail", "error"=>"incorrect indexname"]);
+			}
+			if( !isset($_POST['new_index']['keys']) ){
+				json_response(['status'=>"fail", "error"=>"Require keys"]);
+			}else if( !is_array($_POST['new_index']['keys']) ){
+				json_response(['status'=>"fail", "error"=>"Require keys"]);
+			}
+			$keys = [];
+			$ops = [
+				"name"=>$_POST['new_index']['name'],
+				"sparse"=>($_POST['new_index']['sparse']?true:false),
+				"unique"=>($_POST['new_index']['unique']?true:false),
+			];
+			foreach( $_POST['new_index']['keys'] as $i=>$j ){
+				if( !isset($j['name']) || !isset($j['type']) || !isset($j['sort']) ){
+					json_response(['status'=>"fail", "error"=>"Incorrect keys"]);
+				}
+				$keys[ $j['name'] ] = ($j['sort']=="asc"?1:-1);
+			}
+
+			$ires = $con->create_index( $table['table'], $keys, $ops );
+			if( $ires['status'] != "success" ){
+				json_response($ires);
+			}
+
+			if( !isset($table['keys']) ){
+				$keys = [];
+			}else{
+				$keys = $table['keys'];
+			}
+			$keys[ $_POST['new_index']['name'] ] = $_POST['new_index'];
+			$res = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5], [
+				'keys'=>$keys
+			]);
+			json_response($res);
+
+			exit;
+		}
+
+		if( $_POST['action'] == "database_mongodb_import_batch" ){
+
+			$t = validate_token("database_mongodb_import_batch.". $config_param1 . "." .$table['_id'], $_POST['token']);
+			if( $t != "OK" ){
+				json_response("fail", $t);
+			}
+
+			$res = $con->count( $table['table'] );
+			if( $res['status'] != "success" ){
+				json_response(['status'=>"fail", "error"=>"Count check failed: " . $res['error']]);
+			}
+			if( $res['data'] > 20000 ){
+				json_response(['status'=>"fail", "error"=>"Table already has more than 20k records"]);
+			}
+
+			$success = 0;
+			$skipped = 0;
+			$error = "";
+			$skipped_items = [];
+
+			foreach( $_POST['data'] as $i=>$j ){
+				$res = $con->insert( $table['table'], $j );
+				if( $res['status'] != "success" ){
+					$error = $res['error'];
+					break;
+				}
+				$success++;
+			}
+
+			if( $error ){
+				json_response([
+					'status'=>"fail",
+					"success"=>$success,
+					"skipped"=>$skipped,
+					"skipped_items"=>$skipped_items,
+					"error"=>$error
+				]);
+			}else{
+				json_response([
+					'status'=>"success",
+					"success"=>$success,
+					"skipped"=>$skipped,
+					"skipped_items"=>$skipped_items,
+					"error"=>$error,
+				]);
+			}
+			exit;
+		}
+
+		if( $_POST['action'] == "database_table_export" ){
+
+			if( !isset($_POST['exp']) ){
+				json_response(['status'=>"fail", "error"=>"Incorrect input"]);
+			}
+			if( !isset($_POST['exp']['type']) ){
+				json_response(['status'=>"fail", "error"=>"Incorrect input"]);
+			}
+			if( !preg_match("/^(JSON|CSV)$/", $_POST['exp']['type'] ) ){
+				json_response(['status'=>"fail", "error"=>"Unhandled export type"]);
+			}
+
+			@mkdir( "/tmp/phpengine_backups/", 0777 );
+			$tmfn = "/tmp/phpengine_backups/". preg_replace("/\W/", "", $table['table']) . "_" . preg_replace("/\W/", "", $table['des']) . "_" . date("Ymd_His") . "." . strtolower($_POST['exp']['type']);
+			if( file_exists($tmfn) ){
+				if( filemtime($tmfn) > time()-60 ){
+					json_response(['status'=>"fail", "error"=>"An export was just invoked. please wait ".(60-(time()-filemtime($tmfn)))." seconds"]);
+				}
+			}
+			$fp = fopen($tmfn, "w");
+
+			if( $_POST['exp']['type'] == "CSV" ){
+				$res = $con->find( $table['table'], [], ['limit'=>10, 'sort'=>['_id'=>1] ]);
+				$fields = [];
+				foreach( $res['data'] as $i=>$j ){
+					foreach( $j as $fn=>$fd ){
+						$fields[ $fn ]+=1;
+					}
+				}
+				if( sizeof( $fields ) == 0 ){
+					json_response(['status'=>"fail", "error"=>"Table already has more than 20k records"]);
+				}
+				fputcsv($fp, array_keys($fields) );
+			}
+
+			$last_id = "";
+			$perpage = 500;
+			while( 1 ){
+				$cond = [];
+				if( $last_id ){
+					$cond['_id'] = ['$gt'=>$last_id];
+				}
+				$res = $con->find( $table['table'], $cond, ['limit'=>$perpage, 'sort'=>['_id'=>1] ]);
+				if( !$res['data'] ){break;}
+				foreach( $res['data'] as $i=>$j ){
+
+					if( $_POST['exp']['type'] == "JSON" ){
+						fwrite($fp, json_encode($j) . "\n" );
+					}else if( $_POST['exp']['type'] == "CSV" ){
+						$rec = [];
+						foreach( $fields as $fn=>$f ){
+							if( isset($j[ $fn ]) ){
+								if( gettype($j[ $fn ]) == "array" ){
+									$rec[]= "Array";
+								}else{
+									$rec[]= $j[ $fn ];
+								}
+							}else{
+								$rec[]="";
+							}
+						}
+						fputcsv($fp, $rec);
+					}
+					$last_id = $j['_id'];
+				}
+			}
+			fclose($fp);
+			chmod($tmfn, 0777);
+			$sz = filesize($tmfn);
+			if( $sz < 1024 ){
+				$sz .= " Bytes";
+			}else{
+				$sz = round($sz/1024);
+				if( $sz < 1024 ){
+					$sz .= " KB";
+				}else{
+					$sz = round($sz/1024);
+					if( $sz < 1024 ){
+						$sz .= " MB";
+					}
+				}
+			}
+			json_response(['status'=>"success", "temp_fn"=>str_replace("/tmp/phpengine_backups/", "", $tmfn), "sz"=>$sz]);
+			exit;
+		
+		}
+		if( $_GET['action'] == "download_database_mongodb_snapshot" ){
+			$fn = $_GET['snapshot_file'];
+			$tmfn = "/tmp/phpengine_backups/". $fn;
+			//ini_set('zlib.output_compression','On');
+			header( 'Content-Type: application/x-download' );
+			header( 'Transfer-Encoding: gzip' );
+			header( 'Content-Length: '.filesize($tmfn) );
+			header( 'Content-Disposition: attachment; filename="'.$fn.'"' );
+			ob_start("ob_gzhandler");
+			readfile($tmfn);
+			ob_end_flush();
+			exit;
+		}
+
+		if( $_POST['action'] == "database_mongodb_update_record" ){
+			if( !isset($_POST['record_id']) || !isset($_POST['record']) ){
+				json_response(['status'=>"fail","error"=>"payload incorrect"]);
+			}
+			if( $_POST['record_id']  == "new" ){
+				if( isset($_POST["record"]["_id"]) ){
+					if( $_POST["record"]["_id"] == "" || preg_match("/uniqueid/i",$_POST["record"]["_id"]) ){
+						unset($_POST["record"]["_id"]);
+					}
+				}
+				$res = $con->insert( $table["table"], $_POST['record'], "check" );
+				if( $res['status'] == "success" ){
+					$res = $con->find_one( $table["table"], ['_id'=>$res['inserted_id'] ] );
+					json_response($res);
+				}
+				json_response($res);
+			}else{
+				$record_id = $_POST['record_id'];
+				if( $record_id != $_POST["record"]["_id"] ){
+					json_response("fail", "_id should not be changed while editing" );
+				}
+				$main_rec = $con->find_one( $table["table"],["_id"=> $record_id ] );
+				if( !$main_rec['data'] ){
+					json_response("fail", "Record not found" );
+				}else{
+					unset($_POST["record"]["_id"] );
+					$res2 = $con->update_one( $table["table"], ["_id"=>$record_id ], $_POST['record'] );
+					if( $res2['status'] == "success" ){
+						$res = $con->find_one( $table["table"], ['_id'=>$record_id ] );
+						json_response($res);
+					}
+					json_response($res2);
+				}
+			}
+		}
+		if($_POST['action'] == "database_mongodb_delete_record_multiple"){
+			if( !isset($_POST['delete_ids']) ){
+				json_response("fail", "Incorrect paylaod");
+			}
+			if( !is_array($_POST['delete_ids']) ){
+				json_response("fail", "Incorrect paylaod");
+			}
+			foreach( $_POST["delete_ids"] as $i=>$j ){
+				$res = $con->delete_one( $table['table'], ["_id"=>$j ] );
+				if( $res['status'] == "fail" ){
+					json_response($res);
+				}
+			}
+			json_response("success","ok");
+			exit;
+		}
+
+		if( $_POST['action'] == "database_mongodb_delete_record" ){
+			$res = $con->delete_one( $table['table'], ["_id"=>$_POST['record_id'] ] );
+			json_response($res);
+		}
+
 	}
 }

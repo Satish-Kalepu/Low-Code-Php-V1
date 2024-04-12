@@ -281,7 +281,7 @@ class mongodb_connection{
 			return false;
 		}
 
-		function update_many($collection,$data,$condition,$option=[]){
+		function update_many($collection,$condition,$data,$option=[]){
 			if( !is_string($collection) ){
 				return ["status"=>"fail","error"=>"collection name required"];
 			}

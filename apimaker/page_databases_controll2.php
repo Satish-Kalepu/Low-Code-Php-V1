@@ -1,5 +1,4 @@
 <?php
-
 $config_template = [
 	"MySql"=> [
 		"host"=> ["name"=> "Host", "type"=>"text", "value"=>"localhost", "store"=>"plain", "m"=>true],
@@ -203,6 +202,36 @@ if( $_POST['action'] == "test_database" ){
 	exit;
 }
 
+if( $_POST['action'] == "load_tables" ){
+	$config_debug = false;
+	if( !$_POST['db_id'] ){
+		json_response("fail", "DB id required!");
+	}else{
+		if( $_POST['db_id'] != "default-db" ){
+			$db_res = $mongodb_con->find_one($config_api_databases, ["_id"=>$_POST['db_id']]);
+			if( !$db_res['data'] ){
+				json_response("fail","Database not found!");
+			}else{
+				$db = $db_res['data'];
+			}
+		}
+		$tables_res = $mongodb_con->find($config_api_tables, ["app_id"=>$app['_id'], "db_id"=>$_POST['db_id'] ]);
+		if( !isset($tables_res['data']) ){
+			json_response("fail", "Table Details Missing!");
+		}else{
+			if( sizeof( $tables_res['data'] ) == 0 ){
+				$tables_res = [];
+			}else{
+				$tables_res = $tables_res['data'];
+			}
+		}
+		json_response([
+			'status'=>"success", 
+			"tables"=>$tables_res
+		]);
+	}
+}
+
 if( $_POST['action'] == 'delete_table' ){
 	$db_res = $mongodb_con->find_one($config_api_tables,['db_id'=>$_POST["db_id"], '_id'=>$_POST["table_id"] ],[]);
 	if( !$db_res ){
@@ -247,9 +276,6 @@ if( $config_param3 ){
 	}else{
 		echo "DB Engine " . $db['engine'] . " module is under development!";exit;
 	}
-
-
-
 }else{
 	$meta_title = "Databases";
 }

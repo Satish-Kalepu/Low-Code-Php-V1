@@ -5,53 +5,40 @@
 	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 
-			<div style="float:right;"><a class="btn btn-outline-secondary btn-sm" v-bind:href="dbpath">Back</a></div>
+			<div style="float:right;"><a class="btn btn-outline-secondary btn-sm me-2" v-bind:href="dbpath">Back</a></div>
 
-			<h4>Database - <span class="small" style="color:#999;" ><?=ucwords($db['engine']) ?></span>: <?=htmlspecialchars($db['des']) ?> &nbsp;&nbsp;&nbsp;<span class="small" style="color:#999;" >Table:</span> {{ table['des'] }} </h4>
+			<h4>Database - <span class="small" style="color:#999;" ><?=ucwords($db['engine']) ?></span>: <?=htmlspecialchars($db['des']) ?> &nbsp;&nbsp;&nbsp;<span class="small" style="color:#999;" >Table:</span> {{ table['table'] }} </h4>
 
-		<ul class="nav nav-tabs mb-2" >
-			<li class="nav-item">
-				<a class="nav-link<?=$config_param6=='records'||$config_param6==''?" active":"" ?>" v-bind:href="tablepath+'records'">Records</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link<?=$config_param6=='manage'?" active":"" ?>" v-bind:href="tablepath+'manage'">Manage</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link<?=$config_param6=='import'?" active":"" ?>" v-bind:href="tablepath+'import'">Import</a>
-			</li>
-			<li class="nav-item">
-				<a disabled class="nav-link<?=$config_param6=='export'?" active":"" ?>" v-bind:href="tablepath+'export'">Export</a>
-			</li>
-		</ul>
+		<?php if( $config_param5 != "new" ){ ?>
 
-			<div style="overflow: auto;height: calc( 100% - 130px );">
+			<ul class="nav nav-tabs mb-2" >
+				<li class="nav-item disabled">
+					<a class="nav-link<?=$config_param6=='records'||$config_param6==''?" active":"" ?>" v-bind:href="tablepath+'records'">Records</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link<?=$config_param6=='manage'?" active":"" ?>" v-bind:href="tablepath+'manage'">Manage</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link<?=$config_param6=='import'?" active":"" ?>" v-bind:href="tablepath+'import'">Import</a>
+				</li>
+				<li class="nav-item">
+					<a disabled class="nav-link<?=$config_param6=='export'?" active":"" ?>" v-bind:href="tablepath+'export'">Export</a>
+				</li>
+			</ul>
+
+		<?php } ?>
+
+			<div style="overflow: auto;height: calc( 100% - 130px ); padding-right:10px;">
 
 			<table class="table table-sm" >
 				<tr>
-					<td align="right" width="150">Description</td>
-					<td><input class="form-control form-control-sm" type="text" v-model="table['des']" placeholder="Description/purpose"></td>
-				</tr>
-				<tr>
 					<td align="right">Collection</td>
 					<td>
-						<select class="form-select form-select-sm" v-model="table['table']" placeholder="Table/Collection" v-on:change="check_source_database">
-							<option v-if="tables_loading" value="" >Loading Collections List</option>
-							<option v-for="t in source_tables" v-bind:value="t" >{{ t }}</option>
-							<option v-bind:value="table['table']" >{{ table['table'] }}</option>
-						</select>
-						<div v-if="load_tables_error" class="text-danger" >{{ load_tables_error }}</div>
-						<div v-if="load_tables_msg" class="text-success" >{{ load_tables_msg }}</div>
-						<span>{{ check_msg }}</span>  
-						<span v-if="check_error" class="text-danger" >{{check_error}}</span>
-						<div v-if="source_tables.length > 0 && table['table']" >
-							<div><input class="btn btn-link btn-sm" type="button" value="Reload source collection schema" v-on:click="check_source_database" > <input class="btn btn-link btn-sm" type="button" value="Show source schema" v-on:click="do_show_sourceschema" ></div>
-							<template v-if="'source_schema' in table">
-								<span class="small text-secondary">Last checked: {{ table['source_schema']['last_checked'] }}</span>
-							</template>
-						</div>
+						<input class="btn btn-link btn-sm" style="float:right; margin-right: 50px;" type="button" value="Show source schema" v-on:click="do_show_sourceschema" >
+						<p><b>{{ table['table'] }}</b></p>
 					</td>
 				</tr>
-				<template v-if="source_tables.length>0&&'source_schema' in table&&table['table']!=''" >
+				<template v-if="'source_schema' in table&&table['table']!=''">
 				<tr>
 					<td align="right">Schema</td>
 					<td>
@@ -68,8 +55,13 @@
 								<dbobject_table_mongodb v-if="vshow" v-bind:engine="table['engine']" v-bind:level="1" v-bind:items="sd['fields']" v-on:edited="table_fields_edited(si,$event)" ></dbobject_table_mongodb>
 							</div>
 						</div>
-						<div><input type="button" value="Add Schema" v-on:click="show_add_schema=true" ></div>
-						<div v-if="show_add_schema"><input type="text" v-model="new_schema" placeholder="New Schema"><input type="button" value="Add" v-on:click="add_schema" ></div>
+						<p><input type="button" class="btn btn-outline-dark btn-sm" value="Add Schema" v-on:click="show_add_schema=true" ></p>
+						<p v-if="show_add_schema"><input type="text" v-model="new_schema" placeholder="New Schema"><input type="button" value="Add" v-on:click="add_schema" ></p>
+
+						<p><button type="button" v-on:click="save_now" class="btn btn-outline-dark btn-sm">Save</button></p>
+						<div class="alert alert-danger" v-if="err" >{{ err }}</div>
+						<div class="alert alert-success" v-if="msg" >{{ msg }}</div>
+
 					</td>
 				</tr>
 				<tr>
@@ -77,55 +69,87 @@
 					<td>
 
 
-						<table class="table table-bordered table-sm w-auto">
+						<table v-if="keys_list.length>0" class="table table-bordered table-sm w-auto">
 							<tr class="bg-light">
 								<td>IndexName</td>
 								<td>Keys</td>
-								<td>Options</td>
+								<td>Options</td><td></td>
 							</tr>
 							<tr v-for="kd,ki in keys_list" >
 								<td>
-									<input type="text" v-model="kd['name']" title="Index Name" v-on:change="index_update" style="width:150px;" >
+									{{ kd['name'] }}
 								</td>
 								<td>
-									<div v-for="fd,fi in kd['keys']" >
-										<input type="text" v-model="fd['name']" placeholder="Field name" v-on:change="index_update"  style="width:150px;" >
-										<select v-model="fd['type']" v-on:change="index_update" >
+									<div v-for="fd,fi in kd['keys']" style="display: flex; column-gap:5px;" >
+										<div style="min-width:100px;">{{ fd['name'] }}</div>
+										<div style="min-width:100px;">{{ fd['sort'] }}</div>
+										<select class="form-select form-select-sm w-auto" v-model="fd['type']" v-on:change="change_index_data_type(ki,fi)" >
+											<option value="text">text</option>
+											<option value="number">number</option>
+										</select>
+									</div>
+								</td>
+								<td>
+									<div v-if="kd['sparse']" >Sparse</div>
+									<div v-if="kd['unique']" >Unique</div>
+								</td>
+								<td>
+									<input type="button" class="btn btn-outline-danger btn-sm" value="X"  v-on:click="delete_index(ki)" >
+								</td>
+
+							</tr>
+						</table>
+						<p>Create Index</p>
+						<table class="table table-bordered table-sm w-auto">
+							<tr>
+								<td>Name</td>
+								<td>
+									<input type="text" v-model="new_index['name']" title="Index Name" style="width:150px; "  >
+								</td>
+							</tr>
+							<tr>
+								<td>Keys</td>
+								<td>
+									<div v-for="fd,fi in new_index['keys']" style="display:flex; column-gap:5px; margin-bottom: 5px;" >
+										<input type="text" v-model="fd['name']" placeholder="Field name" style="width:150px;" >
+										<select v-model="fd['type']" >
 											<option value='text'>Text</option>
 											<option value='number'>Number</option>
 											<option value='boolean'>Boolean</option>
 										</select>
-										<select v-model="fd['sort']" v-on:change="index_update" >
+										<select v-model="fd['sort']" >
 											<option value="asc" >ASC</option>
 											<option value="dsc" >DSC</option>
 										</select>
-										<input v-if="fi>0" type="button" value="X" style="padding:0px 2px;" v-on:click="index_delete_key(ki,fi)" >
+										<input v-if="fi>0" type="button" class="btn btn-outline-danger btn-sm" value="X" style="padding:0px 2px;" v-on:click="index_delete_key(fi)" >
 									</div>
-									<div><input type="button" value="+" style="padding:0px 2px;" v-on:click="index_add_key(ki)" ></div>
+									<div><input type="button" class="btn btn-outline-dark btn-sm" value="+" style="padding:0px 2px;" v-on:click="index_add_key" ></div>
 								</td>
+							</tr>
+							<tr>
+								<td>Options</td>
 								<td>
-									<label style="cursor:pointer;">Sparse <input type="checkbox" v-model="kd['sparse']" title="Sparse Index"></label>
-									<label style="cursor:pointer;">Unique <input type="checkbox" v-model="kd['unique']" title="Unique Index"></label>
+									<label style="cursor:pointer;">Sparse <input type="checkbox" v-model="new_index['sparse']" title="Sparse Index"></label>
+									<label style="cursor:pointer;">Unique <input type="checkbox" v-model="new_index['unique']" title="Unique Index"></label>
 								</td>
+							</tr>
+							<tr>
+								<td></td>
 								<td>
-									<input type="button" value="X" style="padding:0px 2px;" v-on:click="delete_index(ki)" >
+									<input type="button" value="Create Index" class="btn btn-outline-dark btn-sm" v-on:click="add_index" >
 								</td>
 							</tr>
 						</table>
-						<div><input type="button" value="Add Index" v-on:click="add_index" ></div>
 
-					</td>
-				</tr>
-				<tr>
-					<td align="right">&nbsp;</td>
-					<td>
-						<p><button type="button" v-on:click="save_now" class="btn btn-outline-dark btn-sm">Save</button></p>
-						<p>Note: This form cannot validate the schema because Mongodb is a schemaless database. You can only find schema by observing existing records or documentation. Therefore define schema manually and with caution.</p>
+						<div class="alert alert-danger" v-if="idxerr" >{{ idxerr }}</div>
+						<div class="alert alert-success" v-if="idxmsg" >{{ idxmsg }}</div>
+
+
 					</td>
 				</tr>
 				</template>
 			</table>
-
+			<p>Note: This form cannot validate the schema because Mongodb is a schemaless database. You can only find schema by observing existing records or documentation. Therefore define schema manually with caution.</p>
 			<!-- <pre>{{ table }}</pre> -->
 
 			</div>
@@ -162,7 +186,11 @@
 	      <div class="modal-body">
 
 	      	<template v-if="'source_schema' in table" >
-				<div><input type="button" class="btn btn-outline-secondary btn-sm" value="Import to default schema" v-on:click="update_table_schema_from_source" ></div>
+				<template v-if="'source_schema' in table">
+					<p><input type="button" class="btn btn-outline-secondary btn-sm" value="Import to default schema" v-on:click="update_table_schema_from_source" ></p>
+				</template>
+				<div>{{ check_msg }}</div>
+				<div v-if="check_error" class="text-danger" >{{check_error}}</div>
 				<pre>{{ create_data_template(table['source_schema']['fields']) }}</pre>
 
 				<div>Indexes</div>
@@ -208,6 +236,8 @@ var app = Vue.createApp({
 			"db_id": "<?=$config_param3 ?>",
 			"table_id": "<?=$config_param5 ?>",
 			"table": <?=json_encode($table,JSON_PRETTY_PRINT) ?>,
+			"new_coll_type": "link",
+			"new_table_name": "",
 			"table_checked": false,
 			"schema_matches": false,
 			"showschema": false,
@@ -219,6 +249,7 @@ var app = Vue.createApp({
 			"importjson_msg": "",
 			"import_popup": false,
 			"error": "",
+			"msg": "", "err": "", "idxmsg": "", "idxerr": "", "msg": "", "err": "",
 			"vshow": true,
 			"show_add_schema": false,
 			"new_schema": "",
@@ -229,6 +260,11 @@ var app = Vue.createApp({
 			"source_fields": [],
 			"load_tables_msg": "",
 			"load_tables_error": "",
+			"new_index": {
+				"name": "",
+				"keys": [ {"name":"field", "type": "text", "sort":"asc"} ],
+				"sparse": true, "unique": false, "e": true,
+			}
 		};
 	},
 	mounted : function(){
@@ -240,7 +276,9 @@ var app = Vue.createApp({
 			};
 		}
 		this.update_keys_list();
-		this.load_source_tables();
+		if( this.table_id == "new" ){
+			this.load_source_tables();
+		}
 	},
 	methods : {
 		load_source_tables: function(){
@@ -421,76 +459,83 @@ var app = Vue.createApp({
 			this.echo__( vf );
 			this.table['schema'][si][ 'fields' ] =vf;
 		},
-		index_add_key: function( vi ){
-			this.keys_list[ vi ]['keys'].push( JSON.parse( JSON.stringify( this.keys_list[ vi ]['keys'][0] ) ) );
+		index_add_key: function(){
+			this.new_index['keys'].push( JSON.parse( JSON.stringify( this.new_index['keys'][0] ) ) );
 		},
-		index_delete_key: function( vi, ki ){
-			this.keys_list[ vi ]['keys'].splice(ki,1);
+		index_delete_key: function( ki ){
+			this.new_index['keys'].splice(ki,1);
+		},
+		change_index_data_type: function(ki,fi){
+			this.idxmsg = "";
+			this.idxerr = "";
+			axios.post("?", {
+				"action"	: "database_mongodb_update_index_type", 
+				"index"	: this.keys_list[ki]['name'], 
+				"keys"	: this.keys_list[ki]['keys']
+			}).then(response=>{
+				this.idxmsg = "";
+				if( response.data['status'] == "success" ){
+					//document.location = this.tablepath+"manage?event=updated";
+				}else{
+					this.idxerr =  response.data['error'] ;
+				}
+			}).catch(error=>{
+				this.idxerr =  error.message ;
+			});
 		},
 		add_index: function(){
-			this.keys_list.push({
-				"name": "",
-				"keys":[
-					{"name":"field", "type": "text", "sort":"asc"}
-				],
-				"sparse": true,
-				"unique": false,
-				"e": true,
+
+			this.idxmsg = "";
+			this.idxerr = "";
+			axios.post( "?", {
+				"action"	: "database_mongodb_create_index", 
+				"new_index"	: this.new_index, 
+			} ).then(response=>{
+				this.idxmsg = "";
+				if( response.data['status'] == "success" ){
+					document.location = this.tablepath+"manage?event=updated";
+				}else{
+					this.idxerr =  response.data['error'] ;
+				}
+			}).catch(error=>{
+				this.idxerr =  error.message ;
 			});
-			this.index_update();
 		},
 		delete_index: function(vi){
-			this.keys_list.splice(vi,1);
-			this.index_update();
+			this.idxmsg = "";
+			this.idxerr = "";
+			axios.post( "?", {
+				"action"	: "database_mongodb_drop_index", 
+				"name"	: this.keys_list[vi]['name'], 
+			} ).then(response=>{
+				this.idxmsg = "";
+				if( response.data['status'] == "success" ){
+					document.location = this.tablepath+"manage?event=indexDropped";
+				}else{
+					this.idxerr =  response.data['error'] ;
+				}
+			}).catch(error=>{
+				this.idxerr =  error.message ;
+			});
 		},
 		save_now: function(){
-			this.table['table'] = (this.table['table']+"").trim();
-			this.table['des']   = (this.table['des']+"").trim();
-			if( this.table['des']== "" ){
-				alert("Enter Table Description");
-				return false;
-			}else if( this.table['des'].match( /^[A-Za-z0-9\-\_\s\.\ ]{5,50}$/ ) == null ){
-				alert("Table description From 5 to 50 characters in length, A-Z a-z 0-9 _ - . and spaces allowed.");
-				return false;
-			}else if( this.table['table']== "" ){
-				alert("Enter Table Name");
-				return false;
-			}else if( this.table['table'].match( /^[a-z0-9\-\_\.]{2,25}$/ ) == null ){
-				alert("Table name From 5 to 25 characters in length, lowercase a-z 0-9 _ - . allowed. space is not allowed");
-				return false;
-			}else{
-				for(var ind in this.table['keys'] ){
-					if( ind.match(/^[a-z0-9\.\-\_]{2,60}$/) == null ){
-						alert("Index name " + ind + " incorrect");
-						return false;
-					}else{
-						for(var i=0;i<this.table['keys'][ ind ]['keys'];i++){
-							if(   this.table['keys'][ ind ]['keys'][i]["name"].match(/^[a-z0-9\.\-\_]{2,60}$/) == null ){
-								alert("Index field name `" + this.table['keys'][ind]['keys'][i]["name"] + "` incorrect");
-								return false;
-							}
-						}
-					}
+			this.msg = "";this.err = "";
+			this.msg = "Saving...";
+			vd__ =  {
+				"action"	: "database_table_schema_update", 
+				"schema"		: this.table['schema'], 
+			};
+			axios.post( "?", vd__ ).then(response=>{
+				this.msg = "";
+				if( response.data['status'] == "success" ){
+					this.msg = ("Successfully saved");
+					setTimeout(function(v){v.msg="";},10000,this);
+				}else{
+					this.err =  response.data['error'] ;
 				}
-				vd__ =  {
-					"action"	: "save_table_mongodb", 
-					"table"		: this.table, 
-					"app_id"	: this.app_id, 
-					"db_id"		: this.db_id, 
-					"table_id"	: this.table['_id'] ,
-				};
-				axios.post( "?", vd__ ).then(response=>{
-					if( response.data['status'] == "success" ){
-						if( this.table['_id'] == "new" ){
-							document.location = this.dbpath+"tables/" + response.data['data'] + "/manage";
-						}else{
-							alert("Successfully saved");
-						}
-					}else{
-						alert( response.data['data'] );
-					}
-				});
-			}
+			}).catch(error=>{
+				this.err =  error.message ;
+			});
 		},
 		compare_schema: function(){
 			var ve = true;
@@ -515,13 +560,56 @@ var app = Vue.createApp({
 			}
 			this.schema_matches = ve;
 		},
-		check_source_table: function(){
-			if( 'source_schema' in this.table == false && this.table['table'] != "" && this.table['table'] != "new" ){
-				this.check_source_database();
-			}else if( this.table['source_schema']['last_checked'] == "Never" && this.table['table'] != "" && this.table['table'] != "new" ){
-				this.check_source_database();
-			}
+		cleancname: function(v){
+			v = v.replace(/\-/g, "DASH");
+			v = v.replace(/\_/g, "UDASH");
+			v = v.replace(/\W/g, "").trim();
+			v = v.replace(/UDASH/g, "_");
+			v = v.replace(/DASH/g, "-");
+			return v;
 		},
+		create_new_table: function(){
+			this.new_table_name = this.cleancname( this.new_table_name );
+			if( this.new_table_name ){
+				this.table['table'] = this.new_table_name+'';
+				if( this.table['des'].trim() == "" ){
+					this.table['des'] = this.table['table']+'';
+				}
+				this.table[ 'source_schema' ] = {
+			        "keys": [],
+			        "fields": {
+			            "_id": {
+			                "key": "_id",
+			                "name": "_id",
+			                "type": "text",
+			                "m": true,
+			                "order": 1,
+			                "sub": []
+			            },
+			            "name": {
+			                "key": "field1",
+			                "name": "field1",
+			                "type": "text",
+			                "m": true,
+			                "order": 2,
+			                "sub": []
+			            },
+			            "role": {
+			                "key": "field2",
+			                "name": "field2",
+			                "type": "number",
+			                "m": true,
+			                "order": 4,
+			                "sub": []
+			            },
+			        },
+			        "last_checked": "2024-04-06 02:12:18"
+			    };
+			}
+			this.update_table_schema_from_source();
+			this.save_now();
+		},
+
 		check_source_database: function(){
 			this.check_error = "";
 			this.check_msg = "Checking source database...";
@@ -534,27 +622,26 @@ var app = Vue.createApp({
 				};
 			axios.post("?", vd__ ).then(response=>{
 				this.check_msg = "";
-				console.log( response.status );
-				if( response.status == 500 ){
-					alert( response.data );
-				}else if( response.data["status"] == "success" ){
+				if( response.data["status"] == "success" ){
 					this.table[ 'source_schema' ] = response.data['data'];
-					this.compare_schema();
-					if( this.schema_matches == false ){
-						this.showschema = new bootstrap.Modal(document.getElementById('showschema'));
-						this.showschema.show();
+					if( this.table_id == "new" ){
+						this.update_table_schema_from_source();
+						this.table['des'] = this.table['table']+'';
+					}else{
+						
 					}
-					this.$forceUpdate();
 				}else{
-					this.check_error = response.data['data'] ;
+					this.check_error = response.data['error'] ;
 				}
 			}).catch(error=>{
 				this.check_error = error.toString();
 			});
 		},
 		do_show_sourceschema: function(){
+
 			this.showschema = new bootstrap.Modal(document.getElementById('showschema'));
 			this.showschema.show();
+			this.check_source_database();
 		},
 		update_table_schema_from_source: function(){
 			this.vshow = false;
@@ -565,7 +652,9 @@ var app = Vue.createApp({
 			this.check_msg = "Table configuration updated from source!";
 			this.check_error = "";
 			this.schema_matches = true;
-			this.showschema.hide();
+			if( this.showschema ){
+				this.showschema.hide();
+			}
 			this.update_keys_list();
 		},
 		create_data_template: function( v ){
@@ -619,6 +708,6 @@ var app = Vue.createApp({
 	}
 });
 app.component( "dbobject_table_mongodb", dbobject_table_mongodb );
-app.mount("#app");
+var app2 = app.mount("#app");
 
 </script>

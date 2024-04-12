@@ -125,7 +125,7 @@
 	}
 
 	$url_inputs = [];
-	if( $_GET["version_id"] ){
+	if( isset($_GET["version_id"]) ){
 		$res = $mongodb_con->find_one($db_prefix."_apis_versions", ["_id"=>$_GET['version_id']] );
 		if( $res['data'] ){ $api_version = $res['data']; }else{
 			http_response_code(404);echo "API Version not found!";exit;
@@ -134,7 +134,7 @@
 		$api_id = $api_version['api_id'];
 		$url_page_id = "";
 		$page_type = "api";
-	}else if( $_GET["page_version_id"] ){
+	}else if( isset($_GET["page_version_id"]) ){
 		$res = $mongodb_con->find_one($db_prefix."_pages_versions", ["_id"=>$_GET['page_version_id']] );
 		if( $res['data'] ){ $page_version = $res['data']; }else{
 			http_response_code(404);echo "API Version not found!";exit;
@@ -143,7 +143,7 @@
 		$page_id = $page_version['page_id'];
 		$url_page_id = "";
 		$page_type = "api";
-	}else if( $_GET["function_version_id"] ){
+	}else if( isset($_GET["function_version_id"]) ){
 		$res = $mongodb_con->find_one($db_prefix."_functions_versions", ["_id"=>$_GET['function_version_id']] );
 		if( $res['data'] ){ $api_version = $res['data']; }else{
 			http_response_code(404);echo "API Version not found!";exit;
@@ -280,7 +280,7 @@
 		header( "Cache-Control: post-check=0, pre-check=0", false );
 		header( "Pragma: no-cache" );
 		require("index_page.php");
-	}else if( $page_type == "api" ){
+	}else if( $page_type == "api" || $page_type == "function" ){
 		header( "AppCache: " . ($cache_refresh?"Miss":"Hit") );
 		header( "Access-Control-Allow-Origin: *" );
 		header( "Access-Control-Allow-Methods: *" );

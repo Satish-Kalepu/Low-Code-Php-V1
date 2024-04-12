@@ -293,11 +293,11 @@ if( $_POST['action'] == "get_global_apis" ){
 				$primary_key = "_id";
 				$primary_key_type = "text";
 			}else if( $j['engine'] == "MySql" ){
-				if( isset($jj['source_schema']) ){
+				if( isset($jj['keys']) ){
 					//print_r( $jj['source_schema'] );exit;
-					$primary_keys = $jj['source_schema']['keys']['PRIMARY']['keys'];
-					$primary_key = array_keys($primary_keys)[0];
-					$primary_key_type = $primary_keys[ $primary_key ]['type'];
+					$primary_keys = $jj['keys']['PRIMARY']['keys'];
+					$primary_key = $primary_keys[0]['name'];
+					$primary_key_type = $primary_keys[0]['type'];
 				}
 			}else{
 				$primary_key = "_id";

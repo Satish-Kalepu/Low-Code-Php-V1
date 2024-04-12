@@ -15,15 +15,15 @@
 		</div>
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
-				<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
-				<div v-if="err" class="alert alert-danger" >{{ err }}</div>
-			</div>
-			<div style="float:right;" >
-				<button class="btn btn-outline-secondary btn-sm ms-1" v-on:click="file_show_create_form()" >Create File</button>
-				<button class="btn btn-outline-secondary btn-sm ms-1" v-on:click="file_show_folder_form()" >Create Folder</button>
-				<button class="btn btn-foutline-secondary btn-sm ms-1" v-on:click="file_show_upload_form()" >Upload</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_create_form()" >Create File</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_folder_form()" >Create Folder</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_upload_form()" >Upload</button>
 			</div>
 			<div class="h3 mb-3 w-auto">Files</div>
+
+			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
+			<div v-if="err" class="alert alert-danger" >{{ err }}</div>
+
 			<div style="display: flex; height: 25px;">
 				<div style="min-width:5px; cursor: pointer; padding:0px 5px; border:1px solid #ccc;" v-on:click="change_path('/')" >/</div>
 				<div v-for="vv in paths" style="min-width:20px; cursor: pointer; padding:0px 5px; border:1px solid #ccc;" v-on:click="change_path(vv['tp'])" >{{ vv['p'] }}/</div>
@@ -40,7 +40,7 @@
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
 						<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a></div>
-						<div v-else><a v-bind:href="path+'files/'+v['_id']+'/edit'" >{{ this.current_path + v['name'] }}</a></div>
+						<div v-else><a v-bind:href="path+'files/'+v['_id']+'/edit'" >{{ current_path + v['name'] }}</a></div>
 						<div align="right" >
 							Folder
 						</div>
@@ -150,6 +150,10 @@
 		      	<div>New folder name</div>
 		      	<div><span>{{ current_path }}</span><input type="text" class="form-control form-control-sm w-auto d-inline" v-model="new_folder_name" ></div>
 		      	<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create" v-on:click="do_create_folder" ></div>
+
+			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
+			<div v-if="err" class="alert alert-danger" >{{ err }}</div>
+
 
 		      </div>
 		    </div>
@@ -487,13 +491,19 @@ var app = Vue.createApp({
 			});
 		},
 		do_create_folder: function(){
-			this.msg = "Creating Folder";
 			this.err = "";
-			axios.post("?", {
+			this.msg = "";
+			this.new_folder_name = this.cleanit(this.new_folder_name);
+			if( this.new_folder_name.match(/^[a-z0-9\.\-\_\/]{2,100}$/) == null){
+				this.err = "Folder name should be [a-z0-9\.\-\_\/]{2,100}";return false;
+			}
+
+			this.msg = "Creating Folder";
+			axios.post( "?", {
 				"action":"get_token",
 				"event":"create.folder."+this.app_id,
 				"expire":1
-			}).then(response=>{
+			}).then( response=>{
 				this.msg = "";
 				if( response.status == 200 ){
 					if( typeof(response.data) == "object" ){
@@ -518,8 +528,7 @@ var app = Vue.createApp({
 														this.create_folder_modal.hide();
 														this.load_files();
 													}else{
-														alert("Token error: " + response.data['data']);
-														this.err = "Token Error: " + response.data['data'];
+														this.err = response.data['data'];
 													}
 												}else{
 													this.err = "Incorrect response";
@@ -622,7 +631,8 @@ var app = Vue.createApp({
 			}
 		},
 		getext: function(v){
-			//v.split("/")[1];
+			v = v.split(/\+/)[0];
+			//console.log( v );
 			return v;
 		},
 		filebrowse: function(){

@@ -10,31 +10,55 @@
 	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
-				<button class="btn btn-outline-dark btn-sm me-1" v-on:click="api_show_import_form()" >Import</button>
-				<button class="btn btn-outline-dark btn-sm" v-on:click="api_show_create_form()" >Create API</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="api_show_import_form()" >Import</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="api_show_folder_form()" >Create Folder</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="api_show_create_form()" >Create API</button>
 			</div>
-			<div style="float:right;" >
-				<div v-if="msg" class="alert alert-primary py-0" >{{ msg }}</div>
-				<div v-if="err" class="alert alert-danger py-0" >{{ err }}</div>
-			</div>
-
 			<div class="h3 mb-3">APIs</div>
 			<div style="clear:both;"></div>
-			<div style="height: calc( 100% - 100px ); padding-right:20px; overflow: auto;" >
+
+			<div style="display: flex; height: 25px;">
+				<div style="min-width:5px; cursor: pointer; padding:0px 5px; border:1px solid #ccc;" v-on:click="change_path('/')" >/</div>
+				<div v-for="vv in paths" style="min-width:20px; cursor: pointer; padding:0px 5px; border:1px solid #ccc;" v-on:click="change_path(vv['tp'])" >{{ vv['p'] }}/</div>
+			</div>
+
+			<div style="height: calc( 100% - 130px ); padding-right:20px; overflow: auto;" >
+
+			<div v-if="msg" class="alert alert-primary py-0" >{{ msg }}</div>
+			<div v-if="err" class="alert alert-danger py-0" >{{ err }}</div>
+
 			<table class="table table-striped table-bordered table-sm" >
 				<tr>
 					<td>ID</td>
-					<td>Name</td>
+					<td>Name/Path</td>
+					<td></td>
 					<td></td>
 				</tr>
-				<tr v-for="v,i in apis">
+				<template v-for="v,i in apis">
+				<tr v-if="v['vt']=='folder'">
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
-						<div style="display: inline-block; padding: 0px 5px; border: 1px solid #ccc; width:55px; margin-right:0px;">{{ v['input-method'] }}</div>&nbsp;<div style="display:inline-block;"><a v-bind:href="path+'apis/'+v['_id']+'/'+v['version_id']" >/{{ v['name'] }}</a></div>
+						<div style="display: inline-block; padding: 0px 5px; border: 1px solid #ccc; width:55px; margin-right:0px;">Folder</div>&nbsp;
+						<a v-bind:href="path+'apis/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a>
+						<div style="float:right;" ><span  class="badge bg-secondary" >{{ v['count'] }}</span></div>
+					</td>
+					<td><div class="btn btn-outline-dark btn-sm" v-on:click="folder_settings(i)" ><i class="fa fa-edit"></i></div></td>
+					<td><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
+				</tr>
+				</template>
+				<template v-for="v,i in apis">
+				<tr v-if="v['vt']!='folder'">
+					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
+					<td width="90%">
+						<div style="display: inline-block; padding: 0px 5px; border: 1px solid #ccc; width:55px; margin-right:0px;">{{ v['input-method'] }}</div>&nbsp;
+						<div style="display:inline-block;"><a v-bind:href="path+'apis/'+v['_id']+'/'+v['version_id']" >{{ current_path + v['name'] }}</a></div>
+						<div style="float:right;" >{{ getc(v) }}</div>
 						<div class="text-secondary">{{ v['des'] }}</div>
 					</td>
-					<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_api(i)" ></td>
+					<td><div class="btn btn-outline-dark btn-sm" v-on:click="api_settings(i)" ><i class="fa fa-edit"></i></div></td>
+					<td><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
 				</tr>
+				</template>
 			</table>
 			</div>
 		</div>
@@ -99,8 +123,102 @@
 			        </template>
 
 		        	<input type="button" spellcheck="false" class="btn btn-outline-dark btn-sm" v-on:click="import_api__" value="Import" >
-		        	<div v-if="imsg__" class="alert alert-success" >{{ imsg__ }}</div>
-		        	<div v-if="ierr__" class="alert alert-danger"  >{{ ierr__ }}</div>
+		        	<div v-if="imsg" class="alert alert-success" >{{ imsg }}</div>
+		        	<div v-if="ierr" class="alert alert-danger"  >{{ ierr }}</div>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+
+		<div class="modal fade" id="create_folder_modal" tabindex="-1" >
+		  <div class="modal-dialog model-sm">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Create Folder</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<div>New folder name</div>
+		      	<div><span>{{ current_path }}</span><input type="text" class="form-control form-control-sm w-auto d-inline" v-model="new_folder_name" ></div>
+		      	<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create" v-on:click="do_create_folder" ></div>
+
+				<div v-if="cfmsg" class="alert alert-primary" >{{ cfmsg }}</div>
+				<div v-if="cferr" class="alert alert-danger" >{{ cferr }}</div>
+
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="api_settings_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg modal-xl">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">API Settings</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<p><b><span v-if="editing_api_index>-1" >{{ apis[ editing_api_index ]['name'] }}</span></b></p>
+
+				<div style="border:1px solid #ccc; margin-bottom: 20px;">
+					<div style="padding:10px; background-color: #f8f8f8;">Rename</div>
+					<div style="padding:10px;">
+						<div><input type="text" class="form-control form-control-sm" v-model="new_api_name" >
+						<input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="change_api_name" ></div>
+					</div>
+				</div>
+
+				<div v-if="amsg" class="alert alert-primary" >{{ amsg }}</div>
+				<div v-if="aerr" class="alert alert-danger"  >{{ aerr }}</div>
+
+				<div style="border:1px solid #ccc;">
+					<div style="padding:10px; background-color: #f8f8f8;">Move to Folder</div>
+					<div style="padding:10px;">
+						<p>
+							<select v-model="move_to_folder_name" >
+								<option v-for="v in get_available_paths()" v-bind:value="v" >{{v}}</option>
+							</select>
+						</p>
+						<p><input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="move_api" ></p>
+						<!-- <div><label style="cursor: pointer;"><input type="checkbox" v-model="move_to_new_folder" > Create new folder</label></div> -->
+						<p>&nbsp;</p>
+					</div>
+				</div>
+
+				<p>&nbsp;</p>
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="folder_settings_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg modal-xl">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Folder Settings</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<p><b><span v-if="editing_folder_index>-1" >{{ apis[ editing_folder_index ]['name'] }}</span></b></p>
+
+				<div style="border:1px solid #ccc;">
+					<div style="padding:10px; background-color: #f8f8f8;">Rename Folder</div>
+					<div style="padding:10px;">
+						<div><input type="text" class="form-control form-control-sm w-auto d-inline" v-model="rename_to_folder_name" >
+						<input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="change_folder_name" ></div>
+					</div>
+				</div>
+
+				<div v-if="fmsg" class="alert alert-primary" >{{ fmsg }}</div>
+				<div v-if="ferr" class="alert alert-danger" >{{ ferr }}</div>
+
+
 		      </div>
 		    </div>
 		  </div>
@@ -114,7 +232,10 @@ var app = Vue.createApp({
 			path: "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
 			app_id: "<?=$app['_id'] ?>",
 			app__: <?=json_encode($app) ?>,
-			msg: "",err: "",cmsg: "",cerr: "",imsg__: "",ierr__: "",
+			msg: "",err: "",cfmsg: "",cferr: "",cmsg: "",cerr: "",imsg: "",ierr: "",fmsg: "",ferr: "",amsg: "",aerr: "",
+			new_folder_name: "",
+			current_path: "<?=$_GET['path']?$_GET['path']:'/' ?>",
+			paths: [],
 			import_modal__: false, "import_password__": "", "import_file__": "", "import_version__": "create", "import_name__": "", "import_des__": "", "import_check__": false,
 			apis: [],
 			show_create_api: false,
@@ -122,14 +243,186 @@ var app = Vue.createApp({
 				"name": "",
 				"des": "",
 			},
-			create_app_modal: false,
+			create_app_modal: false, editing_api_index: -1, editing_folder_index: -1,
+			api_settings_modal: false,folder_settings_modal: false,
 			token: "",
+			new_api_name: "", move_to_folder_name: "",move_to_new_folder: false, rename_to_folder_name:"",
 		};
 	},
 	mounted(){
+		this.update_paths();
 		this.load_apis();
 	},
 	methods: {
+		get_available_paths: function(){
+			var v = [];
+			if( this.current_path!='/' ){
+				v.push( "/" );
+			}
+			var x = this.current_path.split(/\//g);
+			var vf = "/";
+			for(var i=0;i<x.length;i++){if( x[i]!="" ){
+				vf = vf + x[i] + "/";
+				if( this.current_path!=vf ){
+					v.push( vf );
+				}
+			}}
+			for(var i=0;i<this.apis.length;i++){if( this.apis[i]['vt']=="folder"){
+				v.push( this.current_path+this.apis[i]['name']+'/' );
+			}}
+			return v;
+		},
+		folder_settings: function(vi){
+			this.editing_folder_index = vi;
+			this.rename_to_folder_name = this.apis[ vi ]['name']+'';
+			this.folder_settings_modal = new bootstrap.Modal(document.getElementById('folder_settings_modal'));
+			this.folder_settings_modal.show();
+			this.fmsg = ""; this.ferr = "";
+		},
+		api_settings: function(vi){
+			this.move_to_folder_name = ""; 
+			this.editing_api_index = vi;
+			this.new_api_name = this.apis[ this.editing_api_index ]['name']+'';
+			this.api_settings_modal = new bootstrap.Modal(document.getElementById('api_settings_modal'));
+			this.api_settings_modal.show();
+			this.amsg = ""; this.aerr = "";
+		},
+		change_api_name: function(vi){
+			this.aerr = ""; this.amsg = "";
+			if( this.new_api_name.match(/^[a-z][a-z0-9\-\_\.]{2,50}$/) == null ){
+				this.aerr = "Api name should not contain special chars. spaces";return;
+			}
+			if( this.new_api_name == this.apis[ this.editing_api_index ]['name'] ){
+				this.aerr = "No change";return ;
+			}
+			axios.post("?", {
+				"action":"apis_rename",
+				"api_id":this.apis[ this.editing_api_index ]['_id'],
+				"new_name": this.new_api_name,
+				"current_path": this.current_path,
+			}).then(response=>{
+				this.amsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.amsg = "Successfully updated";
+								setTimeout( function(v){ v.api_settings_modal.hide(); v.editing_api_index=-1; v.load_apis(); }, 2000, this );
+							}else{
+								this.aerr = "Error: " + response.data['error'];
+							}
+						}else{
+							this.aerr = "Incorrect response";
+						}
+					}else{
+						this.aerr = "Incorrect response Type";
+					}
+				}else{
+					this.aerr = "Response Error: " . response.status;
+				}
+			});
+		},
+		move_api: function(vi){
+			this.aerr = ""; this.amsg = "";
+			this.amsg = "Moving...";
+			axios.post("?", {
+				"action":"apis_move",
+				"api_id":this.apis[ this.editing_api_index ]['_id'],
+				"new_path": this.move_to_folder_name,
+				"current_path": this.current_path,
+			}).then(response=>{
+				this.amsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.amsg = "Successfully updated";
+								setTimeout( function(v){ v.api_settings_modal.hide();v.editing_api_index=-1; v.load_apis(); }, 2000, this );
+							}else{
+								this.aerr = "Error: " + response.data['error'];
+							}
+						}else{
+							this.aerr = "Incorrect response";
+						}
+					}else{
+						this.aerr = "Incorrect response Type";
+					}
+				}else{
+					this.aerr = "Response Error: " . response.status;
+				}
+			});
+		},
+		change_folder_name: function(vi){
+			this.ferr = ""; this.fmsg = "";
+			if( this.rename_to_folder_name.match(/^[a-z][a-z0-9\-\_\.]{2,50}$/) == null ){
+				this.ferr = "Folder name should not contain special chars. spaces";return;
+			}
+			if( this.rename_to_folder_name == this.apis[ this.editing_folder_index ]['name'] ){
+				this.ferr = "No change";return ;
+			}
+			axios.post("?", {
+				"action":"apis_folder_rename",
+				"folder_id":this.apis[ this.editing_folder_index ]['_id'],
+				"new_name": this.rename_to_folder_name,
+				"current_path": this.current_path,
+			}).then(response=>{
+				this.fmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.fmsg = "Successfully updated";
+								setTimeout( function(v){ v.folder_settings_modal.hide(); v.editing_folder_index=-1;  v.load_apis(); }, 2000, this );
+							}else{
+								this.ferr = "Error: " + response.data['error'];
+							}
+						}else{
+							this.ferr = "Incorrect response";
+						}
+					}else{
+						this.ferr = "Incorrect response Type";
+					}
+				}else{
+					this.ferr = "Response Error: " . response.status;
+				}
+			});
+		},
+		getc: function(v){
+			if( 'updated' in v ){
+				return v['updated'].substr(0,10);
+			}return "";
+		},
+		change_path: function(tp){
+			console.log("change path: "+ tp );
+			this.current_path = tp+'';
+			this.update_paths();
+			this.load_apis();
+		},
+		enter_path: function(v){
+			this.current_path = this.current_path + v + "/";
+			console.log( this.current_path );
+			this.update_paths();
+			this.load_apis();
+		},
+		update_paths(){
+			console.log( this.current_path );
+			var paths = this.current_path.split(/\//g);
+			paths.splice(0,1);
+			paths.pop();
+			var p = [];
+			var tp = "/";
+			console.log( JSON.stringify(paths,null,4) );
+			for(var i=0;i<paths.length;i++){
+				tp = tp + paths[i] + "/";
+				p.push({
+					"p":paths[i],
+					"tp": tp+'',
+				});
+			}
+			this.apis = [];
+			this.paths = p;
+			console.log( JSON.stringify(p,null,4) );
+		},
 		nchange: function(){
 			if( this.new_api['des']=="" ){
 				this.new_api['des'] = this.new_api['name']+'';
@@ -152,6 +445,7 @@ var app = Vue.createApp({
 			}
 		},
 		load_apis(){
+			this.editing_api_index= -1; this.editing_folder_index= -1;
 			this.msg = "Loading...";
 			this.err = "";
 			axios.post("?", {
@@ -169,8 +463,8 @@ var app = Vue.createApp({
 									this.load_apis2();
 								}
 							}else{
-								alert("Token error: " + response.dat['data']);
-								this.err = "Token Error: " + response.data['data'];
+								alert("Token error: " + response.data['error']);
+								this.err = "Token Error: " + response.data['error'];
 							}
 						}else{
 							this.err = "Incorrect response";
@@ -186,7 +480,12 @@ var app = Vue.createApp({
 		load_apis2(){
 			this.msg = "Loading...";
 			this.err = "";
-			axios.post("?",{"action":"get_apis","app_id":this.app_id,"token":this.token}).then(response=>{
+			axios.post("?",{
+				"action":"get_apis",
+				"app_id":this.app_id,
+				"token":this.token,
+				"current_path": this.current_path,
+			}).then(response=>{
 				this.msg = "";
 				if( response.status == 200 ){
 					if( typeof(response.data) == "object" ){
@@ -240,13 +539,13 @@ var app = Vue.createApp({
 			this.import_file__ = vf.name+'';
 		},
 		import_api__: function(){
-			this.ierr__ = "";
-			this.imsg__ = "";
+			this.ierr = "";
+			this.imsg = "";
 			if( this.import_password__.trim()=="" ){
-				this.ierr__ = "password is must";return;
+				this.ierr = "password is must";return;
 			}
 			if( document.getElementById("import_file__").value == "" ){
-				this.ierr__ = "select file";return;
+				this.ierr = "select file";return;
 			}
 
 			if( this.import_name__.trim() != "" ){
@@ -271,17 +570,18 @@ var app = Vue.createApp({
 			vpost.append( "app_id", this.app_id );
 			vpost.append( "name", this.import_name__ );
 			vpost.append( "des", this.import_des__ );
-			this.imsg__ = "Importing...";
+			vpost.append( "current_path", this.current_path );
+			this.imsg = "Importing...";
 			axios.post("?", vpost).then(response=>{
-				this.imsg__ = "";
+				this.imsg = "";
 				if( response.status == 200 ){
 					if( typeof(response.data) == "object" ){
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success" ){
-								this.imsg__ = "Imported successfully. Redirecting ...";
+								this.imsg = "Imported successfully. Redirecting ...";
 								setTimeout(function(){document.location = "<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/apis/"+response.data['api_id']+"/"+response.data['version_id']; },1000);
 							}else{
-								this.ierr__ = ( "Export Error: " + response.data['error'] );
+								this.ierr = ( "Export Error: " + response.data['error'] );
 								if( 'name' in response.data ){
 									this.import_check__ = true;
 								}
@@ -293,17 +593,17 @@ var app = Vue.createApp({
 								}
 							}
 						}else{
-							this.ierr__ = ("Incorrect response");
+							this.ierr = ("Incorrect response");
 						}
 					}else{
-						this.ierr__ = ("Incorrect response Type");
+						this.ierr = ("Incorrect response Type");
 					}
 				}else{
-					this.ierr__ = ("Response Error: " + response.status );
+					this.ierr = ("Response Error: " + response.status );
 				}
 			}).catch(error=>{
 				console.log( error );
-				this.ierr__ = ( "Error Exporting" );
+				this.ierr = ( "Error Exporting" );
 			});
 		},
 		createnow(){
@@ -320,7 +620,8 @@ var app = Vue.createApp({
 			this.cmsg = "Creating...";
 			axios.post("?", {
 				"action": "create_api", 
-				"new_api": this.new_api
+				"new_api": this.new_api,
+				"current_path": this.current_path,
 			}).then(response=>{
 				this.cmsg = "";
 				if( response.status == 200 ){
@@ -348,7 +649,11 @@ var app = Vue.createApp({
 			if( confirm("Are you sure?") ){
 				this.msg = "Deleting...";
 				this.err = "";
-				axios.post("?", {"action":"get_token","event":"deleteapi"+this.app_id+this.apis[vi]['_id'],"expire":1}).then(response=>{
+				axios.post("?", {
+					"action":"get_token",
+					"event":"deleteapi"+this.app_id+this.apis[vi]['_id'],
+					"expire":1
+				}).then(response=>{
 					this.msg = "";
 					if( response.status == 200 ){
 						if( typeof(response.data) == "object" ){
@@ -368,8 +673,8 @@ var app = Vue.createApp({
 														if( response.data['status'] == "success" ){
 															this.load_apis();
 														}else{
-															alert("Token error: " + response.data['data']);
-															this.err = "Token Error: " + response.data['data'];
+															alert("Error: " + response.data['error']);
+															this.err = "Error: " + response.data['error'];
 														}
 													}else{
 														this.err = "Incorrect response";
@@ -383,8 +688,8 @@ var app = Vue.createApp({
 										});
 									}
 								}else{
-									alert("Token error: " + response.dat['data']);
-									this.err = "Token Error: " + response.data['data'];
+									alert("Token error: " + response.data['error']);
+									this.err = "Token Error: " + response.data['error'];
 								}
 							}else{
 								this.err = "Incorrect response";
@@ -397,7 +702,79 @@ var app = Vue.createApp({
 					}
 				});
 			}
-		}
+		},
+		api_show_folder_form(){
+			this.create_folder_modal = new bootstrap.Modal(document.getElementById('create_folder_modal'));
+			this.create_folder_modal.show();
+			this.cmsg = ""; this.cerr = "";
+		},
+		do_create_folder: function(){
+			this.cferr = "";
+			this.cfmsg = "";
+			this.new_folder_name = this.cleanit(this.new_folder_name);
+			if( this.new_folder_name.match(/^[a-z0-9\.\-\_\/]{2,100}$/) == null){
+				this.cferr = "Folder name should be [a-z0-9\.\-\_\/]{2,100}";return false;
+			}
+
+			this.cfmsg = "Creating Folder";
+			axios.post( "?", {
+				"action":"get_token",
+				"event":"create.folder."+this.app_id,
+				"expire":1
+			}).then( response=>{
+				this.cfmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								var token = response.data['token'];
+								if( this.is_token_ok( token) ){
+									axios.post("?", {
+										"action":"apis_create_folder",
+										"token":token,
+										"current_path": this.current_path,
+										"new_folder": this.cleanit(this.new_folder_name),
+									}).then(response=>{
+										this.cfmsg = "";
+										if( response.status == 200 ){
+											if( typeof(response.data) == "object" ){
+												if( 'status' in response.data ){
+													if( response.data['status'] == "success" ){
+														//this.current_path = this.current_path + this.new_folder_name + '/';
+														//this.enter_path( this.new_folder_name+'' );
+														this.new_folder_name = '';
+														this.create_folder_modal.hide();
+														this.load_apis();
+													}else{
+														console.log("xxxxx");
+														this.cferr = response.data['error'];
+													}
+												}else{
+													this.cferr = "Incorrect response";
+												}
+											}else{
+												this.cferr = "Incorrect response Type";
+											}
+										}else{
+											this.cferr = "Response Error: " . response.status;
+										}
+									});
+								}
+							}else{
+								alert("Token error: " + response.data['error']);
+								this.cferr = "Token Error: " + response.data['error'];
+							}
+						}else{
+							this.cferr = "Incorrect response";
+						}
+					}else{
+						this.cferr = "Incorrect response Type";
+					}
+				}else{
+					this.cferr = "Response Error: " . response.status;
+				}
+			});
+		},
 	}
 }).mount("#app");
 </script>

@@ -104,8 +104,8 @@ if( $_POST['action'] == "create_file" ){
 
 
 if( $_POST['action'] == "files_create_folder" ){
-	if( !preg_match("/^[a-z0-9\.\-\_\/]{3,100}$/i", $_POST['new_folder']) ){
-		json_response("fail", "Name incorrect");
+	if( !preg_match("/^[a-z0-9\.\-\_\/]{2,100}$/i", $_POST['new_folder']) ){
+		json_response("fail", "Name incorrect. Min 2 chars Max 100. No special chars");
 	}
 	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
 		"app_id"=>$config_param1,

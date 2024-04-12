@@ -11,7 +11,7 @@
 	<a class="left_btn <?=$config_param2=='tables_dynamic'?"left_btn_active":"" ?>" v-bind:href="path+'tables_dynamic'">Internal Tables</a>
 	<a class="left_btn <?=$config_param2=='tables_elastic'?"left_btn_active":"" ?>" v-bind:href="path+'tables_elastic'">Elastic Tables</a>
 	<a class="left_btn <?=$config_param2=='databases'?"left_btn_active":"" ?>" v-bind:href="path+'databases'">Databases</a>
-	<a class="left_btn <?=$config_param2=='auth'?"left_btn_active":"" ?>" v-bind:href="path+'auth'">Authenticaion</a>
+	<a class="left_btn <?=$config_param2=='auth'?"left_btn_active":"" ?>" v-bind:href="path+'auth'">Authentication</a>
 	<a class="left_btn <?=$config_param2=='settings'?"left_btn_active":"" ?>" v-bind:href="path+'settings'">Settings</a>
 	<a class="left_btn <?=$config_param2=='logs'?"left_btn_active":"" ?>" v-bind:href="path+'logs'">Logs</a>
 	<a class="left_btn <?=$config_param2=='export'?"left_btn_active":"" ?>" v-bind:href="path+'export'">Backup/Restore</a>

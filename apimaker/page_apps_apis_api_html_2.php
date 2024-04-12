@@ -6,8 +6,9 @@
 	<div style="position: fixed;left:150px; top:40px; height: 60px; width:calc( 100% - 150px ); background-color: white; overflow: hidden; border-bottom:1px solid #ccc; " >
 		<div style="padding: 10px;" >
 			<div>
-				<h5 class="d-inline">API: /{{ s2_iiiiiiiipa['name'] }}</h5>
-				<div v-on:click="s2_mrof_tide_nepo" class="btn btn-outline-dark btn-sm me-1" style="float:right;" ><i class="fa fa-lg fa-pencil-square-o" ></i></div>
+				<h5 class="d-inline">{{ property_type.toUpperCase() }}: {{ (property_type=='api'?s2_iiiiiiiipa['path']:'') }}{{ s2_iiiiiiiipa['name'] }}</h5>
+				<a v-bind:href="path+'apis?path='+s2_iiiiiiiipa['path']" class="btn btn-outline-secondary btn-sm me-1" style="float:right;" >Back</a>
+				<div v-on:click="s2_mrof_tide_nepo" class="btn btn-outline-dark btn-sm me-1" style="float:right;" >Edit</div>
 				<div class="btn btn-outline-dark btn-sm me-1" style="float:right;" v-html="s2_eton_noisrev_teg()" v-on:click="s2_snoisrev_wohs()" ></div>
 			</div>
 			<div class="d-inline" >{{ s2_iiiiiiiipa['des'] }}</div>
@@ -380,17 +381,18 @@
 	      </div>
 	      <div class="modal-body">
 	      	<table class="table table-bordered table-sm w-auto" >
-	      		<tr>
-	      			<td align="center">Version</td><td>Last Updated</td><td>Active</td><td></td><td></td><td></td>
+	      		<tr class="table-active">
+	      			<td>-</td><td align="center">Version</td><td>Last Updated</td><td>Active</td><td></td><td></td><td></td>
 	      		</tr>
 	      		<tr v-for="vd in s2_snoisrev_ipa">
 	      			<td align="center">
-	      				<a v-if="s2_di_noisrev!=vd['_id']" class="btn btn-outline-dark btn-sm" v-bind:href="'<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/apis/<?=$config_param3 ?>/'+vd['_id']" >Edit</a>
+	      				<a v-if="s2_di_noisrev!=vd['_id']" class="btn btn-outline-dark btn-sm" v-bind:href="'<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/'+page_type+'/<?=$config_param3 ?>/'+vd['_id']" >Edit</a>
+	      				<div v-else>Editing</div>
 	      			</td>
 	      			<td align="center">{{ vd['version'] }}</td>
 	      			<td>{{ vd['updated'].substr(0,16) }}</td>
 	      			<td><input v-if="s2_di_noisrev_tnerruc!=vd['_id']" type="button" class="btn btn-outline-dark btn-sm" value="Activate" v-on:click="s2_hctiws_noisrev(vd['version'],vd['_id'])" >
-	      				<span v-else>Current Version</span>
+	      				<span v-else>Active</span>
 	      			</td>
 	      			<td><input type="button" class="btn btn-outline-dark btn-sm" value="Clone" v-on:click="s2_enolc_noisrev(vd['_id'])" ></td>
 	      			<td><input v-if="s2_di_noisrev_tnerruc!=vd['_id']" type="button" class="btn btn-outline-danger btn-sm" value="X" ></td>

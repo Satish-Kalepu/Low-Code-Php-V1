@@ -115,13 +115,13 @@ const dbobject_table_mongodb = {
 				this.items2[ vkey ]["sub"] = [
 					{
 						"f1": {
-						"key": "f1",
-						"name": "f1",
-						"type": "text",
-						"m": true,
-						"index": "none",
-						"sub": {
-						}
+							"key": "f1",
+							"name": "f1",
+							"type": "text",
+							"m": true,
+							"index": "none",
+							"sub": {
+							}
 						}
 					}
 				];
@@ -142,7 +142,7 @@ const dbobject_table_mongodb = {
 			this.informparent();
 		},
 		moveu: function( vi, vkey ){
-			if( vi >= 1 ){
+			if( vi >= 2 ){
 				var it = JSON.parse( JSON.stringify( this.items2[ vi ] ) );
 				this.items2.splice( vi, 1 );
 				this.items2.splice( vi-1, 0, it );
@@ -178,14 +178,21 @@ const dbobject_table_mongodb = {
 			<template v-for="vitem,vi in items2"  >
 			<div style="white-space:nowrap; display:flex; column-gap:5px; margin-bottom:5px;">
 				<div>
-					<div v-if="level==1&&vitem['index']=='primary'" >_id</div>
+					<div v-if="level==1&&vitem['name']=='_id'" >_id</div>
 					<div v-else >
 						<input class="form-control form-control-sm" style="display:inline;width:150px;" type='text' v-model="vitem['name']" v-on:blur="edited_name(vi)" >
 					</div>
 				</div>
 				<div>
-					<div v-if="level==1&&'_id'==vitem['name']" >_id - Primary</div>
-					<select v-else class="form-control form-control-sm" style="display:inline;width:100px;" v-model="vitem['type']" v-on:change="change_field_type(vi)" >
+					<div v-if="level==1&&'_id'==vitem['name']" >
+						<span> ( primary ) </span>
+						<select class="form-select form-select-sm" style="display:inline;width:100px;" v-model="vitem['type']" v-on:change="change_field_type(vi)" >
+							<option value='UniqueId'>UniqueId</option>
+							<option value='text'>Text</option>
+							<option value='number'>Number</option>
+						</select>
+					</div>
+					<select v-else class="form-select form-select-sm" style="display:inline;width:100px;" v-model="vitem['type']" v-on:change="change_field_type(vi)" >
 						<option value='text'>Text</option>
 						<option value='number'>Number</option>
 						<option value='boolean'>Boolean</option>
@@ -196,7 +203,7 @@ const dbobject_table_mongodb = {
 				<div>
 					<input v-if="vitem['name']!='_id'" type="checkbox" v-model="vitem['m']" title="Mandatory" >
 				</div>
-				<div v-if="vitem['index']!='primary'" >
+				<div v-if="vitem['name']!='_id'" >
 					<button class="btn btn-outline-secondary btn-sm me-2" style="padding:0px 5px;" v-on:click="moveu(vi)" >&#8593;</button>
 					<button class="btn btn-outline-secondary btn-sm me-2" style="padding:0px 5px;" v-on:click="moved(vi)" >&darr;</button>
 				</div>

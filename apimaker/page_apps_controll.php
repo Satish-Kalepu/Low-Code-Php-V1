@@ -11,6 +11,16 @@ if( !$res['data'] ){
 }
 $app = $res['data'];
 
+// if( !isset($app['patch1']) ){
+// 	$res  = $mongodb_con->update_many( $config_global_apimaker['config_mongo_prefix'] . "_apis", [], ['path'=>'/', 'vt'=>'api'] );
+// 	print_r($res);
+// 	$res = $mongodb_con->update_many( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [], ['path'=>'/', 'vt'=>'api'] );
+// 	print_r($res);
+// 	$mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", ['_id'=>$config_param1], ['patch1'=>1] );
+// 	echo "<p>A patch has been applied. please reload page</p>";
+// 	exit;
+// }
+
 $take_to_settings = false;
 if( !isset($app['settings']) ){
 	$take_to_settings = true;

@@ -17,12 +17,15 @@ if( $_POST['action'] == "login" ){
 		]);
 	}
 
-	if( $_POST['captcha'] != $_SESSION['login_captcha'] || $_POST['captcha_code'] != $_SESSION['login_code'] ){
-		json_response([
-			"status"=>"fail",
-			"error"=>"Incorrect Code",
-			//"session"=>$_SESSION
-		]);
+	if( $_POST['captcha'] == $config_global_apimaker['config_captcha_bypass'] ){
+	}else{
+		if( $_POST['captcha'] != $_SESSION['login_captcha'] || $_POST['captcha_code'] != $_SESSION['login_code'] ){
+			json_response([
+				"status"=>"fail",
+				"error"=>"Incorrect Code",
+				//"session"=>$_SESSION
+			]);
+		}
 	}
 
 	$usr = $_POST['user'];

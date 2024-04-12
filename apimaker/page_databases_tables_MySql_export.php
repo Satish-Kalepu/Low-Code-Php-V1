@@ -17,6 +17,9 @@
 				<a class="nav-link<?=$config_param6=='manage'?" active":"" ?>" v-bind:href="tablepath+'manage'">Manage</a>
 			</li>
 			<li class="nav-item">
+				<a class="nav-link<?=$config_param6=='structure'?" active":"" ?>" v-bind:href="tablepath+'structure'">Structure</a>
+			</li>
+			<li class="nav-item">
 				<a class="nav-link<?=$config_param6=='import'?" active":"" ?>" v-bind:href="tablepath+'import'">Import</a>
 			</li>
 			<li class="nav-item">
@@ -84,13 +87,13 @@ var app = Vue.createApp({
 			}
 		},
 		geturl: function(){
-			return this.tablepath+'export/?action=download_database_mongodb_snapshot&snapshot_file='+encodeURIComponent(this.file['temp_fn']);
+			return this.tablepath+'export/?action=download_database_mysql_snapshot&snapshot_file='+encodeURIComponent(this.file['temp_fn']);
 		},
 		export_data: function(){
 			this.file = {};
 			this.msg = ""; this.err = "";
 			axios.post("?", {
-				"action": "database_table_export",
+				"action": "database_mysql_export",
 				"exp": this.exp
 			}).then(response=>{
 				this.msg = "";

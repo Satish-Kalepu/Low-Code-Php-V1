@@ -137,7 +137,9 @@ const s2_smarap_egats_gifnoc = {
 		},
 	},
 	"RespondGlobals": {
-		"p": false
+		"p": {
+			"raw": {"t":"B", "v":"false"}
+		},
 	},
 	"RespondXML": {
 		"p": {
