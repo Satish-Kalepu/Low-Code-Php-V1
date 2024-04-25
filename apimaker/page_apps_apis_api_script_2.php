@@ -54,10 +54,10 @@ var app = s2_ssssssssss({
 			s2_ladom_tropmi: false, "s2_drowssap_tropmi": "", "s2_elif_tropmi": "", "s2_noisrev_tropmi": "create",
 			s2_ladom_noisrev: false,
 			s2_pppppppppa: <?=json_encode($app) ?>,
-			s2_iiiiiiiipa: <?=json_encode(($page_type=="apis"?$api:$function)) ?>,
-			s2_snoisrev_ipa: <?=json_encode(($page_type=="apis"?$api_versions:$function_versions)) ?>,
-			s2_di_noisrev: "<?=($page_type=="apis"?$api['_id']:$function['_id']) ?>",
-			s2_di_noisrev_tnerruc: "<?=($page_type=="apis"?$main_api['version_id']:$main_function['version_id']) ?>",
+			s2_iiiiiiiipa: <?=json_encode($page_type=="apis"?$api:($page_type=="functions"?$function:$code['control']) ) ?>,
+			s2_snoisrev_ipa: <?=json_encode(($page_type=="apis"?$api_versions:($page_type=="functions"?$function_versions:[]))) ?>,
+			s2_di_noisrev: "<?=($page_type=="apis"?$api['_id']:($page_type=="functions"?$function['_id']:$code['_id']) ) ?>",
+			s2_di_noisrev_tnerruc: "<?=($page_type=="apis"?$main_api['version_id']:($page_type=="functions"?$main_function['version_id']:"")) ?>",
 			s2_iiipa_tide: {},
 			s2_ladom_tide: false,
 			s2_nnnnnnekot: "",
@@ -65,7 +65,7 @@ var app = s2_ssssssssss({
 			s2_wwwwwwohsv: false,
 			s2_ssssstsaot: [],
 			"s2_tsoh_revres"			: "<?=$config_page_domain ?>",
-			"s2_nnnnoisrev"			: "<?=($page_type=="apis"?$api["_id"]:$function["_id"]) ?>",
+			"s2_nnnnoisrev"			: "<?=($page_type=="apis"?$api["_id"]:($page_type=="functions"?$function["_id"]:$code['_id'])) ?>",
 			"s2_tsil_snoisrev"			: {},
 			"s2_selbat_ipa"			: {},
 			"s2_selbat_cimanyd_ipa"		: {},
@@ -1215,16 +1215,18 @@ var app = s2_ssssssssss({
 		s2_elyts_unem_txetnoc_tes: function(){
 			var s = this.s2_le_txetnoc.getBoundingClientRect();
 			//this.finx_zindex(this.s2_le_txetnoc);
+			var s5 = window.scrollY;
 			if( this.s2_deyalpsid_ladom_pupop ){
 				var s2 = document.getElementById("s2_ydob_ladom_pupop").getBoundingClientRect();
 				this.s2_elyts_txetnoc = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
 			}else{
-				this.s2_elyts_txetnoc = "display:block;top: "+s.top+"px;left: "+s.left+"px;";
+				this.s2_elyts_txetnoc = "display:block;top: "+(s5+s.top)+"px;left: "+s.left+"px;";
 			}
 		},
 		s2_elyts_pupop_elpmis_tes: function(){
 			var s = this.s2_le_pupop_elpmis.getBoundingClientRect();
-			this.s2_elyts_pupop_elpmis = "top: "+s.top+"px;left: "+s.left+"px;";
+			var s5 = window.scrollY;
+			this.s2_elyts_pupop_elpmis = "top: "+(s5+s.top)+"px;left: "+s.left+"px;";
 		},
 		s2_xedniz_dnif: function(el){
 			for(var i=0;i<20;i++){
@@ -1680,7 +1682,6 @@ var app = s2_ssssssssss({
 			});
 		},
 		s2_2atad_laitini_daol: function(){
-			///console.log("load initial data2 ");
 			if( "input_factors" in this.s2_eeeeenigne == false ){
 				this.s2_eeeeenigne['input_factors'] ={};
 				this.s2_ddeen_evas=true;
@@ -1688,68 +1689,68 @@ var app = s2_ssssssssss({
 				this.s2_eeeeenigne['input_factors'] = {};
 				this.s2_ddeen_evas=true;
 			}
-			// if( 'output-template' in this.s2_eeeeenigne ){
-			// 	this.s2_eeeeenigne['ouptut-template'] = {"status": {"t":"T"}};
-			// 	this.s2_ddeen_evas=true;
-			// }
-			//console.log( this.s2_eeeeenigne );
 			if( 'stages' in this.s2_eeeeenigne == false ){
-				this.s2_eeeeenigne['stages'] = [
-					    {
-					      "k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
-					      "t": "c",
-					      "d": {"lhs": "a","rhs": {"t": "N","v": 10}},
-					      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
-					    },
-					    {
-					      "k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
-					      "t": "c",
-					      "d": {"lhs": "b","rhs": {"t": "N","v": 10}},
-					      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
-					    },
-					    {
-					      "k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
-					      "t": "c",
-					      "d": {"lhs": "c","rhs": {"t": "N","v": 0}},
-					      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
-					    },
-					    {
-					      "k": {"v": "Math","t": "c","vs": false},"pk": "Math",
-					      "t": "c",
-					      "d": {
-					        "lhs": {"t": "V","v": {"v": "c","t": "N","vs": false}},
-					        "rhs": [
-					            {"m": [
-					              {"t": "V","v": {"v": "a","t": "N","vs": false},"OP": "+"},
-					              {"t": "V","v": {"v": "b","t": "N","vs": false},"OP": "+"},
-					              {"t": "N","v": "10","OP": "."}
-					            ],"OP": "."}
-					        ]
-					      },
-					      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
-					    },
-					    // {
-					    //   "k": {"v": "Respond","t": "c","vs": false},"pk": "Respond",
-					    //   "t": "c",
-					    //   "d": {"t": "O","v": {"status": {"t": "T","v": "success","k":"status"},"data": {"t": "V","v": {"v": "c","t": "N","vs": {"v": "","t": "","d": []}},"k":"data"}}},
-					    //   "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
-					    // },
-					    {
-							"k": {"v": "RespondJSON", "t": "c", "vs": false}, "pk": "RespondJSON",
+				if( this.page_type =='codeeditor' ){
+					this.s2_eeeeenigne['stages'] = [
+						{
+							"k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
 							"t": "c",
-							"d": {
-								"output": {
-								  "t": "O",
-								  "v": {
-									"status": {"t": "T","v": "success","k": "status"},
-									"data": {"t": "V","v": {"v": "c","t": "N","vs": {"v": "","t": "","d": []}},"k": "data"}
-								  }
-								},
-								"pretty": {"t": "B","v": "false"}
-							},
+							"d": {"lhs": "a","rhs": {"t": "N","v": 10}},
 							"l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
 						}
-				];
+					];
+				}else{
+					this.s2_eeeeenigne['stages'] = [
+						    {
+						      "k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
+						      "t": "c",
+						      "d": {"lhs": "a","rhs": {"t": "N","v": 10}},
+						      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
+						    },
+						    {
+						      "k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
+						      "t": "c",
+						      "d": {"lhs": "b","rhs": {"t": "N","v": 10}},
+						      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
+						    },
+						    {
+						      "k": {"v": "Let", "t": "c", "vs": false}, "pk": "Let",
+						      "t": "c",
+						      "d": {"lhs": "c","rhs": {"t": "N","v": 0}},
+						      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
+						    },
+						    {
+						      "k": {"v": "Math","t": "c","vs": false},"pk": "Math",
+						      "t": "c",
+						      "d": {
+						        "lhs": {"t": "V","v": {"v": "c","t": "N","vs": false}},
+						        "rhs": [
+						            {"m": [
+						              {"t": "V","v": {"v": "a","t": "N","vs": false},"OP": "+"},
+						              {"t": "V","v": {"v": "b","t": "N","vs": false},"OP": "+"},
+						              {"t": "N","v": "10","OP": "."}
+						            ],"OP": "."}
+						        ]
+						      },
+						      "l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
+						    },
+						    {
+								"k": {"v": "RespondJSON", "t": "c", "vs": false}, "pk": "RespondJSON",
+								"t": "c",
+								"d": {
+									"output": {
+									  "t": "O",
+									  "v": {
+										"status": {"t": "T","v": "success","k": "status"},
+										"data": {"t": "V","v": {"v": "c","t": "N","vs": {"v": "","t": "","d": []}},"k": "data"}
+									  }
+									},
+									"pretty": {"t": "B","v": "false"}
+								},
+								"l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
+							}
+					];
+				}
 				this.s2_ddeen_evas=true;
 			}else{
 				this.s2_evas_tsrif = true;
@@ -2902,7 +2903,16 @@ var app = s2_ssssssssss({
 		s2_aatad_evas: function(){
 			this.s2_ddeen_evas = false;
 			this.s2_gnivas_wohs = true;
-			if( this.property_type == "api" ){
+			if( this.page_type == "codeeditor" ){
+				var s2_dddddddddv = {
+					"action"		: "save_engine_data",
+					"data"			: this.s2_eeeeenigne,
+					"input-method"		: this.s2_iiiiiiiipa['input-method'],
+					"input-type"		: this.s2_iiiiiiiipa['input-type'],
+					"output-type"		: this.s2_iiiiiiiipa['output-type'],
+					"auth-type"		: this.s2_iiiiiiiipa['auth-type'],
+				};
+			}else if( this.property_type == "api" ){
 				var s2_dddddddddv = {
 					"action"		: "save_engine_data",
 					"data"			: this.s2_eeeeenigne,

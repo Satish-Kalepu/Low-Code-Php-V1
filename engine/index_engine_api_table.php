@@ -23,6 +23,11 @@ if( $engine == "MongoDb" ){
 		$db_res['data']['details']['tls'], 
 	);
 
+	if( $action == "getSchema" ){
+		header("Content-Type: application/json");
+		echo json_encode($table_res);exit;
+	}
+
 	if( $action == "findMany" ){
 		$cond = [];
 		if( isset( $_POST['query'] ) && is_array($_POST['query']) ){
@@ -248,6 +253,11 @@ if( $engine == "MongoDb" ){
 	$primary_keys = $table_res['data']['source_schema']['keys']['PRIMARY']['keys'];
 	$primary_key = array_keys($primary_keys)[0];
 	$primary_key_type = $primary_keys[ $primary_key ]['type'];
+
+	if( $action == "getSchema" ){
+		header("Content-Type: application/json");
+		echo json_encode($table_res);exit;
+	}
 
 	if( $action == "findMany" ){
 		$where = "";

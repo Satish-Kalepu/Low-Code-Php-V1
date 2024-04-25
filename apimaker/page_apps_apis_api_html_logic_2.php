@@ -1,9 +1,10 @@
 
-
+	<template v-if="page_type!='codeeditor'" >
 	<div class="btn btn-outline-dark btn-sm w-auto me-1" style="float: right;" v-on:click="s2_ipa_tropxe" >Export</div>
 	<div class="btn btn-outline-dark btn-sm w-auto me-1" style="float: right;" v-on:click="s2_ipa_tropmi_wohs" >Import</div>
+	</template>
 
-	<div v-if="property_type=='api'" class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
+	<div v-if="property_type=='api'||page_type=='codeeditor'" class="code_line" style="display: flex; gap:20px; margin-bottom: 10px;" >
 		<div>
 			<div>Method</div>
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="input-method" data-list-values="input-method" >{{ s2_iiiiiiiipa['input-method'] }}</div>
@@ -16,7 +17,7 @@
 			<div>Input</div>
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="input-type" data-list-values="get-input-type" >{{ s2_iiiiiiiipa['input-type'] }}</div>
 		</div>
-		<div>
+		<div v-if="page_type!='codeeditor'">
 			<div>Output</div>
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="output-type" data-list-values="output-type" >{{ s2_iiiiiiiipa['output-type'] }}</div>
 		</div>
@@ -36,7 +37,7 @@
 			<div data-type="dropdown" data-for='api' data-list="list" data-var="auth-type" data-list-values="auth-type" >{{ s2_iiiiiiiipa['auth-type'] }}</div>
 		</div>
 	</div> -->
-	<div v-if="property_type=='api'"  class="code_line" style="border-bottom:1px solid #bbcccc; margin-bottom:10px;" >
+	<div v-if="property_type=='api'||page_type=='codeeditor'"  class="code_line" style="border-bottom:1px solid #bbcccc; margin-bottom:10px;" >
 		<div v-if="s2_iiiiiiiipa['input-type']=='application/json'">
 			<div style="font-size:14px; ">Input JSON: </div>
 			<input_object v-bind:v="s2_eeeeenigne['input_factors']" datafor="engine" datavar="input_factors" viewas="json" allowsub="yes" v-on:edited="s2_detide_srotcaf_tupni"></input_object>
@@ -301,6 +302,26 @@
 							<div>
 								<pre title="Object or Associative List" data-type="objecteditable" editable-type="O" data-for="stages" data-var="d:v" style="margin-bottom:5px;" >{{ s2_noitaton_tcejbo_teg(s2_dddddegats['d']['v']) }}</pre>
 								<div>End Execution</div>
+							</div>
+						</template>
+						<template v-if="s2_dddddegats['k']['v']=='SetResponseStatus'" >
+							<div>
+								<div style="display:flex; column-gap:5px;">
+									<div>Http Status</div>
+									<div><inputtextbox2 datafor="stages" v-bind:v="s2_dddddegats['d']['statusCode']" types="N" datavar="d:statusCode" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]"></inputtextbox2></div>
+								</div>
+							</div>
+						</template>
+						<template v-if="s2_dddddegats['k']['v']=='SetResponseHeader'" >
+							<div>
+								<div style="display:flex; column-gap:5px;">
+									<div style="width:60px; text-align: right;">Name</div>
+									<div><inputtextbox2 datafor="stages" v-bind:v="s2_dddddegats['d']['header']" types="T,V" datavar="d:header" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]"></inputtextbox2></div>
+								</div>
+								<div style="display:flex; column-gap:5px;">
+									<div style="width:60px; text-align: right;">Value</div>
+									<div><inputtextbox2 datafor="stages" v-bind:v="s2_dddddegats['d']['value']" types="T,V" datavar="d:value" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]"></inputtextbox2></div>
+								</div>
 							</div>
 						</template>
 						<template v-if="s2_dddddegats['k']['v']=='RespondPage'" >

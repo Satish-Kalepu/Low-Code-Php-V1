@@ -47,6 +47,9 @@ if( $config_param2 == "auth" ){
 if( $config_param2 == "functions" ){
 	require("page_apps_functions_controll.php");
 }
+if( $config_param2 == "codeeditor" ){
+	require("page_apps_codeeditor_controll.php");
+}
 if( $config_param2 == "pages" ){
 	require("page_apps_pages_controll.php");
 }

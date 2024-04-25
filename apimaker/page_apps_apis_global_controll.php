@@ -222,7 +222,9 @@ if( $_POST['action'] == "get_global_apis" ){
 		$schema2 = $schema;
 		unset($schema2['_id']);
 		//print_r( $schema );exit;
-
+		$j['getSchema'] = [
+			"action"=> "getSchema"
+		];
 		$j['findMany'] = [
 			"action"=> "findMany",
 			"query"=> [
@@ -340,6 +342,9 @@ if( $_POST['action'] == "get_global_apis" ){
 				$primary_key = "_id";
 				$primary_key_type = "text";
 			}
+			$res2['data'][$ii]['getSchema'] = [
+				"action"=> "getSchema"
+			];
 			$res2['data'][$ii]['findMany'] = [
 				"action"=> "findMany",
 				"query"=> [

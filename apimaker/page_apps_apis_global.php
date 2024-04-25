@@ -163,18 +163,21 @@
 									  <div class="accordion-item" v-for="apitype in api_types" >
 									    <h2 class="accordion-header" v-bind:id="apitype+d['_id']">
 									      <button v-bind:class="{'accordion-button':true,'collapsed':d['show']!=apitype}" type="button" v-on:click="toggle_td(ti,apitype)" >
-									        {{apitype}}
+									        {{ apitype }}
 									      </button>
 									    </h2>
 									    <div v-bind:id="'collapse'+apitype+d['_id']" v-bind:class="{'accordion-collapse':true, 'collapse':d['show']!=apitype}">
 									      <div class="accordion-body" style="overflow: auto;">
-									      	<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="show_test('tables_dynamic',ti,apitype)">Test</div>
-									      	<div>POST {{ test_url__ }}{{ d['path'] }}</div>
-									      	<div>Content-Type: application/json</div>
-											<div>Access-Key: xxxxxxx</div>
-											<div>&nbsp;</div>
-									        <pre v-if="apitype in d">{{ d[apitype] }}</pre>
-									        <pre v-else>api data not found</pre>
+									      	<div v-if="apitype in d == false" >API Configuration Missing</div>
+									      	<div v-else>
+										      	<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="show_test('tables_dynamic',ti,apitype)">Test</div>
+										      	<div>POST {{ test_url__ }}{{ d['path'] }}</div>
+										      	<div>Content-Type: application/json</div>
+												<div>Access-Key: xxxxxxx</div>
+												<div>&nbsp;</div>
+										        <pre v-if="apitype in d">{{ d[apitype] }}</pre>
+										        <pre v-else>api data not found</pre>
+										    </div>
 									      </div>
 									    </div>
 									  </div>
@@ -223,26 +226,31 @@
 										      <div class="accordion-body">
 										        	<!-- <pre>{{ td }}</pre> -->
 
-										        	<div class="accordion" v-bind:id="'table_'+td['_id']">
-													  <div class="accordion-item" v-for="apitype in api_types" >
-													    <h2 class="accordion-header" v-bind:id="apitype+td['_id']">
-													      <button v-bind:class="{'accordion-button':true,'collapsed':td['show']!='findOne'}" type="button" v-on:click="toggle_t(db_id,ti,apitype)" >
-													        {{ apitype }}
-													      </button>
-													    </h2>
-													    <div v-bind:id="'collapse'+apitype+td['_id']" v-bind:class="{'accordion-collapse':true, 'collapse':td['show']!=apitype}">
-													      <div class="accordion-body" style="overflow: auto;">
-													      	<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="show_test2('tables',db_id,ti,apitype)">Test</div>
-													      	<div>POST {{ test_url__ }}{{ td['path'] }}</div>
-													      	<div>Content-Type: application/json</div>
-															<div>Access-Key: xxxxxxx</div>
-															<div>&nbsp;</div>
-													        <pre v-if="apitype in td">{{ td[apitype] }}</pre>
-									        				<pre v-else>api data not found</pre>
-													      </div>
-													    </div>
-													  </div>
-													</div>
+														<div class="accordion" v-bind:id="'table_'+td['_id']">
+														  <div class="accordion-item" v-for="apitype in api_types" >
+														    <h2 class="accordion-header" v-bind:id="apitype+td['_id']">
+														      <button v-bind:class="{'accordion-button':true,'collapsed':td['show']!='findOne'}" type="button" v-on:click="toggle_t(db_id,ti,apitype)" >
+														        {{ apitype }}
+														      </button>
+														    </h2>
+														    <div v-bind:id="'collapse'+apitype+td['_id']" v-bind:class="{'accordion-collapse':true, 'collapse':td['show']!=apitype}">
+														      <div class="accordion-body" style="overflow: auto;">
+	      														<div v-if="apitype in td == false" >API Configuration Missingxx</div>
+														      	<div v-else>
+
+															      	<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="show_test2('tables',db_id,ti,apitype)">Test</div>
+															      	<div>POST {{ test_url__ }}{{ td['path'] }}</div>
+															      	<div>Content-Type: application/json</div>
+																	<div>Access-Key: xxxxxxx</div>
+																	<div>&nbsp;</div>
+															        <pre v-if="apitype in td">{{ td[apitype] }}</pre>
+											        				<pre v-else>api data not found</pre>
+											        			</div>
+														      </div>
+														    </div>
+														  </div>
+														</div>
+
 
 
 
@@ -493,7 +501,7 @@ var app = Vue.createApp({
 			cerr: "",
 			apis: {},
 			show_create_api: false,
-			api_types: ['findOne','findMany','insertOne','insertMany','updateOne', 'updateMany', 'deleteOne', 'deleteMany'],
+			api_types: ['getSchema','findOne','findMany','insertOne','insertMany','updateOne', 'updateMany', 'deleteOne', 'deleteMany'],
 			new_api: {
 				"name": "",
 				"des": "",

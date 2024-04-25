@@ -166,7 +166,9 @@ if( $config_page != "" ){
 	}
 }
 
-if( $config_layout ){
+if( $config_page == "codeeditor" ){
+	require("layout_simple.php");
+}else if( $config_layout ){
 	require("layout_".$config_layout.".php");
 }else{
 	require("layout_main.php");

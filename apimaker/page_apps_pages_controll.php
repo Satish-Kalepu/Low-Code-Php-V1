@@ -128,6 +128,7 @@ if( $config_param4 && $main_page ){
 			"_id"=>$config_param4
 		],[
 			"html"=>$_POST['html'],
+			"script"=>$_POST['script'],
 			"settings"=>$_POST['settings'],
 			"updated"=>date("Y-m-d H:i:s"),
 		]);

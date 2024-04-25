@@ -120,8 +120,4 @@ var app = createApp({
   	}
   }
 }).mount('#app');
-setTimeout("doit()", 2000);
-function doit(){
-	app.count++;
-}
 </script>

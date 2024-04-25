@@ -1,12 +1,14 @@
 
 
-<div id="editor_div" class="satish_editor_v1" data-id="root" spellcheck="false" data-id="root" draggable="false" contenteditable="true" v-html="this.page__['html']" ></div>
-
+<div id="editor_div" class="satish_editor_v1" data-id="root" spellcheck="false" data-id="root" draggable="false" contenteditable="true" ></div>
 
 <div id="editor_controlls" >
 	<div class="satish_editor_controls" id="satish_editor_controls_div" v-cloak>
 		<div v-if="selection_start==false" class="vmttt"  data-id="bounds" v-bind:style="vmttt" >
-			<div class="vmtip">{{ focused_type + (focused_className?'.'+focused_className:'') }}</div>
+			<!-- <div class="vmtip" v-if="focused_app">{{ focused_app_type }}</div> -->
+			<div class="vmtip" >{{ focused_type + (focused_className?'.'+focused_className:'') }}</div>
+
+			<!-- <div v-if="focused_app" style="display: block; position: absolute;align-items: center;width: 100%;text-align: center;height: 100%;line-height: 200px;font-size: 1.5rem;color: #666;vertical-align: middle; user-select: none;" v-on:dblclick="edit_app_component_settings()">Double click to edit app settings</div> -->
 		</div>
 		<div v-if="insert_tag" class="vmtt2"  data-id="bounds" v-bind:style="vmtt2" v-on:mouseover="vmtt_focus_t=true" v-on:mouseout="vmtt_focus_t=false">
 			<div class="vmtt2_sub2" v-if="vmtt_focus==false" v-on:mouseout="vmtt_focus_t=false" ></div>

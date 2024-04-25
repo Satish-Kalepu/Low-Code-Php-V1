@@ -506,6 +506,6 @@ var tag_settings_configs = {
 		  <p>...</p>
 		</div>`},
 	"RichText": {"html":"<pre>Rich text content</pre>"},
-	"DatabaseTable":  {"html":`<div data-app="DatabaseTable" >Database Table APP</div>` },
-	"Authentication": {"html":`<div data-app="Authentication" >Authentication APP</div>`},
+	"DatabaseTable":  {"html":`<app_databasetable data-app="DatabaseTable" >Database Table APP</app_app_databasetable>` },
+	"AuthDefault": {"html":`<app_authdefault data-app="AuthDefault" >Default Auth App</app_authdefault>`},
 };

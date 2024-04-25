@@ -9,15 +9,17 @@
 		text-align: center;
 		user-select: none;
 		box-shadow: 2px 2px 5px gray;
-
-/*		-ms-zoom: 0.75;
-        -moz-transform: scale(0.75);
-        -moz-transform-origin: 0 0;
-        -o-transform: scale(0.75);
-        -o-transform-origin: 0 0;
-        -webkit-transform: scale(0.75);
-        -webkit-transform-origin: 0 0;
-*/
+	}
+	.editor_block_a{
+		position: fixed;
+		left:160px; top:90px; 
+		height:calc( 100% - 100px - 40px ); 
+		width:calc( 100% - 170px - 20px ); 
+		background-color: #f8f8f8; 
+		overflow: auto; 
+		text-align: center;
+		user-select: none;
+		box-shadow: 2px 2px 5px gray;
 	}
 	.save_block_a{
 		position: fixed;

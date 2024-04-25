@@ -10,6 +10,8 @@ if( $config_param2 == "" ){
 	}
 }else if( $config_param2 == "apis_global"){
 	require("page_apps_apis_global.php");
+}else if( $config_param2 == "codeeditor" ){
+	require("page_apps_codeeditor.php");
 }else if( $config_param2 == "functions"){
 	if( $config_param3 && $config_param4 ){
 		require("page_apps_functions_function.php");

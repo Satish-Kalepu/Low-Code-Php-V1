@@ -84,6 +84,7 @@ class api_engine{
 		$this->s2_dddddi_ppa = $s2_eeeeenigne['app_id'];
 		$this->s2_ddddi_resu = $s2_eeeeenigne['user_id'];
 		$this->s2_eeeeenigne = $s2_eeeeenigne;
+		
 		$this->s2_eeesnopser['headers']['content-type'] = $s2_eeeeenigne['output-type'];
 		$this->s2_ssssstupni = $this->s2_eeeeenigne["engine"]["input_factors"];
 		$this->s2_noitucexe_dnev = false;
@@ -577,11 +578,26 @@ class api_engine{
 					$this->s2_ggggggggol[] = "Respond";
 					if( $s2_ddddegatsf['d']['t'] == "O" ){
 						$this->s2_eeesnopser['body'] =$this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['v'] );
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
 						$this->s2_eeesnopser['body'] =["status"=>"fail", "error"=>"Unhandled retrun type"];
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
+					}
+				}
+				//echo $s2_ddddegatsf['k']['v'] . "=";
+				if( $s2_ddddegatsf['k']['v'] == "SetResponseStatus" ){
+					//print_r( $s2_ddddegatsf['d'] );exit;
+					$v = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['statusCode'] );
+					if( is_numeric($v) ){
+						$this->s2_eeesnopser['statusCode'] = (int)$v;
+					}else{
+						$this->s2_eeesnopser['statusCode'] = 500;
+						$this->s2_eeesnopser['body'] = ["status"=>"fail","error"=>"SetResponseStatus non numeric value" . $v];
+						$this->s2_noitucexe_dnev = true;
+						break;
 					}
 				}
 				if( $s2_ddddegatsf['k']['v'] == "RespondStatus" ){
@@ -592,6 +608,7 @@ class api_engine{
 						'data'=>$this->s2_eeulav_teg($s2_ddddegatsf['d']['data']),
 						'error'=>$this->s2_eeulav_teg($s2_ddddegatsf['d']['error']),
 					]);
+					$this->s2_noitucexe_dnev = true;
 					return $this->s2_eeesnopser;
 				}
 				if( $s2_ddddegatsf['k']['v'] == "RespondJSON" ){
@@ -602,10 +619,12 @@ class api_engine{
 						if( $s2_ddddegatsf['d']['pretty']['v'] != "false" && $s2_ddddegatsf['d']['pretty']['v'] !== false  ){
 							$this->s2_eeesnopser['pretty'] = true;
 						}
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
 						$this->s2_eeesnopser['body'] = ["status"=>"fail", "error"=>"Unhandled retrun type"];
+						$this->s2_noitucexe_dnev = true;
 					}
 				}
 				if( $s2_ddddegatsf['k']['v'] == "RespondVar" ){
@@ -619,14 +638,17 @@ class api_engine{
 						}else{
 							$this->s2_eeesnopser['body'] = $s2_ddddegatsf['d']['output'];
 						}
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
 					}else if( $s2_ddddegatsf['d']['output']['t'] == "V" ){
 						$this->s2_eeesnopser['body'] = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['output'] );
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
 						$this->s2_eeesnopser['body'] = ["status"=>"fail", "error"=>"Unhandled retrun type"];
 					}
+					$this->s2_noitucexe_dnev = true;
 				}
 				if( $s2_ddddegatsf['k']['v'] == "RespondGlobals" ){
 
@@ -639,6 +661,7 @@ class api_engine{
 						}
 					}
 					$this->s2_eeesnopser['body'] = $vv;
+					$this->s2_noitucexe_dnev = true;
 					return $this->s2_eeesnopser;
 				}
 				if( $s2_ddddegatsf['k']['v'] == "RespondVars" ){
@@ -647,6 +670,7 @@ class api_engine{
 						foreach( $s2_ddddegatsf['d']['outputs'] as $ii=>$jj ){
 							$vv[ $jj['v']['v'] ] = $this->s2_eeulav_teg($jj);
 						}
+						$this->s2_noitucexe_dnev = true;
 						return ["status"=>"success", "data"=>$vv ];
 					}else{
 						$vv = [];
@@ -654,16 +678,19 @@ class api_engine{
 							$vv[ $jj['v']['v'] ] = $this->s2_eulav_erup_teg($jj);
 						}
 						$this->s2_eeesnopser['body'] = $vv;
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
 					}
 				}
 				if( $s2_ddddegatsf['k']['v'] == "RespondXML" ){
 					if( $s2_ddddegatsf['d']['output']['t'] == "O" ){
 						$this->s2_eeesnopser['body'] =$this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['v'] );
+						$this->s2_noitucexe_dnev = true;
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
 						$this->s2_eeesnopser['body'] = ["status"=>"fail", "error"=>"Unhandled retrun type"];
+						$this->s2_noitucexe_dnev = true;
 					}
 				}
 				//echo $s2_ddddegatsf['k']['v'];exit;
@@ -674,6 +701,7 @@ class api_engine{
 								"_id"=>$s2_ddddegatsf['d']['page']['v']['i']['v']
 							]);
 							if( !$page_version['data'] ){
+								$this->s2_noitucexe_dnev = true;
 								$this->s2_eeesnopser = [
 									'statusCode'=>500, 
 									'body'=> $page_version, 
@@ -683,6 +711,7 @@ class api_engine{
 							$page_version = $page_version['data'];
 							require_once("index_page.php");exit;
 						}else{
+							$this->s2_noitucexe_dnev = true;
 							$this->s2_eeesnopser = [
 								'statusCode'=>500, 
 								'body'=> "Page version not found",
@@ -690,6 +719,7 @@ class api_engine{
 							];break;
 						}
 					}else{
+						$this->s2_noitucexe_dnev = true;
 						$this->s2_eeesnopser = [
 							'statusCode'=>500, 
 							'body'=> "Page version not found",
@@ -3793,6 +3823,11 @@ class api_engine{
 		$key['expiret'] = new \MongoDB\BSON\UTCDateTime($expire*1000);
 		$key['t'] = "uk";
 		$key['updated']= date("Y-m-d H:i:s");
+		$key['hits'] = 0;
+		$key['maxhits'] = 5;
+		$key['hitsmin'] = 5;
+
+		//print_r( $key );exit;
 
 		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
 		if( $res['status'] == "success" ){

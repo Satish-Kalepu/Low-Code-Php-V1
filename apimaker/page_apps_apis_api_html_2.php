@@ -1,47 +1,58 @@
 <div id="app" v-cloak >
-	<div class="leftbar">
-		<?php require("page_apps_leftbar.php"); ?>
-	</div>
+	<template v-if="page_type=='codeeditor'" >
+		<?php require("page_apps_apis_api_html_logic_2.php"); ?>
+	</template>
+	<template v-else>
 
-	<div style="position: fixed;left:150px; top:40px; height: 60px; width:calc( 100% - 150px ); background-color: white; overflow: hidden; border-bottom:1px solid #ccc; " >
-		<div style="padding: 10px;" >
-			<div>
-				<h5 class="d-inline">{{ property_type.toUpperCase() }}: {{ (property_type=='api'?s2_iiiiiiiipa['path']:'') }}{{ s2_iiiiiiiipa['name'] }}</h5>
-				<a v-bind:href="path+'apis?path='+s2_iiiiiiiipa['path']" class="btn btn-outline-secondary btn-sm me-1" style="float:right;" >Back</a>
-				<div v-on:click="s2_mrof_tide_nepo" class="btn btn-outline-dark btn-sm me-1" style="float:right;" >Edit</div>
-				<div class="btn btn-outline-dark btn-sm me-1" style="float:right;" v-html="s2_eton_noisrev_teg()" v-on:click="s2_snoisrev_wohs()" ></div>
-			</div>
-			<div class="d-inline" >{{ s2_iiiiiiiipa['des'] }}</div>
-			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
-			<div v-if="err" class="alert alert-danger" >{{ err }}</div>
+		<div class="leftbar">
+			<?php require("page_apps_leftbar.php"); ?>
 		</div>
-	</div>
 
-	<div v-if="s2_wwwwwwohsv==false" >Loading...</div>
-	<div v-else>
-		<div class="codeeditor_block_a" v-if="s2_lluf_rotide_edoc" >
+		<div style="position: fixed;left:150px; top:40px; height: 60px; width:calc( 100% - 150px ); background-color: white; overflow: hidden; border-bottom:1px solid #ccc; " >
 			<div style="padding: 10px;" >
-				<?php require("page_apps_apis_api_html_logic_2.php"); ?>
+				<div>
+					<h5 class="d-inline">{{ property_type.toUpperCase() }}: {{ (property_type=='api'?s2_iiiiiiiipa['path']:'') }}{{ s2_iiiiiiiipa['name'] }}</h5>
+					<a v-bind:href="path+'apis?path='+s2_iiiiiiiipa['path']" class="btn btn-outline-secondary btn-sm me-1" style="float:right;" >Back</a>
+					<div v-on:click="s2_mrof_tide_nepo" class="btn btn-outline-dark btn-sm me-1" style="float:right;" >Edit</div>
+					<div class="btn btn-outline-dark btn-sm me-1" style="float:right;" v-html="s2_eton_noisrev_teg()" v-on:click="s2_snoisrev_wohs()" ></div>
+				</div>
+				<div class="d-inline" >{{ s2_iiiiiiiipa['des'] }}</div>
+				<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
+				<div v-if="err" class="alert alert-danger" >{{ err }}</div>
 			</div>
 		</div>
-		<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true"  >
-			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
-		</div>
-		<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false&&s2_evas_tsrif==true" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
-			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
-		</div>
-		<div class="test_menu_div_a" v-else-if="s2_bat_tset_wohs==false" v-on:click="s2_aatad_evas" >
-			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>S<BR/>A<BR/>V<BR/>E</div>
-		</div>
-		<div class="test_menu_div_b" v-if="s2_bat_tset_wohs" >
-			<?php require("page_apps_apis_api_html_test_2.php"); ?>
-		</div>
-	</div>
 
-	<div v-if="s2_ddeen_evas" class="save_block_a" >
+		<div v-if="s2_wwwwwwohsv==false" >Loading...</div>
+		<div v-else>
+			<div class="codeeditor_block_a" v-if="s2_lluf_rotide_edoc" >
+				<div style="padding: 10px;" >
+					<?php require("page_apps_apis_api_html_logic_2.php"); ?>
+				</div>
+			</div>
+			<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true"  >
+				<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
+			</div>
+			<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false&&s2_evas_tsrif==true" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
+				<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
+			</div>
+			<div class="test_menu_div_a" v-else-if="s2_bat_tset_wohs==false" v-on:click="s2_aatad_evas" >
+				<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>S<BR/>A<BR/>V<BR/>E</div>
+			</div>
+			<div class="test_menu_div_b" v-if="s2_bat_tset_wohs" >
+				<?php require("page_apps_apis_api_html_test_2.php"); ?>
+			</div>
+		</div>
+
+	</template>
+
+	<div v-if="s2_ddeen_evas&&page_type!='codeeditor'" class="save_block_a" >
 		<input spellcheck="false" type="button" class="btn btn-primary btn-sm" v-on:click="s2_aatad_evas" value="SAVE">
 	</div>
-	<div v-if="s2_gnivas_wohs" class="save_block_b">{{ s2_egassem_evas }}</div>  
+	<div v-if="s2_ddeen_evas&&page_type=='codeeditor'" class="save_block_aa" >
+		<input spellcheck="false" type="button" class="btn btn-primary btn-sm" v-on:click="s2_aatad_evas" value="SAVE">
+	</div>
+	<div v-if="s2_gnivas_wohs&&page_type!='codeeditor'" class="save_block_b">{{ s2_egassem_evas }}</div>
+	<div v-if="s2_gnivas_wohs&&page_type=='codeeditor'" class="save_block_bb">{{ s2_egassem_evas }}</div>
 
 
 	<div id="s2_unem_txetnoc" data-context="contextmenu" class="s2_unem_txetnoc" v-bind:style="s2_elyts_txetnoc">

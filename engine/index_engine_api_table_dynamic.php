@@ -1,5 +1,11 @@
 <?php
 
+if( $action == "getSchema" ){
+	header("Content-Type: application/json");
+	unset($table_res['_id']);unset($table_res['app_id']);
+	echo json_encode($table_res);exit;
+}
+
 if( $action == "findMany" ){
 	$cond = [];
 	if( isset( $_POST['query'] ) && is_array($_POST['query']) ){
@@ -18,6 +24,9 @@ if( $action == "findMany" ){
 	}
 	if( isset($options['projection']) && is_array($options['projection']) ){
 		$ops['projection'] = $options['projection'];
+	}
+	if( isset($options['hint']) ){
+		$ops['hint'] = $options['hint'];
 	}
 	$res = $mongodb_con->find( $db_prefix . "_dt_" . $table_res['data']['_id'], $cond, $ops );
 	if( $res['status'] != "success" ){
@@ -164,6 +173,7 @@ if( $action == "findMany" ){
 		echo json_encode($res);exit;
 	}
 	header("Content-Type: application/json");
+	$res['query']=$cond;
 	echo json_encode($res);exit;
 }else if( $action == "deleteMany" ){
 	$cond = [];
@@ -182,6 +192,7 @@ if( $action == "findMany" ){
 		echo json_encode($res);exit;
 	}
 	header("Content-Type: application/json");
+	$res['query']=$cond;
 	echo json_encode($res);exit;
 }else if( $action == "deleteOne" ){
 	$cond = [];

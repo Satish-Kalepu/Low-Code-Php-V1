@@ -16,6 +16,10 @@
 			<div v-else v-on:click="previewit()" style="float:right;cursor: pointer; margin-right:20px;" title="Preview" ><img src="<?=$config_global_apimaker_path ?>edit.png" ></div>
 
 			<h5 class="d-inline">Page: {{ page__['name'] }}</h5>
+
+
+
+
 		</div>
 	</div>
 
@@ -36,13 +40,19 @@
 
 		</div>
 		<div v-show="edit_tab=='source'" >
-			<div id="page_source_block" style="position: fixed; left: 160px; top:90px; height:calc( 100% - 100px - 40px ); width:calc( 100% - 170px ); background-color: #f8f8f8; " ></div>
+			<div id="page_source_block" style="position: fixed; font-size:1rem; left: 160px; top:90px; height:calc( 100% - 100px - 40px ); width:calc( 100% - 170px ); background-color: #f8f8f8; " ></div>
+		</div>
+		<div v-show="edit_tab=='sourcescript'" >
+			<div id="page_script_block" style="position: fixed; font-size:1rem; left: 160px; top:90px; height:calc( 100% - 100px - 40px ); width:calc( 100% - 170px ); background-color: #f8f8f8; " ></div>
+		</div>
+		<div v-show="edit_tab=='control'" >
+			<iframe ref="control_iframe__"  style="position: fixed; left: 150px; top:80px; height:calc( 100% - 90px ); width:calc( 100% - 150px ); "  id="editor_block_aa" ></iframe>
 		</div>
 
 	</div>
 
 
-	<div class="save_block_a" >
+	<div class="save_block_a" v-if="edit_tab!='control'" >
 		<div style=" display: inline-block; padding: 3px; margin-left: 10px;margin-right: 10px;" ><div class="btn btn-outline-dark btn-sm"  v-on:click="save_page" >SAVE</div></div>
 		<div style=" display: inline-block; padding: 3px;" >
 			<div v-if="msg__" class="text-success px-3" >{{ msg__ }}</div>
@@ -75,8 +85,10 @@
 				<div class="modal-body">
 
 					<div v-if="tag_settings_type=='DatabaseTable'" >
-						<page_databasetable v-bind:tag="focused_app"></page_databasetable>
-
+								<page_databasetable v-bind:tag="focused_app" v-on:updated="focused_app_update_event($event)"></page_databasetable>
+					</div>
+					<div v-else-if="tag_settings_type=='AuthDefault'" v-on:updated="focused_app_update_event($event)" >
+								<page_auth_default v-bind:tag="focused_app"></page_auth_default>
 					</div>
 					<div v-else-if="tag_settings_type=='new'" >
 						<div v-for="tt,ti in config_tags">

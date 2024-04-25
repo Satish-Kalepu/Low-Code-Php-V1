@@ -171,6 +171,8 @@
 			if( $cap_res['data']['c'] != $_POST['captcha'] ){
 				http_response_code(400);header("Content-Type: application/json");
 				echo json_encode(["status"=>"fail", "error"=>"Captcha mismatch..."]);exit;
+			}else{
+				$mongodb_con->delete_one( $db_prefix . "_captcha", ['_id'=>$_POST['code']] );
 			}
 			//echo "captcha check pending";exit;
 		}
@@ -220,6 +222,8 @@
 			$new_key = $res['inserted_id'];
 
 			$res = $mongodb_con->update_one( $db_prefix . "_user_pool", ["_id"=>$user_res['data']['_id']], ['last_login'=>date("Y-m-d H:i:s")] );
+
+			$mongodb_con->delete_one( $db_prefix . "_user_keys", ["_id"=>$_SERVER['HTTP_ACCESS_KEY']] );
 
 			header("Content-Type: application/json");
 			echo json_encode(["status"=>"success", "access-key"=>$new_key ]);exit;

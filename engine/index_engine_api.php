@@ -169,6 +169,8 @@
 		}
 	}
 
+	//echo $_SERVER['HTTP_ACCESS_KEY'];exit;
+
 	if( !$allow_policy ){{
 			if( !isset($_SERVER['HTTP_ACCESS_KEY']) ){
 				http_response_code(403);
@@ -312,19 +314,24 @@
 		}
 	}
 
-	function mongo_query( $query ){
+	function mongo_query( $query, $top_field = "" ){
 		global $mongodb_con;
 		foreach( $query as $field=>$j ){
 			if( $field == '$and' || $field == '$or' ){
 				for($ii=0;$ii<sizeof($j);$ii++){
-					$query[ $field ][ $ii ] = mongo_query($query[ $field ][ $ii ]);
+					$query[ $field ][ $ii ] = mongo_query($query[ $field ][ $ii ], $field);
 				}
-			}else if( $field == '_id' ){
+			}else if( $field == '_id' || $top_field == '_id' ){
 				if( is_array($j) ){
 					$jj = [];
 					$keys = array_keys($j);
 					foreach( $keys as $c ){
 						$v = $j[ $c ];
+						if( $c == '$in' ){
+							foreach( $v as $vi=>$vd ){
+								$v[ $vi ] = $mongodb_con->get_id($vd);
+							}
+						}
 						if( is_string($v) && preg_match("/^[a-f0-9]{24}$/",$v) ){
 							$v = $mongodb_con->get_id($v);
 						}

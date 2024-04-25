@@ -121,4 +121,4 @@ li:empty:before {content: ' ';white-space: pre;}
 td:empty:before {content: ' ';white-space: pre;}
 th:empty:before {content: ' ';white-space: pre;}
 
-div[data-app]{ min-height:200px; min-width:300px; border: 5px solid #eee; padding:10px; text-align:center; font-size:2rem; color:#777; cursor:pointer; background-color:#68aeea; user-select:none; }
+[data-app]{ display: block; min-height:200px; min-width:300px; border: 15px solid #eee; padding:10px; text-align:center; font-size:1rem; color:#513434;; cursor:pointer; background-color:#dfe8f0; user-select:none; }

@@ -45,12 +45,30 @@
 		border-top:1px solid black; 
 		font-weight:bold; text-align:center;
 	}
+	.save_block_aa{
+		position:fixed; 
+		bottom:0px; left:10px; z-index:600; 
+		background-color:white; color:black; 
+		height:40px; padding:3px; 
+		width:calc( 100% - 20px ); 
+		border-top:1px solid black; 
+		font-weight:bold; text-align:center;
+	}
 	.save_block_b{
 		position:fixed; 
 		bottom:0px; left:150px; z-index:1001; 
 		background-color:orange; color:white; 
 		height:40px; padding:3px; 
 		width:calc( 100% - 180px );  
+		border-top:1px solid red; 
+		font-weight:bold;
+	}
+	.save_block_bb{
+		position:fixed; 
+		bottom:0px; left:10px; z-index:1001; 
+		background-color:orange; color:white; 
+		height:40px; padding:3px; 
+		width:calc( 100% - 20px );  
 		border-top:1px solid red; 
 		font-weight:bold;
 	}

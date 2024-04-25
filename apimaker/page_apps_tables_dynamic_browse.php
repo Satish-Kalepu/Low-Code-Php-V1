@@ -7,7 +7,7 @@ div.zz::-webkit-scrollbar-track { background: #f1f1f1;}
 div.zz::-webkit-scrollbar-thumb { background: #888;}
 div.zz::-webkit-scrollbar-thumb:hover { background: #555;}
 
-	td pre{margin-bottom: 0px;}
+td pre{margin-bottom: 0px;}
 </style>
 <div id="app" >
 	<div class="leftbar" >

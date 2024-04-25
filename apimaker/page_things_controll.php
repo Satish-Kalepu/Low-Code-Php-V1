@@ -284,7 +284,11 @@ if( $_POST['action'] == "context_load_things" ){
 			}
 
 			$things[] = ["l"=>["t"=>"T", "v"=>"auth_api:generate_access_token"], "i"=>["t"=>"T", "v"=>"auth_api:10001"]];
-			$things[] = ["l"=>["t"=>"T", "v"=>"auth_api:user_authentication"],   "i"=>["t"=>"T", "v"=>"auth_api:10002"]];
+			$things[] = ["l"=>["t"=>"T", "v"=>"auth_api:user_auth"],   "i"=>["t"=>"T", "v"=>"auth_api:10002"]];
+			$things[] = ["l"=>["t"=>"T", "v"=>"auth_api:user_auth_captcha"],   "i"=>["t"=>"T", "v"=>"auth_api:10003"]];
+			$things[] = ["l"=>["t"=>"T", "v"=>"auth_api:verify_session_key"],   "i"=>["t"=>"T", "v"=>"auth_api:10004"]];
+			$things[] = ["l"=>["t"=>"T", "v"=>"auth_api:assume_session_key"],   "i"=>["t"=>"T", "v"=>"auth_api:10005"]];
+			$things[] = ["l"=>["t"=>"T", "v"=>"captcha:get"],   "i"=>["t"=>"T", "v"=>"captcha:10101"]];
 		}
 		if( $_POST['depend'] == "files" ){
 			$things[] = ["l"=>["t"=>"T", "v"=>"file:internal" ], "i"=>["t"=>"T", "v"=>"file:f0010"] ];

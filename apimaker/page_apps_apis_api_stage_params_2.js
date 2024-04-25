@@ -173,10 +173,10 @@ const s2_smarap_egats_gifnoc = {
 		"p": {"t":"TT", "v":""}
 	},
 	"SetResponseStatus": {
-		"p": {"status":{"t":"N", "v":"200"}},
+		"p": {"statusCode":{"t":"N", "v":"200"}},
 	},
 	"SetResponseHeader": {
-		"p": {"Header":{"t":"T", "v":"X-Header"},"Value":{"t":"T", "v":"X-Value"}},
+		"p": {"header":{"t":"T", "v":"X-Header"},"value":{"t":"T", "v":"X-Value"}},
 	},
 	"SetCookie": {
 		"p": {"Cookie":{"t":"T", "v":"Name"},"Value":{"t":"T", "v":"X-Value"},"Expire":{"t":"N", "v":"86400"}},

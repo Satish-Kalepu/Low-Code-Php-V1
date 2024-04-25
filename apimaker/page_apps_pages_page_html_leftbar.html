@@ -1,13 +1,21 @@
 <div class="leftbar_scroll" style="overflow: auto; height:calc( 100% - 40px ); padding:5px; ">
 
 
-	<div class="mb-1">
-		<div v-if="edit_tab=='html'" class="btn btn-outline-dark btn-sm py-1" v-on:click="switch_tab('source')" >Edit Page Source</div>
-		<div v-if="edit_tab=='source'" class="btn btn-outline-dark btn-sm py-1" v-on:click="switch_tab('html')" >Edit Html</div>
-	</div>
+	<div v-bind:class="{'left_btn':true,'left_btn_active':edit_tab=='html'}" v-on:click="switch_tab('html')">Design</div>
+	<div v-bind:class="{'left_btn':true,'left_btn_active':edit_tab=='source'}" v-on:click="switch_tab('source')" >HTML</div>
+	<div v-bind:class="{'left_btn':true,'left_btn_active':edit_tab=='sourcescript'}" v-on:click="switch_tab('sourcescript')" >JavaScript</div>
+	<div v-bind:class="{'left_btn':true,'left_btn_active':edit_tab=='control'}" v-on:click="switch_tab('control')" >Control</div>
 
 	<template v-if="edit_tab=='source'">
 		<div>Editing Raw html source</div>
+	</template>
+
+	<template v-if="edit_tab=='sourcescript'">
+		<div>Editing script tag which comes at end of the page</div>
+	</template>
+
+	<template v-if="edit_tab=='control'">
+		<div>Code to execute at begining of the page</div>
 	</template>
 
 	<template v-if="edit_tab=='html'">
@@ -201,16 +209,14 @@
 				</select>
 				</div>
 			</template>
-			<div>{{ focused_app_type }}</div>
-			<template v-if="focused_app_type=='DatabaseTable'" >
+			
+			<template v-if="focused_app_type!=''" >
 				<div style="border: 1px solid #bbb; padding: 5px;">
 					<div><b>App</b></div>
-					<div>DatabaseTable</div>
+					<div>{{ focused_app_type }}</div>
 					<div><input type="button" class="btn btn-outline-dark btn-sm" value="Edit APP" v-on:click="edit_app_component_settings" ></div>
 				</div>
 			</template>
-
-
 
 		<div data-id="editor-popup" tabindex="0" v-on:click.stop.prevent v-on:mousemove.stop v-on:mouseover.stop v-on:keydown.stop v-on:keypress.stop v-on:keyup.stop >
 			<div class="table_settings">

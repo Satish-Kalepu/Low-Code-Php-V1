@@ -14,6 +14,8 @@
 			break;
 		}
 	}
+	$v = pathinfo($_SERVER['PHP_SELF'] );
+	$hosting_path = $v['dirname'];
 	if( !$config_global_apimaker_engine ){
 		if( $_SERVER['REQUEST_METHOD'] == "GET" ){
 			if( file_exists("__install.php") ){
@@ -117,6 +119,7 @@
 	function url_repl($m){
 		return "\\" . $m[0];
 	}
+
 	$url_parts = parse_url( $path );
 	if( isset($url_parts['path']) ){
 		$path_params = explode("/", $url_parts['path'] );
