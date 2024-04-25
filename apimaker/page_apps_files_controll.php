@@ -1,5 +1,20 @@
 <?php
 
+if( $_POST['action'] == "load_storage_vaults" ){
+
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
+		'app_id'=>$config_param1,
+	],[
+		'projection'=>[
+			'des'=>true,'vault_type'=>true,
+		],
+		'sort'=>['des'=>1],
+		'limit'=>200,
+	]);
+	json_response($res);
+
+	exit;
+}
 if( $_POST['action'] == "get_files" ){
 	$t = validate_token("getfiles.". $config_param1, $_POST['token']);
 	if( $t != "OK" ){
@@ -107,15 +122,16 @@ if( $_POST['action'] == "files_create_folder" ){
 	if( !preg_match("/^[a-z0-9\.\-\_\/]{2,100}$/i", $_POST['new_folder']) ){
 		json_response("fail", "Name incorrect. Min 2 chars Max 100. No special chars");
 	}
+	$path = $_POST['current_path'];
 	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
 		"app_id"=>$config_param1,
 		'vt'=>"folder",
 		'name'=>$_POST['new_folder'],
+		"path"=>$path,
 	]);
 	if( $res['data'] ){
 		json_response("fail", "Already exists");
 	}
-	$path = $_POST['current_path'];
 	$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", [
 		"app_id"=>$config_param1,
 		"name"=>$_POST['new_folder'],
@@ -141,6 +157,7 @@ if( $_POST['action'] == "apps_file_upload" ){
 			'app_id'=>$config_param1,
 			'name'=>$_POST['name']
 		]);
+		
 		$fb = file_get_contents($_FILES['file']['tmp_name']);
 		//echo $_FILES['file']['name'];exit;
 		//print_r( explode(".",$_FILES['file']['name']) );
@@ -179,6 +196,74 @@ if( $_POST['action'] == "apps_file_upload" ){
 	}else{
 		json_response(['status'=>"fail", "error"=>"server error"]);
 	}
+	exit;
+}
+
+
+if( $_POST['action'] == "mount_storage_vault" ){
+
+	if( !isset($_POST['new_mount']) ){
+		json_response("fail", "input missing");
+	}
+	if( !isset($_POST['new_mount']['vault_id']) || !isset($_POST['new_mount']['vault_name']) || !isset($_POST['new_mount']['vault_path']) || !isset($_POST['new_mount']['local_path']) ){
+		json_response("fail", "input missing");
+	}
+	if( !preg_match("/^[0-9a-f]{24}$/", $_POST['new_mount']['vault_id']) ){
+		json_response("fail", "Incorrect vault id");
+	}
+	$vault_res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
+		"_id"=>$_POST['new_mount']['vault_id']
+	]);
+	if( !$vault_res['data'] ){
+		json_response( $vault_res );
+	}
+	$_POST['new_mount']['vault_name'] = $vault_res['data']['des'];
+	$_POST['new_mount']['vault_type'] = $vault_res['data']['vault_type'];
+
+	if( $_POST['new_mount']['vault_path'] != "/" && !preg_match("/^\/[a-z0-9\-\_\.\/]+\/$/i", $_POST['new_mount']['vault_path']) ){
+		json_response("fail", "Vault path should be / or /path/  or /path/path/");
+	}
+	if( !preg_match("/^\/[a-z0-9\-\_\.\/]+\/$/i", $_POST['new_mount']['local_path']) ){
+		json_response("fail", "Local path should be /path/  or /path/path/");
+	}
+	if( preg_match("/[\/]{2,5}/i", $_POST['new_mount']['local_path']) ){
+		json_response("fail", "Local path should be /path/  or /path/path/");
+	}
+	if( preg_match("/[\/]{2,5}/i", $_POST['new_mount']['vault_path']) ){
+		json_response("fail", "Vault path should be /path/  or /path/path/");
+	}
+
+	$x = explode("/",$_POST['new_mount']['local_path']);
+	array_pop( $x );
+	if( sizeof( $x ) > 1 ){
+		$name = array_pop( $x );
+		$path = implode("/", $x);
+		if( $path == "" ){$path = "/";}
+	}else{
+		$name = array_pop( $x );
+		$path = "/";
+	}
+	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+		'app_id'=>$config_param1,
+		'path'=>$path, "name"=>$name
+	]);
+	$res['q'] = [
+		'app_id'=>$config_param1,
+		'path'=>$path, "name"=>$name
+	];
+	if( $res['data'] ){
+		json_response("fail", $path . $name . "/ already exists with same name");
+	}
+	$res = $mongodb_con->insert(  $config_global_apimaker['config_mongo_prefix'] . "_files", [
+		'app_id'=>$config_param1,
+		'path'=>$path, 
+		"name"=>$name,
+		"vt"=>"folder", 
+		"type"=>"mounted",
+		"vault"=>$_POST['new_mount'],
+	]);
+	json_response($res);
+
 	exit;
 }
 
@@ -295,5 +380,7 @@ if( $config_param3 ){
 		json_response($res);
 		exit;
 	}
+
+	
 
 }

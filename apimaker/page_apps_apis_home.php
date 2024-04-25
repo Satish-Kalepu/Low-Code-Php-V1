@@ -629,8 +629,9 @@ var app = Vue.createApp({
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success" ){
 								this.cmsg = "Created";
-								this.create_app_modal.hide();
-								this.load_apis();
+								setTimeout("document.location='" + this.path + 'apis/'+ response.data['api_id'] + '/'+response.data['version_id'] + "'", 1000 );
+								//this.create_app_modal.hide();
+								//this.load_apis();
 							}else{
 								this.cerr = response.data['error'];
 							}

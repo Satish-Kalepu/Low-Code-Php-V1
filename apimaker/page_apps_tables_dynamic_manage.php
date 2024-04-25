@@ -436,7 +436,7 @@ var app = Vue.createApp({
 				alert("Need proper index name");return false;
 			}
 			for(var i=0;i<this.new_index['keys'].length;i++){
-				if( this.new_index['keys'][i]['name'].match(/^[a-z][a-z0-9\_\-\.]{1,100}$/i) == null ){
+				if( this.new_index['keys'][i]['name'] != "_id" && this.new_index['keys'][i]['name'].match(/^[a-z][a-z0-9\_\-\.]{1,100}$/i) == null ){
 					alert("Need proper field name for index:"+(i+1));return false;
 				}
 			}
@@ -455,8 +455,8 @@ var app = Vue.createApp({
 					setTimeout("document.location.reload()", 3000);
 				}else{
 					this.not_busy = true;
-					his.indmsg = "Error: " + response.data['data'];
-					alert( "There was an error\n\n"+ response.data['data'] );
+					this.indmsg = "Error: " + response.data['error'];
+					alert( "There was an error\n\n"+ response.data['error'] );
 				}
 			});
 		},
@@ -473,7 +473,7 @@ var app = Vue.createApp({
 						alert("Index is successfully dropped!");
 						document.location.reload();
 					}else{
-						alert( "There was an error\n\n"+ response.data['data'] );
+						alert( "There was an error\n\n"+ response.data['error'] );
 					}
 				});
 			}
@@ -513,7 +513,7 @@ var app = Vue.createApp({
 						alert("Successfully saved");
 						document.location.reload();
 					}else{
-						alert( response.data['data'] );
+						alert( response.data['error'] );
 					}
 				});
 			}
@@ -569,8 +569,8 @@ var app = Vue.createApp({
 											}
 										});
 									}else{
-										alert("Token error: " + response.dat['data']);
-										this.err = "Token Error: " + response.data['data'];
+										alert("Token error: " + response.dat['error']);
+										this.err = "Token Error: " + response.data['error'];
 									}
 								}else{
 									this.err = "Incorrect response";
@@ -620,8 +620,8 @@ var app = Vue.createApp({
 											}
 										});
 									}else{
-										alert("Token error: " + response.dat['data']);
-										this.err = "Token Error: " + response.data['data'];
+										alert("Token error: " + response.dat['error']);
+										this.err = "Token Error: " + response.data['error'];
 									}
 								}else{
 									this.err = "Incorrect response";

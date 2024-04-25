@@ -400,7 +400,6 @@ var app = Vue.createApp({
 				cnt++;
 			}
 			}
-			this.echo__(k );
 			return k;
 		},
 		add_schema: function(){

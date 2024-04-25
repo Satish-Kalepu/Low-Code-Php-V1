@@ -1,5 +1,7 @@
 <?php
 
+//phpinfo();exit;
+
 class api_engine{
 	public $s2_nnnnnnnnoc = false;
 	public $s2_ggggggggol = [];
@@ -15,7 +17,7 @@ class api_engine{
 	public $s2_snoitcennoc_bd = [];
 	public $s2_noitareti_sqs_tnerruc = 0;
 	public $s2_egats_tnerruc  = 0;
-	public $s2_noitucexe_dne = false;
+	public $s2_noitucexe_dnev = false;
 	public $s2_nnngissaer = false;
 	public $s2_lmth_tuptuo = "";
 	public $s2_rrrrrrorre = "";
@@ -50,8 +52,8 @@ class api_engine{
 		// echo $str . "\n";
 		//echo strlen($str) . ": " . mb_detect_encoding($str) . "\n";
 		if( mb_detect_encoding($str) == "" ){ return true; }
-		if( mb_detect_encoding($str) == s2_aaaaaaaotb('VVRGLTg=') ){ return false; }
-		if( mb_detect_encoding($str) == s2_aaaaaaaotb('QVNDSUk=') ){ 
+		if( mb_detect_encoding($str) == "UTF-8" ){ return false; }
+		if( mb_detect_encoding($str) == "ASCII" ){ 
 			return preg_match('~[^\x20-\x7E\t\r\n]~', $str) > 0;
 			//return true; 
 		}
@@ -60,13 +62,14 @@ class api_engine{
 		return $this->s2_ggggggggol;
 	}
 	function execute( $s2_eeeeenigne, $s2_stupni_tset, $s2_ssssnoitpo=[] ){
+		global $config_global_engine;
 		$this->s2_ggggggggol = [];
 		$this->s2_tttttluser = [];
 		$this->s2_ssssstupni = [];
 		$this->s2_sssstuptuo = [];
 		$this->s2_lmth_tuptuo = "";
-		$this->s2_tttttneilc = s2_aaaaaaaotb('U2ltdWxhdGU=');
-		$this->s2_sssssutats = s2_aaaaaaaotb('c3VjY2Vzcw==');
+		$this->s2_tttttneilc = "Simulate";
+		$this->s2_sssssutats = "success";
 		$this->s2_rrrrrrorre = "";
 		$this->s2_di_gol_tseuqer = "";
 		$this->s2_sssssspmuj = 0;
@@ -78,29 +81,29 @@ class api_engine{
 		if( $this->s2_nnnnnnnnoc == false ){
 			return $this->s2_rorre_dnopser("Error with Database Connection!");
 		}
-		$this->s2_dddddi_ppa = $s2_eeeeenigne['app']['_id'];
+		$this->s2_dddddi_ppa = $s2_eeeeenigne['app_id'];
 		$this->s2_ddddi_resu = $s2_eeeeenigne['user_id'];
 		$this->s2_eeeeenigne = $s2_eeeeenigne;
 		$this->s2_eeesnopser['headers']['content-type'] = $s2_eeeeenigne['output-type'];
-		$this->s2_ssssstupni = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')][s2_aaaaaaaotb('aW5wdXRfZmFjdG9ycw==')];
-		$this->s2_noitucexe_dne = false;
+		$this->s2_ssssstupni = $this->s2_eeeeenigne["engine"]["input_factors"];
+		$this->s2_noitucexe_dnev = false;
 		
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('cmVxdWVzdF9sb2dfaWQ=')] ){
+		if( $s2_ssssnoitpo["request_log_id"] ){
 	        	$this->s2_di_gol_tseuqer = $s2_ssssnoitpo['request_log_id'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('cmVjdXJzaXZlX2xldmVs')] ){
+		if( $s2_ssssnoitpo["recursive_level"] ){
 	        	$this->s2_level_evisrucer = $s2_ssssnoitpo['recursive_level'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('cmVzdWx0')] ){
+		if( $s2_ssssnoitpo["result"] ){
 	        	$this->s2_tttttluser = $s2_ssssnoitpo['result'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('aW5wdXRz')] ){
+		if( $s2_ssssnoitpo["inputs"] ){
 	        	$this->s2_ssssstupni = $s2_ssssnoitpo['inputs'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('b3V0cHV0cw==')] ){
+		if( $s2_ssssnoitpo["outputs"] ){
 	        	$this->s2_sssstuptuo = $s2_ssssnoitpo['outputs'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('bG9n')] ){
+		if( $s2_ssssnoitpo["log"] ){
 	        	$this->s2_ggggggggol = $s2_ssssnoitpo['log'];
 		}
 		$this->s2_ggggggggol[] = "Testing Started: " . date("Y-m-d H:i:s");
@@ -111,7 +114,7 @@ class api_engine{
 		}else if( isset($s2_stupni_tset['t'])&&isset($s2_stupni_tset['v'])&&$s2_stupni_tset['t']=='O'){
 			$s2_stupni_tset = $s2_stupni_tset['v'];
 		}else{
-			if( $s2_stupni_tset != null && gettype($s2_stupni_tset) == s2_aaaaaaaotb('YXJyYXk=') ){
+			if( $s2_stupni_tset != null && gettype($s2_stupni_tset) == "array" ){
 				$this->s2_tcejbo_ot_tupni($s2_stupni_tset);
 			}
 		}
@@ -129,9 +132,9 @@ class api_engine{
 			}
 			//echo $j['m'] ; 
 			if( $j['m'] && !isset($this->s2_tttttluser[ $i ])  ){
-				return $this->s2_rorre_dnopser("Input: " . $i . s2_aaaaaaaotb('IHJlcXVpcmVk'));
+				return $this->s2_rorre_dnopser("Input: " . $i . " required");
 			}else if( $j['m'] && $this->s2_tttttluser[ $i ]['v'] == "" ){
-				return $this->s2_rorre_dnopser("Input: " . $i . s2_aaaaaaaotb('IHJlcXVpcmVk'));
+				return $this->s2_rorre_dnopser("Input: " . $i . " required");
 			}else if( isset($this->s2_tttttluser[ $i ]) ){
 				if( $j['t'] =="N" ){
 					$this->s2_tttttluser[ $i ]['v'] = $this->s2_rebmun_ot_gnirts( $this->s2_tttttluser[ $i ]['v'] );
@@ -143,41 +146,53 @@ class api_engine{
 		//$e = false;
 		//$this->s2_ggggggggol[] = $this->s2_tttttluser;
 		$s2_egats_gnitrats = 0;
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('Y3VycmVudF9zcXNfaXRlcmF0aW9u')] ){
+		if( $s2_ssssnoitpo["current_sqs_iteration"] ){
 			$this->s2_ggggggggol[] = "SQS Iteration: " . $s2_ssssnoitpo['current_sqs_iteration'];
 			$this->s2_noitareti_sqs_tnerruc = $s2_ssssnoitpo['current_sqs_iteration'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('dGFza19xdWV1ZV91cmw=')] ){
+		if( $s2_ssssnoitpo["task_queue_url"] ){
 			$this->task_queue_url = $s2_ssssnoitpo['task_queue_url'];
 		}
-		if( $s2_ssssnoitpo[s2_aaaaaaaotb('c3RhcnRfZnJvbV9zdGFnZQ==')] ){
-			$this->s2_ggggggggol[] = "Start from Stage: " . ($s2_ssssnoitpo[s2_aaaaaaaotb('c3RhcnRfZnJvbV9zdGFnZQ==')]+1);
-			$s2_egats_gnitrats = $s2_ssssnoitpo[s2_aaaaaaaotb('c3RhcnRfZnJvbV9zdGFnZQ==')];
+		if( $s2_ssssnoitpo["start_from_stage"] ){
+			$this->s2_ggggggggol[] = "Start from Stage: " . ($s2_ssssnoitpo["start_from_stage"]+1);
+			$s2_egats_gnitrats = $s2_ssssnoitpo["start_from_stage"];
 		}
 		$s2_oooot_pmuj = 0;
 		$s2_ttnc_poolf=0;
 		$s2_spool_xamf=5000;
 		$s2_verp_iegatsf=0;
-		for($s2_iiiiegatsf=0;$s2_iiiiegatsf<sizeof($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages']);$s2_iiiiegatsf++){
+		for($s2_iiiiegatsf=0;$s2_iiiiegatsf<sizeof($this->s2_eeeeenigne["engine"]['stages']);$s2_iiiiegatsf++){
 			$s2_ttnc_poolf++;
 			if( $s2_ttnc_poolf >= $s2_spool_xamf ){
+				$this->response['statusCode'] = 500;
+				$this->response['body'] = "Maximum Steps Reached: " . $s2_ttnc_poolf;
 				$this->s2_ggggggggol[] = "Maximum Steps Reached: " . $s2_ttnc_poolf;
 				break;
 			}
-			$next_fstaged = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][$s2_iiiiegatsf+1];
-			if( $next_fstaged['type'] == s2_aaaaaaaotb('Rm9yRWFjaA==') ){
-				unset($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][$s2_iiiiegatsf+1]['keys']);
-				unset($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][$s2_iiiiegatsf+1]['keyi']);
+			$next_fstaged = $this->s2_eeeeenigne["engine"]['stages'][$s2_iiiiegatsf+1];
+			if( $next_fstaged['type'] == "ForEach" ){
+				unset($this->s2_eeeeenigne["engine"]['stages'][$s2_iiiiegatsf+1]['keys']);
+				unset($this->s2_eeeeenigne["engine"]['stages'][$s2_iiiiegatsf+1]['keyi']);
 			}
-			$s2_ddddegatsf = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][$s2_iiiiegatsf]; 
-			if( $this->s2_noitucexe_dne ){
-				$this->s2_ggggggggol[] = s2_aaaaaaaotb('RW5kIG9mIEV4ZWN1dGlvbg==');
+			$s2_ddddegatsf = $this->s2_eeeeenigne["engine"]['stages'][$s2_iiiiegatsf]; 
+			if( $this->s2_noitucexe_dnev ){
+				$this->s2_ggggggggol[] = "End of Execution";
 				break;
 			}
-			if( $s2_ddddegatsf['k']['t'] == s2_aaaaaaaotb('Yw==') ){
+			if( isset($s2_ddddegatsf['a']) ){
+				if( $s2_ddddegatsf['a']===true ){
+					if( $s2_ddddegatsf['k']['t'] == "c" ){
+						$this->s2_ggggggggol[] = $s2_ttnc_poolf . ": " . ($s2_iiiiegatsf+1) . ": " . $s2_ddddegatsf['k']['v'] . ": " . "Skipped";
+					}else{
+						$this->s2_ggggggggol[] = $s2_ttnc_poolf . ": " . ($s2_iiiiegatsf+1) . ": " . $s2_ddddegatsf['k']['t'] . ":" . $s2_ddddegatsf['k']['v'] . ": ". "Skipped";
+					}
+					continue;
+				}
+			}
+			if( $s2_ddddegatsf['k']['t'] == "c" ){
 				$d = $s2_ttnc_poolf . ": " . ($s2_iiiiegatsf+1) . ": " . $s2_ddddegatsf['k']['v'];
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TGV0') ){
-					if( $s2_ddddegatsf['d']['rhs']['t'] == s2_aaaaaaaotb('Vg==') ){
+				if( $s2_ddddegatsf['k']['v'] == "Let" ){
+					if( $s2_ddddegatsf['d']['rhs']['t'] == "V" ){
 						$d .= ": ". $s2_ddddegatsf['d']['lhs'] . "= " . $s2_ddddegatsf['d']['rhs']['t']. ":" .$s2_ddddegatsf['d']['rhs']['v']['v'] . ":" . $s2_ddddegatsf['d']['rhs']['v']['t'];
 					}else{
 						$d .= ": ". $s2_ddddegatsf['d']['lhs'] . "= " . $s2_ddddegatsf['d']['rhs']['t']. ":" .$s2_ddddegatsf['d']['rhs']['v'];
@@ -199,15 +214,20 @@ class api_engine{
 			//$this->s2_ggggggggol[] = $this->s2_tttttluser;
 			//print_pre( $s2_ddddegatsf );
 
-			if( $s2_ddddegatsf['k']['t'] == s2_aaaaaaaotb('Yw==') ){
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TGV0') ){
+			if( $s2_ddddegatsf['k']['t'] == "c" ){
+				if( $s2_ddddegatsf['k']['v'] == "Let" ){
 					$this->s2_ggggggggol[] = $s2_ddddegatsf['d']['lhs'] . " = " . $s2_ddddegatsf['d']['rhs']['t'] . ":" . $s2_ddddegatsf['d']['rhs']['v'];
 					$s2_sssssssshl = $s2_ddddegatsf['d']['lhs'];
 					$s2_sssssssshr = $s2_ddddegatsf['d']['rhs'];
 					if( preg_match("/\W/", $s2_sssssssshl ) ){
 						return $this->s2_rorre_dnopser("Line: ".$s2_iiiiegatsf . ": Let variable name should not contain special chars");
 					}
-					if( $s2_sssssssshr['t'] == s2_aaaaaaaotb('Vg==') ){
+					if( $s2_sssssssshr['t'] == "Function" ){
+						$val = $this->s2_noitcnuf_od( $s2_ddddegatsf['d']['rhs']['v'] );
+						if( $s2_ddddegatsf['d']['rhs']['v']['return'] ){
+							$this->s2_tttttluser[ $s2_ddddegatsf['d']['lhs'] ] = $val;
+						}
+					}else if( $s2_sssssssshr['t'] == "V" ){
 						$v = $this->s2_eeulav_teg($s2_sssssssshr);
 						//print_pre( $v );exit;
 						//$this->s2_ggggggggol[] = $v;
@@ -216,26 +236,17 @@ class api_engine{
 						$this->s2_tttttluser[ $s2_sssssssshl ] =$s2_sssssssshr;
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TGV0Q29tcG9uZW50') ){
-					$this->s2_ggggggggol[] = $s2_ddddegatsf['d']['lhs'] . " = " . $s2_ddddegatsf['d']['rhs']['t'];
-					$s2_sssssssshl = $s2_ddddegatsf['d']['lhs'];
-					$s2_sssssssshr = $s2_ddddegatsf['d']['rhs'];
-					if( preg_match("/\W/", $s2_sssssssshl ) ){
-						return $this->s2_rorre_dnopser("Line: ".$s2_iiiiegatsf . ": Let variable name should not contain special chars");
-					}
-					$component = $s2_sssssssshr['v']['i']['v'];
-					if( file_exists(s2_aaaaaaaotb('Y2xhc3Nf') . $component . s2_aaaaaaaotb('LnBocA==')) ){
-						require_once(s2_aaaaaaaotb('Y2xhc3Nf') . $component . s2_aaaaaaaotb('LnBocA=='));
-						$v = new HTTPRequest();
-						$this->s2_tluser_tes( $s2_sssssssshl, [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Q2xhc3M='), s2_aaaaaaaotb('dg==')=>$v] );
-					}else{
-						return $this->s2_rorre_dnopser("component not found!");
-					}
-				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('QXNzaWdu') ){
+				if( $s2_ddddegatsf['k']['v'] == "Assign" ){
 					$var = $s2_ddddegatsf['d']['lhs']['v']['v'];
 					$s2_sssssssshl = $this->s2_eeulav_teg($s2_ddddegatsf['d']['lhs']);
-					$s2_sssssssshr = $this->s2_eeulav_teg($s2_ddddegatsf['d']['rhs']);
+					if( $s2_ddddegatsf['d']['rhs']['t'] == "Function" ){
+						$val = $this->s2_noitcnuf_od( $s2_ddddegatsf['d']['rhs']['v'] );
+						if( $s2_ddddegatsf['d']['rhs']['v']['return'] ){
+							$s2_sssssssshr = $val;
+						}
+					}else{
+						$s2_sssssssshr = $this->s2_eeulav_teg($s2_ddddegatsf['d']['rhs']);
+					}
 					if( $s2_sssssssshl['t'] != $s2_sssssssshr['t'] ){
 						$this->s2_ggggggggol[] = $s2_sssssssshr['v'];
 						$this->s2_ggggggggol[] = "Warning: Assign: ". $s2_sssssssshl['t'] . ":" . $var . " = " . $s2_sssssssshr['t']. ":";
@@ -243,7 +254,7 @@ class api_engine{
 					}
 					$this->s2_tluser_tes( $var, $s2_sssssssshr );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RXhwcmVzc2lvbl9VbndhbnRlZA==') ){
+				if( $s2_ddddegatsf['k']['v'] == "Expression_Unwanted" ){
 					$this->s2_ssmeti_pxe = [];
 					$exp = "(" . $s2_ddddegatsf['d']['rhs']['v'] . ")";
 					$exp = preg_replace_callback("/[\(\)\+\-\/\%\*]/", function($m){
@@ -256,11 +267,11 @@ class api_engine{
 						if( trim($j) ){
 							if( is_numeric(trim($j) ) ){}else{
 								$kv = $this->s2_eeulav_teg(trim($j));
-								if( $kv['t'] == s2_aaaaaaaotb('Tg==') || is_numeric($kv['v']) ){
+								if( $kv['t'] == "N" || is_numeric($kv['v']) ){
 									$x[$i] = $this->s2_rebmun_ot_gnirts( $kv['v'] );
 								}else{
 									$this->s2_ggggggggol[] = "Error: Expresssion Variable is not Numeric: " . $j . " : " . $kv['t'];
-									$x[$i] = s2_aaaaaaaotb('MA==');
+									$x[$i] = "0";
 								}
 							}
 						}
@@ -275,9 +286,9 @@ class api_engine{
 						$this->s2_ggggggggol[] = "Expression error: " . $ex->getMessage();
 						$vv = 0;
 					}
-					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], ['t'=>s2_aaaaaaaotb('Tg=='),s2_aaaaaaaotb('dg==')=>$vv] );
+					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], ['t'=>"N","v"=>$vv] );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RXhwcmVzc2lvbg==') ){
+				if( $s2_ddddegatsf['k']['v'] == "Expression" ){
 					$this->s2_ssmeti_pxe = [];
 					$this->s2_ggggggggol[] = $s2_ddddegatsf['d']['rhs']['v'];
 					$exp = "(" . $s2_ddddegatsf['d']['rhs']['v'] . ")";
@@ -290,11 +301,11 @@ class api_engine{
 					foreach( $x as $i=>$j ){
 						if( $i < sizeof($this->s2_ssmeti_pxe) ){
 							$kv = $this->s2_eeulav_teg( trim($this->s2_ssmeti_pxe[$i]) );
-							if( $kv['t'] == s2_aaaaaaaotb('Tg==') || is_numeric($kv['v']) ){
+							if( $kv['t'] == "N" || is_numeric($kv['v']) ){
 								$kv['v'] = $this->s2_rebmun_ot_gnirts( $kv['v'] );
 							}else{
 								$this->s2_ggggggggol[] = "Error: Expresssion Variable is not Numeric: " . $this->s2_ssmeti_pxe[$i] . " : " . $kv['t'];
-								$x[$i] = s2_aaaaaaaotb('MA==');
+								$x[$i] = "0";
 							}
 							$exp2 .= $j . $kv['v'];
 						}else{
@@ -310,23 +321,23 @@ class api_engine{
 						$this->s2_ggggggggol[] = "Expression error: " . $ex->getMessage();
 						$vv = 0;
 					}
-					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], ['t'=>s2_aaaaaaaotb('Tg=='),s2_aaaaaaaotb('dg==')=>$vv] );
+					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], ['t'=>"N","v"=>$vv] );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TWF0aA==') ){
+				if( $s2_ddddegatsf['k']['v'] == "Math" ){
 					$s2________shlv = $this->s2_eeulav_teg($s2_ddddegatsf['d']['lhs']);
-					if( $s2________shlv['t'] != s2_aaaaaaaotb('Tg==') ){
+					if( $s2________shlv['t'] != "N" ){
 						$this->s2_ggggggggol[] = "Warning: Math: lhs: not numeric";
 					}
 					$s2_sssssssshr = $s2_ddddegatsf['d']['rhs'];
 					$s2_sssssssser = $this->s2_hhhhtam_od( $s2_sssssssshr );
-					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$s2_sssssssser] );
+					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], ["t"=>"N", "v"=>$s2_sssssssser] );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('SWY=') ){
+				if( $s2_ddddegatsf['k']['v'] == "If" ){
 					$s2_kkkkkodnoc = true;
 					foreach( $s2_ddddegatsf['d']['cond'] as $ci=>$cd ){
 						$s2_sssssssshl = $this->s2_eeulav_teg($cd['lhs']);
 						$s2_sssssssshr = $this->s2_eeulav_teg($cd['rhs']);
-						$this->s2_ggggggggol[] = s2_aaaaaaaotb('SWYg') . $s2_sssssssshl['t'].":".$s2_sssssssshl['v'] . s2_aaaaaaaotb('IA==') . $cd['op'] . s2_aaaaaaaotb('IA==') . $s2_sssssssshl['t'].":".$s2_sssssssshr['v'];
+						$this->s2_ggggggggol[] = "If " . $s2_sssssssshl['t'].":".$s2_sssssssshl['v'] . " " . $cd['op'] . " " . $s2_sssssssshl['t'].":".$s2_sssssssshr['v'];
 						if( $cd['op'] == "==" ){
 							if( $s2_sssssssshl['t'] == $s2_sssssssshr['t'] ){
 								if( $s2_sssssssshl['v'] == $s2_sssssssshr['v'] ){}else{$s2_kkkkkodnoc = false;break; }
@@ -366,12 +377,12 @@ class api_engine{
 						}
 					}
 					if( $s2_kkkkkodnoc ){
-						//$this->s2_ggggggggol[] = s2_aaaaaaaotb('SWYgbWF0Y2hlZA==');
+						//$this->s2_ggggggggol[] = "If matched";
 					}else{
 						$s2_iiiiegatsf = $this->s2_dnar_txen_dnif( $s2_iiiiegatsf );
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('Rm9y') ){
+				if( $s2_ddddegatsf['k']['v'] == "For" ){
 					$a = false;
 					$vrand = $s2_ddddegatsf['vrand'];
 					if( isset($this->s2_vvvv_dnarv[ $vrand ]) ){
@@ -379,28 +390,28 @@ class api_engine{
 					}
 					if( !$a ){
 						$this->s2_vvvv_dnarv[ $vrand ] = [
-							s2_aaaaaaaotb('cw==') => $this->s2_eeulav_teg($s2_ddddegatsf['d']['start'])['v'],
-							s2_aaaaaaaotb('ZQ==') => $this->s2_eeulav_teg($s2_ddddegatsf['d']['end'])['v'],
-							s2_aaaaaaaotb('bw==') => $s2_ddddegatsf['d']['order'],
-							s2_aaaaaaaotb('bQ==') => $this->s2_eeulav_teg($s2_ddddegatsf['d']['modifier'])['v'],
-							s2_aaaaaaaotb('bXg=') => (int)$s2_ddddegatsf['d']['maxloops'],
-							s2_aaaaaaaotb('YXM=') => $s2_ddddegatsf['d']['as'],
-							s2_aaaaaaaotb('YQ==')=>true,
-							s2_aaaaaaaotb('Yw==')=>0
+							"s" => $this->s2_eeulav_teg($s2_ddddegatsf['d']['start'])['v'],
+							"e" => $this->s2_eeulav_teg($s2_ddddegatsf['d']['end'])['v'],
+							"o" => $s2_ddddegatsf['d']['order'],
+							"m" => $this->s2_eeulav_teg($s2_ddddegatsf['d']['modifier'])['v'],
+							"mx" => (int)$s2_ddddegatsf['d']['maxloops'],
+							"as" => $s2_ddddegatsf['d']['as'],
+							"a"=>true,
+							"c"=>0
 						];
 						$this->s2_ggggggggol[] = "Start: " . $this->s2_vvvv_dnarv[ $vrand ]['s'] . ", End: " . $this->s2_vvvv_dnarv[ $vrand ]['e'] . ", o: " . $this->s2_vvvv_dnarv[ $vrand ]['o']  . ", mx: ". $this->s2_vvvv_dnarv[ $vrand ]['mx'] . ", as: ". $this->s2_vvvv_dnarv[ $vrand ]['as'];
-						$this->s2_tttttluser[ $this->s2_vvvv_dnarv[ $vrand ]['as'] ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$this->s2_vvvv_dnarv[ $vrand ]['s'] ];
+						$this->s2_tttttluser[ $this->s2_vvvv_dnarv[ $vrand ]['as'] ] = ["t"=>"N", "v"=>$this->s2_vvvv_dnarv[ $vrand ]['s'] ];
 					}
 					//print_pre( $this->s2_tttttluser );
 					$c = $this->s2_vvvv_dnarv[ $vrand ]['c']++;
 					$o = $this->s2_vvvv_dnarv[ $vrand ]['o'];
 					$mx = $this->s2_vvvv_dnarv[ $vrand ]['mx'];
-					// $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $s2_iiiiegatsf ][ s2_aaaaaaaotb('c3RhcnQ=') ] = $start;
-					// $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $s2_iiiiegatsf ][ s2_aaaaaaaotb('ZW5k') ] = $end;
+					// $this->s2_eeeeenigne["engine"]['stages'][ $s2_iiiiegatsf ][ "start" ] = $start;
+					// $this->s2_eeeeenigne["engine"]['stages'][ $s2_iiiiegatsf ][ "end" ] = $end;
 					$x = $this->s2_tttttluser[ $this->s2_vvvv_dnarv[ $vrand ]['as'] ]['v'];
 					$e = $this->s2_vvvv_dnarv[ $vrand ]['e'];
 					$f = false;
-					if( $o == s2_aaaaaaaotb('YS16') ){
+					if( $o == "a-z" ){
 						$this->s2_ggggggggol[] = "For: ". $x . " <= " . $e . " && " . $c . " < " . $mx;
 						if( $x <= $e && $c < $mx ){$f = true;}
 					}else{
@@ -414,12 +425,12 @@ class api_engine{
 						$s2_iiiiegatsf = $this->s2_dnar_txen_dnif( $s2_iiiiegatsf );
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RW5kRm9y') ){
+				if( $s2_ddddegatsf['k']['v'] == "EndFor" ){
 					$vrand = $s2_ddddegatsf['vrand'];
 					$as = $this->s2_vvvv_dnarv[ $vrand ]['as'];
 					$o = $this->s2_vvvv_dnarv[ $vrand ]['o'];
 					$m = $this->s2_vvvv_dnarv[ $vrand ]['m'];
-					if( $o == s2_aaaaaaaotb('YS16') ){
+					if( $o == "a-z" ){
 						$this->s2_tttttluser[ $as ]['v']+=$m;
 					}else{
 						$this->s2_tttttluser[ $as ]['v']-=$m;
@@ -431,35 +442,33 @@ class api_engine{
 						$s2_iiiiegatsf--;
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('Rm9yRWFjaA==') ){
+				if( $s2_ddddegatsf['k']['v'] == "ForEach" ){
 					$a = false;
 					$vrand = $s2_ddddegatsf['vrand'];
 					if( isset($this->s2_vvvv_dnarv[ $vrand ]) ){
 						$a = $this->s2_vvvv_dnarv[ $vrand ]['a'];
 					}
 					$v = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['var'] );
-					if( $v['t']!=s2_aaaaaaaotb('Tw==') && $v['t']!=s2_aaaaaaaotb('TA==') ){
+					if( $v['t']!="O" && $v['t']!="L" ){
 						$this->s2_ggggggggol[] = "Error: ForEach Expects a List";
-						return $this->s2_rorre_dnopser(s2_aaaaaaaotb('SW5jb3JyZWN0IHZhcmlhYmxlIGZvciBGb3JFYWNo'));
+						return $this->s2_rorre_dnopser("Incorrect variable for ForEach");
 					}
-					//print_pre( $v );exit;
 					if( !$a ){
-						if( $v['t'] != s2_aaaaaaaotb('Tw==') && $v['t'] != s2_aaaaaaaotb('TA==') ){
-							return $this->s2_rorre_dnopser(s2_aaaaaaaotb('SW5jb3JyZWN0IHZhcmlhYmxlIA=='). $v['t'] .s2_aaaaaaaotb('IGZvciBGb3JFYWNo'));
+						if( $v['t'] != "O" && $v['t'] != "L" ){
+							return $this->s2_rorre_dnopser("Incorrect variable ". $v['t'] ." for ForEach");
 						}
 						$this->s2_vvvv_dnarv[ $vrand ] = [
-							s2_aaaaaaaotb('dmFy')=>$s2_ddddegatsf['d']['var']['v'],
-							s2_aaaaaaaotb('a2V5cw==')=>array_keys($v['v']),
-							s2_aaaaaaaotb('aw==') => $s2_ddddegatsf['d']['key'],
-							s2_aaaaaaaotb('dg==') => $s2_ddddegatsf['d']['value'],
-							s2_aaaaaaaotb('YQ==')=>true,
+							"var"=>$s2_ddddegatsf['d']['var']['v'],
+							"keys"=>array_keys($v['v']),
+							"k" => $s2_ddddegatsf['d']['key'],
+							"v" => $s2_ddddegatsf['d']['value'],
+							"a"=>true,
 						];
 					}
 					if( sizeof( $this->s2_vvvv_dnarv[ $vrand ]['keys'] ) ){
-						//print_r( $this->s2_vvvv_dnarv[ $vrand ]['keys'] );
 						$k1 = array_splice($this->s2_vvvv_dnarv[ $vrand ]['keys'],0,1)[0];
-						//echo $k1 . s2_aaaaaaaotb('LS0=');
-						$this->s2_tttttluser[ $this->s2_vvvv_dnarv[ $vrand ]['k'] ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$k1 ];
+						//echo $k1 . "--";
+						$this->s2_tttttluser[ $this->s2_vvvv_dnarv[ $vrand ]['k'] ] = ["t"=>"T", "v"=>$k1 ];
 						$this->s2_tttttluser[ $this->s2_vvvv_dnarv[ $vrand ]['v'] ] = $v['v'][ $k1 ];
 						$this->s2_ggggggggol[] = $k1;
 					}else{
@@ -467,12 +476,12 @@ class api_engine{
 						$s2_iiiiegatsf = $this->s2_dnar_txen_dnif( $s2_iiiiegatsf );
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RW5kRm9yRWFjaA==') ){
+				if( $s2_ddddegatsf['k']['v'] == "EndForEach" ){
 					$vrand = $s2_ddddegatsf['vrand'];
 					$s2_iiiiegatsf = $this->s2_dnar_verp_dnif( $s2_iiiiegatsf );
 					$s2_iiiiegatsf--;
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('V2hpbGU=') ){
+				if( $s2_ddddegatsf['k']['v'] == "While" ){
 					$a = false;
 					$vrand = $s2_ddddegatsf['vrand'];
 					if( isset($this->s2_vvvv_dnarv[ $vrand ]) ){
@@ -480,9 +489,9 @@ class api_engine{
 					}
 					if( !$a ){
 						$this->s2_vvvv_dnarv[ $vrand ] = [
-							s2_aaaaaaaotb('bXg=') => (int)$s2_ddddegatsf['d']['maxloops'],
-							s2_aaaaaaaotb('YQ==')=>true,
-							s2_aaaaaaaotb('Yw==')=>0
+							"mx" => (int)$s2_ddddegatsf['d']['maxloops'],
+							"a"=>true,
+							"c"=>0
 						];
 					}
 					//print_pre( $this->s2_tttttluser );
@@ -494,7 +503,7 @@ class api_engine{
 						$s2_sssssssshr = $this->s2_eeulav_teg( $cd['rhs'] );
 						$op = $cd['op'];
 						if( $s2_sssssssshl['t'] != $s2_sssssssshr['t'] ){
-							$this->s2_ggggggggol[] = "Error: while condition: data type mismatch: " . $s2_sssssssshl['t'] . ":" . $s2_sssssssshl['v'] . s2_aaaaaaaotb('IHRvIA==') . $s2_sssssssshr['t'] . ":" . $s2_sssssssshr['v'];
+							$this->s2_ggggggggol[] = "Error: while condition: data type mismatch: " . $s2_sssssssshl['t'] . ":" . $s2_sssssssshl['v'] . " to " . $s2_sssssssshr['t'] . ":" . $s2_sssssssshr['v'];
 						}
 						if( $op == "==" ){
 							$this->s2_ggggggggol[] = $s2_sssssssshl['v'] . " == " . $s2_sssssssshr['v'];
@@ -515,7 +524,7 @@ class api_engine{
 							$this->s2_ggggggggol[] = $s2_sssssssshl['v'] . " >= " . $s2_sssssssshr['v'];
 							if( $s2_sssssssshl['v'] >= $s2_sssssssshr['v'] ){}else{$f = false;}
 						}else{
-							$this->s2_ggggggggol[] = $op . s2_aaaaaaaotb('IG5vdCBpbXBsZW1lbnRlZA==');
+							$this->s2_ggggggggol[] = $op . " not implemented";
 							$f = false;
 						}
 					}
@@ -526,7 +535,7 @@ class api_engine{
 						$s2_iiiiegatsf = $this->s2_dnar_txen_dnif( $s2_iiiiegatsf );
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RW5kV2hpbGU=') ){
+				if( $s2_ddddegatsf['k']['v'] == "EndWhile" ){
 					$vrand = $s2_ddddegatsf['vrand'];
 					if( $this->s2_vvvv_dnarv[ $vrand ]['c'] >= $this->s2_vvvv_dnarv[ $vrand ]['mx'] ){
 						$this->s2_ggggggggol[] = "For crossed maximum iterations!";
@@ -535,104 +544,200 @@ class api_engine{
 						$s2_iiiiegatsf--;
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('QnJlYWtMb29w') ){
-					for($s2_222iegatsf=$s2_iiiiegatsf+1;$s2_222iegatsf<sizeof($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages']);$s2_222iegatsf++){
-						$ld = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][$s2_222iegatsf];
-						if( $ld['k']['v'] == s2_aaaaaaaotb('RW5kV2hpbGU=') || $ld['k']['v'] == s2_aaaaaaaotb('RW5kRm9yRWFjaA==') || $ld['k']['v'] == s2_aaaaaaaotb('RW5kRm9y') ){
+				if( $s2_ddddegatsf['k']['v'] == "BreakLoop" ){
+					for($s2_222iegatsf=$s2_iiiiegatsf+1;$s2_222iegatsf<sizeof($this->s2_eeeeenigne["engine"]['stages']);$s2_222iegatsf++){
+						$ld = $this->s2_eeeeenigne["engine"]['stages'][$s2_222iegatsf];
+						if( $ld['k']['v'] == "EndWhile" || $ld['k']['v'] == "EndForEach" || $ld['k']['v'] == "EndFor" ){
 							//$vrand = $ld['vrand'];
 							$s2_iiiiegatsf = $s2_222iegatsf;
 						}
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TmV4dExvb3A=') ){
-					for($s2_222iegatsf=$s2_iiiiegatsf+1;$s2_222iegatsf<sizeof($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages']);$s2_222iegatsf++){
-						$ld = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][$s2_222iegatsf];
-						if( $ld['k']['v'] == s2_aaaaaaaotb('RW5kV2hpbGU=') || $ld['k']['v'] == s2_aaaaaaaotb('RW5kRm9yRWFjaA==') || $ld['k']['v'] == s2_aaaaaaaotb('RW5kRm9y') ){
+				if( $s2_ddddegatsf['k']['v'] == "NextLoop" ){
+					for($s2_222iegatsf=$s2_iiiiegatsf+1;$s2_222iegatsf<sizeof($this->s2_eeeeenigne["engine"]['stages']);$s2_222iegatsf++){
+						$ld = $this->s2_eeeeenigne["engine"]['stages'][$s2_222iegatsf];
+						if( $ld['k']['v'] == "EndWhile" || $ld['k']['v'] == "EndForEach" || $ld['k']['v'] == "EndFor" ){
 							//$vrand = $ld['vrand'];
 							$s2_iiiiegatsf = $s2_222iegatsf-1;
 						}
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('U2V0TGFiZWw=') ){
+				if( $s2_ddddegatsf['k']['v'] == "SetLabel" ){
 					$this->s2_ssssslebal[ $s2_ddddegatsf['d']['v'] ] = $s2_iiiiegatsf;
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('SnVtcFRvTGFiZWw=') ){
+				if( $s2_ddddegatsf['k']['v'] == "JumpToLabel" ){
 					if( isset($this->s2_ssssslebal[ $s2_ddddegatsf['d']['v'] ]) ){
 						$s2_iiiiegatsf = $this->s2_ssssslebal[ $s2_ddddegatsf['d']['v'] ];
 					}else{
 						$this->s2_ggggggggol[] = "Label not found!";
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('UmVzcG9uZA==') ){
+				if( $s2_ddddegatsf['k']['v'] == "Respond" ){
 					//print_pre( $this->s2_tttttluser );
-					$this->s2_ggggggggol[] = s2_aaaaaaaotb('UmVzcG9uZA==');
-					if( $s2_ddddegatsf['d']['t'] == s2_aaaaaaaotb('Tw==') ){
+					$this->s2_ggggggggol[] = "Respond";
+					if( $s2_ddddegatsf['d']['t'] == "O" ){
 						$this->s2_eeesnopser['body'] =$this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['v'] );
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
-						$this->s2_eeesnopser['body'] =[s2_aaaaaaaotb('c3RhdHVz')=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('VW5oYW5kbGVkIHJldHJ1biB0eXBl')];
+						$this->s2_eeesnopser['body'] =["status"=>"fail", "error"=>"Unhandled retrun type"];
 						return $this->s2_eeesnopser;
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('UmVzcG9uZEpTT04=') ){
+				if( $s2_ddddegatsf['k']['v'] == "RespondStatus" ){
+					//print_pre( $this->s2_tttttluser );
+					$this->s2_ggggggggol[] = "RespondStatus";
+					$this->s2_eeesnopser['body'] = $this->s2_yarra_ot_etalpmet([
+						'status'=>$s2_ddddegatsf['d']['status'],
+						'data'=>$this->s2_eeulav_teg($s2_ddddegatsf['d']['data']),
+						'error'=>$this->s2_eeulav_teg($s2_ddddegatsf['d']['error']),
+					]);
+					return $this->s2_eeesnopser;
+				}
+				if( $s2_ddddegatsf['k']['v'] == "RespondJSON" ){
 					if( isset($this->s2_ssssnoitpo['raw_output']) ){
-						return [s2_aaaaaaaotb('c3RhdHVz')=>s2_aaaaaaaotb('c3VjY2Vzcw=='), s2_aaaaaaaotb('ZGF0YQ==')=>$this->s2_etutitsbus_ot_etalpmet( $s2_ddddegatsf['d']['output']['v'] ) ];
-					}else if( $s2_ddddegatsf['d']['output']['t'] == s2_aaaaaaaotb('Tw==') ){
+						return ["status"=>"success", "data"=>$this->s2_etutitsbus_ot_etalpmet( $s2_ddddegatsf['d']['output']['v'] ) ];
+					}else if( $s2_ddddegatsf['d']['output']['t'] == "O" ){
 						$this->s2_eeesnopser['body'] =$this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['output']['v'] );
-						if( $s2_ddddegatsf['d']['pretty']['v'] != s2_aaaaaaaotb('ZmFsc2U=') && $s2_ddddegatsf['d']['pretty']['v'] !== false  ){
+						if( $s2_ddddegatsf['d']['pretty']['v'] != "false" && $s2_ddddegatsf['d']['pretty']['v'] !== false  ){
 							$this->s2_eeesnopser['pretty'] = true;
 						}
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
-						$this->s2_eeesnopser['body'] = [s2_aaaaaaaotb('c3RhdHVz')=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('VW5oYW5kbGVkIHJldHJ1biB0eXBl')];
+						$this->s2_eeesnopser['body'] = ["status"=>"fail", "error"=>"Unhandled retrun type"];
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('UmVzcG9uZFZhcg==') ){
-					if( isset($this->s2_ssssnoitpo['raw_output']) ){
-						if( $s2_ddddegatsf['d']['output']['t'] == s2_aaaaaaaotb('Vg==') ){
-							$v = $this->s2_eeulav_teg($s2_ddddegatsf['d']['output']);
+				if( $s2_ddddegatsf['k']['v'] == "RespondVar" ){
+					$r = false;
+					//var_dump( $s2_ddddegatsf['d']['raw'] );exit;
+					if( isset($s2_ddddegatsf['d']['raw']) ){ if( $s2_ddddegatsf['d']['raw']['v'] === "true" ){$r = true;} }
+					if( isset($this->s2_ssssnoitpo['raw_output']) || $r ){
+						//echo "giving raw";exit;
+						if( $s2_ddddegatsf['d']['output']['t'] == "V" ){
+							$this->s2_eeesnopser['body'] = $this->s2_eeulav_teg($s2_ddddegatsf['d']['output']);
 						}else{
-							$v = $s2_ddddegatsf['d']['output'];
+							$this->s2_eeesnopser['body'] = $s2_ddddegatsf['d']['output'];
 						}
-						return [s2_aaaaaaaotb('c3RhdHVz')=>s2_aaaaaaaotb('c3VjY2Vzcw=='), s2_aaaaaaaotb('ZGF0YQ==')=>$v ];
-					}else if( $s2_ddddegatsf['d']['output']['t'] == s2_aaaaaaaotb('Vg==') ){
+						return $this->s2_eeesnopser;
+					}else if( $s2_ddddegatsf['d']['output']['t'] == "V" ){
 						$this->s2_eeesnopser['body'] = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['output'] );
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
-						$this->s2_eeesnopser['body'] = [s2_aaaaaaaotb('c3RhdHVz')=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('VW5oYW5kbGVkIHJldHJ1biB0eXBl')];
+						$this->s2_eeesnopser['body'] = ["status"=>"fail", "error"=>"Unhandled retrun type"];
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('UmVzcG9uZFhNTA==') ){
-					//print_pre( $this->s2_tttttluser );
-					$this->s2_ggggggggol[] = s2_aaaaaaaotb('UmVzcG9uZA==');
-					if( $s2_ddddegatsf['d']['output']['t'] == s2_aaaaaaaotb('Tw==') ){
+				if( $s2_ddddegatsf['k']['v'] == "RespondGlobals" ){
+
+					$vv = [];
+					foreach( $this->s2_tttttluser as $ii=>$jj ){
+						if( $s2_ddddegatsf['d']['raw']['v'] === "true" ){
+							$vv[ $ii ] = $this->s2_eeulav_teg($jj);
+						}else{
+							$vv[ $ii ] = $this->s2_eulav_erup_teg($jj);
+						}
+					}
+					$this->s2_eeesnopser['body'] = $vv;
+					return $this->s2_eeesnopser;
+				}
+				if( $s2_ddddegatsf['k']['v'] == "RespondVars" ){
+					if( isset($this->s2_ssssnoitpo['raw_output']) ){
+						$vv = [];
+						foreach( $s2_ddddegatsf['d']['outputs'] as $ii=>$jj ){
+							$vv[ $jj['v']['v'] ] = $this->s2_eeulav_teg($jj);
+						}
+						return ["status"=>"success", "data"=>$vv ];
+					}else{
+						$vv = [];
+						foreach( $s2_ddddegatsf['d']['outputs'] as $ii=>$jj ){
+							$vv[ $jj['v']['v'] ] = $this->s2_eulav_erup_teg($jj);
+						}
+						$this->s2_eeesnopser['body'] = $vv;
+						return $this->s2_eeesnopser;
+					}
+				}
+				if( $s2_ddddegatsf['k']['v'] == "RespondXML" ){
+					if( $s2_ddddegatsf['d']['output']['t'] == "O" ){
 						$this->s2_eeesnopser['body'] =$this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['v'] );
 						return $this->s2_eeesnopser;
 					}else{
 						$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
-						$this->s2_eeesnopser['body'] = [s2_aaaaaaaotb('c3RhdHVz')=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('VW5oYW5kbGVkIHJldHJ1biB0eXBl')];
+						$this->s2_eeesnopser['body'] = ["status"=>"fail", "error"=>"Unhandled retrun type"];
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('QWRkSFRNTA==') ){
+				//echo $s2_ddddegatsf['k']['v'];exit;
+				if( $s2_ddddegatsf['k']['v'] == "RespondPage" ){
+					if( isset($s2_ddddegatsf['d']['page']['v']['i']['v']) ){
+						if( $s2_ddddegatsf['d']['page']['v']['i']['v'] != "" ){
+							$page_version = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_pages_versions", [
+								"_id"=>$s2_ddddegatsf['d']['page']['v']['i']['v']
+							]);
+							if( !$page_version['data'] ){
+								$this->s2_eeesnopser = [
+									'statusCode'=>500, 
+									'body'=> $page_version, 
+									["headers"=>['content-type'=>"application/json"]]
+								];break;
+							}
+							$page_version = $page_version['data'];
+							require_once("index_page.php");exit;
+						}else{
+							$this->s2_eeesnopser = [
+								'statusCode'=>500, 
+								'body'=> "Page version not found",
+								["headers"=>['content-type'=>"text/plain"]]
+							];break;
+						}
+					}else{
+						$this->s2_eeesnopser = [
+							'statusCode'=>500, 
+							'body'=> "Page version not found",
+							["headers"=>['content-type'=>"text/plain"]]
+						];break;
+					}
+				}
+				if( $s2_ddddegatsf['k']['v'] == "RespondFile" ){
+					if( isset($s2_ddddegatsf['d']['file']['v']['i']['v']) ){
+						if( $s2_ddddegatsf['d']['file']['v']['i']['v'] != "" ){
+							$file_version = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_files", [
+								"_id"=>$s2_ddddegatsf['d']['file']['v']['i']['v']
+							]);
+							//print_r( $file_version );
+							if( !$file_version['data'] ){
+								$this->s2_eeesnopser = [
+									'statusCode'=>500, 
+									'body'=> $file_version, 
+									["headers"=>['content-type'=>"application/json"]]
+								];break;
+							}
+							$file_version = $file_version['data'];
+							$file_id = $file_version['_id'];
+							require_once("index_file.php");exit;
+						}else{
+							$this->s2_noitucexe_dne(500, ["status"=>"fail", "error"=>"File not found"] );break;
+						}
+					}else{
+						$this->s2_noitucexe_dne(500, ["status"=>"fail", "error"=>"File not found"] );break;
+					}
+				}
+				if( $s2_ddddegatsf['k']['v'] == "AddHTML" ){
 					//print_pre( $this->s2_tttttluser );
 					if( $this->s2_eeeeenigne['output-type'] != "text/html" ){
-						$this->s2_ggggggggol[] = s2_aaaaaaaotb('SW5jb3JyZWN0IHBhZ2UgdHlwZSBhbmQgUmVzcG9uc2UgRm9ybWF0');
+						$this->s2_ggggggggol[] = "Incorrect page type and Response Format";
 					}else{
-						$this->s2_ggggggggol[] = s2_aaaaaaaotb('QWRkSFRNTA==');
-						if( gettype( $this->s2_eeesnopser['body'] ) == s2_aaaaaaaotb('YXJyYXk=') ){
+						$this->s2_ggggggggol[] = "AddHTML";
+						if( gettype( $this->s2_eeesnopser['body'] ) == "array" ){
 							$this->s2_eeesnopser['body'] = "";
 						}
-						if( $s2_ddddegatsf['d']['t'] == s2_aaaaaaaotb('VA==') || $s2_ddddegatsf['d']['t'] == s2_aaaaaaaotb('VFQ=') ){
+						if( $s2_ddddegatsf['d']['t'] == "T" || $s2_ddddegatsf['d']['t'] == "TT" ){
 							$this->s2_eeesnopser['body'] .= $this->s2_srav_lmth_ecalper( $s2_ddddegatsf['d']['v'] ) . "\n";
-						}else if( $s2_ddddegatsf['d']['t'] == s2_aaaaaaaotb('SFQ=') ){
+						}else if( $s2_ddddegatsf['d']['t'] == "HT" ){
 							$this->s2_eeesnopser['body'] .= $this->s2_srav_lmth_ecalper( $s2_ddddegatsf['d']['v'] ) . "\n";
-						}else if( $s2_ddddegatsf['d']['t'] == s2_aaaaaaaotb('Vg==') ){
+						}else if( $s2_ddddegatsf['d']['t'] == "V" ){
 							$d = $this->s2_eeulav_teg( $s2_ddddegatsf['d'] );
-							if( gettype($d) == s2_aaaaaaaotb('YXJyYXk=') ){
-								if( $d['t'] == s2_aaaaaaaotb('Tw==') || $d['t'] == s2_aaaaaaaotb('TA==') ){
+							if( gettype($d) == "array" ){
+								if( $d['t'] == "O" || $d['t'] == "L" ){
 									$this->s2_eeesnopser['body'] .= json_encode( $this->s2_yarra_ot_etalpmet( $d['v'] ) , JSON_PRETTY_PRINT);
 								}else{
 									$this->s2_eeesnopser['body'] .= $this->s2_srav_lmth_ecalper( $d['v'] );
@@ -645,23 +750,40 @@ class api_engine{
 						}
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TG9n') ){
-					if( $s2_ddddegatsf['d']['t'] == s2_aaaaaaaotb('Tw==') ){
+				if( $s2_ddddegatsf['k']['v'] == "RenderHTML" ){
+					//print_pre( $this->s2_tttttluser );
+					if( $this->s2_eeeeenigne['output-type'] != "text/html" ){
+						$this->s2_ggggggggol[] = "Incorrect page type and Response Format";
+					}else{
+						$this->s2_ggggggggol[] = "RenderHTML";
+						if( gettype( $this->s2_eeesnopser['body'] ) == "array" ){
+							$this->s2_eeesnopser['body'] = "";
+						}
+						if( $s2_ddddegatsf['d']['t'] == "T" || $s2_ddddegatsf['d']['t'] == "TT" || $s2_ddddegatsf['d']['t'] == "HT" ){
+							$this->s2_eeesnopser['body'] .= $this->s2_srav_lmth_ecalper( $s2_ddddegatsf['d']['v'] ) . "\n";
+						}else{
+							$this->s2_eeesnopser['body'] .= "\nIncorrect Output Format: " . $s2_ddddegatsf['d']['output']['t'];
+							$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
+						}
+					}
+				}
+				if( $s2_ddddegatsf['k']['v'] == "Log" ){
+					if( $s2_ddddegatsf['d']['t'] == "O" ){
 						$this->s2_ggggggggol[] = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['v'] );
 					}else{
 						$this->s2_ggggggggol[] = "Log: Incorrect Type: " . $s2_ddddegatsf['d']['t'];
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RnVuY3Rpb24=') ){
+				if( $s2_ddddegatsf['k']['v'] == "Function" ){
 					$val = $this->s2_noitcnuf_od( $s2_ddddegatsf['d'] );
-					if( $s2_ddddegatsf['d']['self'] == false ){
+					if( $s2_ddddegatsf['d']['return'] ){
 						$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], $val );
 					}
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('RnVuY3Rpb25DYWxs') ){
+				if( $s2_ddddegatsf['k']['v'] == "FunctionCall" ){
 					$s2_sssssssser = $this->s2_llac_noitcnuf_od( $s2_ddddegatsf['d'] );
 					//print_pre( $s2_sssssssser );
-					if( $s2_sssssssser['status'] == s2_aaaaaaaotb('ZmFpbA==') ){
+					if( $s2_sssssssser['status'] == "fail" ){
 						if( isset($this->s2_ssssnoitpo['raw_output']) ){
 							return $s2_sssssssser;
 						}else{
@@ -674,50 +796,51 @@ class api_engine{
 						}
 					}
 					//print_pre( $s2_sssssssser );
-					if( !isset($s2_sssssssser['data']) ){
+					if( !isset($s2_sssssssser['body']) ){
 						$this->s2_eeesnopser['statusCode'] = 500;
 						$this->s2_eeesnopser['body'] = "functionCall: No data returned";
 						return $this->s2_eeesnopser;
 					}
-					if( !isset($s2_sssssssser['data']['t']) || !isset($s2_sssssssser['data']['v']) ){
+					if( !isset($s2_sssssssser['body']['t']) || !isset($s2_sssssssser['body']['v']) ){
 						$this->s2_eeesnopser['statusCode'] = 500;
 						$this->s2_eeesnopser['body'] = "functionCall: Incorrect return type". json_encode($s2_sssssssser['data']);
 						return $this->s2_eeesnopser;
 					}
-					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], $s2_sssssssser['data'] );
+					$this->s2_tluser_tes( $s2_ddddegatsf['d']['lhs'], $s2_sssssssser['body'] );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TW9uZ29EYg==') ){
+				if( $s2_ddddegatsf['k']['v'] == "MongoDb" ){
 					$val = $this->s2_bbbbdognom( $s2_ddddegatsf );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('TXlTcWw=') ){
+				if( $s2_ddddegatsf['k']['v'] == "MySql" ){
 					$val = $this->s2_llllllqsym( $s2_ddddegatsf );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('SW50ZXJuYWwtVGFibGU=') ){
+				if( $s2_ddddegatsf['k']['v'] == "Internal-Table" ){
 					$val = $this->table_dynamic( $s2_ddddegatsf );
 				}
-				if( $s2_ddddegatsf['k']['v'] == s2_aaaaaaaotb('SFRUUFJlcXVlc3Q=') ){
+				if( $s2_ddddegatsf['k']['v'] == "HTTPRequest" ){
 					$val = $this->s2_tseuqeRPTTH( $s2_ddddegatsf );
 				}
+				if( $s2_ddddegatsf['k']['v'] == "Create-Access-Key" ){
+					$val = $this->s2_yek_etaerc_htua( $s2_ddddegatsf );
+				}
+				if( $s2_ddddegatsf['k']['v'] == "Generate-Session-Key" ){
+					$val = $this->s2_yek_noisses_etareneg_htua( $s2_ddddegatsf );
+				}
+				if( $s2_ddddegatsf['k']['v'] == "Assume-Session-Key" ){
+					$val = $this->s2_yek_noisses_emussa_htua( $s2_ddddegatsf );
+				}
+				
 			}else{ // variable commands
-				if( $s2_ddddegatsf['k']['v'] != s2_aaaaaaaotb('Tm9uZQ==') && $s2_ddddegatsf['k']['v'] != s2_aaaaaaaotb('bm9uZQ==') ){
+				if( $s2_ddddegatsf['k']['v'] != "None" && $s2_ddddegatsf['k']['v'] != "none" ){
 					if( $this->s2_ttttttessi( $s2_ddddegatsf['k']['v'] ) ){
 						//print_pre( $s2_ddddegatsf['k'] );//exit;
 						$var = $s2_ddddegatsf['k']['v'];
-						if( $s2_ddddegatsf['k']['plg'] ){
-							if( $s2_ddddegatsf['k']['vs']['d']['self'] && $s2_ddddegatsf['k']['vs']['d']['replace'] ){
-								$newval = $this->s2_eulav_glp_teg(['t'=>s2_aaaaaaaotb('Vg=='), 'v'=>$s2_ddddegatsf['k']]);
-								$this->s2_tluser_tes( $var, $newval );
-							}else{
-								$this->s2_eulav_glp_tes($s2_ddddegatsf['k']);
-							}
+						if( $s2_ddddegatsf['k']['vs']['d']['self'] && $s2_ddddegatsf['k']['vs']['d']['replace'] ){
+							$newval = $this->s2_eeulav_teg(['t'=>"V", 'v'=>$s2_ddddegatsf['k']]);
+							//print_pre( $newval );exit;
+							$this->s2_tluser_tes( $var, $newval );
 						}else{
-							if( $s2_ddddegatsf['k']['vs']['d']['self'] && $s2_ddddegatsf['k']['vs']['d']['replace'] ){
-								$newval = $this->s2_eeulav_teg(['t'=>s2_aaaaaaaotb('Vg=='), 'v'=>$s2_ddddegatsf['k']]);
-								//print_pre( $newval );exit;
-								$this->s2_tluser_tes( $var, $newval );
-							}else{
-								$this->s2_eeulav_tes($s2_ddddegatsf['k']);
-							}
+							$this->s2_eeulav_tes($s2_ddddegatsf['k']);
 						}
 					}else{
 						$this->s2_ggggggggol[] = "ERROR: " . $s2_ddddegatsf['k']['v'] . " not found!";
@@ -726,6 +849,7 @@ class api_engine{
 			}
 			$s2_verp_iegatsf = $s2_iiiiegatsf;
 		}
+		//print_r( $this->s2_eeesnopser );
 		return $this->s2_eeesnopser;
 	}
 	function s2_srav_lmth_ecalper( $v ){
@@ -733,7 +857,7 @@ class api_engine{
 		if( $m[0] ){
 			foreach( $m[0] as $ii=>$jj ){
 				$d = $this->s2_eeulav_teg( trim($m[1][$ii]) );
-				if( $d['t'] == s2_aaaaaaaotb('Tw==') || $d['t'] == s2_aaaaaaaotb('TA==') ){
+				if( $d['t'] == "O" || $d['t'] == "L" ){
 					$v = str_replace( $jj, json_encode($d['v']), $v );
 				}else{
 					$v = str_replace( $jj, $d['v'], $v );
@@ -747,306 +871,458 @@ class api_engine{
 		$_fn_inputs = $s2_ddddegatsf['inputs'];
 		unset($_fn_inputs['type']);
 		$_c = "";
-		$_ct = s2_aaaaaaaotb('Qg==');
-		foreach( $_fn_inputs as $i=>$j ){if( $i != s2_aaaaaaaotb('dHlwZQ==') ){
-			if( $j['t'] == s2_aaaaaaaotb('Vg==') ){
+		$_ct = "B";
+		foreach( $_fn_inputs as $i=>$j ){if( $i != "type" ){
+			if( $j['t'] == "V" ){
+				//echo $j['v']['v']. "\n";
 				$v = $this->s2_eeulav_teg( $j['v']['v'] );
 				$_fn_inputs[ $i ]['v'] = $v['v'];
 				$_fn_inputs[ $i ]['t'] = $v['t'];
 			}
 		}}
-		if( !$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] && gettype( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] ) != s2_aaaaaaaotb('YXJyYXk=') ){
-			$this->s2_ggggggggol[] = "Variable [".$_fn_inputs[s2_aaaaaaaotb('cDE=')]['name']."] empty";
+		if( !$_fn_inputs["p1"]['v'] && gettype( $_fn_inputs["p1"]['v'] ) != "array" ){
+			$this->s2_ggggggggol[] = "Variable [".$_fn_inputs["p1"]['name']."] empty";
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('Um91bmQ=') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$p1 = $this->s2_rebmun_ot_gnirts($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
-			if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] ){
-				$_c = round( $p1, $this->s2_rebmun_ot_gnirts($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']), constant($_fn_inputs[s2_aaaaaaaotb('cDM=')]['v']) );
+		if( $s2_ddddegatsf['fn'] == "Round" ){
+			$_ct = "N";
+			$p1 = $this->s2_rebmun_ot_gnirts($_fn_inputs["p1"]['v']);
+			if( $_fn_inputs["p3"]['v'] ){
+				$op = $_fn_inputs["p3"]['v'];
+				if( $op == "Upper" ){
+					$op = PHP_ROUND_HALF_UP;
+				}else if( $op == "Upper" ){
+					$op = PHP_ROUND_HALF_DOWN;
+				}else{
+					$op = null;
+				}
+				$_c = round( $p1, $this->s2_rebmun_ot_gnirts($_fn_inputs["p2"]['v']), $op );
 			}else{
-				$_c = round( $p1, $this->s2_rebmun_ot_gnirts($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']) );
+				$_c = round( $p1, $this->s2_rebmun_ot_gnirts($_fn_inputs["p2"]['v']) );
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('UmFuZG9tIE51bWJlcg==') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			if( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']  && $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] ){
-				$_c = rand((int) $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], (int)$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Random Number" ){
+			$_ct = "N";
+			if( $_fn_inputs["p1"]['v']  && $_fn_inputs["p2"]['v'] ){
+				$_c = rand((int) $_fn_inputs["p1"]['v'], (int)$_fn_inputs["p2"]['v'] );
 			}else{
 				$_c = rand( 0,1000 );
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('VGV4dCB0byBOdW1iZXI=') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = $this->s2_rebmun_ot_gnirts( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Text to Number" ){
+			$_ct = "N";
+			$_c = $this->s2_rebmun_ot_gnirts( $_fn_inputs["p1"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TnVtYmVyIEZvcm1hdA==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = (string)number_format($this->s2_rebmun_ot_gnirts($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']),(int)$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']);
+		if( $s2_ddddegatsf['fn'] == "Number Format" ){
+			$_ct = "T";
+			$_c = (string)number_format($this->s2_rebmun_ot_gnirts($_fn_inputs["p1"]['v']),(int)$_fn_inputs["p2"]['v']);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('VGV4dCBQYWRkaW5n') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$m = $_fn_inputs[s2_aaaaaaaotb('cDQ=')]['v'];
-			if( $m == s2_aaaaaaaotb('TGVmdA==') ){$m = STR_PAD_LEFT;}
-			if( $m == s2_aaaaaaaotb('UmlnaHQ=') ){$m = STR_PAD_RIGHT;}
-			if( $m == s2_aaaaaaaotb('Qm90aA==') ){$m = STR_PAD_BOTH;}
-			$_c = (string)str_pad( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], (string)$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'],$m);
+		if( $s2_ddddegatsf['fn'] == "Text Padding" ){
+			$_ct = "T";
+			$m = $_fn_inputs["p4"]['v'];
+			if( $m == "Left" ){$m = STR_PAD_LEFT;}
+			if( $m == "Right" ){$m = STR_PAD_RIGHT;}
+			if( $m == "Both" ){$m = STR_PAD_BOTH;}
+			$_c = (string)str_pad( $_fn_inputs["p1"]['v'], $_fn_inputs["p2"]['v'], (string)$_fn_inputs["p3"]['v'],$m);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TnVtYmVyIHRvIFRleHQ=') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = (string)$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
+		if( $s2_ddddegatsf['fn'] == "Number to Text" ){
+			$_ct = "T";
+			$_c = (string)$_fn_inputs["p1"]['v'];
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('aXMgaXQgVGV4dA==') ){
-			$_ct = s2_aaaaaaaotb('Qg==');
-			if( is_string($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+		if( $s2_ddddegatsf['fn'] == "is it Text" ){
+			$_ct = "B";
+			$_c = false;
+			if( is_string($_fn_inputs["p1"]['v']) == "string" ){
 				$_c = true;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('aXMgaXQgTnVtZXJpYw==') ){
-			$_ct = s2_aaaaaaaotb('Qg==');
-			if( is_numeric($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']) ){
+		if( $s2_ddddegatsf['fn'] == "is it Numeric" ){
+			$_ct = "B";
+			$_c = false;
+			if( is_numeric($_fn_inputs["p1"]['v']) ){
 				$_c = true;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('aXMgaXQgQmluYXJ5') ){
-			$_ct = s2_aaaaaaaotb('Qg==');
-			if( $this->isBinary($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']) || $_fn_inputs[s2_aaaaaaaotb('cDE=')]['t'] == s2_aaaaaaaotb('QklO') ){
+		if( $s2_ddddegatsf['fn'] == "is it Binary" ){
+			$_ct = "B";
+			if( $this->isBinary($_fn_inputs["p1"]['v']) || $_fn_inputs["p1"]['t'] == "BIN" ){
 				$_c = true;
 			}else{
 				$_c = false;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TnVtYmVyIHRvIExldHRlcg==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = chr($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
+		if( $s2_ddddegatsf['fn'] == "Number to Letter" ){
+			$_ct = "T";
+			$_c = chr($_fn_inputs["p1"]['v']);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('Q2hhbmdlIFR5cGU=') ){
-			if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('VA==') ){
-				$_c = (string)$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
+		if( $s2_ddddegatsf['fn'] == "Change Type" ){
+			if( $_fn_inputs["p2"]['v'] == "T" ){
+				$_c = (string)$_fn_inputs["p1"]['v'];
 				$_ct = 'T';
-			}else if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('Tg==') ){
-				$_c = $this->s2_rebmun_ot_gnirts( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+			}else if( $_fn_inputs["p2"]['v'] == "N" ){
+				$_c = $this->s2_rebmun_ot_gnirts( $_fn_inputs["p1"]['v'] );
 				$_ct  = 'N';
-			}else if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('Qg==') ){
+			}else if( $_fn_inputs["p2"]['v'] == "B" ){
 				$_c = true;
 				$_ct  = 'B';
-			}else if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('Tw==') ){
+			}else if( $_fn_inputs["p2"]['v'] == "O" ){
 				$_c = [];
 				$_ct  = 'O';
-			}else if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('TA==') ){
+			}else if( $_fn_inputs["p2"]['v'] == "L" ){
 				$_c = [];
 				$_ct  = 'L';
-			}else if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('QklO') ){
+			}else if( $_fn_inputs["p2"]['v'] == "BIN" ){
 				$_c = "";
 				$_ct = 'BIN';
-			}else if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('QjY0') ){
+			}else if( $_fn_inputs["p2"]['v'] == "B64" ){
 				$_c = "";
 				$_ct = 'B64';
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('dWN3b3Jkcw==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = ucwords($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
+		if( $s2_ddddegatsf['fn'] == "ucwords" ){
+			$_ct = "T";
+			$_c = ucwords($_fn_inputs["p1"]['v']);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('VW5pcUlE') ){
-			$_ct = s2_aaaaaaaotb('VA==');
+		if( $s2_ddddegatsf['fn'] == "UniqID" ){
+			$_ct = "T";
 			$_c = uniqid();
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('bW9uZ29kYl9pZA==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
+		if( $s2_ddddegatsf['fn'] == "mongodb_id" ){
+			$_ct = "T";
 			$_c = $this->s2_nnnnnnnnoc->generate_id();
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('QWRkIERheXM=') ){
-			$_ct = s2_aaaaaaaotb('RA==');
-			$_c = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] )+($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']*86400) );
+		if( $s2_ddddegatsf['fn'] == "Get Date String" ){
+			$_ct = "T";
+			$f = $_fn_inputs["p1"]['v'];
+			$ts = $_fn_inputs["p2"]['v'];
+			if( !is_numeric($ts) ){ $ts = -1;}
+			if( $ts != -1 ){
+				$_c = date( $f, $ts );
+			}else{
+				$_c = date( $f );
+			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TWludXMgRGF5cw==') ){
-			$_ct = s2_aaaaaaaotb('RA==');
-			$_c = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] )-($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']*86400) );
+		if( $s2_ddddegatsf['fn'] == "Get Date" ){
+			$_ct = "D";
+			$_c = date("Y-m-d");
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('U3RyVG9UaW1l') ){
-			$_ct = s2_aaaaaaaotb('VFM=');
-			$_c = strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Get DateTime" ){
+			$_ct = "DT";
+			$_c = ["v"=>date("Y-m-d H:i:s"), "t"=> "DT", "tz"=> "UTC+00:00"];
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('RGF5cyB0aWxsIFRvZGF5') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = time()-strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Get Timestamp" ){
+			$_ct = "TS";
+			$_c = time();
+		}
+
+		if( $s2_ddddegatsf['fn'] == "Set Timezone" ){
+			$_ct = "B";
+			$t = $_fn_inputs["p1"]['v'];
+			date_default_timezone_set( "Asia/Kolkata" );
+			$_c = true;
+		}
+		if( $s2_ddddegatsf['fn'] == "Get Timezone" ){
+			$_ct = "T";
+			$_c = date_default_timezone_get();
+		}
+		if( $s2_ddddegatsf['fn'] == "Add Days" ){
+			$_ct = "D";
+			$_c = date("Y-m-d", strtotime( $_fn_inputs["p1"]['v'] )+($_fn_inputs["p2"]['v']*86400) );
+		}
+		if( $s2_ddddegatsf['fn'] == "Date To Timestamp" ){
+			$_ct = "TS";
+			// $t = $this->s2_eeulav_teg( $_fn_inputs["p1"] );
+			$_c = $this->s2_emit_hcope_erup_teg( $_fn_inputs["p1"] );
+		}
+		if( $s2_ddddegatsf['fn'] == "Timestamp To Date" ){
+			$_ct = "D";
+			$t = $this->s2_emit_hcope_erup_teg( $_fn_inputs["p1"] );
+			$_c = date("Y-m-d",$t);
+		}
+		if( $s2_ddddegatsf['fn'] == "Timestamp To DateTime" ){
+			$_ct = "DT";
+			$t = $this->s2_emit_hcope_erup_teg( $_fn_inputs["p1"] );
+			$_c = ['v'=>date("Y-m-d H:i:s",$t), "t"=> "DT", "tz"=> date_default_timezone_get() ];
+		}
+		if( $s2_ddddegatsf['fn'] == "Minus Days" ){
+			$_ct = "D";
+			$_c = date("Y-m-d", strtotime( $_fn_inputs["p1"]['v'] )-($_fn_inputs["p2"]['v']*86400) );
+		}
+		if( $s2_ddddegatsf['fn'] == "StrToTime" ){
+			$_ct = "TS";
+			$_c = strtotime( $_fn_inputs["p1"]['v'] );
+		}
+		if( $s2_ddddegatsf['fn'] == "Days till Today" ){
+			$_ct = "N";
+			$_c = time()-strtotime( $_fn_inputs["p1"]['v'] );
 			$_c = floor($_c/86400);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TW9udGhzIHRpbGwgVG9kYXk=') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = time()-strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Months till Today" ){
+			$_ct = "N";
+			$_c = time()-strtotime( $_fn_inputs["p1"]['v'] );
 			$_c = floor($_c/86400/30);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('WWVhcnMgdGlsbCBUb2RheQ==') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = time()-strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Years till Today" ){
+			$_ct = "N";
+			$_c = time()-strtotime( $_fn_inputs["p1"]['v'] );
 			$_c = floor($_c/86400/365);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('RGF5cyBEaWZm') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = strtotime( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] )-strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Days Diff" ){
+			$_ct = "N";
+			$_c = strtotime( $_fn_inputs["p2"]['v'] )-strtotime( $_fn_inputs["p1"]['v'] );
 			$_c = floor($_c/86400);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TW9udGhzIERpZmY=') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = strtotime( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] )-strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Months Diff" ){
+			$_ct = "N";
+			$_c = strtotime( $_fn_inputs["p2"]['v'] )-strtotime( $_fn_inputs["p1"]['v'] );
 			$_c = floor($_c/86400/30);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('WWVhcnMgRGlmZg==') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$s2_11111111c_ = strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
-			$s2_22222222c_ = strtotime( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Years Diff" ){
+			$_ct = "N";
+			$s2_11111111c_ = strtotime( $_fn_inputs["p1"]['v'] );
+			$s2_22222222c_ = strtotime( $_fn_inputs["p2"]['v'] );
 			$s2_33333333c_ = $s2_22222222c_ - $s2_11111111c_;
 			$_c = floor($s2_33333333c_/86400/365);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('Q2hhbmdlIEZvcm1hdA==') ){
-			$_ct = s2_aaaaaaaotb('RA==');
-			$_c = date($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], strtotime( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] ));
+		if( $s2_ddddegatsf['fn'] == "Change Format" ){
+			$_ct = "D";
+			$_c = date($_fn_inputs["p2"]['v'], strtotime( $_fn_inputs["p1"]['v'] ));
 		}
 
 		//  LIST FUNCTIONS 
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TGlzdCBMZW5ndGg=') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			if( gettype($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']) ==s2_aaaaaaaotb('YXJyYXk=') && array_keys($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'][0]===0) ){
-				$_c = sizeof( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "List Length" ){
+			$_ct = "N";
+			if( gettype($_fn_inputs["p1"]['v']) =="array" && array_keys($_fn_inputs["p1"]['v'])[0]===0 ){
+				$_c = sizeof( $_fn_inputs["p1"]['v'] );
 			}else{
 				$this->s2_ggggggggol[] = "List length: non array";
 				$_c = 0;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('R2V0IExpc3QgSXRlbQ==') ){
-			$_ct = s2_aaaaaaaotb('Tw==');
-			$_c = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'][ $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] ];
+		if( $s2_ddddegatsf['fn'] == "Get List Item" ){
+			$k = $_fn_inputs["p1"]['v'][ $_fn_inputs["p2"]['v'] ];
+			$_ct = $k['t'];
+			$_c = $k['v'];
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TGlzdCBBcHBlbmQ=') ){
-			$_ct = s2_aaaaaaaotb('TA==');
-			if( !is_array($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']) ){
+		if( $s2_ddddegatsf['fn'] == "List Append" ){
+			$_ct = "B";
+			$_c = true;
+			if( !is_array($_fn_inputs["p1"]['v']) ){
 				$this->s2_ggggggggol[] = "List Append Error: Value is not list!";
 			}else{
-				$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'][] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'];
-				$_c = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
+				if( $_fn_inputs["p1"]['t'] != "L" ){
+					$this->s2_ggggggggol[] = "List Append Data is not List";
+					$_c = false;
+				}else{
+					foreach( $_fn_inputs["p2"]['v'] as $i=>$j ){
+						$_fn_inputs["p1"]['v'][] = $j;
+					}
+					$this->s2_tluser_tes( $s2_ddddegatsf['inputs']['p1']['v']['v'], $_fn_inputs["p1"] );
+					$_c = true;
+				}
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TGlzdCBQcmVwZW5k') ){
-			array_splice( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], 0, 0, [$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']] );
-			$_c = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
-			$_ct = s2_aaaaaaaotb('TA==');
+		if( $s2_ddddegatsf['fn'] == "List Prepend" ){
+			$_ct = "B";
+			$_c = true;
+			if( !is_array($_fn_inputs["p1"]['v']) ){
+				$this->s2_ggggggggol[] = "List Prepend Error: Value is not list!";
+			}else{
+				if( $_fn_inputs["p1"]['t'] != "L" ){
+					$this->s2_ggggggggol[] = "List Prepend Data is not List";
+					$_c = false;
+				}else{
+					foreach( $_fn_inputs["p2"]['v'] as $i=>$j ){
+						array_splice($_fn_inputs["p1"]['v'], $i, 0, [$j] );
+					}
+					$this->s2_tluser_tes( $s2_ddddegatsf['inputs']['p1']['v']['v'], $_fn_inputs["p1"] );
+					$_c = true;
+				}
+			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TGlzdCBJdGVtIFJlbW92ZQ==') ){
-			array_splice( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], 1 );
-			$_c = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
-			$_ct = s2_aaaaaaaotb('TA==');
+		if( $s2_ddddegatsf['fn'] == "List Item Remove" ){
+			$k = array_splice( $_fn_inputs["p1"]['v'], $_fn_inputs["p2"]['v'], 1 );
+			$_c = $k[0]['v'];
+			$_ct = $k[0]['t'];
+			$this->s2_tluser_tes( $s2_ddddegatsf['inputs']['p1']['v']['v'], $_fn_inputs["p1"] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('R2V0IFZhbHVl') ){
+		if( $s2_ddddegatsf['fn'] == "Get Value" ){
 			$_ct = $s2_ddddegatsf['return'];
-			$_c = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'][ $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] ];
+			$_c = $_fn_inputs["p1"]['v'][ $_fn_inputs["p2"]['v'] ];
 		}
-		
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('U2V0IFZhbHVl') ){
-			$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'][ $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] ] = $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'];
-			$_ct = s2_aaaaaaaotb('Tw==');
-			$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'][ $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] ];
-			$_c = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
+		if( $s2_ddddegatsf['fn'] == "Set Value" ){
+			$_fn_inputs["p1"]['v'][ $_fn_inputs["p2"]['v'] ] = $_fn_inputs["p3"]['v'];
+			$_ct = "O";
+			$_fn_inputs["p1"]['v'][ $_fn_inputs["p2"]['v'] ];
+			$_c = $_fn_inputs["p1"]['v'];
 		}
 		// LIST FUNCTIONS
 		// String Functions Start
 		
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('Q29uY2F0') ){
-			$_ct = s2_aaaaaaaotb('VA==');
+		if( $s2_ddddegatsf['fn'] == "Concat" ){
+			$_ct = "T";
 			$_c = "";
 			foreach( $_fn_inputs as $i=>$j ){
 				$_c .= $j['v'];
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('U3ViIFN0cmluZw==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = substr( (string)$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], (int)$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], (int)$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Sub String" ){
+			$_ct = "T";
+			$_c = substr( (string)$_fn_inputs["p1"]['v'], (int)$_fn_inputs["p2"]['v'], (int)$_fn_inputs["p3"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('UmVwbGFjZSBUZXh0') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = str_replace( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Replace Text" ){
+			$_ct = "T";
+			$_c = str_replace( $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'], $_fn_inputs["p1"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('dG8gVXBwZXIgQ2FzZQ==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = strtoupper( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "to Upper Case" ){
+			$_ct = "T";
+			$_c = strtoupper( $_fn_inputs["p1"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('dG8gTG93ZXIgQ2FzZQ==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = strtolower( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "to Lower Case" ){
+			$_ct = "T";
+			$_c = strtolower( $_fn_inputs["p1"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('VHJpbQ==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = trim( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Trim" ){
+			$_ct = "T";
+			$_c = trim( $_fn_inputs["p1"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('Q2xlYW4=') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = preg_replace("/[\W]+/", "", $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Clean" ){
+			$_ct = "T";
+			$_c = preg_replace("/[\W]+/", "", $_fn_inputs["p1"]['v'] );
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('TWF0Y2ggUGF0dGVybg==') ){
+		if( $s2_ddddegatsf['fn'] == "Match Pattern" ){
 			$m = false;
-			@preg_match($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $m );
+			@preg_match($_fn_inputs["p2"]['v'], $_fn_inputs["p1"]['v'], $m );
+			// if( !$m ){
+			// 	echo $_fn_inputs["p1"]['v'];
+			// 	echo $_fn_inputs["p2"]['v'];
+			// 	exit;
+			// }
 			if( $m ){
-				if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] == s2_aaaaaaaotb('VHJ1ZQ==') ){
-					$_ct = s2_aaaaaaaotb('Qg==');
+				if( $_fn_inputs["p3"]['v'] == "True" ){
+					$_ct = "B";
 					$_c = true;
-				}else if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] == s2_aaaaaaaotb('TWF0Y2hlZCBTdHJpbmc=') ){
-					$_ct = s2_aaaaaaaotb('VA==');
+				}else if( $_fn_inputs["p3"]['v'] == "Matched String" ){
+					$_ct = "T";
 					$_c = $m[0];
-				}else if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] == s2_aaaaaaaotb('TWF0Y2hlZCBHcm91cCAx') && $m[1] ){
-					$_ct = s2_aaaaaaaotb('VA==');
+				}else if( $_fn_inputs["p3"]['v'] == "Matched Group 1" && $m[1] ){
+					$_ct = "T";
 					$_c = $m[1];
-				}else if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] == s2_aaaaaaaotb('TWF0Y2hlZCBHcm91cCAy') && $m[2] ){
-					$_ct = s2_aaaaaaaotb('VA==');
+				}else if( $_fn_inputs["p3"]['v'] == "Matched Group 2" && $m[2] ){
+					$_ct = "T";
 					$_c = $m[2];
-				}else if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] == s2_aaaaaaaotb('TWF0Y2hlZCBHcm91cCAz') && $m[3] ){
-					$_ct = s2_aaaaaaaotb('VA==');
+				}else if( $_fn_inputs["p3"]['v'] == "Matched Group 3" && $m[3] ){
+					$_ct = "T";
 					$_c = $m[3];
 				}else{
-					$_ct = s2_aaaaaaaotb('Qg==');
+					$_ct = "B";
 					$_c = false;
 				}
 			}else{
-				$_ct = s2_aaaaaaaotb('Qg==');
+				$_ct = "B";
 				$_c = false;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('SlNPTiBFbmNvZGU=') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			if( $_fn_inputs['p2']['v'] == s2_aaaaaaaotb('dHJ1ZQ==') ){
-				$_c = json_encode( $this->s2_yarra_ot_etalpmet( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] ), JSON_PRETTY_PRINT );
+		if( $s2_ddddegatsf['fn'] == "Validate Input" ){
+			$_c = true;
+			$_ct = "B";
+			if( $_fn_inputs["p2"]['v'] == "Email" ){
+				@preg_match("/^[a-z0-9\.\-]{3,50}\@[a-z0-9\.\-]{3,50}\.[a-z\.]{2,6}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Mobile" ){
+				@preg_match("/^[0-9]{10}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Phone" ){
+				@preg_match("/^[0-9\+\-\ ]{10,16}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "yyyy-mm-dd" ){
+				@preg_match("/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Alpha" ){
+				@preg_match("/^[a-z]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Alpha with spaces" ){
+				@preg_match("/^[a-z\ ]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Alpha with spaces - . _" ){
+				@preg_match("/^[a-z\ \-\.\_]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "AlphaNumeric" ){
+				@preg_match("/^[a-z0-9]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "AlphaNumeric with spaces" ){
+				@preg_match("/^[a-z0-9\ ]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "AlphaNumeric with space - . _" ){
+				@preg_match( "/^[a-z0-9\ \.\-\_]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Numeric" ){
+				@preg_match( "/^[0-9\.]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "PAN" ){
+				@preg_match( "/^[a-z]{5}[0-9]{4}[a-z]$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "CreditCard" ){
+				@preg_match( "/^[0-9]{4}[\-\ ][0-9]{4}[\-\ ][0-9]{4}[\-\ ][0-9]{4}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "Aadhaar" ){
+				@preg_match( "/^[0-9]{4}[\-\ ]{0,1}[0-9]{4}[\-\ ]{0,1}[0-9]{4}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "MongoDBId" ){
+				@preg_match( "/^[a-f0-9]{24}$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}else if( $_fn_inputs["p2"]['v'] == "HexCode" ){
+				@preg_match( "/^[a-f0-9]+$/i", $_fn_inputs["p1"]['v'], $m );
+				if( $m ){ $_c = true; }else{ $_c = false; }
+			}
+			if( $_c ){
+				//if( strlen($_fn_inputs["p1"]['v']) < $_fn_inputs["p3"]['v'] )
+			}
+		}
+		if( $s2_ddddegatsf['fn'] == "JSON Encode" ){
+			$_ct = "T";
+			if( $_fn_inputs['p2']['v'] == "true" ){
+				$_c = json_encode( $this->s2_yarra_ot_etalpmet( $_fn_inputs["p1"]['v'] ), JSON_PRETTY_PRINT );
 			}else{
-				$_c = json_encode( $this->s2_yarra_ot_etalpmet( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] ) );
+				$_c = json_encode( $this->s2_yarra_ot_etalpmet( $_fn_inputs["p1"]['v'] ) );
 			}
 			if( json_last_error() ){
 				$this->s2_ggggggggol[] = "JSON Encode Error: " . json_last_error_msg();
 				$_c = "";
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('SlNPTiBEZWNvZGU=') ){
-			$_ct = s2_aaaaaaaotb('Tw==');
-			$_c = json_decode( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], true );
+		if( $s2_ddddegatsf['fn'] == "JSON Decode" ){
+			$_c = json_decode( $_fn_inputs["p1"]['v'], true );
+			$this->s2_tcejbo_ot_tupni( $_c );
+			if( gettype($_c) == "array" ){
+				if( array_keys($_c)[0] === 0 ){
+					$_ct = "L";
+				}else{
+					$_ct = "O";
+				}
+			}
 			if( json_last_error() ){
 				$this->s2_ggggggggol[] = "JSON Decode Error: " . json_last_error_msg();
+				$_ct = "O";
 				$_c = [];
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('SFRNTCBFbnRpdHkgRGVjb2Rl') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = str_replace("&quot;", "\"", $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
+		if( $s2_ddddegatsf['fn'] == "HTML Entity Decode" ){
+			$_ct = "T";
+			$_c = str_replace("&quot;", "\"", $_fn_inputs["p1"]['v']);
 			$_c = str_replace("&lt;", "<", $_c);
 			$_c = str_replace("&gt;", ">", $_c);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('WE1MIERlY29kZQ==') ){
-			$_ct = s2_aaaaaaaotb('Tw==');
+		if( $s2_ddddegatsf['fn'] == "XML Decode" ){
+			$_ct = "O";
 			$_c = "";
 			$_error = "";
 			try{
-				$body_parsed = simplexml_load_string($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
-				preg_match("/^\<\?xml.*\?\>/i", $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $m);
+				$body_parsed = simplexml_load_string($_fn_inputs["p1"]['v']);
+				preg_match("/^\<\?xml.*\?\>/i", $_fn_inputs["p1"]['v'], $m);
 				if( $m ){
-					$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] = substr($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], strlen($m[0]), strlen($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']));
+					$_fn_inputs["p1"]['v'] = substr($_fn_inputs["p1"]['v'], strlen($m[0]), strlen($_fn_inputs["p1"]['v']));
 				}
-				preg_match("/^\<([a-z0-9\:\-\_\.]+)/i", $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $m);
+				preg_match("/^\<([a-z0-9\:\-\_\.]+)/i", $_fn_inputs["p1"]['v'], $m);
 				if( $m ){
 					if( $m[1] ){
 						$body_parsed = $this->parsexml($body_parsed);
@@ -1058,250 +1334,270 @@ class api_engine{
 				$this->s2_ggggggggol[] = "XML Decode Error: " . $_error;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('QmFzZTY0IEVuY29kZQ==') ){
-			$_ct = s2_aaaaaaaotb('QjY0');
-			$_c = base64_encode($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
+		if( $s2_ddddegatsf['fn'] == "Base64 Encode" ){
+			$_ct = "B64";
+			$_c = base64_encode($_fn_inputs["p1"]['v']);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('QmFzZTY0IERlY29kZQ==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_c = base64_decode($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']);
+		if( $s2_ddddegatsf['fn'] == "Base64 Decode" ){
+			$_ct = "T";
+			$_c = base64_decode($_fn_inputs["p1"]['v']);
 			if( $this->isBinary($_c) ){
-				$_ct = s2_aaaaaaaotb('QklO');
+				$_ct = "BIN";
 			}
 		}
-		if( $s2_ddddegatsf['function']['function'] == s2_aaaaaaaotb('R2VuZXJhdGUgSVY=') ){
-			if( $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] == s2_aaaaaaaotb('TnVsbEJ5dGVz') ){
-				$_c = s2_aaaaaaaotb('MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==');
-				$_c = substr($_c, 0, (int)$_fn_inputs[s2_aaaaaaaotb('cDE=')]['value'] );
+		if( $s2_ddddegatsf['fn'] == "Generate IV" ){
+			if( $_fn_inputs["p2"]['v'] == "NullBytes" ){
+				$_c = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+				$_c = substr($_c, 0, (int)$_fn_inputs["p1"]['value'] );
 			}else{
-				$_c = random_bytes( (int)$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+				$_c = random_bytes( (int)$_fn_inputs["p1"]['v'] );
 			}
-			$_ct = s2_aaaaaaaotb('QklO');
+			$_ct = "BIN";
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('UmFuZG9tIFRleHQ=') ){
-			$_c = substr( str_shuffle( s2_aaaaaaaotb('YWJjZGVmMDEyMzQ1Njc5MGdoaWprbG1ub3BxcnN0dXZ3eHl6YWJjZGVmMDEyMzQ1Njc5MGdoaWprbG1ub3BxcnN0dXZ3eHl6YWJjZGVmMDEyMzQ1Njc5MGdoaWprbG1ub3BxcnN0dXZ3eHl6YWJjZGVmMDEyMzQ1Njc5MGdoaWprbG1ub3BxcnN0dXZ3eHl6YWJjZGVmMDEyMzQ1Njc5MGdoaWprbG1ub3BxcnN0dXZ3eHl6YWJjZGVmMDEyMzQ1Njc5MGdoaWprbG1ub3BxcnN0dXZ3eHl6') ), 0, (int)$_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
-			$_ct = s2_aaaaaaaotb('VA==');
+		if( $s2_ddddegatsf['fn'] == "Random Text" ){
+			$_c = substr( str_shuffle( "abcdef0123456790ghijklmnopqrstuvwxyzabcdef0123456790ghijklmnopqrstuvwxyzabcdef0123456790ghijklmnopqrstuvwxyzabcdef0123456790ghijklmnopqrstuvwxyzabcdef0123456790ghijklmnopqrstuvwxyzabcdef0123456790ghijklmnopqrstuvwxyz" ), 0, (int)$_fn_inputs["p1"]['v'] );
+			$_ct = "T";
 		}
-		if( $s2_ddddegatsf['function']['function'] == s2_aaaaaaaotb('R2V0IElWIFNpemU=') ){
-			$_ct = s2_aaaaaaaotb('Tg==');
-			$_c = openssl_cipher_iv_length($_fn_inputs[s2_aaaaaaaotb('cDE=')]['value']);
+		if( $s2_ddddegatsf['fn'] == "Get IV Size" ){
+			$_ct = "N";
+			$_c = openssl_cipher_iv_length($_fn_inputs["p1"]['value']);
 		}
-		if( $s2_ddddegatsf['function']['function'] == s2_aaaaaaaotb('SGV4IHRvIEJpbg==') ){
-			$_ct = s2_aaaaaaaotb('QklO');
-			$_c = hex2bin($_fn_inputs[s2_aaaaaaaotb('cDE=')]['value']);
+		if( $s2_ddddegatsf['fn'] == "Hex to Bin" ){
+			$_ct = "BIN";
+			$_c = hex2bin($_fn_inputs["p1"]['value']);
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('SGFzaA==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$ctx = hash_init($_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']);
-			if( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] ){
-				hash_update( $ctx, $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "Hash" ){
+			$_ct = "T";
+			$ctx = hash_init($_fn_inputs["p2"]['v']);
+			if( $_fn_inputs["p3"]['v'] ){
+				hash_update( $ctx, $_fn_inputs["p3"]['v'] );
 			}
-			hash_update( $ctx, $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'] );
+			hash_update( $ctx, $_fn_inputs["p1"]['v'] );
 			$_c = hash_final( $ctx );
-			$_ct = s2_aaaaaaaotb('QjY0');
+			$_ct = "B64";
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('T3BlblNTTCBQdWJsaWMgRW5jcnlwdA==') ){
-			$_ct = s2_aaaaaaaotb('QjY0');
-			$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']['public'];
-			$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] = constant( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
-			//$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'];
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'];
-			//eval("\$p=".$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'].";");
-			$st = openssl_public_encrypt( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $crypted, $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$_c = base64_encode($crypted);
-		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('T3BlblNTTCBQdWJsaWMgRGVjcnlwdA==') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']['public'];
-			$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] = constant( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
-			//$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'];
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'];
-			$st = openssl_public_decrypt( base64_decode($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']), $crypted, $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$_c = $crypted;
-		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('T3BlblNTTCBQcml2YXRlIEVuY3J5cHQ=') ){
-			$_ct = s2_aaaaaaaotb('QjY0');
-			$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']['private'];
-			$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] = constant( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
-			//$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'];
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'];
-			$st = openssl_private_encrypt( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $crypted, $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$_c = base64_encode($crypted);
-		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('T3BlblNTTCBQcml2YXRlIERlY3J5cHQ=') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			$_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v']['private'];
-			$_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] = constant( $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'];
-			//$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'];
-			$this->s2_ggggggggol[] = $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'];
-			$st = openssl_private_decrypt( base64_decode($_fn_inputs[s2_aaaaaaaotb('cDE=')]['v']), $crypted, $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
-			$_c = $crypted;
-		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('T3BlblNTTCBFbmNyeXB0') ){
-			$_ct = s2_aaaaaaaotb('QjY0');
-			if( $_fn_inputs[s2_aaaaaaaotb('cDQ=')]['v'] ){
-				$_c = openssl_encrypt( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'], 0, $_fn_inputs[s2_aaaaaaaotb('cDQ=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "OpenSSL Public Encrypt" ){
+			if( $_fn_inputs["p3"]['v'] == "OPENSSL_NO_PADDING" ){
+				$st = openssl_public_encrypt( $_fn_inputs["p1"]['v'], $crypted, $_fn_inputs["p2"]['v'] );
 			}else{
-				$_c = openssl_encrypt( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
+				$_fn_inputs["p3"]['v'] = constant( $_fn_inputs["p3"]['v'] );
+				$st = openssl_public_encrypt( $_fn_inputs["p1"]['v'], $crypted, $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'] );
+			}
+			if( $st ){
+				if( $this->s2_eulav_erup_teg($_fn_inputs["p4"]) ){
+					$_ct = "B64";
+					$_c = base64_encode($crypted);
+					if( !$_c ){
+						echo "Error base64_encode ";exit;
+					}
+				}else{
+					$_ct = "BIN";
+					$_c = $crypted;
+				}
+			}else{
+				$this->s2_ggggggggol[] = "Encryption failed: " . $st;
+				//echo "Encryption Failed" . $st;
+				$_ct = "B";
+				$_c = false;
+			}
+			//exit;
+		}
+		if( $s2_ddddegatsf['fn'] == "OpenSSL Public Decrypt" ){
+			$v = $this->s2_eeulav_teg($_fn_inputs["p1"]);
+			if( $v['t'] == "B64" ){
+				$v['v'] = base64_decode($v['v']);
+			}
+			if( $_fn_inputs["p3"]['v'] == "OPENSSL_NO_PADDING" ){
+				$st = openssl_public_decrypt( $v['v'], $crypted, $_fn_inputs["p2"]['v'] );
+			}else{
+				$_fn_inputs["p3"]['v'] = constant( $_fn_inputs["p3"]['v'] );
+				$st = openssl_public_decrypt( $v['v'], $crypted, $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'] );
+			}
+			if( $st ){
+				$_ct = "T";
+				$_c = $crypted;
+			}else{
+				$this->s2_ggggggggol[] = "Decryption failed: " . $st;
+				//echo "Encryption Failed" . $st;
+				$_ct = "B";
+				$_c = false;
 			}
 		}
-		if( $s2_ddddegatsf['fn'] == s2_aaaaaaaotb('T3BlblNTTCBEZWNyeXB0') ){
-			$_ct = s2_aaaaaaaotb('VA==');
-			if( $_fn_inputs[s2_aaaaaaaotb('cDQ=')]['v'] ){
-				$_c = openssl_decrypt( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'], 0, $_fn_inputs[s2_aaaaaaaotb('cDQ=')]['v'] );
+		if( $s2_ddddegatsf['fn'] == "OpenSSL Private Encrypt" ){
+			if( $_fn_inputs["p3"]['v'] == "OPENSSL_NO_PADDING" ){
+				$st = openssl_private_encrypt( $_fn_inputs["p1"]['v'], $crypted, $_fn_inputs["p2"]['v'] );
 			}else{
-				$_c = openssl_decrypt( $_fn_inputs[s2_aaaaaaaotb('cDE=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDI=')]['v'], $_fn_inputs[s2_aaaaaaaotb('cDM=')]['v'] );
+				$_fn_inputs["p3"]['v'] = constant( $_fn_inputs["p3"]['v'] );
+				//echo $_fn_inputs["p3"]['v'];exit;
+				$st = openssl_private_encrypt( $_fn_inputs["p1"]['v'], $crypted, $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'] );
+			}
+			if( $st ){
+				if( $this->s2_eulav_erup_teg($_fn_inputs["p4"]) ){
+					$_ct = "B64";
+					$_c = base64_encode($crypted);
+				}else{
+					$_ct = "BIN";
+					$_c = $crypted;
+				}
+			}else{
+				$this->s2_ggggggggol[] = "Encryption failed: " . $st;
+				$_ct = "B";
+				$_c = false;
 			}
 		}
-		if( gettype($_c) == s2_aaaaaaaotb('ZmxvYXQ=') || gettype($_c) == s2_aaaaaaaotb('ZG91Ymxl') ){
+		if( $s2_ddddegatsf['fn'] == "OpenSSL Private Decrypt" ){
+			if( $_fn_inputs["p1"]['t'] == "B64" ){
+				$_fn_inputs["p1"]['v'] = base64_decode($_fn_inputs["p1"]['v']);
+			}
+			if( $_fn_inputs["p3"]['v'] == "OPENSSL_NO_PADDING" ){
+				$st = openssl_private_decrypt( $_fn_inputs["p1"]['v'], $out, $_fn_inputs["p2"]['v'] );
+			}else{
+				$_fn_inputs["p3"]['v'] = constant( $_fn_inputs["p3"]['v'] );
+				$st = openssl_private_decrypt( $_fn_inputs["p1"]['v'], $out, $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'] );
+			}
+			if( $st ){
+				$_ct = "T";
+				$_c = $out;
+			}else{
+				$this->s2_ggggggggol[] = "Decryption failed: " . $st;
+				$_ct = "B";
+				$_c = false;
+			}
+		}
+		if( $s2_ddddegatsf['fn'] == "OpenSSL Encrypt" ){
+			$_ct = "B64";
+			if( $_fn_inputs["p4"]['v'] ){
+				$_c = openssl_encrypt( $_fn_inputs["p1"]['v'], $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'], 0, $_fn_inputs["p4"]['v'] );
+			}else{
+				$_c = openssl_encrypt( $_fn_inputs["p1"]['v'], $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'] );
+			}
+		}
+		if( $s2_ddddegatsf['fn'] == "OpenSSL Decrypt" ){
+			$_ct = "T";
+			if( $_fn_inputs["p4"]['v'] ){
+				$_c = openssl_decrypt( $_fn_inputs["p1"]['v'], $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'], 0, $_fn_inputs["p4"]['v'] );
+			}else{
+				$_c = openssl_decrypt( $_fn_inputs["p1"]['v'], $_fn_inputs["p2"]['v'], $_fn_inputs["p3"]['v'] );
+			}
+		}
+		if( gettype($_c) == "float" || gettype($_c) == "double" ){
 			if( is_nan($_c) || is_infinite($_c) ){
-				$_ct = s2_aaaaaaaotb('Tkw=');
-				$_c = s2_aaaaaaaotb('TlVMTA==');
+				$_ct = "NL";
+				$_c = "NULL";
 			}
 		}
 		///$this->s2_ggggggggol[] = "setting: " . $_c;
 
-		if( $s2_ddddegatsf['self'] ){
-			$this->s2_ggggggggol[] = $s2_ddddegatsf['lhs']['v']['t'] . ":" . $_ct;
-			if( $s2_ddddegatsf['lhs']['v']['t'] != $_ct && $s2_ddddegatsf['lhs']['v']['t'] != ($_ct==s2_aaaaaaaotb('QjY0')?s2_aaaaaaaotb('VA=='):$_ct) ){
-				$this->s2_ggggggggol[] = s2_aaaaaaaotb('VW5leHBlY3RlZCB0eXBlIGFzc2lnbm1lbnQgLi4uIA==');
+		if( $s2_ddddegatsf['return'] ){
+			if( isset( $s2_ddddegatsf['lhs'] ) ){
+				$this->s2_ggggggggol[] = $s2_ddddegatsf['lhs']['v']['t'] . ":" . $_ct;
+				if( $s2_ddddegatsf['lhs']['v']['t'] != $_ct && $s2_ddddegatsf['lhs']['v']['t'] != ($_ct=="B64"?"T":$_ct) ){
+					$this->s2_ggggggggol[] = "Unexpected type assignment ... " . $s2_ddddegatsf['lhs']['v']['t'] . "!=". $_ct  ;
+				}
+				if( $s2_ddddegatsf['lhs']['v']['t'] != "BIN" && $_ct == "BIN" ){
+					$this->s2_ggggggggol[] = "Unexpected: Binary data striped";
+				}
 			}
-			if( $s2_ddddegatsf['lhs']['v']['t'] != s2_aaaaaaaotb('QklO') && $_ct == s2_aaaaaaaotb('QklO') ){
-				$this->s2_ggggggggol[] = "Unexpected: Binary data striped";
-			}
-			//$this->s2_ggggggggol[] = s2_aaaaaaaotb('c2V0dGluZy4uLi4=');
-			$this->s2_tluser_tes( $s2_ddddegatsf['lhs'], [s2_aaaaaaaotb('dA==')=>$_ct, s2_aaaaaaaotb('dg==')=>$_c] );
+			//$this->s2_ggggggggol[] = "setting....";
+			//$this->s2_tluser_tes( $s2_ddddegatsf['lhs'], ["t"=>$_ct, "v"=>$_c] );
 		}
-		return [s2_aaaaaaaotb('dA==')=>$_ct, s2_aaaaaaaotb('dg==')=>$_c];
+		return ["t"=>$_ct, "v"=>$_c];
 	}
-	function s2_noitcnuf_glp_od( &$v, $vs, $var = "" ){
-		//print_pre( s2_aaaaaaaotb('ZG9fUExHX2Z1bmN0aW9u') );
-		//print_pre( $v );
-		//print_pre( $vs );
-		$method = $vs['v'];
-		$inputs = $vs['d']['inputs'];
-		//print_pre( $inputs );
-		foreach( $inputs as $i=>$j ){
-			$inputs[ $i ] = $this->s2_eeulav_teg( $j['v'] );
-		}
-		//print_pre( $inputs );
-		if( method_exists($v['v'], $method) ){
-			//echo s2_aaaaaaaotb('TWV0aG9kIGV4aXN0cw==');
-			$k = $v['v']->{$method}($inputs);
-			// echo s2_aaaaaaaotb('ZG9fcGxnX2Z1bmN0aW9uIA==') . $method . " returning: \n";
-			// print_pre( $k );
-			if( is_array($k) ){
-				return $k;
-			}else{
-				$this->s2_ggggggggol[] = "Method return value incorrect: ". $method;
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>false];
-			}
-		}else{
-			//echo "do_plg_function Method not exists: \n";
-			$this->s2_ggggggggol[] = "Method not found: ". $method;
-			return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>false];
-		}
-		//$rt = true;
-		//$inputs = $vs['d']['inputs'];
-	}
+
 	function s2_noitcnuf_enilni_od( &$v, $vs ){
-		// print_pre( s2_aaaaaaaotb('ZG9faW5saW5lX2Z1bmN0aW9u') );
+		// print_pre( "do_inline_function" );
 		// print_pre( $v );
 		// print_pre( $vs ); 
 		// exit;
 		$rt = true;
 		$inputs = $vs['d']['inputs'];
-		if( $v['t'] == s2_aaaaaaaotb('Tg==') ){
+		if( $v['t'] == "N" ){
 			foreach( $inputs as $i=>$j ){
 
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				return $this->s2_eeulav_teg($inputs['p2']['v']);
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRk') ){
+			if( $vs['v'] == "add" ){
 				$add = $this->s2_eeulav_teg( $inputs['p2']['v'] );
 				$v['v']+=$add['v'];
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3Q=') ){
+			if( $vs['v'] == "subtract" ){
 				$add = $this->s2_eeulav_teg( $inputs['p2']['v'] );
 				$v['v']-=$add['v'];
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cm91bmQ=') ){
+			if( $vs['v'] == "round" ){
 				$de = $this->s2_eeulav_teg( $inputs['p2']['v'] );
 				$v['v'] = round( (float)$v['v'], (int)$de );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Zmxvb3I=') ){
+			if( $vs['v'] == "floor" ){
 				$v['v'] = floor((float)$v['v']);
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Y2VpbA==') ){
+			if( $vs['v'] == "ceil" ){
 				$v['v'] = ceil((float)$v['v']);
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cGFyc2VJbnQ=') ){
+			if( $vs['v'] == "parseInt" ){
 				$v['v'] = (int)$v['v'];
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Y29udmVydFRvVGV4dA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), 'v'=>(string)$v['v']];
+			if( $vs['v'] == "convertToText" ){
+				return ['t'=>"T", 'v'=>(string)$v['v']];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('dGV4dFBhZGRpbmc=') ){
+			if( $vs['v'] == "textPadding" ){
 				$mm = $this->s2_eeulav_teg($inputs['p4']['v'])['v'];
-				if( $mm == s2_aaaaaaaotb('TGVmdA==') ){$m = STR_PAD_LEFT;}else
-				if( $mm == s2_aaaaaaaotb('UmlnaHQ=') ){$m = STR_PAD_RIGHT;}else
-				if( $mm == s2_aaaaaaaotb('Q2VudGVy') ){$m = STR_PAD_BOTH;}else{$m = STR_PAD_RIGHT;}
+				if( $mm == "Left" ){$m = STR_PAD_LEFT;}else
+				if( $mm == "Right" ){$m = STR_PAD_RIGHT;}else
+				if( $mm == "Center" ){$m = STR_PAD_BOTH;}else{$m = STR_PAD_RIGHT;}
 				$v['v'] = str_pad( $v['v'], (int)($this->s2_eeulav_teg($inputs['p2']['v'])['v']), $this->s2_eeulav_teg($inputs['p3']['v'])['v'], $m );
-				$v['t'] = s2_aaaaaaaotb('VA==');
+				$v['t'] = "T";
 				return $v;
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('VA==') ){
+		}else if( $v['t'] == "T" ){
 			foreach( $inputs as $i=>$j ){}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				return $this->s2_eeulav_teg($inputs['p2']['v']);
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('dG9Mb3dlckNhc2U=') ){
+			if( $vs['v'] == "toLowerCase" ){
 				$v['v'] = strtolower($v['v']);return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('dG9VcHBlckNhc2U=') ){
+			if( $vs['v'] == "toUpperCase" ){
 				$v['v'] = strtoupper($v['v']);return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('dHJpbQ==') ){
+			if( $vs['v'] == "trim" ){
 				$v['v'] = trim($v['v']);return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('bWF0Y2hQYXR0ZXJu') ){
+			if( $vs['v'] == "matchPattern" ){
 				$rt = $this->s2_eeulav_teg( $inputs['p3']['v'] )['v'];
 				preg_match( $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'], $v['v'], $m );
 				if( $m ){
-					if( $rt == s2_aaaaaaaotb('dHJ1ZQ==') ){
-						return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
-					}else if( $rt == s2_aaaaaaaotb('TGlzdA==') ){
+					if( $rt == "true" ){
+						return ['t'=>"B", "v"=>true];
+					}else if( $rt == "List" ){
 						for($i=0;$i<sizeof($m);$i++){
-							$m[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$m[ $i ]];
+							$m[ $i ] = ["t"=>"T", "v"=>$m[ $i ]];
 						}
-						return ['t'=>s2_aaaaaaaotb('TA=='), s2_aaaaaaaotb('dg==')=>$m];
+						return ['t'=>"L", "v"=>$m];
 					}else if( $rt == "$0" ){
-						return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$m[0]];
+						return ['t'=>"T", "v"=>$m[0]];
 					}else if( $rt == "$1" ){
-						return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$m[1]];
+						return ['t'=>"T", "v"=>$m[1]];
 					}else if( $rt == "$2" ){
-						return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$m[2]];
+						return ['t'=>"T", "v"=>$m[2]];
 					}
 				}else{
-					if( $rt == s2_aaaaaaaotb('dHJ1ZQ==') ){
-						return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>false];
+					if( $rt == "true" ){
+						return ['t'=>"B", "v"=>false];
 					}else{
-						return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
+						return ['t'=>"T", "v"=>""];
 					}
 				}
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2VhcmNoUGF0dGVybg==') ){
+			if( $vs['v'] == "searchPattern" ){
 				$rt = $this->s2_eeulav_teg( $inputs['p3']['v'] )['v'];
 				$reg = $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'];
 				preg_match_all( $reg, $v['v'], $m );
@@ -1311,52 +1607,52 @@ class api_engine{
 						for($j=0;$j<sizeof($m[ $i ]);$j++){
 							$mm[ $j ] = ['t'=>'T', 'v'=>$m[ $i ][ $j ]];
 						}
-						$m[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('TA=='), s2_aaaaaaaotb('dg==')=>$mm];
+						$m[ $i ] = ["t"=>"L", "v"=>$mm];
 					}
 				}else{
 					$m = [];
 				}
-				return ['t'=>s2_aaaaaaaotb('TA=='), s2_aaaaaaaotb('dg==')=>$m];
+				return ['t'=>"L", "v"=>$m];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('aXNOdW1lcmlj') ){
+			if( $vs['v'] == "isNumeric" ){
 				if( preg_match("/^[0-9\.]+$/", $v['v']) ){
-					return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+					return ['t'=>"B", "v"=>true];
 				}else{
-					return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>false];
+					return ['t'=>"B", "v"=>false];
 				}
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3ViU3RyaW5n') ){
+			if( $vs['v'] == "subString" ){
 				$i = $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'];
 				$s = $this->s2_eeulav_teg( $inputs['p3']['v'] )['v'];
-				return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>substr($v['v'],$i,$s) ];
+				return ['t'=>"T", "v"=>substr($v['v'],$i,$s) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YXBwZW5k') ){
+			if( $vs['v'] == "append" ){
 				for($i=2;$i<=5;$i++){
 					if( $inputs['p'.$i]['v'] ){
 						$v['v'] .= $this->s2_eeulav_teg( $inputs['p'.$i]['v'] )['v'];
 					}
 				}
-				return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$v['v'] ];
+				return ['t'=>"T", "v"=>$v['v'] ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cHJlcGVuZA==') ){
+			if( $vs['v'] == "prepend" ){
 				$i = $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'];
-				return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$i . $v['v'] ];
+				return ['t'=>"T", "v"=>$i . $v['v'] ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('bGVuZ3Ro') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>strlen($v['v']) ];
+			if( $vs['v'] == "length" ){
+				return ['t'=>"N", "v"=>strlen($v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Y2xlYW4=') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>preg_replace("/[\W]/", "",$v['v']) ];
+			if( $vs['v'] == "clean" ){
+				return ['t'=>"T", "v"=>preg_replace("/[\W]/", "",$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Y29udmVydFRvTnVtYmVy') ){
+			if( $vs['v'] == "convertToNumber" ){
 				$v['v'] = preg_replace("/[^0-9\.]+/", "",$v['v']);
 				if( preg_match("/\./", $v['v'] ) ){
-					return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>(float)$v['v']  ];
+					return ['t'=>"N", "v"=>(float)$v['v']  ];
 				}else{
-					return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>(int)$v['v']  ];
+					return ['t'=>"N", "v"=>(int)$v['v']  ];
 				}
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3BsaXQ=') ){
+			if( $vs['v'] == "split" ){
 				$d = $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'];
 				$l = $this->s2_eeulav_teg( $inputs['p3']['v'] )['v'];
 				if( !preg_match("/^\/(.*)\/$/", $d) ){
@@ -1365,245 +1661,325 @@ class api_engine{
 				$this->s2_ggggggggol[] = "regex: " . $d;
 				$parts = preg_split( ($d??""),($v['v']??""),($l??-1) );
 				for($i=0;$i<sizeof($parts);$i++){
-					$parts[$i] = ['t'=>s2_aaaaaaaotb('VA=='), 'v'=>$parts[$i]];
+					$parts[$i] = ['t'=>"T", 'v'=>$parts[$i]];
 				}
-				return ['t'=>s2_aaaaaaaotb('TA=='), 'v'=>$parts ];
+				return ['t'=>"L", 'v'=>$parts ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cmVwbGFjZQ==') ){
+			if( $vs['v'] == "replace" ){
 				$f = $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'];
 				$r = $this->s2_eeulav_teg( $inputs['p3']['v'] )['v'];
 				$v['v'] = str_replace( $f, $r, $v['v'] );
 				return $v;
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('TA==') ){
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0') ){
+			if( $vs['v'] == "validate" ){
+				$r = $this->s2_eeulav_teg( $inputs['p2']['v'] )['v'];
+				$min = $this->s2_eeulav_teg( $inputs['p3']['v'] )['v'];
+				$max = $this->s2_eeulav_teg( $inputs['p4']['v'] )['v'];
+				$_c = true;
+				if( $r == "Email" ){
+					@preg_match("/^[a-z0-9\.\-]{3,50}\@[a-z0-9\.\-]{3,50}\.[a-z\.]{2,6}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Mobile" ){
+					@preg_match("/^[0-9]{10}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Phone" ){
+					@preg_match("/^[0-9\+\-\ ]{10,16}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "yyyy-mm-dd" ){
+					@preg_match("/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Alpha" ){
+					@preg_match("/^[a-z]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Alpha with spaces" ){
+					@preg_match("/^[a-z\ ]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Alpha with spaces - . _" ){
+					@preg_match("/^[a-z\ \-\.\_]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "AlphaNumeric" ){
+					@preg_match("/^[a-z0-9]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "AlphaNumeric with spaces" ){
+					@preg_match("/^[a-z0-9\ ]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "AlphaNumeric with space - . _" ){
+					@preg_match( "/^[a-z0-9\ \.\-\_]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Numeric" ){
+					@preg_match( "/^[0-9\.]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "PAN" ){
+					@preg_match( "/^[a-z]{5}[0-9]{4}[a-z]$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "CreditCard" ){
+					@preg_match( "/^[0-9]{4}[\-\ ][0-9]{4}[\-\ ][0-9]{4}[\-\ ][0-9]{4}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "Aadhaar" ){
+					@preg_match( "/^[0-9]{4}[\-\ ]{0,1}[0-9]{4}[\-\ ]{0,1}[0-9]{4}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "MongoDBId" ){
+					@preg_match( "/^[a-f0-9]{24}$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}else if( $r == "HexCode" ){
+					@preg_match( "/^[a-f0-9]+$/i", $v['v'], $m );
+					if( $m ){ $_c = true; }else{ $_c = false; }
+				}
+				if( $_c ){
+					if( strlen($v['v']) < $min || strlen($v['v']) > $max ){
+						$_c = false;
+					}
+				}
+				return ["t"=>"B", "v"=>$_c];
+			}
+
+		}else if( $v['t'] == "L" ){
+			if( $vs['v'] == "get" ){
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				$v = $this->s2_eeulav_teg($inputs['p2']['v']);
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0SXRlbQ==') ){
+			if( $vs['v'] == "setTemplate" ){
+				//$v = $this->s2_eeulav_teg($inputs['p2']['v']);
+				return ['t'=>"B", "v"=>true];
+			}
+			if( $vs['v'] == "getItem" ){
 				$val = $this->s2_eeulav_teg($inputs['p2']['v']);
 				return $v['v'][ $val['v'] ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('aW5zZXJ0') ){
+			if( $vs['v'] == "setItem" ){
+				$key = $this->s2_eeulav_teg($inputs['p2']['v']);
+				$val = $this->s2_eeulav_teg($inputs['p3']['v']);
+				$v['v'][ (int)$key['v'] ] = $val;
+				return ['t'=>"B", "v"=>true];
+			}
+			if( $vs['v'] == "insert" ){
 				$index = $this->s2_eeulav_teg($inputs['p2']['v']);
 				$item = $this->s2_eeulav_teg($inputs['p3']['v']);
 				array_splice($v['v'], (int)$index['v'], 0, [$item]);
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cmVtb3Zl') ){
+			if( $vs['v'] == "remove" ){
 				$index = $this->s2_eeulav_teg($inputs['p2']['v']);
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>array_splice($v['v'], (int)$index['v'], 1)];
+				return ['t'=>"B", "v"=>array_splice($v['v'], (int)$index['v'], 1)];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cG9w') ){
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>array_splice($v['v'], sizeof($v['v'])-1, 1 ) ];
+			if( $vs['v'] == "pop" ){
+				return ['t'=>"B", "v"=>array_splice($v['v'], sizeof($v['v'])-1, 1 ) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YXBwZW5k') || $vs['v'] == s2_aaaaaaaotb('cHVzaA==') ){
+			if( $vs['v'] == "append" || $vs['v'] == "push" ){
 				$val = $this->s2_eeulav_teg($inputs['p2']['v']);
 				$v['v'][] = $val;
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cHJlcGVuZA==') ){
+			if( $vs['v'] == "prepend" ){
 				$val = $this->s2_eeulav_teg($inputs['p2']['v']);
 				array_splice($v['v'],0,0,[$val]);
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('bGVuZ3Ro') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>sizeof($v['v'])];
+			if( $vs['v'] == "length" ){
+				return ['t'=>"N", "v"=>sizeof($v['v'])];
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('Tw==') ){
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0') ){
+		}else if( $v['t'] == "O" ){
+			if( $vs['v'] == "get" ){
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				$v = $this->s2_eeulav_teg($inputs['p2']['v']);
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0S2V5') ){
+			if( $vs['v'] == "getKey" ){
 				$val = $this->s2_eeulav_teg($inputs['p2']['v']);
 				if( !isset( $v['v'][ $val['v'] ] ) ){
-					$this->s2_ggggggggol[] = "Key: " . $val['v'] . s2_aaaaaaaotb('IG5vdCBmb3VuZA==');
-					return [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
+					$this->s2_ggggggggol[] = "Key: " . $val['v'] . " not found";
+					return ["t"=>"T", "v"=>""];
 				}
 				return $v['v'][ $val['v'] ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0S2V5TGlzdA==') ){
+			if( $vs['v'] == "hasKey" ){
+				$val = $this->s2_eeulav_teg($inputs['p2']['v']);
+				if( isset($v['v'][ $val['v'] ]) ){
+					return ['t'=>"B", "v"=>true ];
+				}else{
+					return ['t'=>"B", "v"=>false ];
+				}
+			}
+			if( $vs['v'] == "getKeyList" ){
 				$val = array_keys($v['v']);
 				$this->s2_tcejbo_ot_tupni($val);
-				return ['t'=>s2_aaaaaaaotb('TA=='), s2_aaaaaaaotb('dg==')=>$val ];
+				return ['t'=>"L", "v"=>$val ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0S2V5') ){
+			if( $vs['v'] == "setKey" ){
 				$key = $this->s2_eeulav_teg( $inputs['p2']['v'] );
 				$item  = $this->s2_eeulav_teg( $inputs['p3']['v'] );
 				$v['v'][ $key['v'] ] = $item;
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('cmVtb3ZlS2V5') ){
+			if( $vs['v'] == "removeKey" ){
 				$key = $this->s2_eeulav_teg($inputs['p2']['v']);
 				unset( $v['v'][ $key['v'] ] );
-				return ['t'=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>true];
+				return ['t'=>"B", "v"=>true];
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('Qg==') ){
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0') ){
+		}else if( $v['t'] == "B" ){
+			if( $vs['v'] == "get" ){
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				$v = $this->s2_eeulav_teg($inputs['p2']['v']);
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0VHJ1ZQ==') ){
+			if( $vs['v'] == "setTrue" ){
 				$v['v'] = true;
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0RmFsc2U=') ){
+			if( $vs['v'] == "setFalse" ){
 				$v['v'] = false;
 				return $v;
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('RA==') ){
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0') ){
+		}else if( $v['t'] == "D" ){
+			if( $vs['v'] == "get" ){
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				$v['v'] = $this->s2_eeulav_teg($inputs['p2']['v']);
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0VmFsdWU=') ){
+			if( $vs['v'] == "setValue" ){
 				$y = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$m = $this->s2_eeulav_teg($inputs['p3']['v'])['v'];
 				$d = $this->s2_eeulav_teg($inputs['p4']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), mktime(12,12,12,$m,$d,$y));
+				$v['v'] = date("Y-m-d", mktime(12,12,12,$m,$d,$y));
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF0ZQ==') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('ZA=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getDate" ){
+				return ['t'=>"N", date("D", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGg=') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('bQ=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getMonth" ){
+				return ['t'=>"N", date("m", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0WWVhcg==') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('WQ=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getYear" ){
+				return ['t'=>"N", date("Y", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGhGdWxs') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('TQ=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getMonthFull" ){
+				return ['t'=>"T", date("M", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGhTaG9ydA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('Rg=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getMonthShort" ){
+				return ['t'=>"T", date("F", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5RnVsbA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('bA=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getDayFull" ){
+				return ['t'=>"T", date("l", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5U2hvcnQ=') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('RA=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getDayShort" ){
+				return ['t'=>"T", date("D", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5c1RpbGw=') ){
+			if( $vs['v'] == "getDaysTill" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v']);
 				$date1 = new DateTime($v['v']);
 				$date2 = new DateTime($d['v']);
 				$interval = $date1->diff($date2);
-				return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$interval->days ];
+				return ['t'=>"N", "v"=>$interval->days ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5c1VudGls') ){
+			if( $vs['v'] == "getDaysUntil" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v']);
 				$date2 = new DateTime($v['v']);
 				$date1 = new DateTime($d['v']);
 				$interval = $date1->diff($date2);
-				return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$interval->days ];
+				return ['t'=>"N", "v"=>$interval->days ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5c1RpbGxUb2RheQ==') ){
-				$date1 = new DateTime(s2_aaaaaaaotb('bm93'));
+			if( $vs['v'] == "getDaysTillToday" ){
+				$date1 = new DateTime("now");
 				$date2 = new DateTime($v['v']);
 				$interval = $date1->diff($date2);
-				return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$interval->days ];
+				return ['t'=>"N", "v"=>$interval->days ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5c1VudGlsVG9kYXk=') ){
-				$date2 = new DateTime(s2_aaaaaaaotb('bm93'));
+			if( $vs['v'] == "getDaysUntilToday" ){
+				$date2 = new DateTime("now");
 				$date1 = new DateTime($v['v']);
 				$interval = $date1->diff($date2);
-				return ['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$interval->days ];
+				return ['t'=>"N", "v"=>$interval->days ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0Rm9ybWF0') ){
+			if( $vs['v'] == "getFormat" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				if( $d == "dd/mm/yyyy" ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date("d/m/Y", strtotime($v['v']) ) ];
+					return ['t'=>"T", "v"=>date("d/m/Y", strtotime($v['v']) ) ];
 				}else if( $d == "mm/dd/yyyy" ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date("m/d/Y", strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQtbW0teXl5eQ==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZC1tLVk='), strtotime($v['v']) ) ];
+					return ['t'=>"T", "v"=>date("m/d/Y", strtotime($v['v']) ) ];
+				}else if( $d == "dd-mm-yyyy" ){
+					return ['t'=>"T", "v"=>date("d-m-Y", strtotime($v['v']) ) ];
 				}else if( $d == "yyyy/mm/dd" ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date("Y/m/d", strtotime($v['v']) ) ];
+					return ['t'=>"T", "v"=>date("Y/m/d", strtotime($v['v']) ) ];
 				}else if( $d == "yyyy/dd/mm" ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date("Y/d/m", strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eS1tbS1kZA==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eS1tbS1kZA==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQtbW0teXl5eQ==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZC1tLVk='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQtTU0teXl5eQ==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZC1GLVk='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQgTU0geXl5eQ==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZCBGIFk='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eSBNTSBkZA==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WSBGIGQ='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eS1NTS1kZA==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WS1GLWQ='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQtTS15eXl5') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZC1NLVk='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQgTSB5eXl5') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZCBNIFk='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eSBNIGRk') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WSBNIGQ='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eS1NLWRk') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WS1NLWQ='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('ZGQgREQgTU0geXl5eQ==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('ZCBEIEYgWQ=='), strtotime($v['v']) ) ];
-				}else if( $d == s2_aaaaaaaotb('eXl5eSBERCBkZCBNTQ==') ){
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>date(s2_aaaaaaaotb('WSBkIEQgRg=='), strtotime($v['v']) ) ];
+					return ['t'=>"T", "v"=>date("Y/d/m", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy-mm-dd" ){
+					return ['t'=>"T", "v"=>date("Y-m-d", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy-mm-dd" ){
+					return ['t'=>"T", "v"=>date("Y-m-d", strtotime($v['v']) ) ];
+				}else if( $d == "dd-mm-yyyy" ){
+					return ['t'=>"T", "v"=>date("d-m-Y", strtotime($v['v']) ) ];
+				}else if( $d == "dd-MM-yyyy" ){
+					return ['t'=>"T", "v"=>date("d-F-Y", strtotime($v['v']) ) ];
+				}else if( $d == "dd MM yyyy" ){
+					return ['t'=>"T", "v"=>date("d F Y", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy MM dd" ){
+					return ['t'=>"T", "v"=>date("Y F d", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy-MM-dd" ){
+					return ['t'=>"T", "v"=>date("Y-F-d", strtotime($v['v']) ) ];
+				}else if( $d == "dd-M-yyyy" ){
+					return ['t'=>"T", "v"=>date("d-M-Y", strtotime($v['v']) ) ];
+				}else if( $d == "dd M yyyy" ){
+					return ['t'=>"T", "v"=>date("d M Y", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy M dd" ){
+					return ['t'=>"T", "v"=>date("Y M d", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy-M-dd" ){
+					return ['t'=>"T", "v"=>date("Y-M-d", strtotime($v['v']) ) ];
+				}else if( $d == "dd DD MM yyyy" ){
+					return ['t'=>"T", "v"=>date("d D F Y", strtotime($v['v']) ) ];
+				}else if( $d == "yyyy DD dd MM" ){
+					return ['t'=>"T", "v"=>date("Y d D F", strtotime($v['v']) ) ];
 				}else{
-					return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$v['v']];
+					return ['t'=>"T", "v"=>$v['v']];
 				}
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkRGF5cw==') ){
+			if( $vs['v'] == "addDays" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v'])+ (86400*$d) );
+				$v['v'] = date("Y-m-d", strtotime($v['v'])+ (86400*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkTW9udGhz') ){
+			if( $vs['v'] == "addMonths" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v'])+ (86400*30*$d) );
+				$v['v'] = date("Y-m-d", strtotime($v['v'])+ (86400*30*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkWWVhcnM=') ){
+			if( $vs['v'] == "addYears" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v'])+ (86400*365*$d) );
+				$v['v'] = date("Y-m-d", strtotime($v['v'])+ (86400*365*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3REYXlz') ){
+			if( $vs['v'] == "subtractDays" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v'])- (86400*$d) );
+				$v['v'] = date("Y-m-d", strtotime($v['v'])- (86400*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RNb250aHM=') ){
+			if( $vs['v'] == "subtractMonths" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v'])- (86400*30*$d) );
+				$v['v'] = date("Y-m-d", strtotime($v['v'])- (86400*30*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RZZWFycw==') ){
+			if( $vs['v'] == "subtractYears" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
-				$v['v'] = date(s2_aaaaaaaotb('WS1tLWQ='), strtotime($v['v'])- (86400*365*$d) );
+				$v['v'] = date("Y-m-d", strtotime($v['v'])- (86400*365*$d) );
 				return $v;
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('RFQ=') ){
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0') ){
+		}else if( $v['t'] == "DT" ){
+			if( $vs['v'] == "get" ){
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				$v['v'] = $this->s2_eeulav_teg($inputs['p2']['v']);
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0VmFsdWU=') ){
+			if( $vs['v'] == "setValue" ){
 				$y =  $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$m =  $this->s2_eeulav_teg($inputs['p3']['v'])['v'];
 				$d =  $this->s2_eeulav_teg($inputs['p4']['v'])['v'];
@@ -1615,104 +1991,104 @@ class api_engine{
 				$v['tz'] = $tz;
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF0ZQ==') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('ZA=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getDate" ){
+				return ['t'=>"N", date("D", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGg=') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('bQ=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getMonth" ){
+				return ['t'=>"N", date("m", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0WWVhcg==') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('WQ=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getYear" ){
+				return ['t'=>"N", date("Y", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGhGdWxs') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('TQ=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getMonthFull" ){
+				return ['t'=>"T", date("M", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGhTaG9ydA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('Rg=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getMonthShort" ){
+				return ['t'=>"T", date("F", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5RnVsbA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('bA=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getDayFull" ){
+				return ['t'=>"T", date("l", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5U2hvcnQ=') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('RA=='), strtotime($v['v'])) ];
+			if( $vs['v'] == "getDayShort" ){
+				return ['t'=>"T", date("D", strtotime($v['v'])) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0VGltZVpvbmU=') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$v['tz'] ];
+			if( $vs['v'] == "getTimeZone" ){
+				return ['t'=>"T", "v"=>$v['tz'] ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0VGltZVpvbmU=') ){
+			if( $vs['v'] == "setTimeZone" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v']);
 				$v['ts'] = $d['v'];
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkRGF5cw==') ){
+			if( $vs['v'] == "addDays" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])+ (86400*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkTW9udGhz') ){
+			if( $vs['v'] == "addMonths" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])+ (86400*30*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkWWVhcnM=') ){
+			if( $vs['v'] == "addYears" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])+ (86400*365*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkSG91cnM=') ){
+			if( $vs['v'] == "addHours" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])+ (60*60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkTWludXRlcw==') ){
+			if( $vs['v'] == "addMinutes" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])+ (60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkU2Vjb25kcw==') ){
+			if( $vs['v'] == "addSeconds" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])+ ($d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3REYXlz') ){
+			if( $vs['v'] == "subtractDays" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])- (86400*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RNb250aHM=') ){
+			if( $vs['v'] == "subtractMonths" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])- (86400*30*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RZZWFycw==') ){
+			if( $vs['v'] == "subtractYears" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v'])- (86400*365*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RIb3Vycw==') ){
+			if( $vs['v'] == "subtractHours" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v']) - (60*60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RNaW51dGVz') ){
+			if( $vs['v'] == "subtractMinutes" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v']) - (60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RTZWNvbmRz') ){
+			if( $vs['v'] == "subtractSeconds" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", strtotime($v['v']) - ($d) );
 				return $v;
 			}
-		}else if( $v['t'] == s2_aaaaaaaotb('VFM=') ){
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0') ){
+		}else if( $v['t'] == "TS" ){
+			if( $vs['v'] == "get" ){
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0') ){
+			if( $vs['v'] == "set" ){
 				$v['v'] = $this->s2_eeulav_teg($inputs['p2']['v']);
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0VmFsdWU=') ){
+			if( $vs['v'] == "setValue" ){
 				$y =  $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$m =  $this->s2_eeulav_teg($inputs['p3']['v'])['v'];
 				$d =  $this->s2_eeulav_teg($inputs['p4']['v'])['v'];
@@ -1724,91 +2100,91 @@ class api_engine{
 				$v['tz'] = $tz;
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF0ZQ==') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('ZA=='), (int)$v['v']) ];
+			if( $vs['v'] == "getDate" ){
+				return ['t'=>"N", date("D", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGg=') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('bQ=='), (int)$v['v']) ];
+			if( $vs['v'] == "getMonth" ){
+				return ['t'=>"N", date("m", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0WWVhcg==') ){
-				return ['t'=>s2_aaaaaaaotb('Tg=='), date(s2_aaaaaaaotb('WQ=='), (int)$v['v']) ];
+			if( $vs['v'] == "getYear" ){
+				return ['t'=>"N", date("Y", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGhGdWxs') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('TQ=='), (int)$v['v']) ];
+			if( $vs['v'] == "getMonthFull" ){
+				return ['t'=>"T", date("M", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0TW9udGhTaG9ydA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('Rg=='), (int)$v['v']) ];
+			if( $vs['v'] == "getMonthShort" ){
+				return ['t'=>"T", date("F", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5RnVsbA==') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('bA=='), (int)$v['v']) ];
+			if( $vs['v'] == "getDayFull" ){
+				return ['t'=>"T", date("l", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0RGF5U2hvcnQ=') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), date(s2_aaaaaaaotb('RA=='), (int)$v['v']) ];
+			if( $vs['v'] == "getDayShort" ){
+				return ['t'=>"T", date("D", (int)$v['v']) ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('Z2V0VGltZVpvbmU=') ){
-				return ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$v['tz'] ];
+			if( $vs['v'] == "getTimeZone" ){
+				return ['t'=>"T", "v"=>$v['tz'] ];
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c2V0VGltZVpvbmU=') ){
+			if( $vs['v'] == "setTimeZone" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v']);
 				$v['ts'] = $d['v'];
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkRGF5cw==') ){
+			if( $vs['v'] == "addDays" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']+ (86400*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkTW9udGhz') ){
+			if( $vs['v'] == "addMonths" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']+ (86400*30*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkWWVhcnM=') ){
+			if( $vs['v'] == "addYears" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']+ (86400*365*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkSG91cnM=') ){
+			if( $vs['v'] == "addHours" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']+ (60*60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkTWludXRlcw==') ){
+			if( $vs['v'] == "addMinutes" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']+ (60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('YWRkU2Vjb25kcw==') ){
+			if( $vs['v'] == "addSeconds" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']+ ($d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3REYXlz') ){
+			if( $vs['v'] == "subtractDays" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']- (86400*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RNb250aHM=') ){
+			if( $vs['v'] == "subtractMonths" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']- (86400*30*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RZZWFycw==') ){
+			if( $vs['v'] == "subtractYears" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v']- (86400*365*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RIb3Vycw==') ){
+			if( $vs['v'] == "subtractHours" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v'] - (60*60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RNaW51dGVz') ){
+			if( $vs['v'] == "subtractMinutes" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v'] - (60*$d) );
 				return $v;
 			}
-			if( $vs['v'] == s2_aaaaaaaotb('c3VidHJhY3RTZWNvbmRz') ){
+			if( $vs['v'] == "subtractSeconds" ){
 				$d = $this->s2_eeulav_teg($inputs['p2']['v'])['v'];
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v'] - ($d) );
 				return $v;
@@ -1822,7 +2198,7 @@ class api_engine{
 		foreach( $s2_sssssssshr as $i=>$j ){
 			if( $op == "+" ){
 				$v = $v + $this->s2_bus_htam_od( $j['m'] );
-			}else if( $op == s2_aaaaaaaotb('LQ==') ){
+			}else if( $op == "-" ){
 				$v = $v - $this->s2_bus_htam_od( $j['m'] );
 			}else if( $op == "/" ){
 				$v = $v / $this->s2_bus_htam_od( $j['m'] );
@@ -1835,7 +2211,7 @@ class api_engine{
 			}
 			$op = $j['OP'];
 			//echo $v . ": " . $op . " : \n";
-			if( $op == s2_aaaaaaaotb('Lg==') ){break;}
+			if( $op == "." ){break;}
 		}
 		return $v;
 	}
@@ -1844,14 +2220,14 @@ class api_engine{
 		$op = "+";
 		foreach( $s2_sssssssshr as $i=>$j ){
 			$vv = $this->s2_eeulav_teg($j);
-			if( $vv['t'] != s2_aaaaaaaotb('Tg==') ){
-				$this->s2_ggggggggol[] = "Warning: Math: non numeric operand: " . ($j['v'] == s2_aaaaaaaotb('Vg==')?$j['v']['t'].":".$j['v']['v']:$j['t'].":".$j['v']);
+			if( $vv['t'] != "N" ){
+				$this->s2_ggggggggol[] = "Warning: Math: non numeric operand: " . ($j['v'] == "V"?$j['v']['t'].":".$j['v']['v']:$j['t'].":".$j['v']);
 			}
 			$vv['v'] = $this->s2_rebmun_ot_gnirts($vv['v']);
-			//echo $vv['v'] . s2_aaaaaaaotb('IA==') . $op . " \n";
+			//echo $vv['v'] . " " . $op . " \n";
 			if( $op == "+" ){
 				$v = $v + $vv['v'];
-			}else if( $op == s2_aaaaaaaotb('LQ==') ){
+			}else if( $op == "-" ){
 				$v = $v - $vv['v'];
 			}else if( $op == "/" ){
 				$v = $v / $vv['v'];
@@ -1863,13 +2239,13 @@ class api_engine{
 				$v = $v ^ $vv['v'];
 			}
 			$op = $j['OP'];
-			if( $op == s2_aaaaaaaotb('Lg==') ){break;}
+			if( $op == "." ){break;}
 		}
 		//echo "ret: " . $v . ": \n";
 		return $v;
 	}
 	function s2_rebmun_ot_gnirts($v){
-		if( gettype($v) == s2_aaaaaaaotb('c3RyaW5n') ){
+		if( gettype($v) == "string" ){
 			if( is_numeric($v) ){
 				if( preg_match("/\./",$v) ){
 					return (float)$v;
@@ -1880,7 +2256,7 @@ class api_engine{
 				$this->s2_ggggggggol[] = "Numeric expected: ". $v;
 				return 0;
 			}
-		}else if( gettype($v) == s2_aaaaaaaotb('aW50ZWdlcg==') || gettype($v) == s2_aaaaaaaotb('ZmxvYXQ=') || gettype($v) == s2_aaaaaaaotb('ZG91Ymxl') ){
+		}else if( gettype($v) == "integer" || gettype($v) == "float" || gettype($v) == "double" ){
 			return $v;
 		}else{
 			$this->s2_ggggggggol[] = "Numeric expected: ". gettype($v) . ": ". $v;
@@ -1888,43 +2264,44 @@ class api_engine{
 		}
 	}
 	function s2_tcejbo_ot_tupni( &$d ){
+		$debug = true;
 		if( array_keys($d)[0] === 0 ){
 			for($i=0;$i<sizeof($d);$i++){
 				$j = $d[$i];
-				if( gettype($j) == s2_aaaaaaaotb('YXJyYXk=') ){
+				if( gettype($j) == "array" ){
 					$this->s2_tcejbo_ot_tupni($j);
 					if( array_keys($j)[0] === 0 ){
-						$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('TA=='), s2_aaaaaaaotb('dg==')=>$j];
+						$d[ $i ] = ["t"=>"L", "v"=>$j];
 					}else{
-						$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tw=='), s2_aaaaaaaotb('dg==')=>$j];
+						$d[ $i ] = ["t"=>"O", "v"=>$j];
 					}
-				}else if( gettype($j) == s2_aaaaaaaotb('c3RyaW5n') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$j];
-				}else if( gettype($j) == s2_aaaaaaaotb('ZG91Ymxl') || gettype($j) == s2_aaaaaaaotb('ZmxvYXQ=') || gettype($j) == s2_aaaaaaaotb('aW50ZWdlcg==') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$j];
-				}else if( gettype($j) == s2_aaaaaaaotb('Ym9vbGVhbg==') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>$j];
-				}else if( gettype($j) == s2_aaaaaaaotb('TlVMTA==') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tkw='), s2_aaaaaaaotb('dg==')=>null];
+				}else if( gettype($j) == "string" ){
+					$d[ $i ] = ["t"=>"T", "v"=>$j];
+				}else if( gettype($j) == "double" || gettype($j) == "float" || gettype($j) == "integer" ){
+					$d[ $i ] = ["t"=>"N", "v"=>$j];
+				}else if( gettype($j) == "boolean" ){
+					$d[ $i ] = ["t"=>"B", "v"=>$j];
+				}else if( gettype($j) == "NULL" ){
+					$d[ $i ] = ["t"=>"NL", "v"=>null];
 				}
 			}
 		}else{
 			foreach( $d as $i=>$j ){
-				if( gettype($j) == s2_aaaaaaaotb('YXJyYXk=') ){
+				if( gettype($j) == "array" ){
 					$this->s2_tcejbo_ot_tupni($j);
 					if( array_keys($j)[0] === 0 ){
-						$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('TA=='), s2_aaaaaaaotb('dg==')=>$j];
+						$d[ $i ] = ["t"=>"L", "v"=>$j];
 					}else{
-						$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tw=='), s2_aaaaaaaotb('dg==')=>$j];
+						$d[ $i ] = ["t"=>"O", "v"=>$j];
 					}
-				}else if( gettype($j) == s2_aaaaaaaotb('c3RyaW5n') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$j];
-				}else if( gettype($j) == s2_aaaaaaaotb('ZG91Ymxl') || gettype($j) == s2_aaaaaaaotb('ZmxvYXQ=') || gettype($j) == s2_aaaaaaaotb('aW50ZWdlcg==') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>$j];
-				}else if( gettype($j) == s2_aaaaaaaotb('Ym9vbGVhbg==') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Qg=='), s2_aaaaaaaotb('dg==')=>$j];
-				}else if( gettype($j) == s2_aaaaaaaotb('TlVMTA==') ){
-					$d[ $i ] = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tkw='), s2_aaaaaaaotb('dg==')=>null];
+				}else if( gettype($j) == "string" ){
+					$d[ $i ] = ["t"=>"T", "v"=>$j];
+				}else if( gettype($j) == "double" || gettype($j) == "float" || gettype($j) == "integer" ){
+					$d[ $i ] = ["t"=>"N", "v"=>$j];
+				}else if( gettype($j) == "boolean" ){
+					$d[ $i ] = ["t"=>"B", "v"=>$j];
+				}else if( gettype($j) == "NULL" ){
+					$d[ $i ] = ["t"=>"NL", "v"=>null];
 				}
 			}
 		}
@@ -1933,7 +2310,7 @@ class api_engine{
 	function s2_yarra_ot_atad_cigol_trevnoc( $d ){
 		foreach( $d as $i=>$j ){
 			if( preg_match("/(\.|\-\>)/", $i) ){
-				$x = explode(s2_aaaaaaaotb('Lg=='),$i);
+				$x = explode(".",$i);
 				if( sizeof($x) == 1 ){
 					$d[ $x[0] ] = $j;
 				}else if( sizeof($x) == 2 ){
@@ -1966,7 +2343,7 @@ class api_engine{
 			if( is_object($key['v']) ){
 				return 0;
 			}
-			if( $key['t'] != s2_aaaaaaaotb('Vg==') ){
+			if( $key['t'] != "V" ){
 				$this->s2_ggggggggol[] = "ERROR: set_result: incorrect key.: " . print_r($key,true);
 				return false;
 			}
@@ -1976,38 +2353,38 @@ class api_engine{
 			return 0;
 		}
 		if( !isset($v) ){
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('SW5wdXQgTWlzc2luZw==');
+			$this->s2_ggggggggol[] = "Input Missing";
 		}else{
 			if( !is_array($v) ){
-				$this->s2_ggggggggol[] = "Warning: " . $var . s2_aaaaaaaotb('IEludmFsaWQgQXNzaWdubWVudA==');
-				$v = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tg=='),s2_aaaaaaaotb('dg==')=>0];
-			}else if( $v['t'] == s2_aaaaaaaotb('Tg==') ){
+				$this->s2_ggggggggol[] = "Warning: " . $var . " Invalid Assignment";
+				$v = ["t"=>"N","v"=>0];
+			}else if( $v['t'] == "N" ){
 				if( $v['v'] != "" ){
 					if( is_float($v['v']) && ( is_infinite($v['v']) || is_nan($v['v']) ) ){
 						$this->s2_ggggggggol[] = "Warning: " . $var . " = Infinate/Nan: 0";
-						$v = [s2_aaaaaaaotb('dA==')=>s2_aaaaaaaotb('Tg=='),s2_aaaaaaaotb('dg==')=>0];
+						$v = ["t"=>"N","v"=>0];
 					}else if( is_float($v['v']) ){
 						$v['v'] = (float)$v['v'];
 					}else{
-						//echo gettype($v['v']); echo s2_aaaaaaaotb('eWVz');
+						//echo gettype($v['v']); echo "yes";
 						$v['v'] = (int)$v['v'];
 					}
 				}else{
 					$v['v'] = 0;
 				}
 			}
-			if( gettype($v['t']) == s2_aaaaaaaotb('QklO') ){
+			if( gettype($v['t']) == "BIN" ){
 				$this->s2_ggggggggol[] = "Set: " . $var . " = BinaryData";
-			}else if( gettype($v['v']) == s2_aaaaaaaotb('YXJyYXk=') ){
+			}else if( gettype($v['v']) == "array" ){
 				$this->s2_ggggggggol[] = "Set: " . $var  . " = ";
 				$this->s2_ggggggggol[] = $v['v'];
-			}else if( gettype($v['v']) == s2_aaaaaaaotb('b2JqZWN0') ){
+			}else if( gettype($v['v']) == "object" ){
 				$this->s2_ggggggggol[] = "Set: " . $var  . " = Object ";
-			}else if( gettype($v['v']) == s2_aaaaaaaotb('c3RyaW5n') || $v['t'] == s2_aaaaaaaotb('VA==') ){
+			}else if( gettype($v['v']) == "string" || $v['t'] == "T" ){
 				if( $this->isBinary($v['v']) ){
 					$this->s2_ggggggggol[] = "Set: " . $var . " = BinaryData in " . $v['t'];
 				}else{
-					$this->s2_ggggggggol[] = "Set: " . $var . " = " . substr($v['v'],0,200) . (strlen($v['v'])>200?s2_aaaaaaaotb('Li4u'):"" );
+					$this->s2_ggggggggol[] = "Set: " . $var . " = " . substr($v['v'],0,200) . (strlen($v['v'])>200?"...":"" );
 				}
 			}else{
 				$this->s2_ggggggggol[] = "Set: " . $var . " = " . $v['v'];
@@ -2018,11 +2395,10 @@ class api_engine{
 		}
 	}
 	function s2_2tluser_tes( $x, &$r, $v ){
-		//print_r( $x ); print_r( $r );
 		$key = $x[0];
 		if( isset($r[ $key ]) ){
 			if( sizeof($x) > 1 ){
-				if( $r[ $key ]['t'] == s2_aaaaaaaotb('Tw==') ){
+				if( $r[ $key ]['t'] == "O" ){
 					array_splice($x,0,1);
 					return $this->s2_2tluser_tes($x, $r[ $key ]['v'], $v);
 				}else{
@@ -2044,14 +2420,14 @@ class api_engine{
 				$this->s2_ggggggggol[] = "Assign: " . $i  . " = Infinate/Nan: 0";
 				$v = 0;
 			}else{
-				if( gettype($v) == s2_aaaaaaaotb('c3RyaW5n') ){
+				if( gettype($v) == "string" ){
 					$v = preg_replace('/[\x00-\x1F\x7F-\xFF]/', ' ', $v);  // rpelace all non printable chars
 				}
-				if( gettype($v) == s2_aaaaaaaotb('YXJyYXk=') || gettype($v) == s2_aaaaaaaotb('b2JqZWN0') ){
+				if( gettype($v) == "array" || gettype($v) == "object" ){
 					$this->s2_ggggggggol[] = "Set: " . $i  . " = ";
 					$this->s2_ggggggggol[] = $v;
-				}else if( gettype($v) == s2_aaaaaaaotb('c3RyaW5n') ){
-					$this->s2_ggggggggol[] = "Set: " . $i  . " = " . substr($v,0,500) . (strlen($v)>500?s2_aaaaaaaotb('Li4u'):"" );
+				}else if( gettype($v) == "string" ){
+					$this->s2_ggggggggol[] = "Set: " . $i  . " = " . substr($v,0,500) . (strlen($v)>500?"...":"" );
 				}else{
 					$this->s2_ggggggggol[] = "Set: " . $i  . " = " . $v;
 				}
@@ -2111,7 +2487,7 @@ class api_engine{
 		if( isset($r[ $key ]) ){
 			if( sizeof($x) > 1 ){
 				array_splice($x,0,1);
-				if( $r[ $key ]['t'] == s2_aaaaaaaotb('Tw==') ){
+				if( $r[ $key ]['t'] == "O" ){
 					$this->s2_2eulav_tes( $x, $r[ $key ]['v'], $k);
 				}
 			}else{
@@ -2119,176 +2495,80 @@ class api_engine{
 			}
 		}
 	}
-	function s2_eulav_glp_tes( &$k ){
-		//print_pre( $k );exit;
-		$var = $k['v'];
-		$x = explode("->",$var);
-		$v = $this->s2_2eulav_glp_tes( $x, $this->s2_tttttluser, $k );
-	}
-	function s2_2eulav_glp_tes( $x, &$r, &$k ){
-		// print_pre( $x );
-		// print_pre( $r );
-		$key = $x[0];
-		if( isset($r[ $key ]) ){
-			if( is_object($r[ $key ]) ){
-				$this->s2_noitcnuf_glp_od( $r[ $key ], $k['vs'] );
-			}else if( sizeof($x) > 1 ){
-				array_splice($x,0,1);
-				if( $r[ $key ]['t'] == s2_aaaaaaaotb('Tw==') ){
-					$this->s2_2eulav_glp_tes( $x, $r[ $key ]['v'], $k);
-				}
-			}else{
-				$this->s2_noitcnuf_glp_od( $r[ $key ], $k['vs'] );
-			}
+	function s2_eeulav_teg( $s2_iiiiiiiiii ){
+		$s2_ggggggubed = false;
+		if( $s2_ggggggubed ){
+			echo "s2__eulav_teg\n";
 		}
-	}
-	function s2_eulav_glp_teg( $s2_iiiiiiiiii ){
-		//print_r( $s2_iiiiiiiiii );exit;
 		if( !is_array($s2_iiiiiiiiii) ){
-			$v = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
+			if( $s2_ggggggubed ){ echo $s2_iiiiiiiiii . "\n"; }
+			$v = ['t'=>"T", "v"=>""];
 			if( $s2_iiiiiiiiii ){
 				$x = explode("->",$s2_iiiiiiiiii);
-				//print_pre( $x );
-				$v = $this->s2_2eulav_glp_teg( $x, $this->s2_tttttluser );
-				//print_pre( $v );exit;
+				$v = $this->s2_2eulav_teg( $x, $this->s2_tttttluser );
 			}
 			if( !isset($v['t']) || !isset($v['v']) ){
-				$this->s2_ggggggggol[] = "Error: Variable " . $s2_iiiiiiiiii . s2_aaaaaaaotb('IEludmFsaWQgdmFsdWU=');
-				$v = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
-			}else{
-				return $v;
+				$this->s2_ggggggggol[] = "Error: Variable " . $s2_iiiiiiiiii . " Invalid value";
+				$this->s2_ggggggggol[] = $v;
+				if( $s2_ggggggubed ){ echo "Error: Variable " . $s2_iiiiiiiiii . " Invalid value". "\n"; print_r( $v ); }
+				$v = ['t'=>"T", "v"=>""];
 			}
+			if( $s2_ggggggubed ){ echo "return1: "; print_r($v); }
 			return $v;
 		}else if( $s2_iiiiiiiiii['t'] && isset($s2_iiiiiiiiii['v']) ){
-			if( $s2_iiiiiiiiii['t']==s2_aaaaaaaotb('Vg==') ){
-				$val = $this->s2_eulav_glp_teg( $s2_iiiiiiiiii['v']['v'] );
+			if( $s2_ggggggubed ){ print_r($s2_iiiiiiiiii); }
+			//echo "get value\n" ; print_pre( $s2_iiiiiiiiii );
+			if( $s2_iiiiiiiiii['t']=="V" ){
+				$val = $this->s2_eeulav_teg( $s2_iiiiiiiiii['v']['v'] );
 				if( isset( $s2_iiiiiiiiii['v']['vs']['v'] ) ){
-					if( $s2_iiiiiiiiii['v']['vs']['v'] != "" ){
-						$newval = $this->s2_noitcnuf_glp_od( $val, $s2_iiiiiiiiii['v']['vs'], $s2_iiiiiiiiii['v']['v'] );
+					if( trim($s2_iiiiiiiiii['v']['vs']['v']) != "" ){
+						$newval = $this->s2_noitcnuf_enilni_od( $val, $s2_iiiiiiiiii['v']['vs'], $s2_iiiiiiiiii['v']['v'] );
+						if( $s2_ggggggubed ){ echo "return3: "; print_r($newval); }
 						return $newval;
 					}
 				}
+				if( $s2_ggggggubed ){ echo "return4: "; print_r($val); }
 				return $val;
 			}else{
 				$val = $s2_iiiiiiiiii['v'];
-				if( $s2_iiiiiiiiii['t'] == s2_aaaaaaaotb('Tg==') && gettype($val) == s2_aaaaaaaotb('c3RyaW5n') ){
+				if( $s2_iiiiiiiiii['t'] == "N" && gettype($val) == "string" ){
 					if( preg_match("/\./", $val) ){ $val = (float)$val; }else{ $val = (int)$val; }
-					//echo $s2_iiiiiiiiii['t'] . ": " . $val . "\n";
 				}
-				return [s2_aaaaaaaotb('dA==')=>$s2_iiiiiiiiii['t'], s2_aaaaaaaotb('dg==')=>$val];
+				if( $s2_iiiiiiiiii['t']=="B" && ( $val === "true" || $val === 1 || $val === true ) ){ $val = true; }
+				if( $s2_iiiiiiiiii['t']=="B" && ( $val === "false" || $val === 0 || $val === false ) ){ $val = false; }
+				if( $s2_ggggggubed ){ echo "return5: "; print_r(["t"=>$s2_iiiiiiiiii['t'], "v"=>$val]); }
+				return ["t"=>$s2_iiiiiiiiii['t'], "v"=>$val];
 			}
 		}else{
 			$this->s2_ggggggggol[] = "ERROR: get_value: incorrect: ";
-			$v = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
-			return $v;
-		}
-	}
-	function s2_2eulav_glp_teg( $x, &$r ){
-		// echo "get value2 \n";
-		// print_pre( $x );
-		// print_pre( $r );
-		$key = $x[0];
-		if( $key == "[]" ){ $key = 0; }
-		if( isset($r[ $key ]) ){
-			if( sizeof($x) > 1 ){
-				array_splice($x,0,1);
-				if( $r[ $key ]['t'] == s2_aaaaaaaotb('Tw==') ){
-					return $this->s2_2eulav_glp_teg($x, $r[ $key ]['v']);
-				}else if( $r[ $key ]['t'] == s2_aaaaaaaotb('TA==') ){
-					return $this->s2_2eulav_glp_teg($x, $r[ $key ]['v']);
-				}else{
-					return false;
-				}
-			}else{
-				return $r[ $key ];
-			}
-		}else{
-			return false;
-		}
-	}
-	function s2_eeulav_teg( $s2_iiiiiiiiii ){
-		//print_r( $s2_iiiiiiiiii );exit;
-		if( !is_array($s2_iiiiiiiiii) ){
-			$v = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
-			if( $s2_iiiiiiiiii ){
-				$x = explode("->",$s2_iiiiiiiiii);
-				//print_pre( $x );
-				$v = $this->s2_2eulav_teg( $x, $this->s2_tttttluser );
-				//print_pre( $v );exit;
-			}
-			if( !isset($v['t']) || !isset($v['v']) ){
-				$this->s2_ggggggggol[] = "Error: Variable " . $s2_iiiiiiiiii . s2_aaaaaaaotb('IEludmFsaWQgdmFsdWU=');
-				$v = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
-			}else{
-				return $v;
-			}
-			return $v;
-		}else if( $s2_iiiiiiiiii['t'] && isset($s2_iiiiiiiiii['v']) ){
-			//echo "get value\n" ; print_pre( $s2_iiiiiiiiii );
-			if( $s2_iiiiiiiiii['t']==s2_aaaaaaaotb('Vg==') ){
-				if( $s2_iiiiiiiiii['v']['plg'] ){
-					//echo "get plg value: \n";
-					$val = $this->s2_eulav_glp_teg( $s2_iiiiiiiiii['v']['v'] );
-					//print_pre($val);
-					if( isset( $s2_iiiiiiiiii['v']['vs']['v'] ) ){
-						if( $s2_iiiiiiiiii['v']['vs']['v'] != "" ){
-							//echo "do plg function: " . $s2_iiiiiiiiii['v']['vs']['v'] . "\n";
-							$newval = $this->s2_noitcnuf_glp_od( $val, $s2_iiiiiiiiii['v']['vs'], $s2_iiiiiiiiii['v']['v'] );
-							//echo "returning 2: \n"; print_pre( $new_value );
-							return $newval;
-						}
-					}
-					//echo "returning: \n"; print_pre( $val );
-					return $val;
-				}else{
-					//print_pre( $s2_iiiiiiiiii['v']['v'] );
-					$val = $this->s2_eeulav_teg( $s2_iiiiiiiiii['v']['v'] );
-					//print_pre($val);
-					if( isset( $s2_iiiiiiiiii['v']['vs']['v'] ) ){
-						//echo s2_aaaaaaaotb('MTEx') . $s2_iiiiiiiiii['v']['vs']['v'] . s2_aaaaaaaotb('MTExMQ==');
-						if( trim($s2_iiiiiiiiii['v']['vs']['v']) != "" ){
-							$newval = $this->s2_noitcnuf_enilni_od( $val, $s2_iiiiiiiiii['v']['vs'], $s2_iiiiiiiiii['v']['v'] );
-							return $newval;
-						}
-					}	
-					//echo "returning: \n"; print_pre( $val );
-					return $val;
-				}
-			}else{
-				$val = $s2_iiiiiiiiii['v'];
-				if( $s2_iiiiiiiiii['t'] == s2_aaaaaaaotb('Tg==') && gettype($val) == s2_aaaaaaaotb('c3RyaW5n') ){
-					if( preg_match("/\./", $val) ){ $val = (float)$val; }else{ $val = (int)$val; }
-					//echo $s2_iiiiiiiiii['t'] . ": " . $val . "\n";
-				}
-				//echo "returning: \n"; print_pre( $val );
-				return [s2_aaaaaaaotb('dA==')=>$s2_iiiiiiiiii['t'], s2_aaaaaaaotb('dg==')=>$val];
-			}
-		}else{
-			$this->s2_ggggggggol[] = "ERROR: get_value: incorrect: ";
-			$v = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>""];
+			$v = ['t'=>"T", "v"=>""];
 			return $v;
 		}
 	}
 	function s2_2eulav_teg( $x, &$r ){
-		// echo "get value2 \n";
-		// print_pre( $x );
-		// print_pre( $r );
+		$s2_ggggggubed = false;
+		if( $s2_ggggggubed ){
+			echo "s2__2eulav_teg\n";
+		}
 		$key = $x[0];
 		if( $key == "[]" ){ $key = 0; }
 		if( isset($r[ $key ]) ){
+			if( $s2_ggggggubed ){ echo $key . ": found\n"; }
 			if( sizeof($x) > 1 ){
 				array_splice($x,0,1);
-				if( $r[ $key ]['t'] == s2_aaaaaaaotb('Tw==') ){
+				if( $r[ $key ]['t'] == "O" ){
 					return $this->s2_2eulav_teg($x, $r[ $key ]['v']);
-				}else if( $r[ $key ]['t'] == s2_aaaaaaaotb('TA==') ){
+				}else if( $r[ $key ]['t'] == "L" ){
 					return $this->s2_2eulav_teg($x, $r[ $key ]['v']);
 				}else{
 					return false;
 				}
 			}else{
+				if( $s2_ggggggubed ){ print_r( $r[ $key ]); }
 				return $r[ $key ];
 			}
 		}else{
+			if( $s2_ggggggubed ){ echo "not found\n"; }
 			return false;
 		}
 	}
@@ -2296,7 +2576,7 @@ class api_engine{
 		$s2_vvvvvvvvvv = "";
 		if( is_array($s2_iiiiiiiiii) ){
 			if( $s2_iiiiiiiiii['t'] && isset($s2_iiiiiiiiii['v']) ){
-				if( $s2_iiiiiiiiii['t'] == s2_aaaaaaaotb('Vg==') ){
+				if( $s2_iiiiiiiiii['t'] == "V" ){
 					$s2_vvvvvvvvvv = $s2_iiiiiiiiii['v'];
 				}else{
 					return true;
@@ -2319,7 +2599,7 @@ class api_engine{
 		if( isset($r[ $key ]) ){
 			if( sizeof($x) > 1 ){
 				array_splice($x,0,1);
-				if( $r[ $key ]['t'] == s2_aaaaaaaotb('Tw==') ){
+				if( $r[ $key ]['t'] == "O" ){
 					return $this->s2_22222tessi($x, $r[ $key ]['v']);
 				}else{
 					return false;
@@ -2333,23 +2613,34 @@ class api_engine{
 	}
 	function s2_rorre_dnopser( $error ){
 		if( isset($this->s2_ssssnoitpo['raw_output']) ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='),s2_aaaaaaaotb('ZXJyb3I=')=>$error];
+			return ['status'=>"fail","error"=>$error];
 		}else{
 			$this->s2_eeesnopser['statusCode'] = 500;
 			$this->s2_eeesnopser['body'] = [$error];
 			return $this->s2_eeesnopser;
 		}
 	}
+	function s2_noitucexe_dne( $http_code = 500, $data = "Something wrong", $headers = [] ){
+		$this->s2_eeesnopser['statusCode'] = $http_code;
+		if( is_array($data ) ){
+			$this->s2_eeesnopser['headers']['content-type']="applicatin/json";
+			$this->s2_eeesnopser['body'] = $data;
+		}else{
+			$this->s2_eeesnopser['headers']['content-type']="text/html";
+			$this->s2_eeesnopser['body'] = [$data];
+		}
+		$this->s2_noitucexe_dnev = true;
+	}
 	function s2_tluser_naelc($v){
 		foreach($v as $i=>$j ){
-			if( gettype($j) == s2_aaaaaaaotb('YXJyYXk=') ){
+			if( gettype($j) == "array" ){
 				$v[$i] = $this->s2_tluser_naelc($j);
-			}else if( gettype($j) == s2_aaaaaaaotb('ZmxvYXQ=') || gettype($j) == s2_aaaaaaaotb('ZG91Ymxl') ){
+			}else if( gettype($j) == "float" || gettype($j) == "double" ){
 				if( is_infinite($j) ){
-					$v[$i] = s2_aaaaaaaotb('TlVMTA==');
+					$v[$i] = "NULL";
 				}
 			}else if( is_nan($j) ){
-				$v[$i] = s2_aaaaaaaotb('TlVMTA==');
+				$v[$i] = "NULL";
 			} 
 		}
 		//print_pre( $v );
@@ -2357,8 +2648,8 @@ class api_engine{
 	}
 	function s2_dnepool_txen_dnif( $s2_iiiiegatsf ){
 		$n = 0;
-		for($i=$s2_iiiiegatsf+1;$i<sizeof($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages']);$i++){
-			if( $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $i ]['type'] == s2_aaaaaaaotb('RW5kV2hpbGU=') ||  $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $i ]['type'] == s2_aaaaaaaotb('RW5kRm9y') || $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $i ]['type'] == s2_aaaaaaaotb('RW5kRm9yRWFjaA==') ){
+		for($i=$s2_iiiiegatsf+1;$i<sizeof($this->s2_eeeeenigne["engine"]['stages']);$i++){
+			if( $this->s2_eeeeenigne["engine"]['stages'][ $i ]['type'] == "EndWhile" ||  $this->s2_eeeeenigne["engine"]['stages'][ $i ]['type'] == "EndFor" || $this->s2_eeeeenigne["engine"]['stages'][ $i ]['type'] == "EndForEach" ){
 				return $i;
 			}
 		}
@@ -2367,9 +2658,9 @@ class api_engine{
 	function s2_dnar_txen_dnif( $s2_iiiiegatsf ){
 		$lastif = -1;
 		$n = 0;
-		$vrand = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $s2_iiiiegatsf ]['vrand'];
-		for($i=$s2_iiiiegatsf+1;$i<sizeof($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages']);$i++){
-			if( $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $i ]['vrand'] == $vrand ){
+		$vrand = $this->s2_eeeeenigne["engine"]['stages'][ $s2_iiiiegatsf ]['vrand'];
+		for($i=$s2_iiiiegatsf+1;$i<sizeof($this->s2_eeeeenigne["engine"]['stages']);$i++){
+			if( $this->s2_eeeeenigne["engine"]['stages'][ $i ]['vrand'] == $vrand ){
 				$lastif = $i;
 				break;
 			}
@@ -2379,10 +2670,10 @@ class api_engine{
 	function s2_dnar_verp_dnif( $s2_iiiiegatsf ){
 		$lastif = -1;
 		$n = 0;
-		$vrand = $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $s2_iiiiegatsf ]['vrand'];
+		$vrand = $this->s2_eeeeenigne["engine"]['stages'][ $s2_iiiiegatsf ]['vrand'];
 		for($i=$s2_iiiiegatsf-1;$i>-1;$i--){
-			//print_pre($this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages']);
-			if( $this->s2_eeeeenigne[s2_aaaaaaaotb('ZW5naW5l')]['stages'][ $i ]['vrand'] == $vrand ){
+			//print_pre($this->s2_eeeeenigne["engine"]['stages']);
+			if( $this->s2_eeeeenigne["engine"]['stages'][ $i ]['vrand'] == $vrand ){
 				$lastif = $i;
 				break;
 			}
@@ -2400,10 +2691,10 @@ class api_engine{
 		foreach( $template as $i=>$j ){
 			//echo "<div>" . $i . ": " . $j['name'] . "</div>";
 			if( $value[ $i ] || is_numeric($value[$i]) ){
-				if( $j[s2_aaaaaaaotb('dmFsdWU=')] ){
-					$outputs[ $j[s2_aaaaaaaotb('dmFsdWU=')] ] = $value[$i];
-				}else if( $j[s2_aaaaaaaotb('c3Vi')] ){
-					$o = $this->s2_stuptuo_pam( $value[$i], $j[s2_aaaaaaaotb('c3Vi')] );
+				if( $j["value"] ){
+					$outputs[ $j["value"] ] = $value[$i];
+				}else if( $j["sub"] ){
+					$o = $this->s2_stuptuo_pam( $value[$i], $j["sub"] );
 					foreach( $o as $ii=>$jj ){
 						$outputs[ $ii ] = $jj;
 					}
@@ -2434,25 +2725,30 @@ class api_engine{
 	}
 
 	function s2_yarra_ot_etalpmet( $v ){
-		// echo "template to array\n";
-		// print_pre( $v );
+		$debug = false;
+		if( $debug ){
+			echo "template to array\n";
+			print_pre( $v );
+		}
 		if( is_array($v) ){
 			if( array_keys($v)[0] === 0 ){
 				for($i=0;$i<sizeof($v);$i++){
 					$j = $v[ $i ];
-					if( gettype($j) == s2_aaaaaaaotb('YXJyYXk=') ){
-						if( $j['t'] == s2_aaaaaaaotb('Vg==') ){
+					if( gettype($j) == "array" ){
+						if( $j['t'] == "V" ){
 							$j = $this->s2_eeulav_teg( $j );
 						}
-						if( gettype($j['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+						if( $j['t'] == "BIN" ){
+							$j['v'] = "BinaryData";
+						}else if( gettype($j['v']) == "string" ){
 							if( $this->isBinary($j['v']) ){
-								$j['v'] = s2_aaaaaaaotb('QmluYXJ5IFN0cmlwcGVk');
+								$j['v'] = "Binary Stripped";
 							}
 						}
-						if( $j['t'] == s2_aaaaaaaotb('Tw==') || $j['t'] == s2_aaaaaaaotb('TA==') ){
+						if( $j['t'] == "O" || $j['t'] == "L" ){
 							$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
-						}else if( $j['t'] == s2_aaaaaaaotb('Tg==') ){
-							if( gettype($j['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+						}else if( $j['t'] == "N" ){
+							if( gettype($j['v']) == "string" ){
 								if( preg_match("/\./", $j['v']) ){
 									$v[ $i ] = (float)$j['v'];
 								}else{
@@ -2461,12 +2757,14 @@ class api_engine{
 							}else{
 								$v[ $i ] = $j['v'];
 							}
-						}else if( $j['t'] == s2_aaaaaaaotb('RFQ=') ){
-							$v[ $i ] = $j['v']['v'] . s2_aaaaaaaotb('IA==') . $j['v']['tz'];
-						}else if( $j['t'] == s2_aaaaaaaotb('Qg==') ){
-							$v[ $i ] = ((!$j['v']||$j['v']==s2_aaaaaaaotb('ZmFsc2U='))?false:true);
-						}else if( $j['t'] == s2_aaaaaaaotb('Tkw=') ){
+						}else if( $j['t'] == "DT" ){
+							$v[ $i ] = $j['v']['v'] . " " . $j['v']['tz'];
+						}else if( $j['t'] == "B" ){
+							$v[ $i ] = ((!$j['v']||$j['v']==="false"||$j['v']===false||$j['v']===0)?false:true);
+						}else if( $j['t'] == "NL" ){
 							$v[ $i ] = null;
+						}else if( $j['t'] == "TS" ){
+							$v[ $i ] = $j['v']['v'];
 						}else{
 							$v[ $i ] = $j['v'];
 						}
@@ -2477,22 +2775,22 @@ class api_engine{
 			}else{
 				foreach( $v as $i=>$j ){
 					//echo "Each key: " . $i . "\n";
-					if( gettype( $j ) == s2_aaaaaaaotb('YXJyYXk=') ){
-						if( $j['t'] == s2_aaaaaaaotb('Vg==') ){
+					if( gettype( $j ) == "array" ){
+						if( $j['t'] == "V" ){
 							$j = $this->s2_eeulav_teg( $j );
 							//print_pre($j);
 						}
-						if( gettype($j['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+						if( $j['t'] == "BIN" ){
+							$j['v'] = "BinaryData";
+						}else if( gettype($j['v']) == "string" ){
 							if( $this->isBinary($j['v']) ){
-								$j['v'] = s2_aaaaaaaotb('QmluYXJ5IFN0cmlwcGVk');
+								$j['v'] = "Binary Stripped";
 							}
 						}
-						if( $j['t'] == s2_aaaaaaaotb('Tw==') || $j['t'] == s2_aaaaaaaotb('TA==') ){
+						if( $j['t'] == "O" || $j['t'] == "L" ){
 							$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
-							//print_pre( $v[ $i ] );
-							//echo s2_aaaaaaaotb('eHh4');exit;
-						}else if( $j['t'] == s2_aaaaaaaotb('Tg==') ){
-							if( gettype($j['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+						}else if( $j['t'] == "N" ){
+							if( gettype($j['v']) == "string" ){
 								if( preg_match("/\./", $j['v']) ){
 									$v[ $i ] = (float)$j['v'];
 								}else{
@@ -2501,20 +2799,23 @@ class api_engine{
 							}else{
 								$v[ $i ] = $j['v'];
 							}
-						}else if( $j['t'] == s2_aaaaaaaotb('Qg==') ){
-							$v[ $i ] = ((!$j['v']||$j['v']==s2_aaaaaaaotb('ZmFsc2U='))?false:true);
-						}else if( $j['t'] == s2_aaaaaaaotb('RFQ=') ){
-							$v[ $i ] = $j['v']['v'] . s2_aaaaaaaotb('IA==') . $j['v']['tz'];
-						}else if( $j['t'] == s2_aaaaaaaotb('Tkw=') ){
+						}else if( $j['t'] == "B" ){
+							$v[ $i ] = ((!$j['v']||$j['v']==="false"||$j['v']===false||$j['v']===0)?false:true);
+						}else if( $j['t'] == "DT" ){
+							$v[ $i ] = $j['v']['v'] . " " . $j['v']['tz'];
+						}else if( $j['t'] == "NL" ){
 							$v[ $i ] = null;
+						}else if( $j['t'] == "TS" ){
+							$v[ $i ] = $j['v']['v'];
 						}else{
 							$v[ $i ] = $j['v'];
 						}
 					}else{
 						$this->s2_ggggggggol[] = "Error: unhandled parts " .$j;
-						//echo s2_aaaaaaaotb('VW5oYW5kbGVkIHBhcnRz');
+						//echo "Unhandled parts";
 						//print_pre( $j );
-						$v[ $i ] = ['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$j . "(Unhandled)"];
+						//$v[ $i ] = ['t'=>"T", "v"=>$j . "(Unhandled)"];
+						//$v[ $i ] = $j;
 					}
 				}
 			}
@@ -2522,7 +2823,7 @@ class api_engine{
 			$this->s2_ggggggggol[] = "template to array: " . gettype($v);
 		}
 		// echo "template to array returning...\n";
-		// print_pre( $v );
+		if( $debug ){print_pre( $v );}
 		return $v;
 	}
 	function s2_etutitsbus_ot_etalpmet( $v ){
@@ -2532,15 +2833,17 @@ class api_engine{
 			if( array_keys($v)[0] === 0 ){
 				for($i=0;$i<sizeof($v);$i++){
 					$j = $v[ $i ];
-					if( gettype($j) == s2_aaaaaaaotb('YXJyYXk=') ){
-						if( $j['t'] == s2_aaaaaaaotb('Vg==') ){
+					if( gettype($j) == "array" ){
+						if( $j['t'] == "V" ){
 							$v[ $i ] = $this->s2_eeulav_teg( $j );
-						}else if( $j['t'] == s2_aaaaaaaotb('Tw==') || $j['t'] == s2_aaaaaaaotb('TA==') ){
+						}else if( $j['t'] == "O" || $j['t'] == "L" ){
 							$v[ $i ]['v'] = $this->s2_etutitsbus_ot_etalpmet( $j['v'] );
+						}else if( $j['t'] == "BIN" ){
+							$v[ $i ]['v'] = "BinaryData";
 						}
-						if( gettype($v[ $i ]['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+						if( gettype($v[ $i ]['v']) == "string" ){
 							if( $this->isBinary($v[ $i ]['v']) ){
-								$v[ $i ]['v'] = s2_aaaaaaaotb('QmluYXJ5IFN0cmlwcGVk');
+								$v[ $i ]['v'] = "Binary Stripped";
 							}
 						}
 					}else{
@@ -2553,15 +2856,17 @@ class api_engine{
 			}else{
 				foreach( $v as $i=>$j ){
 					//echo "Each key: " . $i . "\n";
-					if( gettype($j) == s2_aaaaaaaotb('YXJyYXk=') ){
-						if( $j['t'] == s2_aaaaaaaotb('Vg==') ){
+					if( gettype($j) == "array" ){
+						if( $j['t'] == "V" ){
 							$v[ $i ] = $this->s2_eeulav_teg( $j );
-						}else if( $j['t'] == s2_aaaaaaaotb('Tw==') || $j['t'] == s2_aaaaaaaotb('TA==') ){
+						}else if( $j['t'] == "O" || $j['t'] == "L" ){
 							$v[ $i ]['v'] = $this->s2_etutitsbus_ot_etalpmet( $j['v'] );
+						}else if( $j['t'] == "BIN" ){
+							$v[ $i ]['v'] = "BinaryData";
 						}
-						if( gettype($v[ $i ]['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+						if( gettype($v[ $i ]['v']) == "string" ){
 							if( $this->isBinary($v[ $i ]['v']) ){
-								$v[ $i ]['v'] = s2_aaaaaaaotb('QmluYXJ5IFN0cmlwcGVk');
+								$v[ $i ]['v'] = "Binary Stripped";
 							}
 						}
 					}else{
@@ -2577,18 +2882,27 @@ class api_engine{
 		return $v;
 	}
 	function s2_eulav_erup_teg( $j ){
-		if( $j['t'] == s2_aaaaaaaotb('Vg==') ){
-			$j = $this->s2_eeulav_teg( $j );
+		$s2_ggggggubed = false;
+		if( $j == null ){ $this->s2_ggggggggol[] = "get_pure_value null"; return ""; }
+		if( !is_array($j) ){
+			$this->s2_ggggggggol[] = "get_pure_value non array"; return "";
+			return $j;
 		}
-		if( gettype($j['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+		if( $s2_ggggggubed ){ echo "get_pure_value\n"; print_r( $j ); }
+		//print_r( $j );
+		if( $j['t'] == "V" ){
+			$j = $this->s2_eeulav_teg( $j );
+			if( $s2_ggggggubed ){  print_r( $j ); }
+		}
+		if( gettype($j['v']) == "string" ){
 			if( $this->isBinary($j['v']) ){
-				$j['v'] = s2_aaaaaaaotb('QmluYXJ5IFN0cmlwcGVk');
+				$j['v'] = "Binary Stripped";
 			}
 		}
-		if( $j['t'] == s2_aaaaaaaotb('Tw==') || $j['t'] == s2_aaaaaaaotb('TA==') ){
+		if( $j['t'] == "O" || $j['t'] == "L" ){
 			$v = $this->s2_yarra_ot_etalpmet( $j['v'] );
-		}else if( $j['t'] == s2_aaaaaaaotb('Tg==') ){
-			if( gettype($j['v']) == s2_aaaaaaaotb('c3RyaW5n') ){
+		}else if( $j['t'] == "N" ){
+			if( gettype($j['v']) == "string" ){
 				if( preg_match("/\./", $j['v']) ){
 					$v = (float)$j['v'];
 				}else{
@@ -2597,16 +2911,35 @@ class api_engine{
 			}else{
 				$v = $j['v'];
 			}
-		}else if( $j['t'] == s2_aaaaaaaotb('Qg==') ){
-			$v = ((!$j['v']||$j['v']==s2_aaaaaaaotb('ZmFsc2U='))?false:true);
-		}else if( $j['t'] == s2_aaaaaaaotb('RFQ=') ){
-			$v = $j['v']['v'] . s2_aaaaaaaotb('IA==') . $j['v']['tz'];
-		}else if( $j['t'] == s2_aaaaaaaotb('Tkw=') ){
+		}else if( $j['t'] == "B" ){
+			$v = ((!$j['v']||$j['v']==="false"||$j['v']===false||$j['v']===0)?false:true);
+		}else if( $j['t'] == "DT" ){
+			$v = $j['v']['v'] . " " . $j['v']['tz'];
+		}else if( $j['t'] == "NL" ){
 			$v = null;
+		}else if( $j['t'] == "BIN" ){
+			$v = "BinaryData";
 		}else{
 			$v = $j['v'];
 		}
+		if( $s2_ggggggubed ){  print_r( $v ); }
 		return $v;
+	}
+	function s2_emit_hcope_erup_teg( $j ){
+		if( $j['t'] == 'T' ){
+			if( is_numeric($j['v']) ){
+				return (int)$j['v'];
+			}
+		}else if( $j['t'] == 'N' ){
+			return (int)$j['v'];
+		}else if( $j['t'] == 'D' ){
+			return strtotime( $j['v'] );
+		}else if( $j['t'] == 'DT' ){
+			return strtotime( $j['v']['v'] );
+		}else if( $j['t'] == 'TS' ){
+			return (int)$j['v'];
+		}
+		return 1000;
 	}
 	function s2_yarra_ot_etalpmet_atad_ognom( $v ){
 		// echo "template to array\n";
@@ -2616,7 +2949,7 @@ class api_engine{
 			$j = $v[ $i ];
 			$val = $j['v'];
 			$val = $this->s2_eulav_erup_teg($val);
-			$s2_aaaaaaatad[ str_replace("->", s2_aaaaaaaotb('Lg=='), $j['f']['v'] ) ] = $val;
+			$s2_aaaaaaatad[ str_replace("->", ".", $j['f']['v'] ) ] = $val;
 		}
 		return $s2_aaaaaaatad;
 	}
@@ -2627,7 +2960,7 @@ class api_engine{
 		for($i=0;$i<sizeof($v);$i++){
 			$j = $v[ $i ];
 			$val = $j['v']['v'];
-			$s2_aaaaaaatad[ str_replace("->", s2_aaaaaaaotb('Lg=='), $j['f']['v'] ) ] = ($val==s2_aaaaaaaotb('dHJ1ZQ==')||$val===true?true:false);
+			$s2_aaaaaaatad[ str_replace("->", ".", $j['f']['v'] ) ] = ($val=="true"||$val===true?true:false);
 		}
 		return $s2_aaaaaaatad;
 	}
@@ -2638,7 +2971,7 @@ class api_engine{
 		for($i=0;$i<sizeof($v);$i++){
 			$j = $v[ $i ];
 			$val = $j['v']['v'];
-			$s2_aaaaaaatad[ str_replace("->", s2_aaaaaaaotb('Lg=='), $j['f']['v'] ) ] = ($val==s2_aaaaaaaotb('LTE=')||$val===-1?-1:1);
+			$s2_aaaaaaatad[ str_replace("->", ".", $j['f']['v'] ) ] = ($val=="-1"||$val===-1?-1:1);
 		}
 		return $s2_aaaaaaatad;
 	}
@@ -2649,10 +2982,10 @@ class api_engine{
 
 		for($i=0;$i<sizeof($v);$i++){
 			$j = $v[$i];
-			$j['f']['v'] = str_replace("->", s2_aaaaaaaotb('Lg=='), $j['f']['v']);
-			if( $j['v']['t'] == s2_aaaaaaaotb('Vg==') ){
+			$j['f']['v'] = str_replace("->", ".", $j['f']['v']);
+			if( $j['v']['t'] == "V" ){
 				$s2_dddddddnoc[ $j['f']['v'] ] = $this->s2_eulav_erup_teg( $j['v'] );
-			}else if( $j['v']['t'] == s2_aaaaaaaotb('TA==') && ( $j['f']['v'] == '$and' || $j['f']['v'] == '$or' ) ){
+			}else if( $j['v']['t'] == "L" && ( $j['f']['v'] == '$and' || $j['f']['v'] == '$or' ) ){
 				$s2_dddddddnoc[ $j['f']['v'] ] = [];
 				for($k=0;$k<sizeof($j['v']['v']);$j++){
 					$s2_dddddddnoc[ $j['f']['v'] ][] = $this->s2_yarra_ot_etalpmet_yreuq_ognom($j['v']['v'][$k]['v']);
@@ -2687,15 +3020,15 @@ class api_engine{
 
 		//print_pre( $s2_ddddegatsf['d'] );exit;
 
-		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X2RhdGFiYXNlcw=='), ['_id'=>$s2_ddddddi_bd] );
+		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('RGF0YWJhc2Ugbm90IGZvdW5k')];
+			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
-		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X3RhYmxlcw=='), ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('RGF0YWJhc2Ugbm90IGZvdW5k')];
+			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{
 			$s2_eeeeeelbat = $tres['data'];
 		}
@@ -2706,17 +3039,17 @@ class api_engine{
 
 		$mongo_con = new mongodb_connection( $db['details']['host'], $db['details']['port'], $db['details']['database'], $db['details']['username'], $db['details']['password'],$db['details']['authSource'], ($db['details']['tls']?true:false) );
 
-		if( $s2_ttttttttca == s2_aaaaaaaotb('SW5zZXJ0') || $s2_ttttttttca == s2_aaaaaaaotb('SW5zZXJ0T25l') ){
+		if( $s2_ttttttttca == "Insert" || $s2_ttttttttca == "InsertOne" ){
 			//print_pre( $set );exit;
 			$insert_data = $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			//print_pre( $insert_data );exit;
 			$s2_sssssserbd = $mongo_con->insert( $s2_eeeeeelbat['table'], $insert_data );
 			$s2_sssssserbd['insertId'] = $s2_sssssserbd['inserted_id'];unset($s2_sssssserbd['inserted_id']);
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
-			if( $s2_sssssserbd['status'] == s2_aaaaaaaotb('c3VjY2Vzcw==') ){}
+			if( $s2_sssssserbd['status'] == "success" ){}
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RmluZE9uZQ==') ){
+		if( $s2_ttttttttca == "FindOne" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$project = $this->s2_yarra_ot_etalpmet_tcejorp_ognom( $project );
 			$s2_tttttttros = $this->s2_yarra_ot_etalpmet_tros_ognom( $s2_tttttttros );
@@ -2728,13 +3061,13 @@ class api_engine{
 				$ops['projection'] = $project;
 			}
 			$s2_sssssserbd = $mongo_con->find_one($s2_eeeeeelbat['table'], $s2_dddddddnoc, $ops);
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RmluZE1hbnk=') ){
+		if( $s2_ttttttttca == "FindMany" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$project = $this->s2_yarra_ot_etalpmet_tcejorp_ognom( $project );
 			$s2_tttttttros = $this->s2_yarra_ot_etalpmet_tros_ognom( $s2_tttttttros );
@@ -2748,13 +3081,13 @@ class api_engine{
 			//print_pre( $ops );exit;
 			$s2_sssssserbd = $mongo_con->find($s2_eeeeeelbat['table'], $s2_dddddddnoc, $ops);
 			//print_pre( $s2_sssssserbd );exit;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRlT25l') ){
+		if( $s2_ttttttttca == "UpdateOne" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$set =  $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			$unset= $this->s2_yarra_ot_etalpmet_atad_ognom( $unset );
@@ -2768,15 +3101,15 @@ class api_engine{
 
 			$s2_sssssserbd = $mongo_con->update_one($s2_eeeeeelbat['table'], $s2_dddddddnoc, $d, $ops);
 			//print_pre( $s2_sssssserbd );exit;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('RGF0YQ==');
+			$this->s2_ggggggggol[] = "Data";
 			$this->s2_ggggggggol[] = $d;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRlTWFueQ==') ){
+		if( $s2_ttttttttca == "UpdateMany" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$set =  $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			$unset= $this->s2_yarra_ot_etalpmet_atad_ognom( $unset );
@@ -2790,28 +3123,28 @@ class api_engine{
 
 			$s2_sssssserbd = $mongo_con->update_one($s2_eeeeeelbat['table'], $s2_dddddddnoc, $d, $ops);
 			//print_pre( $s2_sssssserbd );exit;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('RGF0YQ==');
+			$this->s2_ggggggggol[] = "Data";
 			$this->s2_ggggggggol[] = $d;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RGVsZXRlT25l') ){
+		if( $s2_ttttttttca == "DeleteOne" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$ops = [];
 			$s2_sssssserbd = $mongo_con->delete_one($s2_eeeeeelbat['table'], $s2_dddddddnoc, $ops);
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRlTWFueQ==') ){
+		if( $s2_ttttttttca == "UpdateMany" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$ops = ['limit'=>(int)$s2_ddddegatsf['d']['data']['limit']['v'] ];
 			$s2_sssssserbd = $mongo_con->update_one($s2_eeeeeelbat['table'], $s2_dddddddnoc, $ops);
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
@@ -2832,26 +3165,26 @@ class api_engine{
 		$inc = $s2_ddddegatsf['d']['data']['inc']['v'];
 		$output = $s2_ddddegatsf['d']['data']['output']['v'];
 
-		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X3RhYmxlc19keW5hbWlj'), ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables_dynamic", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('RGF0YWJhc2Ugbm90IGZvdW5k')];
+			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{
 			$s2_eeeeeelbat = $tres['data'];
 		}
 
-		$s2_eman_elbat = $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X2R0Xw==') . $s2_eeeeeelbat['_id'];
+		$s2_eman_elbat = $config_global_engine['config_mongo_prefix'] . "_dt_" . $s2_eeeeeelbat['_id'];
 		//echo $s2_eman_elbat;exit;
 
-		if( $s2_ttttttttca == s2_aaaaaaaotb('SW5zZXJ0') || $s2_ttttttttca == s2_aaaaaaaotb('SW5zZXJ0T25l') ){
+		if( $s2_ttttttttca == "Insert" || $s2_ttttttttca == "InsertOne" ){
 			//print_pre( $set );exit;
 			//print_pre( $insert );exit;
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->insert( $s2_eman_elbat, $insert );
 			$s2_sssssserbd['insertId'] = $s2_sssssserbd['inserted_id'];unset($s2_sssssserbd['inserted_id']);
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
-			if( $s2_sssssserbd['status'] == s2_aaaaaaaotb('c3VjY2Vzcw==') ){}
+			if( $s2_sssssserbd['status'] == "success" ){}
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RmluZE9uZQ==') ){
+		if( $s2_ttttttttca == "FindOne" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$project = $this->s2_yarra_ot_etalpmet_tcejorp_ognom( $project );
 			$s2_tttttttros = $this->s2_yarra_ot_etalpmet_tros_ognom( $s2_tttttttros );
@@ -2863,13 +3196,13 @@ class api_engine{
 				$ops['projection'] = $project;
 			}
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one($s2_eman_elbat, $s2_dddddddnoc, $ops);
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RmluZE1hbnk=') ){
+		if( $s2_ttttttttca == "FindMany" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$project = $this->s2_yarra_ot_etalpmet_tcejorp_ognom( $project );
 			$s2_tttttttros = $this->s2_yarra_ot_etalpmet_tros_ognom( $s2_tttttttros );
@@ -2883,13 +3216,13 @@ class api_engine{
 			//print_pre( $ops );exit;
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->find($s2_eman_elbat, $s2_dddddddnoc, $ops);
 			//print_pre( $s2_sssssserbd );exit;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRlT25l') ){
+		if( $s2_ttttttttca == "UpdateOne" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$set =  $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			$unset= $this->s2_yarra_ot_etalpmet_atad_ognom( $unset );
@@ -2903,15 +3236,15 @@ class api_engine{
 
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->update_one($s2_eman_elbat, $s2_dddddddnoc, $d, $ops);
 			//print_pre( $s2_sssssserbd );exit;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('RGF0YQ==');
+			$this->s2_ggggggggol[] = "Data";
 			$this->s2_ggggggggol[] = $d;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRlTWFueQ==') ){
+		if( $s2_ttttttttca == "UpdateMany" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$set =  $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			$unset= $this->s2_yarra_ot_etalpmet_atad_ognom( $unset );
@@ -2925,28 +3258,28 @@ class api_engine{
 
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->update_one($s2_eman_elbat, $s2_dddddddnoc, $d, $ops);
 			//print_pre( $s2_sssssserbd );exit;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('RGF0YQ==');
+			$this->s2_ggggggggol[] = "Data";
 			$this->s2_ggggggggol[] = $d;
 			//$s2_sssssserbd['cond'] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RGVsZXRlT25l') ){
+		if( $s2_ttttttttca == "DeleteOne" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$ops = [];
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->delete_one($s2_eman_elbat, $s2_dddddddnoc, $ops);
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRlTWFueQ==') ){
+		if( $s2_ttttttttca == "UpdateMany" ){
 			$s2_dddddddnoc = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $s2_yyyyyyreuq );
 			$ops = ['limit'=>(int)$s2_ddddegatsf['d']['data']['limit']['v'] ];
 			$s2_sssssserbd = $this->s2_nnnnnnnnoc->update_one($s2_eman_elbat, $s2_dddddddnoc, $ops);
-			$this->s2_ggggggggol[] = s2_aaaaaaaotb('REIgY29uZA==');
+			$this->s2_ggggggggol[] = "DB cond";
 			$this->s2_ggggggggol[] = $s2_dddddddnoc;
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
@@ -2955,12 +3288,12 @@ class api_engine{
 
 	function s2_gnirts_ot_etalpmet_erehw_lqsym($con, $v ){
 		$vv = [];
-		if( gettype($v)==s2_aaaaaaaotb('YXJyYXk=') ){
+		if( gettype($v)=="array" ){
 			if( array_keys($v)[0] === 0  ){
 				foreach($v as $k=>$vd){
-					if( $vd['v']['t'] == s2_aaaaaaaotb('Vg==') ){
+					if( $vd['v']['t'] == "V" ){
 						$vv[] = "`".$vd['f']['v'] ."`". $vd['c']['v'] ."'". mysqli_escape_string($con, $this->s2_eulav_erup_teg($vd['v']) ) . "'";
-					}else if( $vd['v']['t'] == s2_aaaaaaaotb('TA==') ){
+					}else if( $vd['v']['t'] == "L" ){
 						$vv[] = " ( " . $this->s2_gnirts_ot_etalpmet_erehw_lqsym($con, $vd['v']['v']) . " ) ";
 					}else{
 						$vv[] = "`".$vd['f']['v'] ."`". $vd['c']['v'] ."'". mysqli_escape_string($con, $this->s2_eulav_erup_teg($vd['v']) ) . "'";
@@ -2969,13 +3302,13 @@ class api_engine{
 						$vv[] = $vd['n']['v'];
 					}
 				}
-			}else{ $this->s2_ggggggggol[] = s2_aaaaaaaotb('d2hlcmUgY29uZGl0aW9uIG5vdCBhcnJheQ=='); }
+			}else{ $this->s2_ggggggggol[] = "where condition not array"; }
 		}else{ $this->s2_ggggggggol[] = "where condition incorrect type: "+ gettype($v); }
-		return implode(s2_aaaaaaaotb('IA=='), $vv);
+		return implode(" ", $vv);
 	}
 	function s2_gnirts_ot_etalpmet_sdleif_lqsym($v){
 		$vv = [];
-		if( gettype($v)==s2_aaaaaaaotb('YXJyYXk=') ){
+		if( gettype($v)=="array" ){
 				foreach($v as $k=>$vd){
 					$vv[] = $k;
 				}
@@ -2984,10 +3317,10 @@ class api_engine{
 	}
 	function s2_gnirts_ot_etalpmet_tros_lqsym($v){
 		$vv = [];
-		if( gettype($v)==s2_aaaaaaaotb('YXJyYXk=') ){
+		if( gettype($v)=="array" ){
 			if( array_keys($v)[0] === 0  ){
 				foreach($v as $k=>$vd){
-					$vv[] = $vd['f']['v'] . ($vd['o']['v']==s2_aaaaaaaotb('RGVzYw==')?s2_aaaaaaaotb('IGRlc2M='):"");
+					$vv[] = $vd['f']['v'] . ($vd['o']['v']=="Desc"?" desc":"");
 				}
 			}else{ $this->s2_ggggggggol[] = "get_fields_notation: not a object "; }
 		}else{ $this->s2_ggggggggol[] = "get_fields_notation: incorrect type: " .gettype($v); }
@@ -3013,15 +3346,15 @@ class api_engine{
 		//print_pre( $config_global_engine );exit;
 		//print_pre( $keys );exit;
 
-		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X2RhdGFiYXNlcw=='), ['_id'=>$s2_ddddddi_bd] );
+		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) || !$s2_sssssserbd['data'] ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('RGF0YWJhc2Ugbm90IGZvdW5k')];
+			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
-		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X3RhYmxlcw=='), ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) || !$tres['data'] ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>s2_aaaaaaaotb('RGF0YWJhc2Ugbm90IGZvdW5k')];
+			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{
 			$s2_eeeeeelbat = $tres['data'];
 		}
@@ -3033,13 +3366,13 @@ class api_engine{
 		$mysql_con = mysqli_connect( $db['details']['host'], $db['details']['username'], $db['details']['password'], $db['details']['database'], (int)$db['details']['port'] ) ;
 		if( mysqli_connect_error() ){
 			$this->s2_tluser_tes( $output, [
-				'status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>"ConnectError:" . mysqli_connect_error()
+				'status'=>"fail", "error"=>"ConnectError:" . mysqli_connect_error()
 			] );return false;
 		}
 		mysqli_options($mysql_con, MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true); 
 		mysqli_report(MYSQLI_REPORT_OFF);
 
-		if( $s2_ttttttttca == s2_aaaaaaaotb('SW5zZXJ0') ){
+		if( $s2_ttttttttca == "Insert" ){
 			//print_pre( $set );exit;
 			$insert_data = $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			//print_pre( $insert_data );exit;
@@ -3052,86 +3385,86 @@ class api_engine{
 			if( mysqli_error( $mysql_con) ){
 				//echo mysqli_error( $mysql_con);
 				$s2_sssssserbd = [
-					s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('ZmFpbA==')],
-					s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>mysqli_error($mysql_con) ],
-					s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq]
+					"status"=>['t'=>"T", "v"=>"fail"],
+					"error"=>['t'=>"T", "v"=>mysqli_error($mysql_con) ],
+					"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq]
 				];
-				$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );return false;
+				$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );return false;
 			}
 			$s2_sssssserbd = [
-				s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('c3VjY2Vzcw==')],
-				s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>"" ],
-				s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq],
-				s2_aaaaaaaotb('aW5zZXJ0SWQ=')=>['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>mysqli_insert_id($mysql_con)],
+				"status"=>['t'=>"T", "v"=>"success"],
+				"error"=>['t'=>"T", "v"=>"" ],
+				"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq],
+				"insertId"=>['t'=>"N", "v"=>mysqli_insert_id($mysql_con)],
 			];
-			$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );
+			$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0') || $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0QXNzb2M=') || $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0S2V5VmFsdWU=') ){
+		if( $s2_ttttttttca == "Select" || $s2_ttttttttca == "SelectAssoc" || $s2_ttttttttca == "SelectKeyValue" ){
 			$s2_eeeeeerehw = $this->s2_gnirts_ot_etalpmet_erehw_lqsym($mysql_con, $s2_eeeeeerehw );
-			if( $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0QXNzb2M=') || $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0S2V5VmFsdWU=') ){
+			if( $s2_ttttttttca == "SelectAssoc" || $s2_ttttttttca == "SelectKeyValue" ){
 				if( !isset($s2_sssssdleif[ $key ]) ){
 					$s2_sssssdleif[ $key ] = ['t'=>'T'];
 				}
 			}
-			if( $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0S2V5VmFsdWU=') ){
+			if( $s2_ttttttttca == "SelectKeyValue" ){
 				$s2_sssssdleif = [ $key => ['t'=>'T'], $value => ['t'=>'T'] ];
 			}
 			$s2_sssssdleif = $this->s2_gnirts_ot_etalpmet_sdleif_lqsym( $s2_sssssdleif );
 			$s2_tttttttros = $this->s2_gnirts_ot_etalpmet_tros_lqsym( $s2_tttttttros );
 			$key = $s2_ddddegatsf['d']['data']['key']['v'];
 			$value = $s2_ddddegatsf['d']['data']['value']['v'];
-			$s2_ttttttimil = s2_aaaaaaaotb('bGltaXQg') . (int)$s2_ddddegatsf['d']['data']['limit']['v'];
-			$s2_yyyyyyreuq = s2_aaaaaaaotb('c2VsZWN0IA==') . (trim($s2_sssssdleif)?$s2_sssssdleif:"*") . " from `" . $s2_eeeeeelbat['table'] . "` " . (trim($s2_eeeeeerehw)?"\nwhere " . $s2_eeeeeerehw:"") . s2_aaaaaaaotb('IA==') . (trim($s2_tttttttros)?"\norder by " .$s2_tttttttros:"") . " \n" . $s2_ttttttimil;
+			$s2_ttttttimil = "limit " . (int)$s2_ddddegatsf['d']['data']['limit']['v'];
+			$s2_yyyyyyreuq = "select " . (trim($s2_sssssdleif)?$s2_sssssdleif:"*") . " from `" . $s2_eeeeeelbat['table'] . "` " . (trim($s2_eeeeeerehw)?"\nwhere " . $s2_eeeeeerehw:"") . " " . (trim($s2_tttttttros)?"\norder by " .$s2_tttttttros:"") . " \n" . $s2_ttttttimil;
 			$s2_sssssssser = mysqli_query($mysql_con, $s2_yyyyyyreuq);
 			$this->s2_ggggggggol[] = $s2_yyyyyyreuq;
 			if( mysqli_error( $mysql_con) ){
 				//echo mysqli_error( $mysql_con);
 				$s2_sssssserbd = [
-					s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('ZmFpbA==')],
-					s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>mysqli_error($mysql_con) ],
-					s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq]
+					"status"=>['t'=>"T", "v"=>"fail"],
+					"error"=>['t'=>"T", "v"=>mysqli_error($mysql_con) ],
+					"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq]
 				];
-				$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );return false;
+				$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );return false;
 			}
 			$rec = [];
 			while( $row = mysqli_fetch_assoc($s2_sssssssser) ){
-				if( $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0QXNzb2M=') ){
+				if( $s2_ttttttttca == "SelectAssoc" ){
 					$rec[ $row[ $key ] ] = $row;
-				}else if( $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0S2V5VmFsdWU=') ){
+				}else if( $s2_ttttttttca == "SelectKeyValue" ){
 					$rec[ $row[ $key ] ] = $row[ $value ];
 				}else{
 					$rec[] = $row;
 				}
 			}
 			$this->s2_tcejbo_ot_tupni( $rec );
-			if( $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0QXNzb2M=') || $s2_ttttttttca == s2_aaaaaaaotb('U2VsZWN0S2V5VmFsdWU=') ){
-				$s2_sssssserbd = ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>[
-					s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('c3VjY2Vzcw==')],
-					s2_aaaaaaaotb('ZGF0YQ==')=>['t'=>'O', 'v'=>$rec],
-					s2_aaaaaaaotb('Y291bnQ=')=>['t'=>'N', 'v'=>sizeof($rec)],
-					s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq]
+			if( $s2_ttttttttca == "SelectAssoc" || $s2_ttttttttca == "SelectKeyValue" ){
+				$s2_sssssserbd = ['t'=>"O",'v'=>[
+					"status"=>['t'=>"T", "v"=>"success"],
+					"data"=>['t'=>'O', 'v'=>$rec],
+					"count"=>['t'=>'N', 'v'=>sizeof($rec)],
+					"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq]
 				]];
 			}else{
-				$s2_sssssserbd = ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>[
-					s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('c3VjY2Vzcw==')],
-					s2_aaaaaaaotb('ZGF0YQ==')=>['t'=>'L', 'v'=>$rec],
-					s2_aaaaaaaotb('Y291bnQ=')=>['t'=>'N', 'v'=>sizeof($rec)],
-					s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq]
+				$s2_sssssserbd = ['t'=>"O",'v'=>[
+					"status"=>['t'=>"T", "v"=>"success"],
+					"data"=>['t'=>'L', 'v'=>$rec],
+					"count"=>['t'=>'N', 'v'=>sizeof($rec)],
+					"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq]
 				]];
 			}
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('VXBkYXRl') ){
+		if( $s2_ttttttttca == "Update" ){
 			$s2_eeeeeerehw = $this->s2_gnirts_ot_etalpmet_erehw_lqsym($mysql_con, $s2_eeeeeerehw );
 			$s2_aaaaaaatad = $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			$s2_tttttttros = $this->s2_gnirts_ot_etalpmet_tros_lqsym( $s2_tttttttros );
-			$s2_ttttttimil = s2_aaaaaaaotb('bGltaXQg') . (int)$s2_ddddegatsf['d']['data']['limit']['v'];
+			$s2_ttttttimil = "limit " . (int)$s2_ddddegatsf['d']['data']['limit']['v'];
 			$q = [];
 			foreach($s2_aaaaaaatad as $i=>$j){
 				$q[] = "`" . $i . "` = '" . mysqli_escape_string($mysql_con, $j ) . "' ";
 			}
 			$s2_yyyyyyreuq = "update `" . $s2_eeeeeelbat['table'] .  "` ";
-			$s2_yyyyyyreuq .= "\nset " . implode(", \n", $q ) . s2_aaaaaaaotb('IA=='); 
+			$s2_yyyyyyreuq .= "\nset " . implode(", \n", $q ) . " "; 
 			$s2_yyyyyyreuq .= (trim($s2_eeeeeerehw)?"\nwhere " . $s2_eeeeeerehw:"");
 			$s2_yyyyyyreuq .= (trim($s2_tttttttros)?"\norder by " .$s2_tttttttros:"") . " \n" . $s2_ttttttimil;
 			$s2_sssssssser = mysqli_query($mysql_con, $s2_yyyyyyreuq);
@@ -3139,26 +3472,26 @@ class api_engine{
 			if( mysqli_error( $mysql_con) ){
 				//echo mysqli_error( $mysql_con);
 				$s2_sssssserbd = [
-					s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('ZmFpbA==')],
-					s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>mysqli_error($mysql_con) ],
-					s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq]
+					"status"=>['t'=>"T", "v"=>"fail"],
+					"error"=>['t'=>"T", "v"=>mysqli_error($mysql_con) ],
+					"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq]
 				];
-				$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );
+				$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );
 				return false;
 			}
 			$s2_sssssserbd = [
-				s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('c3VjY2Vzcw==')],
-				s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>"" ],
-				s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq],
-				s2_aaaaaaaotb('dXBkYXRlZA==')=>['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>mysqli_affected_rows($mysql_con)],
+				"status"=>['t'=>"T", "v"=>"success"],
+				"error"=>['t'=>"T", "v"=>"" ],
+				"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq],
+				"updated"=>['t'=>"N", "v"=>mysqli_affected_rows($mysql_con)],
 			];
-			$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );
+			$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );
 		}
-		if( $s2_ttttttttca == s2_aaaaaaaotb('RGVsZXRl') ){
+		if( $s2_ttttttttca == "Delete" ){
 			$s2_eeeeeerehw = $this->s2_gnirts_ot_etalpmet_erehw_lqsym($mysql_con, $s2_eeeeeerehw );
 			$s2_aaaaaaatad = $this->s2_yarra_ot_etalpmet_atad_ognom( $set );
 			$s2_tttttttros = $this->s2_gnirts_ot_etalpmet_tros_lqsym( $s2_tttttttros );
-			$s2_ttttttimil = s2_aaaaaaaotb('bGltaXQg') . (int)$s2_ddddegatsf['d']['data']['limit']['v'];
+			$s2_ttttttimil = "limit " . (int)$s2_ddddegatsf['d']['data']['limit']['v'];
 			$s2_yyyyyyreuq = "delete from `" . $s2_eeeeeelbat['table'] .  "` ";
 			$s2_yyyyyyreuq .= (trim($s2_eeeeeerehw)?"\nwhere " . $s2_eeeeeerehw:"");
 			$s2_yyyyyyreuq .= (trim($s2_tttttttros)?"\norder by " .$s2_tttttttros:"") . " \n" . $s2_ttttttimil;
@@ -3167,20 +3500,20 @@ class api_engine{
 			if( mysqli_error( $mysql_con) ){
 				//echo mysqli_error( $mysql_con);
 				$s2_sssssserbd = [
-					s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('ZmFpbA==')],
-					s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>mysqli_error($mysql_con) ],
-					s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq]
+					"status"=>['t'=>"T", "v"=>"fail"],
+					"error"=>['t'=>"T", "v"=>mysqli_error($mysql_con) ],
+					"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq]
 				];
-				$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );
+				$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );
 				return false;
 			}
 			$s2_sssssserbd = [
-				s2_aaaaaaaotb('c3RhdHVz')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>s2_aaaaaaaotb('c3VjY2Vzcw==')],
-				s2_aaaaaaaotb('ZXJyb3I=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>"" ],
-				s2_aaaaaaaotb('cXVlcnk=')=>['t'=>s2_aaaaaaaotb('VA=='), s2_aaaaaaaotb('dg==')=>$s2_yyyyyyreuq],
-				s2_aaaaaaaotb('ZGVsZXRlZA==')=>['t'=>s2_aaaaaaaotb('Tg=='), s2_aaaaaaaotb('dg==')=>mysqli_affected_rows($mysql_con)],
+				"status"=>['t'=>"T", "v"=>"success"],
+				"error"=>['t'=>"T", "v"=>"" ],
+				"query"=>['t'=>"T", "v"=>$s2_yyyyyyreuq],
+				"deleted"=>['t'=>"N", "v"=>mysqli_affected_rows($mysql_con)],
 			];
-			$this->s2_tluser_tes( $output, ['t'=>s2_aaaaaaaotb('Tw=='),'v'=>$s2_sssssserbd] );
+			$this->s2_tluser_tes( $output, ['t'=>"O",'v'=>$s2_sssssserbd] );
 		}
 	}
 	function s2_tseuqeRPTTH( $s2_ddddegatsf ){
@@ -3190,7 +3523,10 @@ class api_engine{
 		$url = $this->s2_eulav_erup_teg($s2_ddddegatsf['d']['data']['url']);
 		$contentType = $s2_ddddegatsf['d']['data']['content-type']['v'];
 		$reqheaders = $this->s2_yarra_ot_etalpmet_eulav_yek( $s2_ddddegatsf['d']['data']['headers']['v'] );
+		//print_r( $s2_ddddegatsf['d']['data']['payload']['v'] );
 		$payload = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['data']['payload']['v'] );
+		//echo json_encode($payload);
+		//print_r( $payload );exit;
 		$redirects = $s2_ddddegatsf['d']['data']['redirect']['v'];
 		$ctime = $s2_ddddegatsf['d']['data']['ctime']['v'];
 		$rtime = $s2_ddddegatsf['d']['data']['rtime']['v'];
@@ -3200,6 +3536,7 @@ class api_engine{
 		$sslkey = $this->s2_eulav_erup_teg($s2_ddddegatsf['d']['data']['sslkey']);
 		$userproxy = $this->s2_eulav_erup_teg($s2_ddddegatsf['d']['data']['userproxy']);
 		$proxy = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['data']['proxy']['v'] );
+		$response_parse = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['data']['parse'] );
 		$output = $s2_ddddegatsf['d']['data']['output']['v'];
 
 		if( 1==12 ){
@@ -3223,6 +3560,27 @@ class api_engine{
 			echo json_encode($k,JSON_PRETTY_PRINT);exit;
 		}
 
+		// if( !isset($reqheaders['User-Agent']) && !isset($reqheaders['user-agent']) ){
+		// 	$reqheaders[] = "User-Agent: BackendMaker V2 Curl";
+		// }
+		$reqh = [];
+		$uaf = false;
+		foreach( $reqheaders as $i=>$j ){
+			if( strtolower($i) == "user-agent" ){
+				$uaf = true;
+			}
+			$reqh[] = $i.": ".$j;
+		}
+		if( !$uaf ){
+			$reqh[] = "User-Agent: Backendmaker V2 Curl";
+		}
+
+		if( preg_match("/json/i", $contentType) ){
+			$payload = json_encode($payload);
+			$reqh[] = "Content-Type: " . $contentType;
+			$reqh[] = "Content-Length: " . strlen($payload);
+		}
+
 		$ch = curl_init();
 		$s2_ssssnoitpo = array(
 			CURLOPT_HEADER => 1,
@@ -3234,6 +3592,10 @@ class api_engine{
 			CURLOPT_HEADER=>true
 		);
 		curl_setopt_array($ch, $s2_ssssnoitpo);
+		//print_r( $reqh  );
+		if( sizeof($reqh) ){
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $reqh );
+		}
 		if( $sslverify ){
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true );
 		}
@@ -3242,15 +3604,12 @@ class api_engine{
 			curl_setopt($ch, CURLOPT_SSLKEY, $sslkey );
 		}
 		//curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method );
-		if( $mthod == s2_aaaaaaaotb('UE9TVA==') ){
+		if( $method == "POST" ){
 			curl_setopt($ch, CURLOPT_POST, 1 );
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $payload );
 		}else{
 			curl_setopt($ch, CURLOPT_HTTPGET, 1 );
 		}
-		if( sizeof($reqheaders) ){
-  			curl_setopt($ch, CURLOPT_HTTPHEADER, $reqheaders );
-  		}
 		$s2_tttttluser = curl_exec($ch);
 		$info = curl_getinfo( $ch );
 		$error = curl_error( $ch );
@@ -3278,13 +3637,13 @@ class api_engine{
 			foreach( $h as $i=>$j ){
 				$k = explode(":",$j,2);
 				if( sizeof($k) > 1 ){
-					if( strtolower(trim($k[0])) == s2_aaaaaaaotb('Y29udGVudC10eXBl') ){
+					if( strtolower(trim($k[0])) == "content-type" ){
 						$k[1] = trim(explode(";",$k[1])[0]);
 						if( !$k[1] ){
 							$k[1] = "";
 						}
 					}
-					if( strtolower(trim($k[0])) == s2_aaaaaaaotb('c2V0LWNvb2tpZQ==') ){
+					if( strtolower(trim($k[0])) == "set-cookie" ){
 						$k[1] = trim(explode(";",$k[1])[0]);
 						$ck = explode("=",trim($k[1]));
 						$cookies[ $ck[0] ] = trim($ck[1]);
@@ -3293,21 +3652,29 @@ class api_engine{
 					}
 				}
 			}
-			if( $info[s2_aaaaaaaotb('Y29udGVudF90eXBl')] ){
-				$content_type=explode(";",$info[s2_aaaaaaaotb('Y29udGVudF90eXBl')])[0];
+			if( $info["content_type"] ){
+				$content_type=explode(";",$info["content_type"])[0];
 			}else{
 				$content_type="text/plain";
+			}
+			if( preg_match("/json/i", $content_type) && $response_parse ){
+				$bodyp = json_decode($body,true);
+				if( json_last_error() || !$bodyp ){
+					$error = "Response JSON parse Error: " . json_last_error_msg();
+				}else{
+					$body = $bodyp;
+				}
 			}
 		}
 		$d = [
 			'status'=>(int)$info['http_code'],
-			s2_aaaaaaaotb('Ym9keQ==')=>$body,
-			s2_aaaaaaaotb('ZXJyb3I=')=>$error,
-			s2_aaaaaaaotb('Y29udGVudF90eXBl')=>$content_type,
-			s2_aaaaaaaotb('dGltZV90YWtlbg==')=>$info['total_time'],
-			s2_aaaaaaaotb('c2l6ZQ==')=>(int)$info['size_download'],
-			s2_aaaaaaaotb('aGVhZGVycw==')=>$headers,
-			s2_aaaaaaaotb('Y29va2llcw==')=>$cookies
+			"body"=>$body,
+			"error"=>$error,
+			"content_type"=>$content_type,
+			"time_taken"=>$info['total_time'],
+			"size"=>(int)$info['size_download'],
+			"headers"=>$headers,
+			"cookies"=>$cookies
 		];
 		//print_pre( $d );exit;
 		$this->s2_tcejbo_ot_tupni($d);
@@ -3316,38 +3683,40 @@ class api_engine{
 	}
 	function s2_llac_noitcnuf_od( $d ){
 		global $config_global_engine;
-		//print_pre( $d );
-		//$this->s2_ggggggggol[] = $this->s2_tttttluser;
 		$fn = $d['fn']['v']['i']['v'];
 		$fnl = $d['fn']['v']['l']['v'];
-		//echo s2_aaaaaaaotb('YmVmb3JlIGZ1bmN0aW9uIGNhbGwg');
-		//print_pre( $d['fn']['v']['inputs'] );
 		$inputs = [];
 		foreach( $d['fn']['v']['inputs']['v'] as $i=>$j ){
 			$inputs[ $i ] = $this->s2_eeulav_teg( $j );
 		}
-		//$inputs = $this->s2_etutitsbus_ot_etalpmet( $d['fn']['v']['inputs'] );
-		//print_pre($inputs);exit;
 		$return = $d['fn']['v']['return'];
-		$s2_sssssssser = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . s2_aaaaaaaotb('X2Z1bmN0aW9uc192ZXJzaW9ucw=='), ['_id'=>$fn] );
+		$s2_sssssssser = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_functions_versions", ['_id'=>$fn] );
 		if( !isset($s2_sssssssser['data']) || !$s2_sssssssser['data'] ){
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>"Function: ".$fnl.s2_aaaaaaaotb('IG5vdCBmb3VuZA==')];
+			return ['status'=>"fail", "error"=>"Function: ".$fnl." not found"];
 		}else{
 			$sub_engine = new api_engine();
 			if( !$sub_engine ){
-				return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>"Function: ".$fnl.": Error initializing function engine"];
+				return ['status'=>"fail", "error"=>"Function: ".$fnl.": Error initializing function engine"];
 			}
 			if( $this->s2_level_evisrucer > 50 ){
-				return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZXJyb3I=')=>"Function: ".$fnl.": Error Max Recursive Limit Reached"];
+				return ['status'=>"fail", "error"=>"Function: ".$fnl.": Error Max Recursive Limit Reached"];
 			}
 			$s2_tttttluser = $sub_engine->execute( $s2_sssssssser['data'], $inputs, [
-				s2_aaaaaaaotb('cmVxdWVzdF9sb2dfaWQ=')=>$this->s2_di_gol_tseuqer, 
+				"request_log_id"=>$this->s2_di_gol_tseuqer, 
 				'raw_output'=>true,
-				s2_aaaaaaaotb('cmVjdXJzaXZlX2xldmVs')=>($this->s2_level_evisrucer+1)
+				"recursive_level"=>($this->s2_level_evisrucer+1)
 			]);
+			//print_r($s2_tttttluser);exit;
 			$this->s2_ggggggggol[] = $sub_engine->getlog();
-			if( isset($s2_tttttluser['status']) ){
-				if( $s2_tttttluser['status'] == s2_aaaaaaaotb('ZmFpbA==') ){
+			if( isset($s2_tttttluser['statusCode']) ){
+				return $s2_tttttluser;
+				if( $s2_tttttluser['statusCode'] == 200 ){
+					return $s2_tttttluser;
+				}else{
+					return ['status'=>"fail", "data"=>"Function: ".$fnl.": Incorrect response: " . json_encode($s2_tttttluser)];
+				}
+			}else if( isset($s2_tttttluser['status']) ){
+				if( $s2_tttttluser['status'] == "fail" ){
 					if( strpos($s2_tttttluser['error'], "Function: ".$fnl) === 0 ){
 
 					}else{
@@ -3356,8 +3725,231 @@ class api_engine{
 				}
 				return $s2_tttttluser;
 			}
-			return ['status'=>s2_aaaaaaaotb('ZmFpbA=='), s2_aaaaaaaotb('ZGF0YQ==')=>"Function: ".$fnl.": Incorrect response: " . json_encode($s2_tttttluser)];
+			return ['status'=>"fail", "data"=>"Function: ".$fnl.": Incorrect response: " . json_encode($s2_tttttluser)];
 		}
+	}
+	function s2_yek_etaerc_htua( $s2_ddddegatsf ){
+		global $config_global_engine;
+		//print_pre( $s2_ddddegatsf );exit;
+		$as = $s2_ddddegatsf['d']['data']['allow_session']['v'];
+		$expire_t = $s2_ddddegatsf['d']['data']['expire_t']['v'];
+		$expire_m = $s2_ddddegatsf['d']['data']['expire_m']['v'];
+		$expire_p = $s2_ddddegatsf['d']['data']['expire_p']['v'];
+		if( $expire_t == "In" ){
+			if( !is_numeric($expire_p) ){
+				//return ['status'=>"fail", "data"=>"Expire value must be epoch"];
+				$expire_p = 5;
+			}else{
+				$expire_p = (int)$expire_p;
+				if( $expire_m == "Minutes" ){
+					$expire_p = $expire_p * 60;
+				}else if( $expire_m == "Hours" ){
+					$expire_p = $expire_p * 60 * 60;
+				}else if( $expire_m == "Days" ){
+					$expire_p = $expire_p * 24 * 60 * 60;
+				}
+			}
+			$expire = time() + $expire_p;
+		}else if( $expire_t == "At" ){
+			$expire = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['expire'] )['v'];
+			if( !is_numeric($expire) ){
+				//return ['status'=>"fail", "data"=>"Expire value must be epoch"];
+				$expire = time()+300;
+			}
+		}
+
+		$use_ip = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['use_ip'] )['v'];
+		$ip = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['ip'] )['v'];
+		$output = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['output'] )['v'];
+
+		if( $use_ip == "UserIP" ){
+			$ip = $_SERVER['REMOTE_ADDR'] . "/32";
+		}else if( $use_ip == "FixedIP" ){
+			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $ip) ){
+				$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"Create-Access-Key: incorrect ip format"] );return ;
+			}
+		}else if( $use_ip == "AnyIP" ){
+			$ip = "*";
+		}
+		//print_r( $s2_ddddegatsf['d']['data']['policies'] );
+		$policies = $s2_ddddegatsf['d']['data']['policies'];
+		foreach( $policies as $i=>$j ){
+			$policies[ $i ]['service'] = $policies[ $i ]['service']['v'];
+			foreach( $j['things'] as $ti=>$tj ){
+				$policies[ $i ]['things'][ $ti ] = [
+					"thing"=>$tj['v']['l']['v'],
+					"_id"=>$tj['v']['i']['v']
+				];
+			}
+		}
+		//print_r( $policies );exit;
+
+		$key = [];
+		$key['active'] = 'y';
+		$key['policies'] = $policies;
+		$key['ips'] = [$ip];
+		$key["app_id"] = $this->s2_dddddi_ppa;
+		$key['expire'] = $expire;
+		$key['expiret'] = new \MongoDB\BSON\UTCDateTime($expire*1000);
+		$key['t'] = "uk";
+		$key['updated']= date("Y-m-d H:i:s");
+
+		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
+		if( $res['status'] == "success" ){
+			$res = [
+				"status"=>"success",
+				"access_key"=>$res['inserted_id']
+			];
+		}
+		$this->s2_tcejbo_ot_tupni($res);
+		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
+	}
+	function s2_yek_noisses_etareneg_htua( $s2_ddddegatsf ){
+		global $config_global_engine;
+		//print_pre( $s2_ddddegatsf );exit;
+		$ak = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['data']['key'] );
+		//echo $ak;
+		if( !preg_match("/^[a-f0-9]{24}$/", $ak) ){
+			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"generate session key: access key invalid format"] );return ;
+		}
+		$key_res = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_user_keys", ["app_id"=>$this->s2_dddddi_ppa, "_id"=>$ak] );
+		if( !$key_res['data'] ){
+			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"generate session key: authentication access key not found"] );return ;
+		}
+		$expire_t = $s2_ddddegatsf['d']['data']['expire_t']['v'];
+		$expire_m = $s2_ddddegatsf['d']['data']['expire_m']['v'];
+		$expire_p = $s2_ddddegatsf['d']['data']['expire_p']['v'];
+		//echo $expire_t;exit;
+		if( $expire_t == "In" ){
+			if( !is_numeric($expire_p) ){
+				//return ['status'=>"fail", "data"=>"Expire value must be epoch"];
+				$expire_p = 5;
+			}else{
+				$expire_p = (int)$expire_p;
+				if( $expire_m == "Minutes" ){
+					$expire_p = $expire_p * 60;
+				}else if( $expire_m == "Hours" ){
+					$expire_p = $expire_p * 60 * 60;
+				}else if( $expire_m == "Days" ){
+					$expire_p = $expire_p * 24 * 60 * 60;
+				}
+			}
+			$expire = time() + $expire_p;
+		}else if( $expire_t == "At" ){
+			$expire = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['expire'] )['v'];
+			if( !is_numeric($expire) ){
+				//return ['status'=>"fail", "data"=>"Expire value must be epoch"];
+				$expire = time()+300;
+			}
+		}
+		$use_ip = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['use_ip'] )['v'];
+		$ip = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['ip'] )['v'];
+		$output = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['output'] )['v'];
+		if( $use_ip == "UserIP" ){
+			$ip = $_SERVER['REMOTE_ADDR'] . "/32";
+		}else if( $use_ip == "FixedIP" ){
+			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $ip) ){
+				$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"Create-Access-Key: incorrect ip format"] );return ;
+			}
+		}else if( $use_ip == "AnyIP" ){
+			$ip = "*";
+		}
+		$policies = $key_res['policies'];
+
+		$key = [];
+		$key['active'] = 'y';
+		$key['policies'] = $policies;
+		$key['ips'] = [$ip];
+		$key["app_id"] = $this->s2_dddddi_ppa;
+		$key['expire'] = $expire;
+		$key['expiret'] = new \MongoDB\BSON\UTCDateTime($expire*1000);
+		$key['t'] = "uk";
+		$key['updated']= date("Y-m-d H:i:s");
+
+		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
+		if( $res['status'] == "success" ){
+			$res = [
+				"status"=>"success",
+				"access_key"=>$res['inserted_id']
+			];
+		}
+		$this->s2_tcejbo_ot_tupni($res);
+		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
+	}
+	function s2_yek_noisses_emussa_htua( $s2_ddddegatsf ){
+		global $config_global_engine;
+		//print_pre( $s2_ddddegatsf );exit;
+		$role_id = $s2_ddddegatsf['d']['data']['role']['v']['i']['v'];
+		if( !preg_match("/^[a-f0-9]{24}$/", $role_id) ){
+			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"assume session key: Role ID missing or Invalid"] );return ;
+		}
+		$key_res = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_user_roles", ["app_id"=>$this->s2_dddddi_ppa, "_id"=>$role_id] );
+		if( !$key_res['data'] ){
+			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"generate session key: authentication access key not found"] );return ;
+		}
+		$expire_t = $s2_ddddegatsf['d']['data']['expire_t']['v'];
+		$expire_m = $s2_ddddegatsf['d']['data']['expire_m']['v'];
+		$expire_p = $s2_ddddegatsf['d']['data']['expire_p']['v'];
+		$hits = (int)$s2_ddddegatsf['d']['data']['hits']['v'];
+		$maxh = (int)$s2_ddddegatsf['d']['data']['maxh']['v'];
+		//echo $expire_t;exit;
+		if( $expire_t == "In" ){
+			if( !is_numeric($expire_p) ){
+				//return ['status'=>"fail", "data"=>"Expire value must be epoch"];
+				$expire_p = 5 * 60;
+			}else{
+				$expire_p = (int)$expire_p;
+				if( $expire_m == "Minutes" ){
+					$expire_p = $expire_p * 60;
+				}else if( $expire_m == "Hours" ){
+					$expire_p = $expire_p * 60 * 60;
+				}else if( $expire_m == "Days" ){
+					$expire_p = $expire_p * 24 * 60 * 60;
+				}
+			}
+			$expire = time() + $expire_p;
+		}else if( $expire_t == "At" ){
+			$expire = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['expire'] )['v'];
+			if( !is_numeric($expire) ){
+				//return ['status'=>"fail", "data"=>"Expire value must be epoch"];
+				$expire = time()+300;
+			}
+		}
+		$use_ip = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['use_ip'] )['v'];
+		$ip = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['ip'] )['v'];
+		$output = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['output'] )['v'];
+		if( $use_ip == "UserIP" ){
+			$ip = $_SERVER['REMOTE_ADDR'] . "/32";
+		}else if( $use_ip == "FixedIP" ){
+			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $ip) ){
+				$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"Create-Access-Key: incorrect ip format"] );return ;
+			}
+		}else if( $use_ip == "AnyIP" ){
+			$ip = "*";
+		}
+		$policies = $key_res['data']['policies'];
+
+		$key = [];
+		$key['active'] = 'y';
+		$key['policies'] = $policies;
+		$key['ips'] = [$ip];
+		$key["app_id"] = $this->s2_dddddi_ppa;
+		$key['maxhits'] = $hits;
+		$key['hitsmin'] = $maxh;
+		$key['expire'] = $expire;
+		$key['expiret'] = new \MongoDB\BSON\UTCDateTime($expire*1000);
+		$key['t'] = "uk";
+		$key['updated']= date("Y-m-d H:i:s");
+
+		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
+		if( $res['status'] == "success" ){
+			$res = [
+				"status"=>"success",
+				"session_key"=>$res['inserted_id']
+			];
+		}
+		$this->s2_tcejbo_ot_tupni($res);
+		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
 	}
 }
 

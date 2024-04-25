@@ -232,17 +232,18 @@
 		}else if( isset($config_app['pages'][ $path ]) ){
 			//echo "path found";exit;
 		}else if( $path == "home" ){
-			$version_id = explode(":",$config_app['settings']['homepage']['v'])[0];
-			//echo "xx".$version_id;
-			$res = $mongodb_con->find_one($db_prefix."_pages", [ "_id"=>$version_id ], ['projection'=>['version_id'=>1]] );
-			//print_r( $res );
-			if( $res['data'] ){ $version_id = $res['data']['version_id']; }else{
-				http_response_code(404);echo "Page Version not found! ..";exit;
+			if( $config_app['settings']['homepage']['t'] == "page" ){
+				$version_id = explode(":",$config_app['settings']['homepage']['v'])[0];
+				$config_app['pages'][ "home" ] = [
+					't'=>'page',
+					'version_id'=>$version_id,
+				];
+			}else{
+				$config_app['pages'][ "home" ] = [
+					't'=>'file',
+					'_id'=>$config_app['settings']['homepage']['v'],
+				];
 			}
-			$config_app['pages'][ "home" ] = [
-				't'=>'page',
-				'version_id'=>$version_id,
-			];
 		}
 		//echo "<pre>";print_r( $config_app );exit;
 		$page_type = $config_app['pages'][ $path ]['t'];
@@ -279,7 +280,7 @@
 		header( "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" );
 		header( "Cache-Control: post-check=0, pre-check=0", false );
 		header( "Pragma: no-cache" );
-		require("index_page.php");
+		require_once("index_page.php");
 	}else if( $page_type == "api" || $page_type == "function" ){
 		header( "AppCache: " . ($cache_refresh?"Miss":"Hit") );
 		header( "Access-Control-Allow-Origin: *" );
@@ -290,39 +291,7 @@
 		header( "Pragma: no-cache" );		
 		require("index_api.php");
 	}else if( $page_type == "file" ){
-		if( !isset($file_version['t']) ){
-			http_response_code(500);
-			echo "Incorrect file type";
-			exit;
-		}
-		header( "Content-Type: "  . $file_version['type']);
-		header( "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" );
-		header( "Cache-Control: post-check=0, pre-check=0", false );
-		header( "Pragma: no-cache" );		
-		if( $file_version['t'] == "inline" ){
-			if( isset($file_version['vars_used']) ){
-				if( is_array($file_version['vars_used']) ){
-					$vars = [
-						"--engine-url--" =>"https://" . $_SERVER['HTTP_HOST'] . $config_global_apimaker_engine['config_engine_path'],
-						"--engine-path--"=>$config_global_apimaker_engine['config_engine_path'],
-					];
-					foreach( $file_version['vars_used'] as $var ){
-						if( isset($vars[$var]) ){
-							$file_version['data'] = str_replace( $var, $vars[$var], $file_version['data'] );
-						}
-					}
-				}
-			}
-			echo $file_version['data'];
-		}else if( $file_version['t'] == "base64" && preg_match("/^image/i", $file_version['type']) ){
-			echo base64_decode($file_version['data']);exit;
-		}else if( $file_version['t'] == "base64" ){
-			echo base64_decode($file_version['data']);exit;
-		}else{
-			http_response_code(500);
-			echo "Incorrect file type";
-			exit;
-		}
+		require_once("index_file.php");
 	}else{
 		http_response_code(403);
 		echo "Incorrect engine type! " . $page_type;

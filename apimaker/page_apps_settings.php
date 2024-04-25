@@ -177,6 +177,7 @@
 					<template v-if="'homepage' in settings" >
 						<p>Type: <select class="form-select form-select-sm w-auto d-inline" v-model="settings['homepage']['t']">
 							<option value="" >Select</option>
+							<option value="file" >File</option>
 							<option value="page" >Page</option>
 							<option value="apisummary" >Api Summary</option>
 						</select>
@@ -184,6 +185,11 @@
 							<template v-if="settings['homepage']['t']=='page'" >
 								<select class="form-select form-select-sm w-auto d-inline" v-model="settings['homepage']['v']" >
 									<option v-for="p in pages" v-bind:value="p['_id']+':'+p['version_id']" >{{ p['name'] }}</option>
+								</select>
+							</template>
+							<template v-if="settings['homepage']['t']=='file'" >
+								<select class="form-select form-select-sm w-auto d-inline" v-model="settings['homepage']['v']" >
+									<option v-for="p in files" v-bind:value="p['_id']" >{{ p['path']+p['name'] }}</option>
 								</select>
 							</template>
 						</template>
@@ -236,7 +242,7 @@ var app = Vue.createApp({
 			cd: <?=isset($config_global_apimaker['config_cloud_domains'])?json_encode($config_global_apimaker['config_cloud_domains']):'[]' ?>,
 			alb_cname: "<?=$config_global_apimaker['config_cloud_alb_cname'] ?>",
 			msg1: "",err1: "",msg2: "",err2: "",msg3: "",err3: "",msg4: "",err4: "",
-			pages:[],
+			pages:[],files:[],
 			enginep: "<?=$enginep ?>", 
 			engined: <?=json_encode([$engined]) ?>,
 			default_app: <?=$default_app?"true":"false" ?>,
@@ -325,7 +331,8 @@ var app = Vue.createApp({
 		},
 		load_pages2: function(){
 			axios.post("?",{"action":"settings_load_pages","app_id":this.app_id,"token":this.token}).then(response=>{
-				this.pages = response.data['data'];
+				this.pages = response.data['pages'];
+				this.files = response.data['files'];
 			})
 		},
 		is_token_ok(t){

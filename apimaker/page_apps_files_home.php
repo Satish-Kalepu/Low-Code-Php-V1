@@ -18,6 +18,7 @@
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_create_form()" >Create File</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_folder_form()" >Create Folder</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_upload_form()" >Upload</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_settings()" >Configure</button>
 			</div>
 			<div class="h3 mb-3 w-auto">Files</div>
 
@@ -39,10 +40,17 @@
 				<tr v-if="v['vt']=='folder'">
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
-						<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a></div>
-						<div v-else><a v-bind:href="path+'files/'+v['_id']+'/edit'" >{{ current_path + v['name'] }}</a></div>
-						<div align="right" >
-							Folder
+						<div v-if="'vault' in v" >
+							<a v-bind:href="path+'storage/'+v['vault']['vault_id']" >{{ this.current_path + v['name'] }}/</a>
+							<div align="right" >
+								Vault {{ v['vault']['vault_type'] + ' ('+v['vault']['vault_name'] + ')'+ v['vault']['vault_path'] }}
+							</div>
+						</div>
+						<div v-else >
+							<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a></div>
+							<div align="right">
+								Folder
+							</div>
 						</div>
 					</td>
 					<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_file(i)" ></td>
@@ -151,9 +159,46 @@
 		      	<div><span>{{ current_path }}</span><input type="text" class="form-control form-control-sm w-auto d-inline" v-model="new_folder_name" ></div>
 		      	<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create" v-on:click="do_create_folder" ></div>
 
-			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
-			<div v-if="err" class="alert alert-danger" >{{ err }}</div>
+				<div v-if="cfmsg" class="alert alert-primary" >{{ cfmsg }}</div>
+				<div v-if="cferr" class="alert alert-danger" >{{ cferr }}</div>
 
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		<div class="modal fade" id="settings_modal" tabindex="-1" >
+		  <div class="modal-dialog model-sm">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Storage Settings</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<div><b>Storage Vaults</b></div>
+
+				<div v-if="smsg" class="alert alert-primary" >{{ smsg }}</div>
+				<div v-if="serr" class="alert alert-danger" >{{ serr }}</div>
+
+				<div style="border:1px solid #ccc;">
+					<div style="padding:10px; background-color: #f8f8f8; border-bottom: 1px solid #ccc;">Mount Storage Vault</div>
+					<div style="padding:10px; ">
+						<div>Storage Vault: </div>
+						<div><select v-model="new_mount['vault_id']" v-on:click="select_vault()" >
+							<option v-for="v in storage_vaults" v-bind:value="v['_id']" >{{ v['des'] + ': ' + v['vault_type'] }}</option>
+						</select></div>
+						<div>Vault Path: </div>
+						<input type="text" class="form-control form-control-sm" v-model="new_mount['vault_path']">
+						<div>Local Path: </div>
+						<input type="text" class="form-control form-control-sm" v-model="new_mount['local_path']">
+						<div>&nbsp;</div>
+						<input type="button" class="btn btn-outline-dark btn-sm" value="Mount" v-on:click="mountit()" >
+
+						<div class="alert alert-success" v-if="cnfmsg" >{{ cnfmsg }}</div>
+						<div class="alert alert-danger" v-if="cnferr" >{{ cnferr }}</div>
+					</div>
+				</div>
 
 		      </div>
 		    </div>
@@ -167,10 +212,7 @@ var app = Vue.createApp({
 			path: "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
 			app_id: "<?=$app['_id'] ?>",
 			app__: <?=json_encode($app) ?>,
-			msg: "",
-			err: "",
-			cmsg: "",
-			cerr: "",
+			msg: "",err: "",cmsg: "",cerr: "",smsg: "",serr: "",cfmsg: "",cferr: "",cnfmsg: "",cnferr: "",
 			files: [],
 			upload_list: [],
 			new_folder_name: "",
@@ -196,6 +238,11 @@ var app = Vue.createApp({
 			create_file_modal: false,
 			upload_file_modal: false,
 			create_folder_modal: false,
+			new_mount: {
+				"vault_id": "", "vault_name": "",
+				"vault_path": "/", "local_path": "/mount_folder/"
+			},
+			storage_vaults: [],
 			token: "",
 			dropdiv: false,dropdiv2: false,
 		};
@@ -203,7 +250,7 @@ var app = Vue.createApp({
 	mounted(){
 		this.update_paths();
 		this.load_files();
-		setInterval(this.check_queue,1000);
+		setInterval(this.check_queue,100);
 		//document.addEventListener("drop", function(e){e.preventDefault();e.stopPropagation();app.dropit(e);}, true);
 	},
 	methods: {
@@ -356,6 +403,29 @@ var app = Vue.createApp({
 				this.err = "Token Error: " + t;
 			}
 		},
+		load_storage_vaults: function(){
+			axios.post("?",{
+				"action":"load_storage_vaults",
+			}).then(response=>{
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.storage_vaults = response.data['data'];
+							}else{
+								alert("error: " + response.data['error']);
+							}
+						}else{
+							alert("Incorrect response");
+						}
+					}else{
+						alert("Incorrect response Type");
+					}
+				}else{
+					alert("Response Error: " . response.status);
+				}
+			});
+		},
 		load_files(){
 			this.msg = "Loading...";
 			this.err = "";
@@ -374,8 +444,8 @@ var app = Vue.createApp({
 									this.load_files2();
 								}
 							}else{
-								alert("Token error: " + response.dat['data']);
-								this.err = "Token Error: " + response.data['data'];
+								alert("Token error: " + response.dat['error']);
+								this.err = "Token Error: " + response.data['error'];
 							}
 						}else{
 							this.err = "Incorrect response";
@@ -437,16 +507,22 @@ var app = Vue.createApp({
 			this.create_folder_modal.show();
 			this.cmsg = ""; this.cerr = "";
 		},
+		file_show_settings(){
+			this.settings_modal = new bootstrap.Modal(document.getElementById('settings_modal'));
+			this.settings_modal.show();
+			this.load_storage_vaults();
+			this.smsg = ""; this.serr = "";
+		},
 		cleanit( v ){
-			v = v.replace( /\-/g, "DASH" );
 			v = v.replace( /\//g, "SLASHS" );
 			v = v.replace( /\_/g, "UDASH" );
+			v = v.replace( /\-/g, "DASH" );
 			v = v.replace( /\./g, "DOTT" );
 			v = v.replace( /\W/g, "-" );
-			v = v.replace( /DASH/g, "-" );
 			v = v.replace( /UDASH/g, "_" );
 			v = v.replace( /DOTT/g, "." );
 			v = v.replace( /SLASHS/g, "/" );
+			v = v.replace( /DASH/g, "-" );
 			v = v.replace( /[\-]{2,5}/g, "-" );
 			v = v.replace( /[\_]{2,5}/g, "_" );
 			return v;
@@ -491,20 +567,20 @@ var app = Vue.createApp({
 			});
 		},
 		do_create_folder: function(){
-			this.err = "";
-			this.msg = "";
+			this.cferr = "";
+			this.cfmsg = "";
 			this.new_folder_name = this.cleanit(this.new_folder_name);
 			if( this.new_folder_name.match(/^[a-z0-9\.\-\_\/]{2,100}$/) == null){
-				this.err = "Folder name should be [a-z0-9\.\-\_\/]{2,100}";return false;
+				this.cferr = "Folder name should be [a-z0-9\.\-\_\/]{2,100}";return false;
 			}
 
-			this.msg = "Creating Folder";
+			this.cfmsg = "Creating Folder";
 			axios.post( "?", {
 				"action":"get_token",
 				"event":"create.folder."+this.app_id,
 				"expire":1
 			}).then( response=>{
-				this.msg = "";
+				this.cfmsg = "";
 				if( response.status == 200 ){
 					if( typeof(response.data) == "object" ){
 						if( 'status' in response.data ){
@@ -517,7 +593,7 @@ var app = Vue.createApp({
 										"current_path": this.current_path,
 										"new_folder": this.cleanit(this.new_folder_name),
 									}).then(response=>{
-										this.msg = "";
+										this.cfmsg = "";
 										if( response.status == 200 ){
 											if( typeof(response.data) == "object" ){
 												if( 'status' in response.data ){
@@ -528,31 +604,31 @@ var app = Vue.createApp({
 														this.create_folder_modal.hide();
 														this.load_files();
 													}else{
-														this.err = response.data['data'];
+														this.cferr = "error:" + response.data['error'];
 													}
 												}else{
-													this.err = "Incorrect response";
+													this.cferr = "Incorrect response";
 												}
 											}else{
-												this.err = "Incorrect response Type";
+												this.cferr = "Incorrect response Type";
 											}
 										}else{
-											this.err = "Response Error: " . response.status;
+											this.cferr = "Response Error: " . response.status;
 										}
 									});
 								}
 							}else{
-								alert("Token error: " + response.dat['data']);
-								this.err = "Token Error: " + response.data['data'];
+								alert("Token error: " + response.dat['error']);
+								this.cferr = "Token Error: " + response.data['error'];
 							}
 						}else{
-							this.err = "Incorrect response";
+							this.cferr = "Incorrect response";
 						}
 					}else{
-						this.err = "Incorrect response Type";
+						this.cferr = "Incorrect response Type";
 					}
 				}else{
-					this.err = "Response Error: " . response.status;
+					this.cferr = "Response Error: " . response.status;
 				}
 			});
 		},
@@ -598,8 +674,8 @@ var app = Vue.createApp({
 										});
 									}
 								}else{
-									alert("Token error: " + response.dat['data']);
-									this.err = "Token Error: " + response.data['data'];
+									alert("Token error: " + response.dat['error']);
+									this.err = "Token Error: " + response.data['error'];
 								}
 							}else{
 								this.err = "Incorrect response";
@@ -778,7 +854,59 @@ var app = Vue.createApp({
 				this.upload_list[ vi ]['er'] = "upload fail";
 				console.log( error );
 			});
-		}
+		},
+		select_vault: function(){
+			for( var i=0;i<this.storage_vaults.length;i++){
+				if( this.storage_vaults[i]['vault_id'] == this.new_mount['vault_id'] ){
+					this.new_mount['vault_name'] = this.storage_vaults[i]['des']+'';
+				}
+			}
+		},
+		mountit: function(){
+			this.cnferr = "";this.cnfmsg = "";
+			if( this.new_mount['vault_id'].match(/^[a-f0-9]{24}$/) == null ){
+				this.cnferr = "Select Vault";return;
+			}
+			if( this.new_mount['vault_path'] != "/" && this.new_mount['vault_path'].match(/^\/[a-z0-9\-\_\.\/]+\/$/i) == null ){
+				this.cnferr = "Vault path should be / or /path/  or /path/path/";return;
+			}
+			if( this.new_mount['local_path'].match(/^\/[a-z0-9\-\_\.\/]+\/$/i) == null ){
+				this.cnferr = "Local path should be /path/  or /path/path/";return;
+			}
+			if( this.new_mount['local_path'].match(/[\/]{2,5}/i)  ){
+				this.cnferr = "Local path incorrect format";return;
+			}
+			if( this.new_mount['vault_path'].match(/[\/]{2,5}/i) ){
+				this.cnferr = "Vault path incorrect format";return;
+			}
+			this.cnfmsg = "Mounting..";
+			axios.post("?", {
+				"action":"mount_storage_vault",
+				"new_mount":this.new_mount,
+			}).then(response=>{
+				this.cnfmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.cnfmsg = "Success";
+								this.load_files();
+							}else{
+								this.cnferr = "Error: " + response.data['error'];
+							}
+						}else{
+							this.cnferr = "Incorrect Response";
+						}
+					}else{
+						this.cnferr = "Invalid response";
+					}
+				}else{
+					this.cnferr = "http: "+ response.status;
+				}
+			}).catch(error=>{
+				this.cnferr = error.message;
+			});
+		},
 	}
 }).mount("#app");
 </script>

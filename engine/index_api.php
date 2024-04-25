@@ -258,7 +258,12 @@
 		echo json_encode($r,JSON_PRETTY_PRINT);
 		exit;
 	}else{
-		if( $api_version['output-type'] == "application/json" ){
+		$result_content_type = "application/json";
+		if( isset($result['headers']['content-type']) ){
+			$result_content_type = $result['headers']['content-type'];
+		}
+		//echo $result_content_type;exit;
+		if( $api_version['output-type'] == "application/json" || $result_content_type == "application/json" ){	
 			if( gettype($result['statusCode'])=="integer" && $result['statusCode'] != 200 ){
 				http_response_code((int)$result['statusCode']);
 			}

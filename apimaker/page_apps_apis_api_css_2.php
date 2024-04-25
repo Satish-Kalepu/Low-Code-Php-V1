@@ -333,7 +333,7 @@
 	.code_line .varsub{ background-color:#fff1ec; border:1px solid #ffbaa0; }
 	.code_line .varsub:hover{ background-color:#ffd6eb; }	
 
-	.varsub-inputs{ border-left:1px solid #ffa56a; padding-left:5px; display:inline-grid; grid-gap: 5px 10px; grid-template-columns: auto auto;  }
+	.varsub-inputs{ border:1px solid #ffa56a; margin-top:-2px; padding:5px; display:inline-grid; grid-column-gap: 5px; grid-template-columns: auto auto auto;  }
 
 	.code_line .thing_type{
 		color:#999;
@@ -356,8 +356,13 @@
 		min-width:50px;
 		padding-left:5px;padding-right:10px;
 		outline: 0px; display: inline-block;
-		max-width:300px;overflow: hidden;
+		max-width:400px;overflow: auto;
 	}
+	.code_line .editable [contenteditable]::-webkit-scrollbar{width: 5px;height:5px;}
+	.code_line .editable [contenteditable]::-webkit-scrollbar-track {background:#dabbbb;cursor: default;}
+	.code_line .editable [contenteditable]::-webkit-scrollbar-thumb {background:#be8989;cursor: pointer;}
+	.code_line .editable [contenteditable]::-webkit-scrollbar-thumb:hover {background:#8f5050;}
+	
 	.code_line .editable .editabletextarea{
 		min-width:150px; min-height:60px; white-space: nowrap;
 		max-width:300px; max-height:200px; overflow: auto; resize:both;
@@ -493,5 +498,7 @@
 .help-div{ display:inline; padding:2px; cursor:pointer; background-color:#f8f8f8; padding:0px 5px; }
 .help-div:hover{ font-weight:bold; background-color:#e0e0e0; }
 
+.help-div2{ display:inline; padding:2px; cursor:pointer; background-color:#f8f8f8; padding:0px 5px; }
+.help-div2:hover{ font-weight:bold; background-color:#e0e0e0; }
 
 </style>

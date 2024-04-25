@@ -58,7 +58,9 @@
 						<div>Content-Type: {{ s2_esnopser_tset['headers']['content-type'] }}</div>
 						<div v-if="s2_iiiiiiiipa['output-type']=='application/json'&&typeof(s2_esnopser_tset['body'])!='object'" class="text-danger">Incorrect response type</div>
 						<div>Response Body:</div>
-						<pre style="padding:5px; border:1px solid #cdcdcd;" >{{ s2_yalpsid_erofeb_naelc_esnopser(s2_esnopser_tset['body']) }}</pre>
+						<div v-if="is_test_response_binary()" >Binary Data</div>
+						<pre v-else style="padding:5px; border:1px solid #cdcdcd;" >{{ s2_yalpsid_erofeb_naelc_esnopser(s2_esnopser_tset['body']) }}</pre>
+						
 					</div>
 				</div>
 				</template>

@@ -240,6 +240,30 @@ var s2_snoitcnuf_gifnoc = {
 			"p1": {"n": "Text", "t": "T", "v": "", "m": true, "types": ["V", "T"],},
 		}
 	},
+	"Get Date String": {
+		"t": "Date",
+		"self": false,
+		"return": "T",
+		"inputs": {
+			"p1": {"n": "Date Format", "types": ["T"], "t": "T", "m": true, "v": "Y-m-d H:i:s", "h":"date.html"},
+			"p2": {"n": "Timestamp", "types": ["TS", "N", "NL"], "t": "TS", "m": false, "v": "-1", "hh":"Optional Parameter<BR>NL or -1 to ignore"},
+		}
+	},
+	"Get Date": {
+		"t": "Date",
+		"self": false,
+		"return": "D",
+	},
+	"Get DateTime": {
+		"t": "Date",
+		"self": false,
+		"return": "DT",
+	},
+	"Get Timestamp": {
+		"t": "Date",
+		"self": false,
+		"return": "TS",
+	},
 	"Set Timezone": {
 		"t": "Date",
 		"self": true,
@@ -261,12 +285,21 @@ var s2_snoitcnuf_gifnoc = {
 			"p1": {"n": "Date", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
 		}
 	},
+	"Timestamp To Date String": {
+		"t": "Date",
+		"self": false,
+		"return": "T",
+		"inputs": {
+			"p1": {"n": "Timestamp", "types": ["V", "T", "TS", "N"], "t": "V", "m": true, "v": {"v":"","t":""}},
+			"p2": {"n": "Date Format", "types": ["T"], "t": "T", "m": true, "v": "Y-m-d H:i:s", "h":"date.html"},
+		}
+	},
 	"Timestamp To Date": {
 		"t": "Date",
 		"self": false,
 		"return": "D",
 		"inputs": {
-			"p1": {"n": "Date", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
+			"p1": {"n": "Timestamp", "types": ["V", "T", "TS", "N"], "t": "V", "m": true, "v": {"v":"","t":""}},
 		}
 	},
 	"Timestamp To DateTime": {
@@ -274,7 +307,7 @@ var s2_snoitcnuf_gifnoc = {
 		"self": false,
 		"return": "TS",
 		"inputs": {
-			"p1": {"n": "Date", "types": ["V", "T"], "t": "V", "m": true, "v": {"v":"","t":""}},
+			"p1": {"n": "Date", "types": ["V", "T", "TS", "N"], "t": "V", "m": true, "v": {"v":"","t":""}},
 		}
 	},
 	"Years till Today": {

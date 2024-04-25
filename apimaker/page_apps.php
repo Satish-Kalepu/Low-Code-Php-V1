@@ -60,6 +60,14 @@ if( $config_param2 == "" ){
 	require("page_apps_export.php");
 }else if( $config_param2 == "auth" ){
 	require("page_apps_auth.php");
+}else if( $config_param2 == "storage" ){
+	require("page_apps_storage_vaults.php");
+
+}else if( $config_param2 == "redis" ){
+	require("page_apps_redis.php");
+
+}else if( $config_param2 == "objects" ){
+	require("page_apps_objects.php");
 
 }else if( $config_param1 ){
 	require("page_apps_home.php");

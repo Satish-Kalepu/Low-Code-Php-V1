@@ -103,17 +103,46 @@
 						<template v-if="s2_dddddegats['k']['v']=='Let'" >
 							<div class="editable" data-var="d:lhs" data-for="stages" ><div contenteditable  spellcheck="false" data-for="stages" data-type="editable" data-var="d:lhs" data-allow="variable_name" >{{ s2_dddddegats['d']['lhs'] }}</div></div>
 							<div> as </div>
-							<inputtextbox datafor="stages" v-bind:v="s2_dddddegats['d']['rhs']" datavar="d:rhs" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]" ></inputtextbox>
-						</template>
-						<template v-if="s2_dddddegats['k']['v']=='LetComponent'" >
-							<div class="editable" data-var="d:lhs" data-for="stages" ><div contenteditable  spellcheck="false" data-for="stages" data-type="editable" data-var="d:lhs" data-allow="variable_name" >{{ s2_dddddegats['d']['lhs'] }}</div></div>
-							<div> as </div>
-							<thing datafor="stages" v-bind:v="s2_dddddegats['d']['rhs']" datavar="d:rhs" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]" ></thing>
+							<template v-if="s2_dddddegats['d']['rhs']['t']=='Function'" >
+								<div>Function </div>
+								<div data-type="dropdown" data-for="stages" data-list="functions" data-var="d:rhs:v:fn" data-var-parent="d:rhs:v" style="white-space: nowrap;">{{ s2_dddddegats['d']['rhs']['v']['fn'] }}</div>
+								<template v-if="'inputs' in s2_dddddegats['d']['rhs']['v']" >
+								<template v-if="typeof(s2_dddddegats['d']['rhs']['v']['inputs'])=='object'" >
+								<div class="varsub-inputs" style="margin-left:-5px;">
+									<template v-for="fv,fi in s2_dddddegats['d']['rhs']['v']['inputs']" >
+										<div style="min-width:50px;text-align:right;">{{ fv['n'] }}</div>
+										<inputtextbox2 datafor="stages" v-bind:v="fv" v-bind:types="fv['types']" v-bind:datavar="'d:rhs:v:inputs:'+fi" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]"></inputtextbox2>
+										<div v-if="'h' in fv" ><div class="help-div" v-bind:doc="fv['h']" >?</div></div>
+										<div v-else-if="'hh' in fv" ><div class="help-div2" v-bind:data-help="fv['hh']" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" v-bind:data-bs-title="fv['hh']" >?</div></div>
+										<div v-else></div>
+									</template>
+								</div>
+								</template>
+								</template>
+							</template>
+							<inputtextbox v-else datafor="stages" v-bind:v="s2_dddddegats['d']['rhs']" datavar="d:rhs" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]" ></inputtextbox>
 						</template>
 						<template v-if="s2_dddddegats['k']['v']=='Assign'" >
 							<div data-type="dropdown" data-for="stages" data-list="vars" data-var="d:lhs:v:v">{{ s2_dddddegats['d']['lhs']['v']['v'] }}</div>
 							<div> = </div>
-							<inputtextbox datafor="stages" v-bind:v="s2_dddddegats['d']['rhs']" datavar="d:rhs" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]" ></inputtextbox>
+							<template v-if="s2_dddddegats['d']['rhs']['t']=='Function'" >
+								<div>Function </div>
+								<div data-type="dropdown" data-for="stages" data-list="functions" data-var="d:rhs:v:fn" data-var-parent="d:rhs:v" style="white-space: nowrap;">{{ s2_dddddegats['d']['rhs']['v']['fn'] }}</div>
+								<template v-if="'inputs' in s2_dddddegats['d']['rhs']['v']" >
+								<template v-if="typeof(s2_dddddegats['d']['rhs']['v']['inputs'])=='object'" >
+								<div class="varsub-inputs" style="margin-left:-5px;">
+									<template v-for="fv,fi in s2_dddddegats['d']['rhs']['v']['inputs']" >
+										<div style="min-width:50px;text-align:right;">{{ fv['n'] }}</div>
+										<inputtextbox2 datafor="stages" v-bind:v="fv" v-bind:types="fv['types']" v-bind:datavar="'d:rhs:v:inputs:'+fi" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]"></inputtextbox2>
+										<div v-if="'h' in fv" ><div class="help-div" v-bind:doc="fv['h']" >?</div></div>
+										<div v-else-if="'hh' in fv" ><div class="help-div2" v-bind:data-help="fv['hh']" >?</div></div>
+										<div v-else></div>
+									</template>
+								</div>
+								</template>
+								</template>
+							</template>
+							<inputtextbox v-else datafor="stages" v-bind:v="s2_dddddegats['d']['rhs']" datavar="d:rhs" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]" ></inputtextbox>
 						</template>
 						<template v-if="s2_dddddegats['k']['v']=='If'" >
 							<div style="display: flex;">
@@ -243,6 +272,9 @@
 								<template v-for="fv,fi in s2_dddddegats['d']['inputs']" >
 									<div style="min-width:50px;text-align:right;">{{ fv['n'] }}</div>
 									<inputtextbox2 datafor="stages" v-bind:v="fv" v-bind:types="fv['types']" v-bind:datavar="'d:inputs:'+fi" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]"></inputtextbox2>
+									<div v-if="'h' in fv" ><div class="help-div" v-bind:doc="fv['h']" >?</div></div>
+									<div v-else-if="'hh' in fv" ><div class="help-div2" v-bind:data-help="fv['hh']"  >?</div></div>
+									<div v-else></div>
 								</template>
 							</div>
 							</template>
@@ -271,6 +303,19 @@
 								<div>End Execution</div>
 							</div>
 						</template>
+						<template v-if="s2_dddddegats['k']['v']=='RespondPage'" >
+							<div>
+								<div data-type="dropdown" data-for="stages" data-list="thing" data-thing="Pages" v-bind:data-var="'d:page:v'">{{ s2_dddddegats['d']['page']['v']['l']['v'] }}</div>
+								<div>End Execution</div>
+							</div>
+						</template>
+						<template v-if="s2_dddddegats['k']['v']=='RespondFile'" >
+							<div>
+								<div data-type="dropdown" data-for="stages" data-list="thing" data-thing="Files" v-bind:data-var="'d:file:v'">{{ s2_dddddegats['d']['file']['v']['l']['v'] }}</div>
+								<div>End Execution</div>
+							</div>
+						</template>
+						
 						<template v-if="s2_dddddegats['k']['v']=='RespondStatus'" >
 							<div>
 								<div style="display:flex; column-gap:5px;">
@@ -315,10 +360,12 @@
 							</div>
 						</template>
 						<template v-if="s2_dddddegats['k']['v']=='RespondGlobals'" >
+							<template v-if="typeof(s2_dddddegats['d'])=='object'" >
 							<div v-if="'raw' in s2_dddddegats['d']" style="display:flex; column-gap:5px;">
 								<div>Raw</div>
 								<div title="Raw" data-type="dropdown" data-for="stages" data-var="d:raw:v" data-list="boolean"  style="margin-bottom:5px;" >{{ s2_dddddegats['d']['raw']['v'] }}</div>
 							</div>
+							</template>
 							<div>
 								<div>End Execution</div>
 							</div>
@@ -392,6 +439,9 @@
 						</template>
 						<template v-if="s2_dddddegats['k']['v']=='Generate-Session-Key'" >
 							<akgenv1 v-bind:ref="'stage_'+s2_iiiiiegats+'_comp'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_comp'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d"  v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></akgenv1>
+						</template>
+						<template v-if="s2_dddddegats['k']['v']=='Assume-Session-Key'" >
+							<akass v-bind:ref="'stage_'+s2_iiiiiegats+'_comp'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_comp'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d"  v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></akass>
 						</template>
 						<div v-if="s2_dddddegats['k']['v']=='Dynamic-Table'" >Yet to Implement</div>
 						<div v-if="s2_dddddegats['k']['v']=='Elastic-Tabl'" >Yet to Implement</div>						

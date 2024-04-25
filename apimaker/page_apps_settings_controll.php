@@ -52,7 +52,18 @@ if( $_POST['action'] == "settings_load_pages" ){
 		'limit'=>200,
 		'projection'=>['version_id'=>1,'name'=>1]
 	]);
-	json_response($res);
+	$res2 = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+		'app_id'=>$config_param1
+	],[
+		'sort'=>['path'=>1,'name'=>1],
+		'limit'=>200,
+		'projection'=>['path'=>1,'name'=>1]
+	]);
+	json_response([
+		"status"=>"success",
+		"pages"=>$res['data'],
+		"files"=>$res2['data'],
+	]);
 }
 
 if( $_POST['action'] == "app_save_custom_settings" ){
@@ -238,27 +249,42 @@ if( $_POST['action'] == "app_save_cloud_settings" ){
 
 if( $_POST['action'] == "app_save_other_settings" ){
 
-	$homepage = $_POST['homepage'];
-
-	if( !isset($homepage) ){
+	if( !isset($_POST['homepage']) ){
 		json_response("fail", "Incorrect data. Page settings missing.");
 	}
-	if( !preg_match("/^([a-f0-9]{24})\:([a-f0-9]{24})$/", $homepage['v'], $m) ){
-		json_response("fail", "Incorrect data. Incorrect format.");
-	}
+
+	$homepage = $_POST['homepage'];
+
 	//print_r($m);exit;
-	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
-		'_id'=>$m[1]
-	]);
-	if( !$res['data'] ){
-		json_response("fail", "Page not found.");
-	}
-	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", [
-		'_id'=>$m[2],
-		'page_id'=>$m[1]
-	]);
-	if( !$res['data'] ){
-		json_response("fail", "Page Version not found.");
+	if( $homepage['t'] == "page" ){
+		if( !preg_match("/^([a-f0-9]{24})\:([a-f0-9]{24})$/", $homepage['v'], $m) ){
+			json_response("fail", "Incorrect data. Incorrect format.");
+		}
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
+			'_id'=>$m[1]
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "Page not found.");
+		}
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", [
+			'_id'=>$m[2],
+			'page_id'=>$m[1]
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "Page Version not found.");
+		}
+	}else if( $homepage['t'] == "file" ){
+		if( !preg_match("/^[a-f0-9]{24}$/", $homepage['v']) ){
+			json_response("fail", "Incorrect data. Incorrect format.");
+		}
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+			'_id'=>$homepage['v']
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "File not found.");
+		}
+	}else{
+		json_response("fail", "Incorrect home page type");
 	}
 
 	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [

@@ -74,6 +74,9 @@ var app = s__({
 			inside_app__: false,
 			/* ---------------------------------------------------------------------- */
 
+			vurls: {},
+			vurls_list: [],
+
 			target_editor_id: "editor_div",
 			shwoit: false,
 			enabled: true,
@@ -328,32 +331,45 @@ var app = s__({
 		<?php 
 		//require("page_apps_pages_page_script2.js");
 		?>
+		console.log("OKK");
 		setTimeout(this.init,500);
 		setTimeout(this.initialize_events,1000);
 		setTimeout(this.initialize_tables,2000);
 		setInterval(this.vmtt_set,300);
+		console.log("OKK");
 		this.set_preview_urls();
+		console.log("OKKz");
 	},
 	methods: {
 
 		set_preview_urls: function(){
-			//alert( this.vurl );
+			console.log("OKK1");
 			var urls = {};
+			var ulist = [];
 			if( 'cloud' in this.app__['settings'] ){if( this.app__['settings']['cloud'] ){
-				urls['cloud'] = "https://" + this.app__['settings']['cloud-subdomain'] + '.' + this.app__['settings']['cloud-domain'] + '/' + this.app__['settings']['cloud-enginepath'] + this.file__['path'].substr(1,500) + this.file__['name'];
+				var u = "https://" + this.app__['settings']['cloud-subdomain'] + '.' + this.app__['settings']['cloud-domain'] + '/' + this.app__['settings']['cloud-enginepath'] + this.page__['name'];
+				urls['cloud'] = u;
+				ulist.push( u );
 				if( 'alias' in this.app__['settings'] ){if( this.app__['settings']['alias'] ){
-					urls['alias'] = "https://" + this.app__['settings']['alias-domain'] + this.file__['path'].substr(1,500) + this.file__['name'];
+					var u = "https://" + this.app__['settings']['alias-domain'] + this.page__['name'];
+					urls['alias'] = u;
+					ulist.push( u );
 				}}
 			}}
+			console.log("OKK2");
 			if( 'domains' in this.app__['settings'] ){
 				urls['domains'] = [];
 				for(var d=0;d<this.app__['settings']['domains'].length;d++ ){
-					urls['domains'].push( this.app__['settings']['domains'][ d ]['url'] + this.file__['path'].substr(1,500) + this.file__['name'] );
+					var u = this.app__['settings']['domains'][ d ]['url'] + this.page__['name'];
+					urls['domains'].push( u );
+					ulist.push( u );
 				}
 			}
 			this.vurls = urls;
+			this.vurls_list = ulist;
+			this.echo__( this.vurls );this.echo__( this.vurls_list );
 		},
-		previewit: function(){
+		previewit: function(){	
 			this.url_modal = new bootstrap.Modal(document.getElementById('url_modal'));
 			this.url_modal.show();
 		},

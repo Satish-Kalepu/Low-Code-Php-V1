@@ -65,6 +65,8 @@ if( $_POST['action'] == "get_global_apis" ){
 		"captcha"=>[],
 		"tables_dynamic"=>[],
 		"databases"=>[],
+		"files"=>[],
+		"storage"=>[],
 	];
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
 		'app_id'=>$config_param1
@@ -100,14 +102,43 @@ if( $_POST['action'] == "get_global_apis" ){
 		"des"=>"Generate session token with admin token",
 		'input-method'=>"POST",
 		"vpost"=>json_encode([
+			'action'=>"generate_access_token",
 			'access_key'=>"",
 			'expire_minutes'=>2,
 			'client_ip'=>'192.168.1.1/32'
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
+	"action"=>"generate_access_token",
 	"access_key": "",
 	"expire_minutes": 2 //optional
 	"client_ip": "192.168.1.1/32" //optional
+}',
+	];
+	$apis['auth_apis'][] = [
+		"_id"=>"10005",
+		"path" => "_api/auth/assume_session_key",
+		"name"=>"assume_session_key",
+		"des"=>"Create session token using Role",
+		'input-method'=>"POST",
+		"vpost"=>json_encode([
+			'action'=>"assume_session_key",
+			'role_id'=>"",
+			'expire_type'=>"In",
+			'expire_minutes'=>2,
+			'expire_at'=>"2025-12-12 10:10:10",
+			'client_ip'=>'192.168.1.1/32',
+			'max_hits'=>10,
+			'hits_per_minute'=>2
+		],JSON_PRETTY_PRINT),
+		"vpost_help"=>'{
+	"action"=>"assume_session_key",
+	"role_id": "",
+	"expire_type"=>"In", //In,At
+	"expire_minutes"=>2,
+	"expire_at"=>"2025-12-12 10:10:10",
+	"client_ip": "192.168.1.1/32" //optional
+	"max_hits"=>10,
+	"hits_per_minute"=>2
 }',
 	];
 	$apis['auth_apis'][] = [
@@ -117,11 +148,13 @@ if( $_POST['action'] == "get_global_apis" ){
 		"des"=>"Generate session token with user credentials",
 		'input-method'=>"POST",
 		"vpost"=>json_encode([
+			"action"=>"user_auth",
 			'username'=>"",
 			'password'=>"",
 			'expire_minutes'=>2 
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
+	"action"=>"user_auth",
 	"username": "",
 	"password": "",
 	"expire_minutes": 2 //optional
@@ -134,6 +167,7 @@ if( $_POST['action'] == "get_global_apis" ){
 		"des"=>"Generate session token with user credentials",
 		'input-method'=>"POST",
 		"vpost"=>json_encode([
+			"action"=>"user_auth_captcha",
 			'username'=>"",
 			'password'=>"",
 			'captcha'=>"",
@@ -141,6 +175,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			'expire_minutes'=>2 
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
+	"action"=>"user_auth_captcha",
 	"username": "",
 	"password": "",
 	"captcha": "",
@@ -155,9 +190,11 @@ if( $_POST['action'] == "get_global_apis" ){
 		"des"=>"Verify session key validity",
 		'input-method'=>"POST",
 		"vpost"=>json_encode([
+			"action"=>"verify_session_key",
 			'session_key'=>"",
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
+	"action"=>"verify_session_key",
 	"session_key": "",
 }',
 	];
@@ -168,8 +205,8 @@ if( $_POST['action'] == "get_global_apis" ){
 		"name"=>"get",
 		"des"=>"Generate Captcha",
 		'input-method'=>"POST",
-		"vpost"=>'{"ok":"ok"}',
-		"vpost_help"=>'{"ok":"ok"}',
+		"vpost"=>'{"action": "captcha_get", "ok":"ok"}',
+		//"vpost_help"=>'{"ok":"ok"}',
 	];
 
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", [
@@ -403,8 +440,253 @@ if( $_POST['action'] == "get_global_apis" ){
 		}
 		$apis['databases'][ $j['_id'] ] = [ 'db'=>$j, 'tables'=> $res2['data'], "show"=> "" ];
 	}
+	
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
+		'app_id'=>$config_param1
+	],[
+		'sort'=>['des'=>1],
+		'limit'=>200,
+	]);
+	foreach( $res['data'] as $i=>$j ){
+		unset($j['details']);
+		$j['apis'] = [];
 
-	json_response(['status'=>"success", "apis"=>$apis]);
+		$j['apis']['list_files'] = [
+			"_id"=>"f0010",
+			"name"=>"list_files", "des"=>"List files from cloud storage",
+			"input-method"=>"POST",
+			"path" => "_api/storage_vaults/" . $j['_id'],
+			"payload" => [
+				"action"=> "list_files",
+				"path"=> "/",
+				"options"=>[
+					"limit"=>10
+				]
+			],
+			"content-type" => "application/json",
+			"response-type"=>"application/json",
+			"response-body"=>[
+				"status"=>"success", 
+				"data"=> [
+					[
+						"_id"=>"file id",
+						"name"=>"name",
+						"path"=>"/",
+					]
+				],
+				"error"=>""
+			]
+		];
+		$j['apis']['get_file'] = [
+			"_id"=>"f0020",
+			"name"=>"get_file", "des"=>"Get file as base64 string",
+			"input-method"=>"POST",
+			"path" => "_api/storage_vaults/" . $j['_id'],
+			"payload" => [
+				"action"=> "get_file",
+				"filename"=> "/path/filename",
+			],
+			"content-type" => "application/json",
+			"response-type"=>"application/json",
+			"response-body"=>[
+				"status"=>"success", 
+				"data"=> "Base64 String",
+				"error"=>""
+			]
+		];
+		$j['apis']['get_raw_file'] = [
+			"_id"=>"f0021",
+			"name"=>"get_raw_file", "des"=>"Get file as binary",
+			"input-method"=>"POST",
+			"path" => "_api/storage_vaults/" . $j['_id'],
+			"payload" => [
+				"action"=> "get_raw_file",
+				"filename"=> "/path/filename",
+			],
+			"content-type" => "application/json",
+			"response-type"=>"application/json",
+			"response-body"=>"BinaryData",
+		];
+		$j['apis']['put_file'] = [
+			"_id"=>"f0030",
+			"name"=>"put_file", "des"=>"Upload a file",
+			"input-method"=>"POST",
+			"path" => "_api/storage_vaults/" . $j['_id'],
+			"payload" => [
+				"action"=> "put_file",
+				"filename"=> "/path/filename",
+				"file"=>"Binary Data"
+			],
+			"formdata" => [
+				"action"=> ["type"=>"text", "value"=>"put_file"],
+				"filename"=> ["type"=>"text", "value"=>"/path/filename"],
+				"file"=> ["type"=>"file", "value"=>""],
+			],
+			"content-type" => "multipart/form-data",
+			"response-type"=>"application/json",
+			"response-body"=>[
+				"status"=>"success", 
+				"error"=>""
+			]
+		];
+		$j['apis']['delete_file'] = [
+			"_id"=>"f0040",
+			"name"=>"delete_file", "des"=>"Delete a file",
+			"input-method"=>"POST",
+			"path" => "_api/storage_vaults/" . $j['_id'],
+			"payload" => [
+				"action"=> "delete_file",
+				"filename"=> "/path/filename",
+			],
+			"content-type" => "application/json",
+			"response-type"=>"application/json",
+			"response-body"=> [
+				"status"=>"success", 
+				"error"=>""
+			]
+		];
+		$j['show'] = "";
+		$apis['storage'][] = $j;
+	}
+
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"list_files", "des"=>"List Files",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=>"list_files",
+			"path"=> "/",
+			"options"=>[
+				"limit"=>10
+			]
+		],
+		"content-type" => "application/json",
+		"response-type"=>"application/json",
+		"response-body"=>[
+			"status"=>"success", 
+			"data"=> [
+				[
+					"_id"=>"file id",
+					"name"=>"name",
+					"path"=>"/",
+				]
+			],
+			"error"=>""
+		]
+	];
+	$apis['files'][] = $d;
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"get_file", "des"=>"Get file as base64 string",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=> "get_file",
+			"filename"=> "/path/filename",
+		],
+		"content-type" => "application/json",
+		"response-type"=>"application/json",
+		"response-body"=>[
+			"status"=>"success", 
+			"data"=> "Base64 String",
+			"error"=>""
+		]
+	];
+	$apis['files'][] = $d;
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"get_raw_file", "des"=>"Get file as binary",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=> "get_raw_file",
+			"filename"=> "/path/filename",
+		],
+		"content-type" => "application/json",
+		"response-type"=>"application/json",
+		"response-body"=>"BinaryData",
+	];
+	$apis['files'][] = $d;
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"get_file_by_id", "des"=>"Get file as base64 string",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=> "get_file_by_id",
+			"file_id"=> "661c948c82434413160042c3",
+		],
+		"content-type" => "application/json",
+		"response-type"=>"application/json",
+		"response-body"=>[
+			"status"=>"success", 
+			"data"=> "Base64 String",
+			"error"=>""
+		]
+	];
+	$apis['files'][] = $d;
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"get_raw_file_by_id", "des"=>"Get file as binary",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=> "get_raw_file_by_id",
+			"file_id"=> "661c948c82434413160042c3",
+		],
+		"content-type" => "application/json",
+		"response-type"=>"application/json",
+		"response-body"=>"BinaryData",
+	];
+	$apis['files'][] = $d;
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"put_file", "des"=>"Upload a file",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=> "put_file",
+			"filename"=> "/path/filename",
+			"file"=>"Binary Data",
+			"replace"=>false,
+		],
+		"formdata" => [
+			"action"=> ["type"=>"text", "value"=>"put_file"],
+			"filename"=> ["type"=>"text", "value"=>"/path/filename"],
+			"file"=> ["type"=>"file", "value"=>""],
+			"replace"=> ["type"=>"boolean", "value"=>false],
+		],
+		"content-type" => "multipart/form-data",
+		"response-type"=>"application/json",
+		"response-body"=>[
+			"status"=>"success", 
+			"error"=>""
+		]
+	];
+	$apis['files'][] = $d;
+	$d = [
+		"_id"=>"f0010",
+		"name"=>"delete_file", "des"=>"Delete a file",
+		"input-method"=>"POST",
+		"path" => "_api/files/internal",
+		"payload" => [
+			"action"=> "delete_file",
+			"file_id"=> "661c948c82434413160042c3",
+		],
+		"content-type" => "application/json",
+		"response-type"=>"application/json",
+		"response-body"=> [
+			"status"=>"success", 
+			"error"=>""
+		]
+	];
+	$apis['files'][] = $d;
+
+	json_response([
+		'status'=>"success", 
+		"apis"=>$apis
+	]);
 	exit;
 }
 
@@ -440,6 +722,18 @@ if( $_POST['action'] == "generate_access_token" ){
 		$thing = [
 			"_id"=>"captcha:".$_POST['thing_id'],
 			"thing"=>"captcha:something"
+		];
+	}else if( $_POST['type'] == "files" ){
+		$service = "files";
+		$thing = [
+			"_id"=>"file:".$_POST['thing_id'],
+			"thing"=>"file:something"
+		];
+	}else if( $_POST['type'] == "storage" ){
+		$service = "storage_vaults";
+		$thing = [
+			"_id"=>"storage_vault:".$_POST['thing_id'],
+			"thing"=>"storage_vault:something"
 		];
 	}else{
 		json_response("fail", "unknown type");

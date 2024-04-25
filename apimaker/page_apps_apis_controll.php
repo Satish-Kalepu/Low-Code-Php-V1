@@ -3,6 +3,11 @@
 $page_type = "apis";
 $property_type = "api";
 
+// $res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apps", [], ['projection'=>['_id'=>true]] );
+// foreach( $res['data'] as $i=>$j ){
+// 	update_app_pages( $j['_id'] );
+// }
+
 if( $_POST['action'] == "get_apis" ){
 	$t = validate_token("getapis.". $config_param1, $_POST['token']);
 	if( $t != "OK" ){
@@ -110,7 +115,7 @@ if( $_POST['action'] == "create_api" ){
 		"auth-type"	=> "None",
 	]);
 	if( $res['status'] == 'success' ){
-		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
+		$res2 = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
 			"_id"=>$mongodb_con->get_id($version_id),
 			"app_id"=>$config_param1,
 			"path"=>$_POST['current_path'],
@@ -129,6 +134,9 @@ if( $_POST['action'] == "create_api" ){
 			"auth-type"	=> "None",
 		]);
 		update_app_pages( $config_param1 );
+		$res['version_id'] = $res2['inserted_id'];
+		$res['api_id'] = $res['inserted_id'];
+		unset($res['inserted_id']);
 		json_response($res);
 	}else{
 		json_response($res);
@@ -185,6 +193,7 @@ if( $_POST['action'] == "apis_rename" ){
 	],[
 		"name"=>$_POST['new_name'], "updated"=>date("Y-m-d H:i:s")
 	]);
+	update_app_pages( $config_param1 );
 	json_response($res);
 	exit;
 }
@@ -249,6 +258,7 @@ if( $_POST['action'] == "apis_folder_rename" ){
 	],[
 		"path"=>$new_name, "updated"=>date("Y-m-d H:i:s")
 	]);
+	update_app_pages( $config_param1 );
 	json_response($res);
 	exit;
 }
@@ -305,6 +315,7 @@ if( $_POST['action'] == "apis_move" ){
 	],[
 		"path"=>$new_path, "updated"=>date("Y-m-d H:i:s")
 	]);
+	update_app_pages( $config_param1 );
 	json_response($res);
 	exit;
 }
@@ -465,6 +476,9 @@ if( $_POST['action'] == "app_api_import_create" ){
 		"auth-type"	=> $import_api_data['auth-type'],
 	]);
 	$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", $import_api_data );
+
+	update_app_pages( $config_param1 );
+
 	json_response([
 		"status"=>"success",
 		"api_id"=>$api_id,
@@ -644,6 +658,9 @@ if( $config_param4 && $main_api ){
 				"_id"=>$config_param4
 			], $import_api_data);
 		}
+
+		update_app_pages( $config_param1 );
+
 		json_response([
 			"status"=>"success",
 			"new_version_id"=>$new_version_id,
@@ -680,6 +697,9 @@ if( $config_param4 && $main_api ){
 		$from_api['updated'] = date("Y-m-d H:i:s");
 
 		$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", $from_api);
+		
+		update_app_pages( $config_param1 );
+
 		json_response([
 			"status"=>"success",
 			"error"=>"",
@@ -706,6 +726,9 @@ if( $config_param4 && $main_api ){
 			"version_id"=>$from_api['_id'],
 			"version"=>$from_api['version'],
 		]);
+
+		update_app_pages( $config_param1 );
+
 		json_response([
 			"status"=>"success",
 			"error"=>"",
@@ -735,7 +758,8 @@ if( $config_param4 && $main_api ){
 		// $api = $res['data'];
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
 			'name'=>$_POST['edit_api']['name'],
-			'_id'=>['$ne'=>$mongodb_con->get_id($_POST['edit_api']['api_id']) ]
+			'_id'=>['$ne'=>$mongodb_con->get_id($_POST['edit_api']['api_id']) ],
+			"path"=>$api['path']
 		]);
 		if( $res['data'] ){
 			json_response("fail", "Name is already in use");

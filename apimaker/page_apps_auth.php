@@ -1,3 +1,6 @@
+<style>
+	.sbadge{ border:1px solid #aaa; border-radius:3px; padding:0px 5px; margin-right:5px; background-color:#f0f0f0; display:inline-block; }
+</style>
 <div id="app" >
 	<div class="leftbar" >
 		<?php require("page_apps_leftbar.php"); ?>
@@ -14,6 +17,9 @@
 						</li>
 						<li class="nav-item">
 							<a v-bind:class="{'nav-link':true,'active':(tab=='keys')}" href="#" v-on:click="open_tab('keys')">Access Keys</a>
+						</li>
+						<li class="nav-item">
+							<a v-bind:class="{'nav-link':true,'active':(tab=='roles')}" href="#" v-on:click="open_tab('roles')">Roles</a>
 						</li>
 						<li class="nav-item">
 							<a v-bind:class="{'nav-link':true,'active':(tab=='tokens')}" href="#" v-on:click="open_tab('tokens')">Session Tokens</a>
@@ -55,6 +61,38 @@
 								</td>
 								<td>
 									<template v-if="'hits' in v" >{{ v['hits'] }}</template>
+								</td>
+							</tr>
+						</table>
+
+					</div>
+					<div v-if="tab=='roles'" >
+						<div v-if="r_msg" >{{ r_msg }}</div>
+						<div v-if="r_error" ckass="text-danger" >{{ r_error }}</div>
+						<div><input type="button" class="btn btn-outline-dark btn-sm" value="Add Role" v-on:click="show_role_add" ></div>
+						<table class="table table-bordered table-sm w-auto">
+							<tr>
+								<td></td><td></td>
+								<td>Name</td>
+								<td>Updated</td>
+								<td>Details</td>
+							</tr>
+							<tr v-for="v,i in roles">
+								<td><div class="bsvg" v-on:click="role_edit_open(i)"><img src="<?=$config_global_apimaker_path ?>images/edit.svg" style="width:20px;" ></div></td>
+								<td><div class="bsvg" v-on:click="role_delete(i)"><img src="<?=$config_global_apimaker_path ?>images/delete.svg" style="width:20px;"></div></td>
+								<td nowrap>
+									<div>{{ v['name'] }}</div>
+									<div class="text-secondary">{{ v['_id'] }}</div>
+								</td>
+								<td nowrap>{{ v['updated'].substr(0,16) }}</td>
+								<td>
+									<div v-for="p in v['policies']" style="padding:5px; border:1px solid #ccc; margin-bottom: 5px;" >
+										<table class="table table-bordered table-sm w-auto">
+										<tr><td>Service</td><td><span class="sbadge" >{{ p['service'] }}</span></td></tr>
+										<tr><td>Things</td><td><template v-for="t in p['things']" ><span class="sbadge"  >{{ t['thing'] }}</span> </template></td></tr>
+										<tr><td>Actions</td><td><template v-for="a in p['actions']" ><span class="sbadge" >{{ a }}</span> </template></td></tr>
+										</table>
+									</div>
 								</td>
 							</tr>
 						</table>
@@ -297,6 +335,8 @@
 												<select class="form-select form-select-sm w-auto" v-model="user_record['policies'][pi]['service']" v-on:change="user_record_service_select(pi)" >
 													<option value="apis" >apis</option>
 													<option value="tables" >tables</option>
+													<option value="files" >files</option>
+													<option value="storage" >storage</option>
 												</select>
 											</td>
 										</tr>
@@ -319,6 +359,28 @@
 														<select class="form-select form-select-sm w-auto" v-model="user_record['policies'][pi]['things'][i]['_id']" v-on:change="user_record_thing_select(pi,i)" >
 															<option value="*" >*</option>
 															<option v-for="tv,ti in config_allow_tables" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+															<option v-if="user_record['policies'][pi]['things'][i]['thing']!='*'&&user_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="user_record['policies'][pi]['things'][i]['_id']" >{{ user_record['policies'][pi]['things'][i]['thing'] }}</option>
+														</select>
+														<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="user_thing_delete(pi,i)">
+													</div>
+													<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="user_thing_add(pi)"></div>
+												</template>
+												<template v-if="user_record['policies'][pi]['service']=='storage'" >
+													<div v-for="v,i in user_record['policies'][pi]['things']" style="display: flex;" >
+														<select class="form-select form-select-sm w-auto" v-model="user_record['policies'][pi]['things'][i]['_id']" v-on:change="user_record_thing_select(pi,i)" >
+															<option value="*" >*</option>
+															<option v-for="tv,ti in config_allow_storage" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+															<option v-if="user_record['policies'][pi]['things'][i]['thing']!='*'&&user_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="user_record['policies'][pi]['things'][i]['_id']" >{{ user_record['policies'][pi]['things'][i]['thing'] }}</option>
+														</select>
+														<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="user_thing_delete(pi,i)">
+													</div>
+													<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="user_thing_add(pi)"></div>
+												</template>
+												<template v-if="user_record['policies'][pi]['service']=='files'" >
+													<div v-for="v,i in user_record['policies'][pi]['things']" style="display: flex;" >
+														<select class="form-select form-select-sm w-auto" v-model="user_record['policies'][pi]['things'][i]['_id']" v-on:change="user_record_thing_select(pi,i)" >
+															<option value="*" >*</option>
+															<option v-for="tv,ti in config_allow_files" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
 															<option v-if="user_record['policies'][pi]['things'][i]['thing']!='*'&&user_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="user_record['policies'][pi]['things'][i]['_id']" >{{ user_record['policies'][pi]['things'][i]['thing'] }}</option>
 														</select>
 														<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="user_thing_delete(pi,i)">
@@ -380,6 +442,8 @@
 															<select class="form-select form-select-sm w-auto" v-model="ak_record['policies'][pi]['service']" v-on:change="ak_record_service_select(pi)" >
 																<option value="apis" >apis</option>
 																<option value="tables" >tables</option>
+																<option value="files" >files</option>
+																<option value="storage" >storage</option>
 															</select>
 														</td>
 													</tr>
@@ -402,6 +466,28 @@
 																	<select class="form-select form-select-sm w-auto" v-model="ak_record['policies'][pi]['things'][i]['_id']" v-on:change="ak_record_thing_select(pi,i)" >
 																		<option value="*" >*</option>
 																		<option v-for="tv,ti in config_allow_tables" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+																		<option v-if="ak_record['policies'][pi]['things'][i]['thing']!='*'&&ak_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="ak_record['policies'][pi]['things'][i]['_id']" >{{ ak_record['policies'][pi]['things'][i]['thing'] }}</option>
+																	</select>
+																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="ak_thing_delete(pi,i)">
+																</div>
+																<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="ak_thing_add(pi)"></div>
+															</template>
+															<template v-if="ak_record['policies'][pi]['service']=='storage'" >
+																<div v-for="v,i in ak_record['policies'][pi]['things']" style="display: flex;" >
+																	<select class="form-select form-select-sm w-auto" v-model="ak_record['policies'][pi]['things'][i]['_id']" v-on:change="ak_record_thing_select(pi,i)" >
+																		<option value="*" >*</option>
+																		<option v-for="tv,ti in config_allow_storage" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+																		<option v-if="ak_record['policies'][pi]['things'][i]['thing']!='*'&&ak_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="ak_record['policies'][pi]['things'][i]['_id']" >{{ ak_record['policies'][pi]['things'][i]['thing'] }}</option>
+																	</select>
+																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="ak_thing_delete(pi,i)">
+																</div>
+																<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="ak_thing_add(pi)"></div>
+															</template>
+															<template v-if="ak_record['policies'][pi]['service']=='files'" >
+																<div v-for="v,i in ak_record['policies'][pi]['things']" style="display: flex;" >
+																	<select class="form-select form-select-sm w-auto" v-model="ak_record['policies'][pi]['things'][i]['_id']" v-on:change="ak_record_thing_select(pi,i)" >
+																		<option value="*" >*</option>
+																		<option v-for="tv,ti in config_allow_files" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
 																		<option v-if="ak_record['policies'][pi]['things'][i]['thing']!='*'&&ak_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="ak_record['policies'][pi]['things'][i]['_id']" >{{ ak_record['policies'][pi]['things'][i]['thing'] }}</option>
 																	</select>
 																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="ak_thing_delete(pi,i)">
@@ -473,6 +559,116 @@
 		</div>
 
 
+		<div class="modal fade" id="role_edit_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title"><span v-if="'_id' in role_record" >Role: {{ role_record['name'] }}</span><span v-else >Create Role</span></h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+
+								<table class="table table-bordered table-sm w-auto" >
+									<tr>
+										<td>Name</td>
+										<td>
+											<input type="text" class="form-control form-control-sm" v-model="role_record['name']" placeholder="role name">
+										</td>
+									</tr>
+									<tr>
+										<td>Policies</td>
+										<td>
+											<div v-for="pv,pi in role_record['policies']" style="padding:10px; border:1px solid #bbb; margin-top:10px;" >
+												<div v-on:click="role_del_policy(pi)" class="btn btn-link btn-sm py-0" style="float:right;" >Delete Policy</div>
+												<p>Policy: <b>{{ pi+1 }}</b> </p>
+												<table class="table table-bordered table-sm w-auto" >
+													<tr>
+														<td>Service</td>
+														<td>
+															<select class="form-select form-select-sm w-auto" v-model="role_record['policies'][pi]['service']" v-on:change="role_record_service_select(pi)" >
+																<option value="apis" >apis</option>
+																<option value="tables" >tables</option>
+																<option value="files" >files</option>
+																<option value="storage" >storage</option>
+															</select>
+														</td>
+													</tr>
+													<tr>
+														<td>{{ role_record['policies'][pi]['service'] }}</td>
+														<td>
+															<template v-if="role_record['policies'][pi]['service']=='apis'" >
+																<div v-for="v,i in role_record['policies'][pi]['things']" style="display: flex;" >
+																	<select class="form-select form-select-sm w-auto" v-model="role_record['policies'][pi]['things'][i]['_id']" v-on:change="role_record_thing_select(pi,i)" >
+																		<option value="*" >*</option>
+																		<option v-for="tv,ti in config_allow_apis" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+																		<option v-if="role_record['policies'][pi]['things'][i]['thing']!='*'&&role_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="role_record['policies'][pi]['things'][i]['_id']" >{{ role_record['policies'][pi]['things'][i]['thing'] }}</option>
+																	</select>
+																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="role_thing_delete(pi,i)">
+																</div>
+																<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="role_thing_add(pi)"></div>
+															</template>
+															<template v-if="role_record['policies'][pi]['service']=='tables'" >
+																<div v-for="v,i in role_record['policies'][pi]['things']" style="display: flex;" >
+																	<select class="form-select form-select-sm w-auto" v-model="role_record['policies'][pi]['things'][i]['_id']" v-on:change="role_record_thing_select(pi,i)" >
+																		<option value="*" >*</option>
+																		<option v-for="tv,ti in config_allow_tables" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+																		<option v-if="role_record['policies'][pi]['things'][i]['thing']!='*'&&role_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="role_record['policies'][pi]['things'][i]['_id']" >{{ role_record['policies'][pi]['things'][i]['thing'] }}</option>
+																	</select>
+																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="role_thing_delete(pi,i)">
+																</div>
+																<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="role_thing_add(pi)"></div>
+															</template>
+															<template v-if="role_record['policies'][pi]['service']=='storage'" >
+																<div v-for="v,i in role_record['policies'][pi]['things']" style="display: flex;" >
+																	<select class="form-select form-select-sm w-auto" v-model="role_record['policies'][pi]['things'][i]['_id']" v-on:change="role_record_thing_select(pi,i)" >
+																		<option value="*" >*</option>
+																		<option v-for="tv,ti in config_allow_storage" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+																		<option v-if="role_record['policies'][pi]['things'][i]['thing']!='*'&&role_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="role_record['policies'][pi]['things'][i]['_id']" >{{ role_record['policies'][pi]['things'][i]['thing'] }}</option>
+																	</select>
+																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="role_thing_delete(pi,i)">
+																</div>
+																<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="role_thing_add(pi)"></div>
+															</template>
+															<template v-if="role_record['policies'][pi]['service']=='files'" >
+																<div v-for="v,i in role_record['policies'][pi]['things']" style="display: flex;" >
+																	<select class="form-select form-select-sm w-auto" v-model="role_record['policies'][pi]['things'][i]['_id']" v-on:change="role_record_thing_select(pi,i)" >
+																		<option value="*" >*</option>
+																		<option v-for="tv,ti in config_allow_files" v-bind:value="tv['_id']" >{{ tv['thing'] }}</option>
+																		<option v-if="role_record['policies'][pi]['things'][i]['thing']!='*'&&role_record['policies'][pi]['things'][i]['thing']!=''" v-bind:value="role_record['policies'][pi]['things'][i]['_id']" >{{ role_record['policies'][pi]['things'][i]['thing'] }}</option>
+																	</select>
+																	<input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="role_thing_delete(pi,i)">
+																</div>
+																<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" v-on:click="role_thing_add(pi)"></div>
+															</template>
+														</td>
+													</tr>
+													<tr>
+														<td>Actions</td>
+														<td>
+															<template v-if="role_record['policies'][pi]['service'] in config_allow_actions" >
+															<div v-for="v,i in config_allow_actions[ role_record['policies'][pi]['service'] ]" ><label><input type="checkbox" v-model="role_record['policies'][pi]['actions']" v-bind:value="v"  v-on:click="role_record_action_select(pi)"> {{ v }}</label></div>
+															</template>
+														</td>
+													</tr>
+												</table>
+											</div>
+											<div><div v-on:click="role_add_policy" class="btn btn-link btn-sm py-0" >Add Policy</div></div>
+										</td>
+									</tr>
+								</table>
+								<div v-if="ra_err" class="text-danger" >{{ ra_err }}</div>
+								<div v-if="ra_msg" class="text-success" >{{ ra_msg }}</div>
+
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+		        <button type="button" class="btn btn-outline-dark btn-sm"  v-on:click="role_save_record">Save Role</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+
 		<div class="modal fade" id="token_edit_modal" tabindex="-1" >
 		  <div class="modal-dialog modal-lg">
 		    <div class="modal-content">
@@ -482,7 +678,7 @@
 		      </div>
 		      <div class="modal-body">
 
-						<table class="table table-bordered table-sm w-auto" >
+						<table v-if="'policies' in token_record" class="table table-bordered table-sm w-auto" >
 							<tr>
 								<td>Policies</td>
 								<td>
@@ -493,6 +689,30 @@
 								<td>Expires In</td>
 								<td>
 									<div>{{ token_expire_project }}</div>
+								</td>
+							</tr>
+							<tr>
+								<td>IP</td>
+								<td>
+									<div>{{ token_record['ips'][0] }}</div>
+								</td>
+							</tr>
+							<tr>
+								<td>Max Hits</td>
+								<td>
+									<div>{{ token_record['maxhits'] }}</div>
+								</td>
+							</tr>
+							<tr>
+								<td>Max Hits per minute</td>
+								<td>
+									<div>{{ token_record['hitsmin'] }}</div>
+								</td>
+							</tr>
+							<tr>
+								<td>Hits</td>
+								<td>
+									<div>{{ token_record['hits'] }}</div>
 								</td>
 							</tr>
 						</table>
@@ -561,8 +781,8 @@ var app = Vue.createApp({
 			help: false,
 			ak_keys: [],
 			tokens: [],
-			ak_error: "",
-			ak_msg: "",
+			roles: [],
+			ak_error: "",ak_msg: "",r_err: "",r_msg: "",ra_err: "",ra_msg: "",
 			ak_form: false,
 			ak_record: {
 				"app_id": "<?=$config_param1 ?>",
@@ -578,6 +798,17 @@ var app = Vue.createApp({
 				"ips": ["192.168.1.1/32"],
 				"allow_sessions": false,
 			},
+			role_record: {
+				"name": "",
+				"policies": [
+					{
+						"service": "tables",
+						"actions": ["*"],
+						"things": [{"thing":"*","_id":"*"}],
+					}
+				],
+			},
+			role_edit_vi: -1,
 			token_record: {
 				"app_id": "<?=$config_param1 ?>",
 				"active": "y",
@@ -604,9 +835,13 @@ var app = Vue.createApp({
 			config_allow_actions: {
 				"apis": [ "*", "invoke" ],
 				"tables": ["*","find", "scan", "insert", "update", "delete"],
+				"storage": ["*","list_files", "get_file", "get_raw_file", "put_file", "delete_file"],
+				"files": ["*","list_files", "get_file", "get_raw_file", "get_file_by_id", "get_raw_file_by_id", "put_file", "delete_file"],
 			},
 			config_allow_tables: [],
 			config_allow_apis: [],
+			config_allow_storage: [],
+			config_allow_files: [],
 			users_tab: false,
 			users: [],
 			user_add_msg: "",
@@ -842,6 +1077,9 @@ var app = Vue.createApp({
 			if( v== 'users' ){
 				this.load_users();
 			}
+			if( v== 'roles' ){
+				this.load_roles();
+			}
 		},
 		select_table: function(vi){
 			this.tableindex = vi;
@@ -996,6 +1234,30 @@ var app = Vue.createApp({
 				}
 			});
 		},
+		load_roles: function(){
+			this.r_error = "";
+			this.r_msg = "Loading...";
+			axios.post("?",{"action": "load_roles"}).then(response=>{
+				this.r_msg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( "status" in response.data ){
+							if( response.data['status'] == "success" ){
+								this.roles = response.data['data'];
+							}else{
+								this.r_error = response.data['error'];
+							}
+						}else{
+							this.r_error = "Incorrect response!";
+						}
+					}else{
+						this.r_error = "Incorrect response!";
+					}
+				}else{
+					this.r_error = "Incorrect response!";
+				}
+			});
+		},
 		load_tokens: function(){
 			this.ak_error = "";
 			this.ak_msg = "Loading...";
@@ -1084,6 +1346,26 @@ var app = Vue.createApp({
 							var f = false;
 							for(var j=0;j<this.config_allow_apis.length;j++){
 								if( this.config_allow_apis[j]['_id'] == this.ak_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.ak_add_error= "Policy "+(pi+1)+": API `"+this.ak_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else if( this.ak_record['policies'][pi]['service']=='files' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_files.length;j++){
+								if( this.config_allow_files[j]['_id'] == this.ak_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.ak_add_error= "Policy "+(pi+1)+": API `"+this.ak_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else if( this.ak_record['policies'][pi]['service']=='storage' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_storage.length;j++){
+								if( this.config_allow_storage[j]['_id'] == this.ak_record['policies'][pi]['things'][i]['_id'] ){
 									f = true;
 								}
 							}
@@ -1509,6 +1791,26 @@ var app = Vue.createApp({
 							if( f == false ){
 								this.user_add_error= "Policy "+(pi+1)+": API `"+this.user_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
 							}
+						}else if( this.user_record['policies'][pi]['service']=='files' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_files.length;j++){
+								if( this.config_allow_files[j]['_id'] == this.user_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.user_add_error= "Policy "+(pi+1)+": API `"+this.user_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else if( this.user_record['policies'][pi]['service']=='storage' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_storage.length;j++){
+								if( this.config_allow_storage[j]['_id'] == this.user_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.user_add_error= "Policy "+(pi+1)+": API `"+this.user_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
 						}else{
 							this.user_add_error= "Policy "+(pi+1)+": Unknown thing `"+this.user_record['policies'][pi]['things'][i]['thing']+"`";return false;
 						}
@@ -1575,6 +1877,8 @@ var app = Vue.createApp({
 							if( response.data['status'] == "success" ){
 								this.config_allow_tables = response.data['tables'];
 								this.config_allow_apis = response.data['apis'];
+								this.config_allow_storage = response.data['storage'];
+								this.config_allow_files = response.data['files'];
 								console.log( response.data );
 							}else{
 								this.session_error = response.data['error'];
@@ -1591,6 +1895,202 @@ var app = Vue.createApp({
 			})
 		},
 
+
+		show_role_add: function(){
+			this.role_edit_modal = new bootstrap.Modal( document.getElementById('role_edit_modal') );
+			this.role_edit_modal.show();
+			this.ra_msg = ""; this.ra_err = "";
+			this.role_record = {
+				"name": "",
+				"policies": [
+					{
+						"service": "",
+						"actions": ["*"],
+						"things": [{"thing":"*","_id":"*"}],
+					}
+				],
+			};
+		},
+		close_role_add: function(){
+			this.role_edit_modal.hide();
+		},
+		role_edit_open: function(vi){
+			this.role_edit_vi = vi;
+			this.role_record = JSON.parse( JSON.stringify(this.roles[vi]) );
+			this.role_edit_modal = new bootstrap.Modal( document.getElementById('role_edit_modal') );
+			this.role_edit_modal.show();
+		},
+		role_record_action_select: function(pi){
+			setTimeout(this.role_record_action_select2,200,pi);
+		},
+		role_record_action_select2: function(pi){
+			var f = false;
+			for(var j=0;j<this.role_record['policies'][pi]['actions'].length;j++){
+				if( this.role_record['policies'][pi]['actions'][j] == "*" ){
+					f = true;
+				}
+			}
+			if( f ){
+				this.role_record['policies'][pi]['actions'] = ["*"];
+			}
+		},
+		role_record_thing_select: function(pi,i){
+			if( this.role_record['policies'][pi]['service']=='tables' ){
+				for(var j=0;j<this.config_allow_tables.length;j++){
+					if( this.role_record['policies'][pi]['things'][i]['_id'] == this.config_allow_tables[j]['_id'] ){
+						this.role_record['policies'][pi]['things'][i]['thing'] = this.config_allow_tables[j]['thing']+'';
+					}
+				}
+			}else if( this.role_record['policies'][pi]['service']=='apis' ){
+				for(var j=0;j<this.config_allow_apis.length;j++){
+					if( this.role_record['policies'][pi]['things'][i]['_id'] == this.config_allow_apis[j]['_id'] ){
+						this.role_record['policies'][pi]['things'][i]['thing'] = this.config_allow_apis[j]['thing']+'';
+					}
+				}
+			}
+		},
+		role_record_service_select: function(pi){
+			this.role_record['policies'][pi]['things'] = [{"thing":"*", "_id":"*"}];
+		},
+		role_save_record: function(){
+			this.ra_err = "";
+			this.ra_msg = "";
+			if( this.role_record['name'].match(/^[a-z][a-z0-9\-\_\.\ ]{2,50}$/i) == null ){
+				this.ra_err= "Name should be simple. no special chars and spaces";return false;
+			}
+			for(var pi=0;pi<this.role_record['policies'].length;pi++){
+				if( this.role_record['policies'][pi]['service'] in this.config_allow_actions == false ){
+					this.ra_err= "Service unknown";return false;
+				}
+				for(var i=0;i<this.role_record['policies'][pi]['actions'].length;i++){
+					if( this.role_record['policies'][pi]['actions'][i] == "*" ){
+						if( this.role_record['policies'][pi]['actions'].length > 1 ){
+							this.ra_err= "Policy "+(pi+1)+": When all Actions allowed, single rule is required!";return false;
+						}
+					}else if( this.config_allow_actions[  this.role_record['policies'][pi]['service']  ].indexOf( this.role_record['policies'][pi]['actions'][i] ) == -1 ){
+						this.ra_err= "Policy "+(pi+1)+": Action `"+this.role_record['policies'][pi]['actions'][i]+"`not found";return false;
+					}
+				}
+
+				for(var i=0;i<this.role_record['policies'][pi]['things'].length;i++){
+					if( this.role_record['policies'][pi]['things'][i]['_id'] == "*" ){
+						if( this.role_record['policies'][pi]['things'].length > 1 ){
+							this.ra_err= "Policy "+(pi+1)+": When all Tables allowed, single rule is required!";return false;
+						}
+					}else if( this.role_record['policies'][pi]['things'][i]['_id'].match( /^(.*?)\:[a-f0-9]+$/ ) == null ){
+						this.ra_err= "Policy "+(pi+1)+": Incorrect thing iD";return false;
+					}else{
+						if( this.role_record['policies'][pi]['service']=='tables' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_tables.length;j++){
+								if( this.config_allow_tables[j]['_id'] == this.role_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.ra_err= "Policy "+(pi+1)+": TableName `"+this.role_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else if( this.role_record['policies'][pi]['service']=='apis' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_apis.length;j++){
+								if( this.config_allow_apis[j]['_id'] == this.role_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.ra_err= "Policy "+(pi+1)+": API `"+this.role_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else if( this.role_record['policies'][pi]['service']=='files' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_files.length;j++){
+								if( this.config_allow_files[j]['_id'] == this.role_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.ra_err= "Policy "+(pi+1)+": API `"+this.role_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else if( this.role_record['policies'][pi]['service']=='storage' ){
+							var f = false;
+							for(var j=0;j<this.config_allow_storage.length;j++){
+								if( this.config_allow_storage[j]['_id'] == this.role_record['policies'][pi]['things'][i]['_id'] ){
+									f = true;
+								}
+							}
+							if( f == false ){
+								this.ra_err= "Policy "+(pi+1)+": API `"+this.role_record['policies'][pi]['things'][i]['thing']+"` not found";return false;
+							}
+						}else{
+							this.ra_err= "Policy "+(pi+1)+": Unknown Thing `"+this.role_record['policies'][pi]['things'][i]['thing']+"` ";return false;
+						}
+					}
+				}
+			}
+			
+			this.ra_msg = "Saving...";
+			axios.post("?", {
+				"action": "auth_save_role",
+				"role": this.role_record,
+			}).then(response=>{
+				this.ra_msg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( "status" in response.data ){
+							if( response.data['status'] == "success" ){
+								if( '_id' in this.role_record == false ){
+									this.ra_msg = "Created new role: " + response.data['role']['_id'];
+								}else{
+									this.ra_msg = "Updated key";
+								}
+								this.role_record = response.data['role'];
+								this.load_roles();
+							}else{
+								this.ra_err = response.data['error'];
+							}
+						}else{
+							this.ra_err = "Incorrect response!";
+						}
+					}else{
+						this.ra_err = "Incorrect response!";
+					}
+				}else{
+					this.ra_err = "Incorrect response!";
+				}
+			});
+		},
+		role_del_policy: function(vi){
+			if( this.role_record['policies'].length > 1 ){
+				this.role_record['policies'].splice(vi,1);
+			}else{
+				alert("Need at least one policy!");
+			}
+		},
+		role_add_policy: function(){
+			if( this.role_record['policies'].length < 5 ){
+				this.role_record['policies'].push({
+					"ips": ["192.168.1.1/32"],
+					"service": [""],
+					"actions": ["*"],
+					"things": [{"_id":"*", "thing": "*"}],
+				});
+			}else{
+				alert("Too many policies!");
+			}
+		},
+		role_thing_add: function(pi){
+			if( this.role_record['policies'][pi]['things'].length < 20 ){
+				this.role_record['policies'][pi]['things'].push({"thing":"*","_id":"*"}); 
+			}else{
+				alert("Too many things");
+			}
+		},
+		role_thing_delete: function(pi,vi){
+			if( this.role_record['policies'][pi]['things'].length > 1 ){
+				this.role_record['policies'][pi]['things'].splice(vi,1);
+			}else{
+				alert("Need at least one table. but it can be *")
+			}
+		},
 
 	}
 }).mount("#app");

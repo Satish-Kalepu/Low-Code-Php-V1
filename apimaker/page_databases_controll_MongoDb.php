@@ -634,8 +634,8 @@ if( $_POST['action'] == "load_mongodb_records" ){
 				$sort = [];
 				foreach( $_POST['index_search'] as $i=>$j ){
 					$bv = $bv2 = "";
-					$sort[ $j['name'] ] = ($j['sort']=="asc"?1:-1);
-					if( $j['name'] == "_id" ){
+					$sort[ $j['field'] ] = ($j['sort']=="asc"?1:-1);
+					if( $j['field'] == "_id" ){
 						if( $j['v'] ){
 							$bv = $mongodb_con->get_id( $j['v'] );
 						}
@@ -644,22 +644,22 @@ if( $_POST['action'] == "load_mongodb_records" ){
 						}
 					}else{
 						if( $j['v'] ){
-							$bv = find_field_type( $j['name'], $j["v"], $main_table['fields'] );
+							$bv = find_field_type( $j['field'], $j["v"], $main_table['fields'] );
 						}
 						if( $j['v2'] ){
-							$bv2 = find_field_type( $j['name'], $j["v2"], $main_table['fields'] );
+							$bv2 = find_field_type( $j['field'], $j["v2"], $main_table['fields'] );
 						}
 					}
 					if( $bv ){
 						if( $j['cond'] == "=" ){
-							$cond[ $j['name'] ] = $bv;
+							$cond[ $j['field'] ] = $bv;
 						}else if( $j['cond'] == "><"){
-							$cond[ $j['name'] ] = [];
-							$cond[ $j['name'] ][$filters['>=']] = $bv;
-							$cond[ $j['name'] ][$filters['<=']] = $bv2;
+							$cond[ $j['field'] ] = [];
+							$cond[ $j['field'] ][$filters['>=']] = $bv;
+							$cond[ $j['field'] ][$filters['<=']] = $bv2;
 						}else{
-							$cond[ $j['name'] ] = [];
-							$cond[ $j['name'] ][ $filters[ $j['cond'] ] ] = $bv;
+							$cond[ $j['field'] ] = [];
+							$cond[ $j['field'] ][ $filters[ $j['cond'] ] ] = $bv;
 						}
 					}
 				}
@@ -668,6 +668,7 @@ if( $_POST['action'] == "load_mongodb_records" ){
 				}
 				$options["sort"] = $sort;
 			}
+			//print_r( $cond );exit;
 			try{
 				$records_list = $con->find( $main_table['table'], $cond, $options );
 				if( !isset($records_list['data']) || $records_list['status'] == "fail" ){
@@ -680,7 +681,7 @@ if( $_POST['action'] == "load_mongodb_records" ){
 					]);
 				}
 			}catch(Exception $ex){
-				json_response("fail", $ex->getMessage());
+				json_response(["status"=>"fail", "error"=>$ex->getMessage(), "cond"=>$cond]);
 			}
 		}
 	}

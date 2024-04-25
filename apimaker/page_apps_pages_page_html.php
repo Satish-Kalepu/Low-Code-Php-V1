@@ -11,8 +11,11 @@
 	<div style="position: fixed;left:150px; top:40px; height: 40px; width:calc( 100% - 150px ); background-color: white; overflow: hidden; border-bottom:1px solid #ccc; " >
 		<div style="padding: 5px 10px;" >
 			<div class="btn btn-outline-dark btn-sm" style="float:right; padding:4px 5px;"  v-on:click="save_page" >Save Page</div>
-			<a v-bind:href="'/engine/'+page__['name']" target="_blank" ><img src="<?=$config_global_apimaker_path ?>edit.png" style="float:right;cursor: pointer; margin-right:20px;" title="Preview" ></a>
-			<h5 class="d-inline">Page: /engine/{{ page__['name'] }}</h5>
+
+			<a v-if="vurls_list.length==1" v-bind:href="vurls_list[0]" target="_blank" ><img src="<?=$config_global_apimaker_path ?>edit.png" style="float:right;cursor: pointer; margin-right:20px;" title="Preview" ></a>
+			<div v-else v-on:click="previewit()" style="float:right;cursor: pointer; margin-right:20px;" title="Preview" ><img src="<?=$config_global_apimaker_path ?>edit.png" ></div>
+
+			<h5 class="d-inline">Page: {{ page__['name'] }}</h5>
 		</div>
 	</div>
 

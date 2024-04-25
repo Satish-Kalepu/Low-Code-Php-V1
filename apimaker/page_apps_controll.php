@@ -35,7 +35,6 @@ if( $take_to_settings ){
 		exit;
 	}
 }
-
 if( $config_param2 == "apis" || $config_param2 == "" ){
 	require("page_apps_apis_controll.php");
 }
@@ -45,7 +44,6 @@ if( $config_param2 == "apis_global" ){
 if( $config_param2 == "auth" ){
 	require("page_apps_auth_controll.php");
 }
-
 if( $config_param2 == "functions" ){
 	require("page_apps_functions_controll.php");
 }
@@ -61,16 +59,25 @@ if( $config_param2 == "export" ){
 if( $config_param2 == "global_files" ){
 	require("page_apps_global_files_controll.php");
 }
-
 if( $config_param2 == "settings" ){
 	require("page_apps_settings_controll.php");
 }
 if( $config_param2 == "databases" ){
 	require("page_databases_controll.php");
 }
+if( $config_param2 == "redis" ){
+	require("page_apps_redis_controll.php");
+}
+
+if( $config_param2 == "storage" ){
+	require("page_apps_storage_vaults_controll.php");
+}
 if( $config_param2 == "tables_dynamic" ){
 	require("page_apps_tables_dynamic_controll.php");
 }
 if( $config_param2 == "tables_elastic" ){
 	//require("page_apps_tables_elastic_controll.php");
+}
+if( $config_param2 == "objects" ){
+	require("page_apps_objects_controll.php");
 }

@@ -606,7 +606,7 @@ if( $config_param3 == "importdump" ){
 				}
 				$keys = [];
 				foreach( $_POST['new_index']['keys'] as $k=>$j ){
-					if( !preg_match("/^[a-z][a-z0-9\-\_]{1,90}$/i", $j['name']) ){
+					if( $j['name'] != "_id" && !preg_match("/^[a-z][a-z0-9\-\_]{1,90}$/i", $j['name']) ){
 						json_response("fail","Field name: " . $j['name'] . ": incorrect format");
 					}
 					$keys[ $j['name'] ] = ($J['sort']=="dsc"?-1:1);
@@ -620,7 +620,10 @@ if( $config_param3 == "importdump" ){
 				}
 				$resind = $mongodb_con->create_index( $dynamic_table_name, $keys, $ops );
 				if( $resind['status'] != "success" ){
-					json_rsponse($resind);
+					if( preg_match("/duplicate/i", $resind['error'] ) ){
+						$resind['error'] = "Unique index cannot be created when there are duplicate records in the table";
+					}
+					json_response($resind);
 				}
 				$keys_list = isset($table['keys_list'])?($table['keys_list']??[]):[];
 				$keys_list[] = [

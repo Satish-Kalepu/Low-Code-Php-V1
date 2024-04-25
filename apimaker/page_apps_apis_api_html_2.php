@@ -27,8 +27,11 @@
 		<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true"  >
 			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
 		</div>
-		<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
+		<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false&&s2_evas_tsrif==true" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
 			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
+		</div>
+		<div class="test_menu_div_a" v-else-if="s2_bat_tset_wohs==false" v-on:click="s2_aatad_evas" >
+			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>S<BR/>A<BR/>V<BR/>E</div>
 		</div>
 		<div class="test_menu_div_b" v-if="s2_bat_tset_wohs" >
 			<?php require("page_apps_apis_api_html_test_2.php"); ?>
@@ -140,13 +143,16 @@
 			<template v-if="s2_retlif_tsil_txetnoc.length>0" >
 				<div v-for="id in s2_retlif_tsil_txetnoc" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==id}" v-on:click.stop="s2_tceles_txetnoc(id,'datatype')" ><div style="width:30px;display: inline-block;" >{{ id }}</div><div style="display: inline; color:gray;" v-if="id in s2_sepyt_atad" >{{ s2_sepyt_atad[ id ] }}</div></div>
 			</template>
-			<div v-else style="display:flex;gap:20px;" >
-				<div>
-					<div v-for="id,ii in s2_1sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+			<div v-else >
+				<div style="display:flex;gap:20px;" >
+					<div>
+						<div v-for="id,ii in s2_1sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+					</div>
+					<div>
+						<div v-for="id,ii in s2_2sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+					</div>
 				</div>
-				<div>
-					<div v-for="id,ii in s2_2sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
-				</div>
+				<div v-if="s2_egats_ngissa_tel_ti_si()" class="context_item" v-on:click.stop="s2_tceles_txetnoc('s2_fffffffftc','datatype')" >Convert to Function</div>
 			</div>
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='inputfactortypes'" >
@@ -424,7 +430,7 @@
 	</div>
 
 	<div class="modal fade" id="s2_ppupop_cod" tabindex="-1" >
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog modal-lg modal-xl">
 	<div class="modal-content">
 	  <div class="modal-header">
 	    <div class="modal-title" ><h5 class="d-inline">Help</h5></div>
@@ -593,7 +599,10 @@
 	</div>	
 
 	<div v-if="s2_ladom_pupop_elpmis" data-context="contextmenu" class="s2_unem_txetnoc" v-bind:style="s2_elyts_pupop_elpmis"  v-bind:data-stagei="s2_di_egats_pupop_elpmis"  >
-		<template v-if="s2_epyt_pupop_elpmis=='d'" >
+		<template v-if="s2_epyt_pupop_elpmis=='hh'" >
+			<div v-html="s2_atad_pupop_elpmis" ></div>
+		</template>
+		<template v-else-if="s2_epyt_pupop_elpmis=='d'" >
 			<vdt v-bind:v="s2_atad_pupop_elpmis" v-bind:datafor="s2_rof_pupop_elpmis" v-bind:datavar="s2_ravatad_pupop_elpmis" v-on:close="s2_ladom_pupop_elpmis=false"  v-on:update="s2_rav_bus_egats_tes(s2_di_egats_pupop_elpmis,s2_ravatad_pupop_elpmis,$event)" ></vdt>
 		</template>
 		<template v-else-if="s2_epyt_pupop_elpmis=='dt'" >

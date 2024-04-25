@@ -150,6 +150,16 @@ const s2_smarap_egats_gifnoc = {
 			"pretty":{"t":"B", "v":"false"}
 		},
 	},
+	"RespondPage": {
+		"p": {
+			"page":{"t":"TH","v":{"i":{"t":"T", "v":""}, "l":{"t":"T", "v":""}},"th":"Pages"},
+		},
+	},
+	"RespondFile": {
+		"p": {
+			"file":{"t":"TH","v":{"i":{"t":"T", "v":""}, "l":{"t":"T", "v":""}},"th":"Files"},
+		},
+	},
 	"RenderHTML": {
 		"p": {"html":{"t":"TT", "v":""},"css":{"t":"TT", "v":""}}
 	},
@@ -193,41 +203,19 @@ const s2_smarap_egats_gifnoc = {
 			"c": [], // conditions
 			"primary": {"field1": {"t": "S"}, "field2": {"t": "S"}},
 			"indexes": {"index": "one", "t": "S" }
-		},
-	},
-	"Internal-Table": {
-		"p": {
-			"data": {"stage":"initiate"}
 		}
 	},
-	"Elastic-Table": {
-		"p": {
-			"data": {"stage":"initiate"}
-		}
-	},
-	"MongoDb": {
-		"p": {
-			"data": {"stage":"initiate"}
-		}
-	},
-	"MySql": {
-		"p": {
-			"data": {"stage":"initiate"}
-		}
-	},
-	"HTTPRequest": {
-		"p": {
-			"data": {"stage":"initiate"}
-		}
-	},
-	"Create-Access-Key": {
-		"p": {
-			"data": {"stage":"initiate"}
-		},
-	},
-	"Generate-Session-Key": {
-		"p": {
-			"data": {"stage":"initiate"}
-		},
-	}
+	"Internal-Table": {"p":{"data": {"stage":"initiate"}}},
+	"Elastic-Table": {"p":{"data": {"stage":"initiate"}}},
+	"MongoDb": {"p":{"data": {"stage":"initiate"}}},
+	"MySql": {"p":{"data": {"stage":"initiate"}}},
+	"HTTPRequest": {"p":{"data": {"stage":"initiate"}}},
+	"Create-Access-Key": {"p": {"data": {"stage":"initiate"}}},
+	"Generate-Session-Key": {"p": {"data": {"stage":"initiate"}}},
+	"Assume-Session-Key": {"p": {"data": {"stage":"initiate"}}},
+	"Generate-FileUpload-Token": {"p": {
+		"FilePath": {"t":"T", "v": ""},
+		"ContenType": {"t":"T", "v": ""},
+		"Type": {"t":"T", "v": "Binary"},
+	}}
 };

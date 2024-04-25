@@ -22,7 +22,7 @@
 		"mongodbv1", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
 		"mysqldbv1", "mysqlq", "mysqlp", "mysqld", "mysqls", "mysql_field",
 		"internal_table",
-		"httprequest", "akv1", "akgenv1"
+		"httprequest", "akv1", "akgenv1", "akass",
 	];
 
 	foreach( $components as $i=>$j ){
@@ -87,6 +87,7 @@ var app = s2_ssssssssss({
 			"s2_gnivas_wohs"			: false,
 			"s2_egassem_evas"		: "Saving..",
 			"s2_ddeen_evas"			: false,
+			"s2_evas_tsrif"			: false,
 			"s2_segats_wohs"			: true,
 			"s2_bat_tset_wohs"		: false,
 			"s2_lluf_rotide_edoc"	: true,
@@ -217,7 +218,7 @@ var app = s2_ssssssssss({
 					"sub": [
 						"SetResponseStatus", "SetResponseHeader", "SetCookie",
 						"RespondStatus",
-						"RespondJSON", "RespondVar", "RespondVars", "RespondGlobals", "RespondXML", "AddHTML", "RenderHTML",
+						"RespondJSON", "RespondVar", "RespondVars", "RespondGlobals", "RespondXML", "RespondPage", "RespondFile", "AddHTML", "RenderHTML",
 						"Log",
 					]
 				},
@@ -230,7 +231,7 @@ var app = s2_ssssssssss({
 						"Internal-Table",
 						"Elastic-Table",
 						"Create-Access-Key", 
-						"Generate-Session-Key"
+						"Generate-Session-Key","Assume-Session-Key"
 					]
 				},
 				{
@@ -368,6 +369,13 @@ var app = s2_ssssssssss({
 		window.addEventListener("paste", this.s2_etsap_tneve, true);
 	},
 	methods: {
+		is_test_response_binary: function(){
+			if( this.s2_esnopser_tset['headers']['content-type'].match(/(json|xml|html|plain|text)/i) ){
+				return false;
+			}else{
+				return true;
+			}
+		},
 		s2_eton_noisrev_teg: function(){
 			return "Version: "+ this.s2_iiiiiiiipa['version'] + " " + (this.s2_di_noisrev_tnerruc==this.s2_di_noisrev?"<span class='text-success'>(Active)</span>":"<span class='text-danger'>(NotActive)</span>");
 		},
@@ -821,6 +829,20 @@ var app = s2_ssssssssss({
 							this.s2_pupop_cod_wohs(doc);
 							return 0;
 						}
+						if( el.className == "help-div2" ){
+							doc = el.getAttribute("data-help");
+							this.s2_le_pupop_elpmis = el;
+							this.s2_di_egats_pupop_elpmis = -1;
+							this.s2_ravatad_pupop_elpmis = "d";
+							this.s2_rof_pupop_elpmis = "stages";
+							this.s2_atad_pupop_elpmis = doc;
+							this.s2_epyt_pupop_elpmis = "hh";
+							this.s2_ladom_pupop_elpmis = true;
+							//this.s2_unem_txetnoc_sucof_dna_wohs();
+							this.s2_elyts_pupop_elpmis_tes();
+
+							return 0;
+						}
 					}
 					el = el.parentNode;
 				}catch(e){
@@ -907,7 +929,7 @@ var app = s2_ssssssssss({
 					this.s2_ravatad_txetnoc = data_var;
 					var v = this.s2_eulav_elbatide_teg({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
 					if( v === false ){console.log("event_click: value false");return false;}
-					console.log("dropdown click: " + data_for + ": " + data_var );
+					//console.log("dropdown click: " + data_for + ": " + data_var );
 					this.s2_di_egats_txetnoc = stage_id;
 					this.s2_epyt_txetnoc = el_data_type.getAttribute("data-list");
 					if( this.s2_epyt_txetnoc == "varsub" || this.s2_epyt_txetnoc == "plgsub" ){
@@ -1242,7 +1264,7 @@ var app = s2_ssssssssss({
 			}
 		},
 		s2_tceles_txetnoc: function(k, t){
-			console.log( "context select: "+ this.s2_rof_txetnoc  + ": " + this.s2_ravatad_txetnoc + ": " + k +  ": " + t );
+			//console.log( "context select: "+ this.s2_rof_txetnoc  + ": " + this.s2_ravatad_txetnoc + ": " + k +  ": " + t );
 			if( this.s2_rof_txetnoc == 'engine' ){
 				this.s2_rav_bus_tes( this.s2_eeeeenigne, this.s2_ravatad_txetnoc, k );
 				if( t == "inputtype" ){
@@ -1284,143 +1306,142 @@ var app = s2_ssssssssss({
 						"vs": false,
 					};
 					this.s2_egats_egnahc_egats(this.s2_di_egats_txetnoc, k, t);
+					this.s2_unem_txetnoc_edih();
+					this.s2_noitpo_detadpu();return;
 
 				}else{
-					if( typeof(k) == "string" || typeof(k) == "number" ){
-						this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc, k );
-					}
-					if( t == 'prop' ){
-						var vt = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":t" );
-						if( vt in this.s2_seitreporp_tcejbo_gifnoc ){
-							if( k in this.s2_seitreporp_tcejbo_gifnoc[ vt ] ){
-								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":vs:d", this.s2_nnnnnnnosj(this.s2_seitreporp_tcejbo_gifnoc[ vt ][k]) );
-							}
+					if( t == "datatype" && this.s2_ravatad_txetnoc == "d:rhs:t" && k == "s2_fffffffftc" ){
+						this.s2_noitcnuf_ot_egats_egnahc_egats( this.s2_di_egats_txetnoc );
+						this.s2_unem_txetnoc_edih();
+						return;
+					}else{
+						if( typeof(k) == "string" || typeof(k) == "number" ){
+							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc, k );
 						}
-					}
-					if( t == 'plgprop' ){
-						var vt = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":t" );
-						if( vt in this.s2_atad_nigulp ){
-							if( 'p' in this.s2_atad_nigulp[ vt ] ){
-								if( k in this.s2_atad_nigulp[ vt ]['p'] ){
-									var d = this.s2_nnnnnnnosj( this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc ) );
-									//d['vs'] = {"v":"", "t":"", "d":{}};
-									this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":vs:d", {} );
-									d['vs']['d'] = this.s2_nnnnnnnosj(this.s2_atad_nigulp[ vt ]['p'][k]);
-									setTimeout(this.s2_rav_bus_egats_tes,100,this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc, d );
-									//this.nextTick();
-								}else{
-									this.s2_ooooooohce( k + " not found in plugin data " + vt );
+						if( t == 'prop' ){
+							var vt = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":t" );
+							if( vt in this.s2_seitreporp_tcejbo_gifnoc ){
+								if( k in this.s2_seitreporp_tcejbo_gifnoc[ vt ] ){
+									this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":vs:d", this.s2_nnnnnnnosj(this.s2_seitreporp_tcejbo_gifnoc[ vt ][k]) );
 								}
-							}else{
-								this.s2_ooooooohce("plugging data sub p not found");
 							}
 						}
-					}
-					if( t == "plugin" ){
-						if( k in this.s2_atad_nigulp ){
-							var x = this.s2_ravatad_txetnoc.split(/\:/g);
-							x.pop(0);
-							var dvp = x.join(":");
-							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, dvp+':vs', {"v": ".", "t": "n", "d": {}} );
-						}else{
-							console.error("selected plugin: " + k + " not found");
-							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.context_datavar_, "" );
-						}
-					}
-					if( t == "thing" ){
-						this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc, k );
-					}
-					if( t == "datatype" ){
-						this.s2_epyt_elbairav_etadpu( this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ], this.s2_ravatad_txetnoc, k );
-						if( this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['k']['v'] == "Let" ){
-							var a = this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['lhs'];
-							var t = this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['rhs']['t'];
-							if( t == "TT" ){ t = "T"; }
-							setTimeout(this.s2_segats_bus_ni_egnahc_epyt_elbairav_etadpu, 100, this.s2_di_egats_txetnoc, a, t);
-						}
-					}
-					if( t == "function" ){
-						if( k != "" ){
-							if( k in this.s2_ssnoitcnuf ){
-								var vt = this.s2_tnerap_ravatad_txetnoc+":inputs";
-								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, vt, {} );
-								var s2_pppppppppp = this.s2_nnnnnnnosj( this.s2_ssnoitcnuf[k]['inputs'] );
-								var s2_rrrrrrrrrr = this.s2_ssnoitcnuf[k]['return'];
-								var s2_ssssssssss = this.s2_ssnoitcnuf[k]['self'];
-								setTimeout(this.s2_stupni_noitcnuf_tes, 100, this.s2_tnerap_ravatad_txetnoc, s2_pppppppppp, s2_rrrrrrrrrr, s2_ssssssssss);
+						if( t == "plugin" ){
+							if( k in this.s2_atad_nigulp ){
+								var x = this.s2_ravatad_txetnoc.split(/\:/g);
+								x.pop(0);
+								var dvp = x.join(":");
+								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, dvp+':vs', {"v": ".", "t": "n", "d": {}} );
 							}else{
-								console.log("function error: " + k + " not found!");
+								console.error("selected plugin: " + k + " not found");
+								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.context_datavar_, "" );
 							}
 						}
-					}
-					if( t == "var" ){
-						var d = this.s2_rav_bus_o_teg( this.s2_esiw_egats_srotcaf_lla[ this.s2_di_egats_txetnoc ], k );
-						if( d ){
-							var x = this.s2_ravatad_txetnoc.split(/\:/g);
+						if( t == "thing" ){
+							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc, k );
+						}
+						if( t == "datatype" ){
+							if( k == "s2_fffffffftc" ){
+								
+							}else{
+								this.s2_epyt_elbairav_etadpu( this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ], this.s2_ravatad_txetnoc, k );
+								if( this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['k']['v'] == "Let" ){
+									var a = this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['lhs'];
+									if( this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['rhs']['t'] == "Function" ){
+										var t = this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['rhs']['v']['return']+'';
+									}else{
+										var t = this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['rhs']['t'];
+									}
+									if( t == "TT" ){ t = "T"; }
+									if( t != "Function" ){
+										setTimeout(this.s2_segats_bus_ni_egnahc_epyt_elbairav_etadpu, 100, this.s2_di_egats_txetnoc, a, t);
+									}
+								}
+							}
+						}
+						if( t == "function" ){
+							if( k != "" ){
+								if( k in this.s2_ssnoitcnuf ){
+									var vt = this.s2_tnerap_ravatad_txetnoc+":inputs";
+									this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, vt, {} );
+									var s2_pppppppppp = this.s2_nnnnnnnosj( this.s2_ssnoitcnuf[k]['inputs'] );
+									var s2_rrrrrrrrrr = this.s2_ssnoitcnuf[k]['return'];
+									var s2_ssssssssss = this.s2_ssnoitcnuf[k]['self'];
+									setTimeout(this.s2_stupni_noitcnuf_tes, 100, this.s2_tnerap_ravatad_txetnoc, s2_pppppppppp, s2_rrrrrrrrrr, s2_ssssssssss);
+								}else{
+									console.log("function error: " + k + " not found!");
+								}
+							}
+						}
+						if( t == "var" ){
+							var d = this.s2_rav_bus_o_teg( this.s2_esiw_egats_srotcaf_lla[ this.s2_di_egats_txetnoc ], k );
+							if( d ){
+								var x = this.s2_ravatad_txetnoc.split(/\:/g);
+								x.pop();
+								var new_path = x.join(":");
+								var var_type = d['t'];
+								//console.log( var_type );
+								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path+':t', var_type );
+								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path+':vs', {"v": "","t": "","d": {} } );
+								if( var_type in this.s2_atad_nigulp ){
+									this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path+':plg', var_type, true );
+								}else{
+									this.s2_rav_bus_egats_evomer( this.s2_di_egats_txetnoc, new_path+':plg' );
+								}
+								var s = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, new_path );
+								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path, this.s2_nnnnnnnosj( s ) );
+							}
+						}
+						if( t == "operator" ){
+							var op = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc );
+							x = this.s2_ravatad_txetnoc.split(/\:/g);
 							x.pop();
-							var new_path = x.join(":");
-							var var_type = d['t'];
-							//console.log( var_type );
-							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path+':t', var_type );
-							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path+':vs', {"v": "","t": "","d": {} } );
-							if( var_type in this.s2_atad_nigulp ){
-								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path+':plg', var_type, true );
-							}else{
-								this.s2_rav_bus_egats_evomer( this.s2_di_egats_txetnoc, new_path+':plg' );
-							}
-							var s = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, new_path );
-							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, new_path, this.s2_nnnnnnnosj( s ) );
-						}
-					}
-					if( t == "operator" ){
-						var op = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc );
-						x = this.s2_ravatad_txetnoc.split(/\:/g);
-						x.pop();
-						var vn = Number(x.pop());
-						var mvar = x.join(":");
-						var mdata = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, mvar );
-						if( mvar == "d:rhs" ){
-							if( op == "." ){
-								while( mdata.length-1 > vn ){
-									mdata.pop();
-								}
-								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, mvar, mdata );
-							}else{
-								if( mdata.length-1 == vn ){
-									mdata.push({ "m": [ {"t":"N","v":"333", "OP":"."} ], "OP": "." });
+							var vn = Number(x.pop());
+							var mvar = x.join(":");
+							var mdata = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, mvar );
+							if( mvar == "d:rhs" ){
+								if( op == "." ){
+									while( mdata.length-1 > vn ){
+										mdata.pop();
+									}
 									this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, mvar, mdata );
 								}else{
-									this.s2_ooooooohce("update existing operator");
+									if( mdata.length-1 == vn ){
+										mdata.push({ "m": [ {"t":"N","v":"333", "OP":"."} ], "OP": "." });
+										this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, mvar, mdata );
+									}else{
+										this.s2_ooooooohce("update existing operator");
+									}
 								}
-							}
-						}else{
-							if( op == "." ){
-								while( mdata.length-1 > vn ){
-									mdata.pop();
-								}
-								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, mvar, mdata );
 							}else{
-								if( mdata.length-1 == vn ){
-									mdata.push({"t":"N","v":"333", "OP":"."});
+								if( op == "." ){
+									while( mdata.length-1 > vn ){
+										mdata.pop();
+									}
 									this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, mvar, mdata );
 								}else{
-									this.s2_ooooooohce("update existing operator");
+									if( mdata.length-1 == vn ){
+										mdata.push({"t":"N","v":"333", "OP":"."});
+										this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, mvar, mdata );
+									}else{
+										this.s2_ooooooohce("update existing operator");
+									}
 								}
 							}
 						}
-					}
-					if( this.s2_kcabllac_txetnoc ){
-						var x = this.s2_kcabllac_txetnoc.split(/\:/g);
-						var vref = x.splice(0,1);
-						if( vref in this.$refs ){
-							if( "length" in this.$refs[ vref ] ){
-								this.$refs[ vref ][0].s2_kkkcabllac(x.join(":"));
+						if( this.s2_kcabllac_txetnoc ){
+							var x = this.s2_kcabllac_txetnoc.split(/\:/g);
+							var vref = x.splice(0,1);
+							if( vref in this.$refs ){
+								if( "length" in this.$refs[ vref ] ){
+									this.$refs[ vref ][0].s2_kkkcabllac(x.join(":"));
+								}else{
+									this.$refs[ vref ].s2_kkkcabllac(x.join(":"));
+								}
 							}else{
-								this.$refs[ vref ].s2_kkkcabllac(x.join(":"));
+								console.error("Ref: " + vref + ": not found");
+								//this.$refs[ x[0] ][ x[1] ]();
 							}
-						}else{
-							console.error("Ref: " + vref + ": not found");
-							//this.$refs[ x[0] ][ x[1] ]();
 						}
 					}
 				}
@@ -1728,11 +1749,10 @@ var app = s2_ssssssssss({
 							},
 							"l": 1,"e": false,"ee": true,"er": "","wr": "", "a": false,
 						}
-
-
 				];
 				this.s2_ddeen_evas=true;
 			}else{
+				this.s2_evas_tsrif = true;
 				for(var i=0;i<this.s2_eeeeenigne['stages'].length;i++){
 					if( 'a' in this.s2_eeeeenigne['stages'][i] == false ){
 						this.s2_eeeeenigne['stages'][i]['a'] = false;
@@ -1841,12 +1861,6 @@ var app = s2_ssssssssss({
 				}
 			return v;
 		},
-		s2_selbairav_egrem: function( vo, vd ){
-			for( var key in vd ){
-				vo[ key+'' ] = this.s2_nnnnnnnosj(vd[key]);
-			}
-			//return vo;
-		},
 		s2_ttttttrosk: function( vd ){
 			var oo = {};
 			var _o = Object.keys(vd).sort();
@@ -1952,19 +1966,22 @@ var app = s2_ssssssssss({
 			}catch(e){console.error(e);console.log("s2_rav_bus_tes error: " + vpath );return false;}
 		},
 		s2_segats_bus_ni_egnahc_epyt_elbairav_etadpu: function( sid, a, t ){
-			for(var s2_iiiiiegats=sid;s2_iiiiiegats<this.s2_eeeeenigne['stages'].length;s2_iiiiiegats++ ){
-				var s2_dddddegats = this.s2_eeeeenigne['stages'][s2_iiiiiegats];
-				this.s2_smarap_egats_bus_ni_egnahc_epyt_elbairav_etadpu( s2_dddddegats, a, t );
+			console.log( "s2_segats_bus_ni_egnahc_epyt_elbairav_etadpu: " + sid + ": " + a + ": " + t );
+			for(var s2_iiiiiegats=sid+1;s2_iiiiiegats<this.s2_eeeeenigne['stages'].length;s2_iiiiiegats++ ){
+				this.s2_smarap_egats_bus_ni_egnahc_epyt_elbairav_etadpu( this.s2_eeeeenigne['stages'][s2_iiiiiegats], a, t );
 			}
 		},
 		s2_smarap_egats_bus_ni_egnahc_epyt_elbairav_etadpu: function( vv, a, t ){
 			try{
 				if( "t" in vv && "v" in vv ){
-					if( vv['t'] == "V" || vv['t'] == "PLG" ){
+					if( vv['t'] == "V" ){
+						// this.s2_ooooooohce("s2_smarap_egats_bus_ni_egnahc_epyt_elbairav_etadpu");
+						// this.s2_ooooooohce( vv );
 						if( typeof( vv['v'] ) == "object" && vv['v'] != null ){
-							if( vv['v']['a'] == a ){
+							if( vv['v']['v'] == a ){
 								if( vv['v']['t'] != t ){
 									vv['v']['t'] = t+'';
+									//this.s2_ooooooohce( "updated" );
 								}
 							}
 						}
@@ -1979,9 +1996,18 @@ var app = s2_ssssssssss({
 		},
 		s2_selbairav_llif: function(){
 			var used_outputs = {};
-			var o = {};
+			var o = {
+				"server_": {
+					"t": "O",
+					"_": {
+						"ip": {"t": "T"},"user-agent": {"t": "T"}
+					}
+				}
+			};
 			vin = this.s2_srav_egats_ot_erutcurts_yarra_trevnoc( this.s2_eeeeenigne['input_factors'] );
-			this.s2_selbairav_egrem( o, vin );
+			for( var key in vin ){
+				o[ key+'' ] = this.s2_nnnnnnnosj(vin[key]);
+			}
 
 			for(var s2_iiiiiegats=0;s2_iiiiiegats<this.s2_eeeeenigne['stages'].length;s2_iiiiiegats++ ){
 				var s2_dddddegats = this.s2_eeeeenigne['stages'][s2_iiiiiegats];
@@ -2020,7 +2046,7 @@ var app = s2_ssssssssss({
 							o[ s2_dddddegats['k']['v']+'' ] = s;
 						}
 					}
-				}else{
+				}else if(  s2_dddddegats['t'] != 'n' ){
 					er = er + this.s2_egasu_elbairav_dnif( o, s2_dddddegats['d'] );
 					if( s2_dddddegats['t'] == "c" && s2_dddddegats['k']['v'] == "Function" ){
 						if( s2_dddddegats['d']['return'] ){
@@ -2033,30 +2059,15 @@ var app = s2_ssssssssss({
 						wr = wr + this.s2_ytpme_elbairav_dnif( s2_dddddegats['d'] );
 					}
 				}
-				if( s2_dddddegats['k']['v'] == "LetComponent" ){
-					//o[ s2_dddddegats['d']['lhs']+'' ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( this.s2_nnnnnnnosj( d ) );
-					//o[ s2_dddddegats['d']['lhs']+'' ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( this.s2_nnnnnnnosj( s2_dddddegats['d']['rhs'] ) );
+				if( s2_dddddegats['k']['v'] == "Let" ){
 					if( s2_dddddegats['d']['lhs'] == "" ){
 						er = er + " lhs variable empty";
 					}else if( s2_dddddegats['d']['lhs'] in o ){
 						wr = wr + " Warning variable `" + s2_dddddegats['d']['lhs'] + "` override;";
 					}
-					var comp = s2_dddddegats['d']['rhs']['v']['i']['v']+'';
-					if( comp in this.s2_atad_nigulp ){
-						o[ s2_dddddegats['d']['lhs']+'' ] = {
-							"t": comp, 
-							"_": {}
-						};
-						//this.s2_srav_egats_ot_erutcurts_yarra_trevnoc( this.s2_nnnnnnnosj( this.s2_atad_nigulp[ comp ]['data'] ) )
-					}
-					//o[ s2_dddddegats['d']['lhs']+'' ]["PLG"] = 
-				}else if( s2_dddddegats['k']['v'] == "Let" ){
-					if( s2_dddddegats['d']['lhs'] == "" ){
-						er = er + " lhs variable empty";
-					}else if( s2_dddddegats['d']['lhs'] in o ){
-						wr = wr + " Warning variable `" + s2_dddddegats['d']['lhs'] + "` override;";
-					}
-					if( s2_dddddegats['d']['rhs']['t'] == "V" ){
+					if( s2_dddddegats['d']['rhs']['t'] == "Function" ){
+						o[ s2_dddddegats['d']['lhs']+'' ] = {"t": s2_dddddegats['d']['rhs']['v']['return']+'', "_":{}};
+					}else if( s2_dddddegats['d']['rhs']['t'] == "V" ){
 						if( s2_dddddegats['d']['rhs']['v']['v'] != "" ){
 							var d = this.s2_rav_bus_o_teg( o, s2_dddddegats['d']['rhs']['v']['v'] );
 							if( d ){
@@ -2133,6 +2144,12 @@ var app = s2_ssssssssss({
 						//this.s2_ooooooohce("Assign Object" );
 						this.s2_rav_bus_o_tes(o, s2_dddddegats['d']['lhs']['v']['v'], this.s2_tupni_sa_mrof_lanif_elbairav_teg( this.s2_nnnnnnnosj( s2_dddddegats['d']['rhs'] ) ) );
 					}
+					if( t2 == "Function" ){
+						t2 = s2_dddddegats['d']['rhs']['v']['return']+'';
+						if( t1 != t2 ){
+							wr = wr + " Warning: data type mismatch: " + t1 + " = " + t2;
+						}
+					}
 					if( t2 == "V" ){
 						var t2 = s2_dddddegats['d']['rhs']['v']['t'];
 						if( t2 in this.s2_seitreporp_tcejbo_gifnoc ){
@@ -2172,6 +2189,10 @@ var app = s2_ssssssssss({
 							}
 						}else{
 							console.log( t2 + ": not found in object props" );
+						}
+					}else{
+						if( t1 != t2 && t1 != "" && t2 != "" ){
+							wr = wr + " Warning: data type mismatch: " + t1 + " = " + t2;
 						}
 					}
 				}
@@ -2214,8 +2235,12 @@ var app = s2_ssssssssss({
 						if( t == "O" ){
 							if( '_' in d ){
 								key = {"t":"T"};
-								//this.s2_ooooooohce( Object.keys(d['_']) );	
-								val = d['_'][ Object.keys(d['_'])[0] ];
+								//this.s2_ooooooohce( Object.keys(d['_']) );
+								if( typeof( d['_'] )=="object" ){
+									if( Object.keys(d['_']).length ){
+										val = d['_'][ Object.keys(d['_'])[0] ];
+									}
+								}
 							}else{
 								er = er + " incorrect source var `"+s2_dddddegats['d']['var']['v']['v']+"` structure";
 							}
@@ -2427,9 +2452,11 @@ var app = s2_ssssssssss({
 					var oo = s2_dddddegats['d']['data']['output']['v']+'';
 					o[ oo ] = {"t": "O", "_":s2_dddddegats['d']['data']['struct']};
 				}
-				if( s2_dddddegats['k']['v'] == "Create-Access-Key" || s2_dddddegats['k']['v'] == "Generate-Session-Key" ){
-					var oo = s2_dddddegats['d']['data']['output']['v']+'';
-					o[ oo ] = {"t": "O", "_":s2_dddddegats['d']['data']['struct']};
+				if( s2_dddddegats['k']['v'] == "Create-Access-Key" || s2_dddddegats['k']['v'] == "Generate-Session-Key" || s2_dddddegats['k']['v'] == "Assume-Session-Key" ){
+					if( 'output' in s2_dddddegats['d']['data'] ){
+						var oo = s2_dddddegats['d']['data']['output']['v']+'';
+						o[ oo ] = {"t": "O", "_":s2_dddddegats['d']['data']['struct']};
+					}
 				}
 				if( s2_dddddegats['k']['v'] == "RespondHTML" ){
 					if( this.s2_iiiiiiiipa['output-type'] != "text/html" && this.property_type == "api" ){
@@ -2707,7 +2734,7 @@ var app = s2_ssssssssss({
 			}
 		},
 		s2_trela_egats_wohs(i){
-			alert(this.s2_eeeeenigne['stages'][ i ]['er'] );
+			alert( this.s2_eeeeenigne['stages'][ i ]['er'] + "\n" + this.s2_eeeeenigne['stages'][ i ]['wr'] );
 		},
 		s2_tupni_sa_mrof_lanif_elbairav_teg: function( v ){
 			//console.log("Get variable finaal form:" );this.s2_ooooooohce( v );
@@ -2900,6 +2927,7 @@ var app = s2_ssssssssss({
 			}else{alert("Error"); return false; }
 			axios.post( "?", s2_dddddddddv).then(response=>{
 				this.s2_ddeen_evas = false;
+				this.s2_evas_tsrif = true;
 				if( response.data["status"] == "success" ){
 					this.s2_gnivas_wohs = false;
 					this.s2_ddeen_evas = false;
@@ -2976,14 +3004,14 @@ var app = s2_ssssssssss({
 					}catch(e){
 						this.s2_rorre_tset = "json parse failed";
 						if( v.length > 1024 ){
-							return v + " ...striped";
+							return v.substr(0,1024) + " ...striped";
 						}else{
 							return v;
 						}
 					}
 				}else{
 					if( v.length > 1024 ){
-						return v + " ...striped";
+						return v.substr(0,1024) + " ...striped";
 					}else{
 						return v;
 					}
@@ -3629,6 +3657,24 @@ var app = s2_ssssssssss({
 			this.s2_eeeeenigne['stages'][ vid ]['e'] = false;
 
 			this.s2_ddeen_evas = true;
+		},
+		s2_noitcnuf_ot_egats_egnahc_egats: function( sid ){
+			var kk = JSON.parse(JSON.stringify(this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]));
+			this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['rhs'] = {
+				't': "Function",
+				'v': {"fn": "","inputs": {},"self": false,"return": "B"}
+			};
+			this.s2_segats_bus_ni_egnahc_epyt_elbairav_etadpu( this.s2_di_egats_txetnoc, this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ]['d']['lhs']+'', 'B' );
+			this.s2_noitpo_detadpu();return;
+		},
+		s2_egats_ngissa_tel_ti_si: function(){
+			if( this.s2_rof_txetnoc == "stages" ){
+				var k = this.s2_eeeeenigne['stages'][ this.s2_di_egats_txetnoc ];
+				if( k['t'] == "c" && ( k['k']['v'] == "Let" || k['k']['v'] == "Assign" ) ){
+					return true;
+				}
+			}
+			return false;
 		},
 		s2_nnnnnnnosj: function( v ){
 			if( typeof(v) == "object" ){
