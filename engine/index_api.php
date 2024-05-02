@@ -296,7 +296,7 @@
 				}
 				$d = json_encode($result['body'],JSON_PRETTY_PRINT);
 			}
-			request_log($result['status'], $result['error'], $api_version['output-type'], substr($d,0,1024), $log);
+			request_log($result['status'], $result['error'], $api_version['output-type'], substr($d,0,2048), $log);
 			echo $d;
 			exit;
 		}else if( $api_version['output-type'] == "text/html" ){

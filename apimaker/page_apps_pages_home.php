@@ -12,13 +12,13 @@
 			<div style="float:right;" >
 				<button class="btn btn-outline-dark btn-sm" v-on:click="page_show_create_form()" >Create PAGE</button>
 			</div>
-			<div style="float:right; margin-right: 10px;" >
-				<div v-if="msg" class="alert alert-primary py-0" >{{ msg }}</div>
-				<div v-if="err" class="alert alert-danger py-0" >{{ err }}</div>
-			</div>
-			<div style="clear: both;"></div>
 			<div class="h3 mb-3">Pages</div>
+			<div style="clear: both;"></div>
 			<div style="height: calc( 100% - 100px ); overflow: auto;" >
+
+			<div v-if="msg" class="alert alert-primary py-0" >{{ msg }}</div>
+			<div v-if="err" class="alert alert-danger py-0" >{{ err }}</div>
+
 			<table class="table table-striped table-bordered table-sm" >
 				<tr>
 					<td>ID</td>

@@ -84,3 +84,6 @@ if( $config_param2 == "tables_elastic" ){
 if( $config_param2 == "objects" ){
 	require("page_apps_objects_controll.php");
 }
+if( $config_param2 == "tasks" ){
+	require("page_apps_tasks_controll.php");
+}

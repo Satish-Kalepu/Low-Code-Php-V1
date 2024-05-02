@@ -15,6 +15,9 @@
 	<a class="left_btn <?=$config_param2=='databases'?"left_btn_active":"" ?>" v-bind:href="path+'databases'">Databases</a>
 	<a class="left_btn <?=$config_param2=='storage'?"left_btn_active":"" ?>" v-bind:href="path+'storage'">Storage Vaults</a>
 	<a class="left_btn <?=$config_param2=='auth'?"left_btn_active":"" ?>" v-bind:href="path+'auth'">Authentication</a>
+	<a class="left_btn <?=$config_param2=='tasks'?"left_btn_active":"" ?>" v-bind:href="path+'tasks'">Tasks &amp; Queues</a>
+	<a class="left_btn <?=$config_param2=='events'?"left_btn_active":"" ?>" v-bind:href="path+'events'">Events Hub</a>
 	<a class="left_btn <?=$config_param2=='settings'?"left_btn_active":"" ?>" v-bind:href="path+'settings'">Settings</a>
 	<a class="left_btn <?=$config_param2=='logs'?"left_btn_active":"" ?>" v-bind:href="path+'logs'">Logs</a>
+	<a class="left_btn <?=$config_param2=='codeexport'?"left_btn_active":"" ?>" v-bind:href="path+'codeexport'">Code Export</a>
 	<a class="left_btn <?=$config_param2=='export'?"left_btn_active":"" ?>" v-bind:href="path+'export'">Backup/Restore</a>

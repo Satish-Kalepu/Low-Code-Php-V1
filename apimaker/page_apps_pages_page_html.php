@@ -17,9 +17,6 @@
 
 			<h5 class="d-inline">Page: {{ page__['name'] }}</h5>
 
-
-
-
 		</div>
 	</div>
 
@@ -79,7 +76,7 @@
 		<div class="modal-dialog modal-xl">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h4 class="modal-title">{{ tag_settings_popup_title }}</h4>
+					<h4 class="modal-title" style="font-size:1rem;">{{ tag_settings_popup_title }}</h4>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
@@ -117,7 +114,8 @@
 						<div>&nbsp;</div>
 						<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create" v-on:click.prevent.stop="anchor_create" ></div>
 					</div>
-					<!-- <div style="border: 1px solid #ccc; margin-bottom: 10px;">
+					<!-- 
+					<div style="border: 1px solid #ccc; margin-bottom: 10px;">
 						<div style="padding: 5px; background-color: #f0f0f0;" >Settings</div>
 						<div style="padding:5px;">
 							<div>Class:</div>
@@ -131,8 +129,10 @@
 							</div>
 							<div><input type="button" class="btn btn-outline-dark btn-sm" value="Update" ></div>
 						</div>
-					</div> -->
-					<div v-else-if="tag_settings_type!='new'&&focused_type&&focused_selection==false" style="border: 1px solid #ccc; margin-bottom: 10px;">
+					</div>
+					 -->
+					<div v-else-if="tag_settings_type!='new'&&focused_type&&focused_selection==false" style=" margin-bottom: 10px;">
+
 						<div v-if="focused_tree.length>0" >
 							<div v-if="focused_tree.length>5" class="tag_btn" v-on:click="set_focus_to(5)" >{{ focused_tree[5]['a'] }}</div>
 							<div v-if="focused_tree.length>4" class="tag_btn" v-on:click="set_focus_to(4)" >{{ focused_tree[4]['a'] }}</div>
@@ -141,12 +141,70 @@
 							<div v-if="focused_tree.length>1" class="tag_btn" v-on:click="set_focus_to(1)" >{{ focused_tree[1]['a'] }}</div>
 							<div v-if="focused_tree.length>0" class="tag_btn tag_btn_a" >{{ focused_tree[0]['a'] }}</div>
 						</div>
-						<div style="padding:5px;">
-							<div id="raw_html_block" style="display: relative; width:100%; height:300px;" ></div>
+
+<!-- 						<ul class="nav nav-tabs">
+							<li class="nav-item">
+							<a v-bind:class="{'nav-link':true, 'active':tag_settings_tab=='html'}" href="#" v-on:click="tag_settings_tab='html'">Html Edit</a>
+							</li>
+							<li class="nav-item">
+							<a v-bind:class="{'nav-link':true, 'active':tag_settings_tab=='settings'}" href="#" v-on:click="tag_settings_tab='settings'">Tag Settings</a>
+							</li>
+							<li class="nav-item" v-if="focused_img">
+							<a v-bind:class="{'nav-link':true, 'active':tag_settings_tab=='IMG'}" href="#" v-on:click="tag_settings_tab='IMG'">Image Settings</a>
+							</li>
+							<li class="nav-item" v-if="focused_td">
+							<a v-bind:class="{'nav-link':true, 'active':tag_settings_tab=='TD'}" href="#" v-on:click="tag_settings_tab='TD'">Table Cell Settings</a>
+							</li>
+							<li class="nav-item" v-if="focused_table">
+							<a v-bind:class="{'nav-link':true, 'active':tag_settings_tab=='TABLE'}" href="#" v-on:click="tag_settings_tab='TABLE'">Table Settings</a>
+							</li>
+						</ul> -->
+
+						<div style="padding:10px; border:1px solid #ccc;">
+							<div>Markup</div>
+							<div id="raw_html_block" style="border:1px solid #ccc; display: relative; width:100%; font-size:1.1rem; height:200px;" ></div>
 							<!-- <textarea class="form-control form-control-sm" style="min-height: 200px;" v-model="tag_settings_html"></textarea> -->
 							<!-- <div>----------</div> -->
 							<div><input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="tag_settings_html_update" ></div>
 						</div>
+						<div style="padding:10px; border:1px solid #ccc;">
+								<div>Tag Attributes:</div>
+								<table class="table table-bordered table-sm">
+									<tr>
+										<td width="150">class</td>
+										<td>{{ focused_attributes['class'] }}</td>
+										<td></td>
+									</tr>
+									<tr>
+										<td width="150">style</td>
+										<td>{{ focused_attributes['style'] }}</td>
+										<td></td>
+									</tr>
+									<template v-for="ad,ai in focused_attributes">
+									<tr v-if="ai!='class'&&ai!='style'">
+										<td>{{ ai }}</td>
+										<td><input type="text" class="form-control form-control-sm" v-bind:value="focused_attributes[ai]" ></td>
+										<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="del_tag_attribute(ai)" ></td>
+									</tr>
+									</template>
+									<tr>
+										<td><input type="text" class="form-control form-control-sm" v-model="html_tag_attribute" placeholder="New Attribute"></td>
+										<td><input type="button" class="btn btn-outline-dark btn-sm" value="+" v-on:click="add_tag_attribute()" ></td>
+										<td></td>
+									</tr>
+								</table>
+
+						</div>
+						<div v-show="focused_img" style="padding:10px; border:1px solid #ccc;">
+							<div>Image Settings</div>
+						</div>
+						<div v-show="focused_td" style="padding:10px; border:1px solid #ccc;">
+							<div>Table Cell Settings</div>
+						</div>
+						<div v-show="focused_table" style="padding:10px; border:1px solid #ccc;">
+							<div>Table Settings</div>
+						</div>
+
 					</div>
 				</div>
 			</div>

@@ -298,6 +298,9 @@
 								</template>
 							</div>
 						</template>
+						<template v-if="s2_dddddegats['k']['v']=='PushToQueue'" >
+							<pushtoqueue v-bind:ref="'stage_'+s2_iiiiiegats+'_ptq'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_ptq'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></pushtoqueue>
+						</template>
 						<template v-if="s2_dddddegats['k']['v']=='Respond'" >
 							<div>
 								<pre title="Object or Associative List" data-type="objecteditable" editable-type="O" data-for="stages" data-var="d:v" style="margin-bottom:5px;" >{{ s2_noitaton_tcejbo_teg(s2_dddddegats['d']['v']) }}</pre>

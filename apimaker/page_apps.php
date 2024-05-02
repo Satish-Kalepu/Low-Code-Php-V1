@@ -71,6 +71,15 @@ if( $config_param2 == "" ){
 }else if( $config_param2 == "objects" ){
 	require("page_apps_objects.php");
 
+}else if( $config_param2 == "codeexport" ){
+	require("page_apps_codeexport.php");
+
+}else if( $config_param2 == "events" ){
+	require("page_apps_events.php");
+
+}else if( $config_param2 == "tasks" ){
+	require("page_apps_tasks.php");
+
 }else if( $config_param1 ){
 	require("page_apps_home.php");
 }

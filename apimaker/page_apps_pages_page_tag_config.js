@@ -18,7 +18,7 @@ var tag_settings_configs = {
 			</div>`},
 	"Table": {"html":`<table class="table table-bordered table-striped table-sm" ><tbody><tr><td>Col 1</td><td>Col 2</td><td>Col 3</td></tr><tr><td>Col 1</td><td>Col 2</td><td>Col 3</td></tr></tbody></table>`},
 
-	"IMG": {"html":`<img src="" title="Image" />`},
+	"IMG": {"html":`<img src="" alt="Image" />`},
 	"Figure": {"html":`<figure class="figure">
 		  <img src="..." class="figure-img img-fluid rounded" alt="...">
 		  <figcaption class="figure-caption">A caption for the above image.</figcaption>

@@ -159,10 +159,10 @@ class api_engine{
 			$s2_egats_gnitrats = $s2_ssssnoitpo["start_from_stage"];
 		}
 		$s2_oooot_pmuj = 0;
-		$s2_ttnc_poolf=0;
-		$s2_spool_xamf=5000;
-		$s2_verp_iegatsf=0;
-		for($s2_iiiiegatsf=0;$s2_iiiiegatsf<sizeof($this->s2_eeeeenigne["engine"]['stages']);$s2_iiiiegatsf++){
+		$s2_ttnc_poolf = 0;
+		$s2_spool_xamf = 5000;
+		$s2_verp_iegatsf = 0;
+		for( $s2_iiiiegatsf=0; $s2_iiiiegatsf<sizeof($this->s2_eeeeenigne["engine"]['stages']); $s2_iiiiegatsf++ ){
 			$s2_ttnc_poolf++;
 			if( $s2_ttnc_poolf >= $s2_spool_xamf ){
 				$this->response['statusCode'] = 500;
@@ -573,6 +573,9 @@ class api_engine{
 						$this->s2_ggggggggol[] = "Label not found!";
 					}
 				}
+				if( $s2_ddddegatsf['k']['v'] == "PushToQueue" ){
+					$val = $this->s2_eueuq_ot_hsup( $s2_ddddegatsf );
+				}
 				if( $s2_ddddegatsf['k']['v'] == "Respond" ){
 					//print_pre( $this->s2_tttttluser );
 					$this->s2_ggggggggol[] = "Respond";
@@ -863,11 +866,11 @@ class api_engine{
 			}else{ // variable commands
 				if( $s2_ddddegatsf['k']['v'] != "None" && $s2_ddddegatsf['k']['v'] != "none" ){
 					if( $this->s2_ttttttessi( $s2_ddddegatsf['k']['v'] ) ){
-						//print_pre( $s2_ddddegatsf['k'] );//exit;
+						//print_pre( $s2_ddddegatsf['k'] ); //exit;
+						//echo $s2_ddddegatsf['k']['v'] . "\n";
 						$var = $s2_ddddegatsf['k']['v'];
 						if( $s2_ddddegatsf['k']['vs']['d']['self'] && $s2_ddddegatsf['k']['vs']['d']['replace'] ){
 							$newval = $this->s2_eeulav_teg(['t'=>"V", 'v'=>$s2_ddddegatsf['k']]);
-							//print_pre( $newval );exit;
 							$this->s2_tluser_tes( $var, $newval );
 						}else{
 							$this->s2_eeulav_tes($s2_ddddegatsf['k']);
@@ -1538,7 +1541,7 @@ class api_engine{
 		// print_pre( "do_inline_function" );
 		// print_pre( $v );
 		// print_pre( $vs ); 
-		// exit;
+		// //exit;
 		$rt = true;
 		$inputs = $vs['d']['inputs'];
 		if( $v['t'] == "N" ){
@@ -1546,7 +1549,10 @@ class api_engine{
 
 			}
 			if( $vs['v'] == "set" ){
-				return $this->s2_eeulav_teg($inputs['p2']['v']);
+				// return $this->s2_eeulav_teg($inputs['p2']['v']);
+				//  $v['v'] = $inputs['p2']['v'];
+				$v['v'] = $this->s2_eulav_erup_teg( $inputs['p2']['v'] );
+				return $v;
 			}
 			if( $vs['v'] == "add" ){
 				$add = $this->s2_eeulav_teg( $inputs['p2']['v'] );
@@ -1590,7 +1596,11 @@ class api_engine{
 		}else if( $v['t'] == "T" ){
 			foreach( $inputs as $i=>$j ){}
 			if( $vs['v'] == "set" ){
-				return $this->s2_eeulav_teg($inputs['p2']['v']);
+				//print_r( $inputs );exit;
+				//$this->s2_eeulav_tes($inputs['p2']['v']);
+				//$v['v'] = $inputs['p2']['v'];
+				$v['v'] = $this->s2_eulav_erup_teg($inputs['p2']['v']);
+				return $v;
 			}
 			if( $vs['v'] == "toLowerCase" ){
 				$v['v'] = strtolower($v['v']);return $v;
@@ -1768,7 +1778,7 @@ class api_engine{
 				return $v;
 			}
 			if( $vs['v'] == "set" ){
-				$v = $this->s2_eeulav_teg($inputs['p2']['v']);
+				$v['v'] = $this->s2_eeulav_teg($inputs['p2']['v']);;
 				return ['t'=>"B", "v"=>true];
 			}
 			if( $vs['v'] == "setTemplate" ){
@@ -2511,17 +2521,35 @@ class api_engine{
 		$v = $this->s2_2eulav_tes( $x, $this->s2_tttttluser, $k );
 	}
 	function s2_2eulav_tes( $x, &$r, &$k ){
-		// print_pre( $x );
+		//echo "set value2 ";
+		//print_pre( $x );
 		// print_pre( $r );
 		$key = $x[0];
 		if( isset($r[ $key ]) ){
 			if( sizeof($x) > 1 ){
 				array_splice($x,0,1);
-				if( $r[ $key ]['t'] == "O" ){
-					$this->s2_2eulav_tes( $x, $r[ $key ]['v'], $k);
+				if( $x[0] == "[]" ){
+					array_splice($x,0,1);
+					$index = array_splice($x,0,1)[0];
+					if( $r[ $key ]['t'] == "L" ){
+						if( isset($r[ $key ]['v'][ (int)$index ]) ){
+							if( sizeof($x) > 0 ){
+								return $this->s2_2eulav_tes( $x, $r[ $key ]['v'][ (int)$index ]['v'], $k );
+							}
+						}
+					}
+				}else{
+					if( $r[ $key ]['t'] == "O" ){
+						$this->s2_2eulav_tes( $x, $r[ $key ]['v'], $k);
+					}
 				}
 			}else{
-				$this->s2_noitcnuf_enilni_od( $r[ $key ], $k['vs'] );
+				// echo "inline function";
+				// print_r( $r[ $key ] );
+				// print_r( $k['vs'] );
+				if( isset($k['vs']['v']) && $k['vs']['v'] ){
+					$this->s2_noitcnuf_enilni_od( $r[ $key ], $k['vs'] );
+				}
 			}
 		}
 	}
@@ -2550,7 +2578,9 @@ class api_engine{
 			//echo "get value\n" ; print_pre( $s2_iiiiiiiiii );
 			if( $s2_iiiiiiiiii['t']=="V" ){
 				$val = $this->s2_eeulav_teg( $s2_iiiiiiiiii['v']['v'] );
+				//print_r( $val );
 				if( isset( $s2_iiiiiiiiii['v']['vs']['v'] ) ){
+					//print_r( $s2_iiiiiiiiii['v']['vs']['v'] );
 					if( trim($s2_iiiiiiiiii['v']['vs']['v']) != "" ){
 						$newval = $this->s2_noitcnuf_enilni_od( $val, $s2_iiiiiiiiii['v']['vs'], $s2_iiiiiiiiii['v']['v'] );
 						if( $s2_ggggggubed ){ echo "return3: "; print_r($newval); }
@@ -2603,6 +2633,7 @@ class api_engine{
 		}
 	}
 	function s2_ttttttessi( $s2_iiiiiiiiii ){
+		//echo "isset: " . $s2_iiiiiiiiii; 
 		$s2_vvvvvvvvvv = "";
 		if( is_array($s2_iiiiiiiiii) ){
 			if( $s2_iiiiiiiiii['t'] && isset($s2_iiiiiiiiii['v']) ){
@@ -2625,10 +2656,35 @@ class api_engine{
 		return false;
 	}
 	function s2_22222tessi( $x, $r ){
+		//echo "isset2: "; print_r( $x ); print_r( $r );
 		$key = $x[0];
 		if( isset($r[ $key ]) ){
+			//echo $key . " exists \n";
 			if( sizeof($x) > 1 ){
 				array_splice($x,0,1);
+				//print_r( $x );
+				if( $x[0] == "[]" ){
+					array_splice($x,0,1);
+					//print_r( $x );
+					$index = array_splice($x,0,1)[0];
+					if( $r[ $key ]['t'] == "L" ){
+						//echo "ys" . $index;
+						//print_r( $r[ $key ]['v'] );
+						if( isset($r[ $key ]['v'][ (int)$index ]) ){
+							//echo "xxx";
+							if( sizeof($x) > 0 ){
+								//echo "xxx";
+								return $this->s2_22222tessi( $x, $r[ $key ]['v'][ (int)$index ]['v'] );
+							}else{
+								return true;
+							}
+						}else{
+							return false;
+						}
+					}else{
+						return false;
+					}
+				}
 				if( $r[ $key ]['t'] == "O" ){
 					return $this->s2_22222tessi($x, $r[ $key ]['v']);
 				}else{
@@ -3985,6 +4041,25 @@ class api_engine{
 		}
 		$this->s2_tcejbo_ot_tupni($res);
 		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
+	},
+	function s2_eueuq_ot_hsup( $s2_ddddegatsf ){
+		global $config_global_engine;
+		if( $s2_ddddegatsf['d']['queue']['v']['i']['v'] ){
+			$_c = $this->s2_nnnnnnnnoc->generate_id();
+			$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_queue_".$s2_ddddegatsf['d']['queue']['v']['i']['v'], [
+				'_id'=>$s2_ddddegatsf['d']['queue']['v']['i']['v'].":".$_c,
+				'app_id'=>$this->s2_dddddi_ppa,
+				'q_id'=>$s2_ddddegatsf['d']['queue']['v']['i']['v'],
+				'data'=>$this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['inputs'] ),
+				'm_i'=>date("Y-m-d H:i:s")
+			]);
+			if( $res['status'] == "success" ){
+				$res = [
+					"status"=>"success",
+					"session_key"=>$res['inserted_id']
+				];
+			}
+		}
 	}
 }
 

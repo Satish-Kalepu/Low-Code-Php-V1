@@ -343,6 +343,28 @@ if( $_POST['action'] == "context_load_things" ){
 				$things[] = ["l"=>"external:".$j['des'] . ":" . $jj['des'], "i"=>"table:".$j['engine'].":".$jj['_id']];
 			}
 		}
+	}else if( $_POST['thing'] == "TaskQueue" ){
+		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_queues", [
+			'app_id'=>$_POST['app_id']
+		],[
+			'sort'=>['topic'=>1],
+			'limit'=>200
+		]);
+		foreach( $res['data'] as $i=>$j ){
+			$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
+				'app_id'=>$_POST['app_id'],
+				"_id"=>$j['fn_vid']
+			],[
+				'projection'=>['engine.input_factors'=>true ]
+			]);
+			if( $res2['data'] ){
+				$things[] = [
+					"l"=>['t'=>"T", "v"=>$j['topic']], 
+					"i"=>['t'=>"T", "v"=>$j['_id']],
+					"inputs"=>$res2['data']['engine']['input_factors']
+				];
+			}
+		}
 	
 	}else{
 		$things = [];

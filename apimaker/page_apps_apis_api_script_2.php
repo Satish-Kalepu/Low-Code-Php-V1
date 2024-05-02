@@ -22,7 +22,7 @@
 		"mongodbv1", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
 		"mysqldbv1", "mysqlq", "mysqlp", "mysqld", "mysqls", "mysql_field",
 		"internal_table",
-		"httprequest", "akv1", "akgenv1", "akass",
+		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue",
 	];
 
 	foreach( $components as $i=>$j ){
@@ -211,6 +211,7 @@ var app = s2_ssssssssss({
 						"SetLabel",
 						"JumpToLabel",
 						"Sleep",
+						"PushToQueue"
 					]
 				},
 				{
@@ -2449,6 +2450,10 @@ var app = s2_ssssssssss({
 						}
 					}
 				}
+				// if( s2_dddddegats['k']['v'] == "PushToQueue" ){
+				// 	var oo = s2_dddddegats['d']['output']['v']+'';
+				// 	o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['inputs'] );
+				// }
 				if( s2_dddddegats['k']['v'] == "HTTPRequest" ){
 					var oo = s2_dddddegats['d']['data']['output']['v']+'';
 					o[ oo ] = {"t": "O", "_":s2_dddddegats['d']['data']['struct']};
@@ -2468,6 +2473,10 @@ var app = s2_ssssssssss({
 					if( this.s2_iiiiiiiipa['output-type'] != "application/json"  && this.property_type == "api" ){
 						er = er + " incorrect page type and response format combination";
 					}
+				}
+				if( '_struct' in s2_dddddegats['d'] ){
+					var oo = s2_dddddegats['d']['output']['v']+'';
+					o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['_struct'] );
 				}
 
 				this.s2_eeeeenigne['stages'][ s2_iiiiiegats ]['er'] = er;
@@ -3013,15 +3022,15 @@ var app = s2_ssssssssss({
 						return JSON.stringify(s);
 					}catch(e){
 						this.s2_rorre_tset = "json parse failed";
-						if( v.length > 1024 ){
-							return v.substr(0,1024) + " ...striped";
+						if( v.length > 10240 ){
+							return v.substr(0,10240) + " ...striped";
 						}else{
 							return v;
 						}
 					}
 				}else{
-					if( v.length > 1024 ){
-						return v.substr(0,1024) + " ...striped";
+					if( v.length > 10240 ){
+						return v.substr(0,10240) + " ...striped";
 					}else{
 						return v;
 					}

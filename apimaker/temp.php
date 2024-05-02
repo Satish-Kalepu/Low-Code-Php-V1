@@ -1,4 +1,10 @@
 <?php
+header("content-type: text/plain");
+
+for($i=0;$i<1000;$i++){
+	echo uniqid("",true) . "\n";
+}
+exit;
 
 $pb = "-----BEGIN CERTIFICATE-----
 MIIGQTCCBSmgAwIBAgIQBJGthhu7H/sDblDs9WHkiDANBgkqhkiG9w0BAQsFADBg
