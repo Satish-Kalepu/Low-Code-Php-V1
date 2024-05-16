@@ -9,6 +9,20 @@ if( !isset($app['internal_redis']) ){
 	$saved = true;
 }
 
+/*$redis_con = new Redis();
+$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
+for ($x = 0; $x <= 100; $x++) {
+	$set = $redis_con->set("token:function:conversion:".$x,10);
+	$set = $redis_con->expire("token:function:conversion:".$x,6000);
+}*/
+
+function v_type($vt){
+	if( $vt == 1 ){return "string";}else 
+	if( $vt == 2 ){return "set";} else
+	if( $vt == 3 ){return "list";} else 
+	if( $vt == 4 ){return "zset";} else 
+	if( $vt == 5 ){return "hash";} else {return $vt;}
+}
 
 if( $_POST['action'] == 'redis_save_settings' ){
 
@@ -87,14 +101,13 @@ if( $_POST['action'] == 'redis_load_keys' ){
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
 	}
 
-
-	$keys = [];
-	$it = null;
-	$pattern = "*";
-	$limit = 1000;
-	//$k = $redis_con->scan($it, $pattern, $limit);
+	if($_POST['keyword'] == "") {
+		$pattern = "*";
+	}else {
+		$pattern = $_POST['keyword'];
+	}
 	$k = $redis_con->keys($pattern);
-
+	
 	json_response(["status"=> "success", "keys"=>$k]);
 
 	exit;
@@ -129,14 +142,6 @@ if( $_POST['action'] == 'redis_load_key' ){
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
 	}
 
-	function v_type($vt){
-		if( $vt == 1 ){return "string";}else 
-		if( $vt == 2 ){return "set";} else
-		if( $vt == 3 ){return "list";} else 
-		if( $vt == 4 ){return "zset";} else 
-		if( $vt == 5 ){return "hash";} else {return $vt;}
-	}
-
 	$type = v_type( $redis_con->type($key) );
 	$data = [
 		"type"=>$type,
@@ -159,6 +164,81 @@ if( $_POST['action'] == 'redis_load_key' ){
 	json_response([
 		"status"=> "success", 
 		"data"=>$data
+	]);
+	exit;
+}
+
+if($_POST['action'] == "redis_key_delete") {
+	if( $app['internal_redis']['enable'] === false ){
+		json_response("fail", "Key Value store is not enabled");
+	}
+	if( !isset($_POST['key']) ){
+		json_response("fail", "Key input missing");
+	}
+	$key = $_POST['key'];
+
+	$ops = [
+		'host' => $app['internal_redis']['host'],
+		'port' => (int)$app['internal_redis']['port'],
+		'connectTimeout' => 1,
+	];
+	if( $app['internal_redis']['username'] && $app['internal_redis']['password'] ){
+		$ops['auth'] = [$app['internal_redis']['username'], $app['internal_redis']['password']];
+	}
+	if( $app['internal_redis']['tls'] === true ){
+		$ops['ssl'] = ['verify_peer' => true];
+	}
+
+	$redis_con = new Redis();
+	if( $app['internal_redis']['username'] && $app['internal_redis']['password'] ){
+		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1, '', 0, 0, ['auth'=>[ $app['internal_redis']['username'], $app['internal_redis']['password'] ]] );
+	}else{
+		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
+	}
+
+	$redis_delete = $redis_con->del($_POST['key']);
+
+	json_response([
+		"status"=> "success", 
+		"data"=>$redis_delete
+	]);
+	exit;
+}
+
+if($_POST['action'] == "redis_key_edit") {
+	if( $app['internal_redis']['enable'] === false ){
+		json_response("fail", "Key Value store is not enabled");
+	}
+	if( !isset($_POST['key']) ){
+		json_response("fail", "Key input missing");
+	}
+	$key = $_POST['key'];
+
+	$ops = [
+		'host' => $app['internal_redis']['host'],
+		'port' => (int)$app['internal_redis']['port'],
+		'connectTimeout' => 1,
+	];
+	if( $app['internal_redis']['username'] && $app['internal_redis']['password'] ){
+		$ops['auth'] = [$app['internal_redis']['username'], $app['internal_redis']['password']];
+	}
+	if( $app['internal_redis']['tls'] === true ){
+		$ops['ssl'] = ['verify_peer' => true];
+	}
+
+	$redis_con = new Redis();
+	if( $app['internal_redis']['username'] && $app['internal_redis']['password'] ){
+		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1, '', 0, 0, ['auth'=>[ $app['internal_redis']['username'], $app['internal_redis']['password'] ]] );
+	}else{
+		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
+	}
+
+	$edit_record = $redis_con->set($key,$_POST['data']);
+	$edit_record_time = $redis_con->expire($key,$_POST['time']);
+
+	json_response([
+		"status"=> "success", 
+		"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
 	]);
 	exit;
 }

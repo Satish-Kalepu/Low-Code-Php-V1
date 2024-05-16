@@ -17,3 +17,9 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: stage 
     ports:
       - "27017:27017"
+
+  redis:
+    container_name: phpengine_redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
