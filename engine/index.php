@@ -34,6 +34,7 @@
 
 	$cache_refresh=false;
 	$current_dir = __DIR__;
+
 	if( $deployment_mode == "apache" ){
 		if( $execution_mode == "local_folder" ){
 			$config_paths = [
@@ -70,8 +71,6 @@
 		}else{
 			require( "../config_global_engine.php" );
 		}
-
-		
 
 	}else if( $deployment_mode == "lambda" ){
 		
@@ -156,7 +155,9 @@
 		}
 	}
 
-function index_normal(){ //normal apache handling
+function index_normal(){
+
+	//normal apache handling
 
 	global $mongodb_con;
 	global $config_global_apimaker_engine;
@@ -413,7 +414,6 @@ function index_normal(){ //normal apache handling
 }
 
 function index_lambda( $event ){ //lambda function handling
-	echo "Event Called\n";
 
 	global $request_context;
 	global $response_context;
@@ -503,6 +503,7 @@ function index_lambda( $event ){ //lambda function handling
 	}
 
 }
+
 function process_lambda_request(){
 	global $request_context;
 	global $config_mime_types;
