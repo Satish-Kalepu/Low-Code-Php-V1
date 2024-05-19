@@ -73,6 +73,26 @@ if( isset($config_session_name) ){
 	}
 }
 
+$g =$_GET;
+unset($g['request_url']);
+$ac = [
+	"ip"=>$_SERVER['REMOTE_ADDR'],
+	"m"=>$_SERVER['REQUEST_METHOD'],
+	"u"=>$_SERVER['REQUEST_URI'],
+	"ct"=>$_SERVER['CONTENT_TYPE'],
+	"ua"=>$_SERVER['HTTP_USER_AGENT'],
+	"s"=>"http",
+	"sid"=>session_id()
+];
+if( sizeof($g) ){
+	$ac['g'] = $g;
+}
+if( sizeof($_POST) ){
+	$ac['p'] = $_POST;
+}
+$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_zlog_actions" , $ac);
+$action_log_id = $res['inserted_id'];
+
 if( $config_page == "config_api" ){
 	require("page_config_api_controll.php");
 	exit;

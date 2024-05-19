@@ -19,7 +19,7 @@
 		"plugin_database",
 		"vdt", "vdtm", "vts",
 		"thing", 
-		"mongodbv1", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
+		"mongodbv1", "mongodbv2", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
 		"mysqldbv1", "mysqlq", "mysqlp", "mysqld", "mysqls", "mysql_field",
 		"internal_table",
 		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue",
@@ -143,6 +143,8 @@ var app = s2_ssssssssss({
 				"NL": "Null", 
 				"BIN": "Binary",
 				"B64": "Base64",
+				"MongoQ": "MongoDB Query",
+				"MysqlQ": "Mysql Query",				
 			},
 			"s2_1sepyt_atad"		: {
 				"V": "Variable",
@@ -150,20 +152,22 @@ var app = s2_ssssssssss({
 				"N": "Number",
 				"B": "Boolean",
 				"NL": "Null", 
+				"L": "List",
+				"O": "Assoc List",
 				"D": "Date",
 				"DT": "DateTime",
 				"TS": "Timestamp",
 			},
 			"s2_2sepyt_atad"		: {
-				"TI": "Thing Item",
-				"TH": "Thing",
-				"THL": "Thing List",
-				"L": "List",
-				"O": "Assoc List",
 				"TT": "MultiLine Text",
 				"HT": "HTML Text",
 				"BIN": "Binary",
 				"B64": "Base64",
+				"TI": "Thing Item",
+				"TH": "Thing",
+				"THL": "Thing List",
+				"MongoQ": "MongoDB Query",
+				"MysqlQ": "Mysql Query",
 			},
 			"s2_sepyt_tupni"		: {
 				"T": "Text",
@@ -852,6 +856,7 @@ var app = s2_ssssssssss({
 				}
 			}
 			//console.log();
+			this.s2_ooooooohce({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
 			if( el_data_type ){
 				var t = el_data_type.getAttribute("data-type");
 				if( t == "type_pop" ){
@@ -2474,9 +2479,11 @@ var app = s2_ssssssssss({
 						er = er + " incorrect page type and response format combination";
 					}
 				}
-				if( '_struct' in s2_dddddegats['d'] ){
-					var oo = s2_dddddegats['d']['output']['v']+'';
-					o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['_struct'] );
+				if( typeof(s2_dddddegats['d']) == "object" ){
+					if( 'struct' in s2_dddddegats['d'] ){
+						var oo = s2_dddddegats['d']['output']['v']+'';
+						o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['_struct'] );
+					}
 				}
 
 				this.s2_eeeeenigne['stages'][ s2_iiiiiegats ]['er'] = er;
@@ -3497,6 +3504,19 @@ var app = s2_ssssssssss({
 						new_val={"v":"<?=date("Y-m-d H:i:s") ?>", "t": "DT", "tz":"UTC+00:00"};
 					}else if( val == "TS" ){
 						new_val=<?=time() ?>;
+					}else if( val == "MongoQ" ){
+						new_val=[{
+							"f":{"t":"T", "v":"field"},
+							"c":{"t":"T", "v":"="},
+							"v":{"t":"T", "v":"value"},
+						}];
+					}else if( val == "MysqlQ" ){
+						new_val=[{
+							"f":{"t":"T", "v":"field"},
+							"c":{"t":"T", "v":"="},
+							"v":{"t":"T", "v":"value"},
+							"n":{"t":"T", "v":"and"}
+						}];
 					}else if( val == "B" ){
 						new_val=true;
 					}else if( val in this.s2_atad_snoitcnuf ){

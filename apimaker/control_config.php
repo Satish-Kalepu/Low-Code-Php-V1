@@ -25,8 +25,8 @@ if( isset($config_global_apimaker['config_mongo_username']) && $config_global_ap
 		$config_global_apimaker['config_mongo_username'], 
 		$config_global_apimaker['config_mongo_password'], 
 		$config_global_apimaker['config_mongo_authSource'], 
-		$config_global_apimaker['config_mongo_tls'
-	] );
+		$config_global_apimaker['config_mongo_tls']
+	);
 }else{
 	$mongodb_con = new mongodb_connection( $config_global_apimaker['config_mongo_host'], $config_global_apimaker['config_mongo_port'], $config_global_apimaker['config_mongo_db'] );
 }

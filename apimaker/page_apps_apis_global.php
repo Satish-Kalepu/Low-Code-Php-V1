@@ -50,7 +50,7 @@
 								</h2>
 								<div v-bind:id="'collapse'+d['_id']" class="accordion-collapse collapse" v-bind:aria-labelledby="d['_id']" data-bs-parent="#apis_list">
 									<div class="accordion-body">
-										<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="show_test5('apis',ti)">Test</div>
+										<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="test_user_apis__('apis',ti)">Test</div>
 										<p>{{ d['des'] }}</p>
 										<div>{{ d['input-method'] }} {{ test_url__ }}{{ d['path'] }}{{ d['name'] }}</div>
 								      	<div v-if="d['input-method']=='POST'">Content-Type: {{ d['input-type'] }}</div>
@@ -418,7 +418,7 @@
 			<!-- <pre>{{ apis__[ test_type__ ][ test_table_id__ ] }}</pre> -->
 
 			<div>URL</div>
-			<div>POST {{ test_url__ }}{{ test_path__ }}</div>
+			<div>{{ test_api_method__ }} {{ test_url__ }}{{ test_path__ }}</div>
 			<div>Access-Key:</div>
 			<div><input type="text" class="form-control form-control-sm" v-model="access_token__" ></div>
 			<div style="float:left;">
@@ -430,7 +430,17 @@
 
 			<div>Body</div>
 			<!-- <textarea spellcheck="false" class="form-control form-control-sm" style="height:200px;" v-model="test_data__"></textarea> -->
-			<template v-if="'content-type' in test_thing__" >
+			<table v-if="test_api_method__=='GET'" class="table table-bordered table-sm w-auto" >
+				<tr v-for="dd,di in test_thing__" >
+					<td>{{ di }}</td>
+					<td>
+						<input v-if="dd['type']=='file'" type="file" class="form-control form-control-sm" v-bind:id="'form_'+di">
+						<input v-else-if="dd['type']=='boolean'" type="checkbox" class="form-control form-control-sm" v-model="dd['value']">
+						<input v-else v-bind:type="dd['type']" class="form-control form-control-sm" v-model="dd['value']">
+					</td>
+				</tr>
+			</table>
+			<template v-else-if="'content-type' in test_thing__" >
 				<div v-if="test_thing__['content-type']=='application/json'" id="json_editor_block" style="display: relative; width:100%; height:200px;resize:both; font-size:1rem;" ></div>
 				<table v-else class="table table-bordered table-sm w-auto" >
 					<tr v-for="dd,di in test_thing__['formdata']" >
@@ -609,6 +619,15 @@ var app = Vue.createApp({
 						return false;
 					}
 				}
+			}else{
+				var v = this.ace_editor.getValue();
+				console.log( JSON.stringify(v) );
+				var vquery = [];
+				for( var i in v ){
+					vquery.push( i + "=" + encodeURIComponent( v[ i ] ) );
+				}
+				console.log( JSON.stringify(vquery) );
+				vquery = vquery.join("&");
 			}
 			var vh = {};
 			if( this.access_token__ != "" ){
@@ -644,7 +663,7 @@ var app = Vue.createApp({
 					}
 				});
 			}else{
-				axios.get( this.test_url__ + this.test_path__, vh ).then(response=>{
+				axios.get( this.test_url__ + this.test_path__ + "?"+vquery, vh ).then(response=>{
 					this.tmsg = "";
 					if( response.status == 200 ){
 						this.test_response__ = response;
@@ -843,7 +862,7 @@ var app = Vue.createApp({
 			this.test_popup__.show();
 			setTimeout(this.init_ace, 500);
 		},
-		show_test5: function(t,ti){
+		test_user_apis__: function(t,ti){
 			this.terr = "";
 			this.test_response__ = {};
 			this.test_error__ = {};
@@ -854,7 +873,11 @@ var app = Vue.createApp({
 			this.test_api_type__ = "";
 			this.test_api_method__ = this.apis[ 'apis' ][ ti ][ 'input-method' ];
 			this.test_path__ = this.apis[ 'apis' ][ ti ]['path'].substr(1,1000)+this.apis[ 'apis' ][ ti ]['name'];
-			this.test_data__ = this.apis[ 'apis' ][ ti ][ 'vpost' ];
+			if( this.test_api_method__ == "GET" ){
+				this.test_thing__ = this.apis[ 'apis' ][ ti ]['formdata'];
+			}else{
+				this.test_data__ = this.apis[ 'apis' ][ ti ][ 'vpost' ];
+			}
 			// console.log( this.test_data__ );
 			this.test_popup__ = new bootstrap.Modal( document.getElementById('popup_test__') );
 			this.test_popup__.show();

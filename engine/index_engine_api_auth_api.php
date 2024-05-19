@@ -1,67 +1,60 @@
 <?php
 
+function engine_auth_api( $api_slug, $post ){
 
+	//print_r( $post );exit;
+
+	global $mongodb_con;
+	global $app_id;
+	global $db_prefix;
 	if( $api_slug == "verify_session_key" ){
-		if( !isset($_POST['session-key']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Session Key required"]);exit;
-		}else if( !preg_match( "/^[a-f0-9]{24}$/", $_POST['session-key'] ) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Session Key incorrect"]);exit;
+		if( !isset($post['session-key']) ){
+			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key required"]) );
+		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['session-key'] ) ){
+			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key Incorrect"]) );
 		}
-		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", ["app_id"=>$app_id, '_id'=>$_POST['session-key']] );
+		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", ["app_id"=>$app_id, '_id'=>$post['session-key']] );
 		if( !$res['data'] ){
-			header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Session Expired"]);exit;
+			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key Expired"]) );
 		}
 		//print_r( $res['data'] );exit;
 		$e = $res['data']['expire'];
 		//echo ($e - time());
 		if( $e > time() && $res['data']['ips'][0] == $_SERVER['REMOTE_ADDR'] . "/32" ){
-			header("Content-Type: application/json");
-			echo json_encode(["status"=>"success", "error"=>"SessionOK"]);exit;
+			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"SessionOK"]) );
 		}else{
-			header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Session Expired", "e"=>($e - time()) ]);exit;
+			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Expired", "e"=>($e - time())]) );
 		}
 	}else if( $api_slug == "generate_access_token" ){
-
-		if( !isset($_POST['access_key']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Access Key required"]);exit;
-		}else if( !preg_match( "/^[a-f0-9]{24}$/", $_POST['access_key'] ) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Access Key incorrect"]);exit;
+		if( !isset($post['access_key']) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Access Key required"]) );
+		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['access_key'] ) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Access Key incorrect"]) );
 		}
 
-		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", [ "app_id"=>$app_id, '_id'=>$_POST['access_key']]);
+		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", [ "app_id"=>$app_id, '_id'=>$post['access_key']]);
 		if( !$res['data'] ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Access Key Not Found"]);exit;
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Access Key Not Found"]) );
 		}
 		if( !isset($res['data']['allow_sessions']) ){
-			http_response_code(500);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Access Key Policy does not allow sub sessions"]);exit;
+			respond(500, "application/json", [], json_encode(["status"=>"fail", "error"=>"Access Key Policy does not allow sub sessions"]) );
 		}else if( $res['data']['allow_sessions'] === false ){
-			http_response_code(500);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Access Key Policy does not allow sub sessions"]);exit;
+			respond(500, "application/json", [], json_encode(["status"=>"fail", "error"=>"Access Key Policy does not allow sub sessions"]) );
 		}
-		if( isset($_POST['expire_minutes']) ){
-			if( !is_numeric($_POST['expire_minutes']) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Incorrect expire minutes"]);exit;
+		if( isset($post['expire_minutes']) ){
+			if( !is_numeric($post['expire_minutes']) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Incorrect expire minutes"]) );
 			}
-			$expire = (int)$_POST['expire_minutes'];
+			$expire = (int)$post['expire_minutes'];
 		}else{
 			$expire = 2;
 		}
 		$expire = time() + ($expire*60);
-		if( isset($_POST['client_ip']) ){
-			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $_POST['client_ip']) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Incorrect client IP"]);exit;
+		if( isset($post['client_ip']) ){
+			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $post['client_ip']) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Incorrect client ip"]) );
 			}
-			$user_ip = $_POST['client_ip'];
+			$user_ip = $post['client_ip'];
 		}else{
 			$user_ip = $_SERVER['REMOTE_ADDR'] . "/32";
 		}
@@ -78,57 +71,47 @@
 		$key['updated']= date("Y-m-d H:i:s");
 		
 		$res = $mongodb_con->insert( $db_prefix . "_user_keys", $key);
-		header("Content-Type: application/json");
-		echo json_encode(["status"=>"success", "access-key"=>$res['inserted_id'] ]);exit;
+		respond(200, "application/json", [], json_encode(["status"=>"success", "access-key"=>$res['inserted_id'] ]) );
 
 	}else if( $api_slug == "assume_session_key" ){
 
-		if( !isset($_POST['role_id']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Role id"]);exit;
-		}else if( !preg_match( "/^[a-f0-9]{24}$/", $_POST['role_id'] ) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Role id incorrect"]);exit;
+		if( !isset($post['role_id']) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Role Id"]) );
+		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['role_id'] ) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Role ID Incorrect"]) );
 		}
 
-		$res = $mongodb_con->find_one( $db_prefix . "_user_roles", [ "app_id"=>$app_id, '_id'=>$_POST['role_id']]);
+		$res = $mongodb_con->find_one( $db_prefix . "_user_roles", [ "app_id"=>$app_id, '_id'=>$post['role_id']]);
 		if( !$res['data'] ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Role Not Found"]);exit;
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Role not found"]) );
 		}
-		if( !isset($_POST['expire_type']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Expire type missing"]);exit;
+		if( !isset($post['expire_type']) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Expire type missing"]) );
 		}
-		if( $_POST['expire_type'] == "In" ){
-			if( !isset($_POST['expire_minutes']) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Expire minutes missing"]);exit;
+		if( $post['expire_type'] == "In" ){
+			if( !isset($post['expire_minutes']) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Expire minutes missing"]) );
 			}
-			$expire = time() + ( (int)$_POST['expire_minutes'] * 60 );
-		}else if( $_POST['expire_type'] == "At" ){
-			if( !isset($_POST['expire_at']) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Expire Timestamp missing"]);exit;
+			$expire = time() + ( (int)$post['expire_minutes'] * 60 );
+		}else if( $post['expire_type'] == "At" ){
+			if( !isset($post['expire_at']) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Expire timestamp missing"]) );
 			}
-			$expire = strtotime( $_POST['expire_at'] );
+			$expire = strtotime( $post['expire_at'] );
 		}
-		if( isset($_POST['client_ip']) ){
-			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $_POST['client_ip']) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Incorrect client IP"]);exit;
+		if( isset($post['client_ip']) ){
+			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/", $post['client_ip']) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Incorrect client ip"]) );
 			}
-			$user_ip = $_POST['client_ip'];
+			$user_ip = $post['client_ip'];
 		}else{
 			$user_ip = $_SERVER['REMOTE_ADDR'] . "/32";
 		}
-		if( !isset($_POST['max_hits']) || !is_numeric($_POST['max_hits']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Max hits missing"]);exit;
+		if( !isset($post['max_hits']) || !is_numeric($post['max_hits']) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Max hits missing"]) );
 		}
-		if( !isset($_POST['hits_per_minute']) || !is_numeric($_POST['hits_per_minute']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Hits per minute missing"]);exit;
+		if( !isset($post['hits_per_minute']) || !is_numeric($post['hits_per_minute']) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Hits per minute missing"]) );
 		}
 
 		$key = [];
@@ -140,69 +123,60 @@
 		$key['expiret'] = new \MongoDB\BSON\UTCDateTime($expire*1000);
 		$key['t'] = "uk";
 		$key['hits'] = 0;
-		$key['maxhits'] = $_POST['max_hits'];
-		$key['hitsmin'] = $_POST['hits_per_minute'];
+		$key['maxhits'] = $post['max_hits'];
+		$key['hitsmin'] = $post['hits_per_minute'];
 		$key['updated']= date("Y-m-d H:i:s");
 
 		$res = $mongodb_con->insert( $db_prefix . "_user_keys", $key);
-		header("Content-Type: application/json");
-		echo json_encode(["status"=>"success", "session-key"=>$res['inserted_id'] ]);exit;
+		respond(200, "application/json", [], json_encode(["status"=>"success", "session-key"=>$res['inserted_id'] ]) );
 
 	}else if( $api_slug == "user_auth" ||  $api_slug == "user_auth_captcha"  ){
 
-		if( !isset($_POST['username']) || !isset($_POST['password']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Username or Password wrong"]);exit;
-		}else if( !preg_match( "/^[a-z][a-z0-9\-]{2,50}$/", $_POST['username'] ) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Username or password wrong.."]);exit;
+		if( !isset($post['username']) || !isset($post['password']) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Username or Password wrong ."]) );
+		}else if( !preg_match( "/^[a-z][a-z0-9\-]{2,50}$/", $post['username'] ) ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Username or Password wrong .. "]) );
 		}
 
 		if( $api_slug == "user_auth_captcha" ){
-			if( !preg_match( "/^[a-f0-9]{24}$/", $_POST['code'] ) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"CaptchaCode incorrect"]);exit;
+			if( !preg_match( "/^[a-f0-9]{24}$/", $post['code'] ) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"CaptchaCode incorrect"]) );
 			}
-			$cap_res = $mongodb_con->find_one( $db_prefix . "_captcha", ['_id'=>$_POST['code']] );
+			//echo $db_prefix . "_captcha";exit;
+			$cap_res = $mongodb_con->find_one( $db_prefix . "_captcha", ['_id'=>$post['code']] );
 			if( !$cap_res['data'] ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Captcha mismatch..."]);exit;
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Captcha mismatch..."]) );
 			}
-			if( $cap_res['data']['c'] != $_POST['captcha'] ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Captcha mismatch..."]);exit;
+			if( $cap_res['data']['c'] != $post['captcha'] ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Captcha mismatch... .."]) );
 			}else{
-				$mongodb_con->delete_one( $db_prefix . "_captcha", ['_id'=>$_POST['code']] );
+				$mongodb_con->delete_one( $db_prefix . "_captcha", ['_id'=>$post['code']] );
 			}
 			//echo "captcha check pending";exit;
 		}
 
-		$user_res = $mongodb_con->find_one( $db_prefix . "_user_pool", ['username'=>$_POST['username']]);
+		$user_res = $mongodb_con->find_one( $db_prefix . "_user_pool", ['username'=>$post['username']]);
 		if( !$user_res['data'] ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Username or password wrong..."]);exit;
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Username or password wrong..."]) );
 		}
 		
-		if( hash("whirlpool",$_POST['password']."123456") != $user_res['data']['password'] ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Username or password wrong...."]);exit;
+		if( hash("whirlpool",$post['password']."123456") != $user_res['data']['password'] ){
+			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Username or password wrong..."]) );
 		}
-		if( isset($_POST['expire_minutes']) ){
-			if( !is_numeric($_POST['expire_minutes']) ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Incorrect expire minutes"]);exit;
+		if( isset($post['expire_minutes']) ){
+			if( !is_numeric($post['expire_minutes']) ){
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Incorrect expire minutes"]) );
 			}
-			$expire = (int)$_POST['expire_minutes'];
+			$expire = (int)$post['expire_minutes'];
 		}else{
 			$expire = 5;
 		}
 		$expire = time() + ($expire*60);
-		if( isset($_POST['client_ip']) ){
+		if( isset($post['client_ip']) ){
 			if( !preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/(32|24|16)$/") ){
-				http_response_code(400);header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Incorrect client IP"]);exit;
+				respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Incorrect client IP"]) );
 			}
-			$user_ip = $_POST['client_ip'];
+			$user_ip = $post['client_ip'];
 		}else{
 			$user_ip = $_SERVER['REMOTE_ADDR'] . "/32";
 		}
@@ -224,16 +198,13 @@
 			$res = $mongodb_con->update_one( $db_prefix . "_user_pool", ["_id"=>$user_res['data']['_id']], ['last_login'=>date("Y-m-d H:i:s")] );
 
 			$mongodb_con->delete_one( $db_prefix . "_user_keys", ["_id"=>$_SERVER['HTTP_ACCESS_KEY']] );
-
-			header("Content-Type: application/json");
-			echo json_encode(["status"=>"success", "access-key"=>$new_key ]);exit;
+			respond(200, "application/json", [], json_encode(["status"=>"success", "access-key"=>$new_key ]) );
 		}else{
-			http_response_code(500);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"DB insert error" ]);exit;
+			respond(500, "application/json", [], json_encode(["status"=>"fail", "error"=>"DB insert error" ]) );
 		}
 
 	}else{
-		http_response_code(404);header("Content-Type: application/json");
-		echo json_encode(["status"=>"fail", "error"=>"Unknown Api Slug"]);exit;
+		respond(404, "application/json", [], json_encode(["status"=>"fail", "error"=>"Unknown Api Slug" ]) );
 	}
 
+}

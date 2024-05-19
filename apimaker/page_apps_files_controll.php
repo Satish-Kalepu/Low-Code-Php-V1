@@ -317,7 +317,8 @@ if( $config_param3 ){
 
 		$vars_used = [];
 		preg_match_all("/[\-]{2}\w[a-z\-]+\w[\-]{2}/", $_POST['data'], $m);
-		//print_r( $m );
+		// print_r( $m );
+		// exit;
 		foreach( $m[0] as $i=>$j ){
 			$vars_used[ $j ] = 2;
 		}

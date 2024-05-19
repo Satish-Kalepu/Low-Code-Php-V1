@@ -152,25 +152,25 @@
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='datatype'" >
 			<template v-if="s2_retlif_tsil_txetnoc.length>0" >
-				<div v-for="id in s2_retlif_tsil_txetnoc" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==id}" v-on:click.stop="s2_tceles_txetnoc(id,'datatype')" ><div style="width:30px;display: inline-block;" >{{ id }}</div><div style="display: inline; color:gray;" v-if="id in s2_sepyt_atad" >{{ s2_sepyt_atad[ id ] }}</div></div>
+				<div v-for="id in s2_retlif_tsil_txetnoc" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==id}" v-on:click.stop="s2_tceles_txetnoc(id,'datatype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ id }}</div><div style="display: inline; color:gray;" v-if="id in s2_sepyt_atad" >{{ s2_sepyt_atad[ id ] }}</div></div>
 			</template>
 			<div v-else >
 				<div style="display:flex;gap:20px;" >
 					<div>
-						<div v-for="id,ii in s2_1sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+						<div v-for="id,ii in s2_1sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
 					</div>
 					<div>
-						<div v-for="id,ii in s2_2sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+						<div v-for="id,ii in s2_2sepyt_atad" v-bind:class="{'context_item':true,'cse':s2_eulav_txetnoc==ii}" v-on:click.stop="s2_tceles_txetnoc(ii,'datatype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
 					</div>
 				</div>
 				<div v-if="s2_egats_ngissa_tel_ti_si()" class="context_item" v-on:click.stop="s2_tceles_txetnoc('s2_fffffffftc','datatype')" >Convert to Function</div>
 			</div>
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='inputfactortypes'" >
-			<div v-for="id,ii in s2_sepyt_tupni" class="context_item" v-on:click.stop="s2_tceles_txetnoc(ii,'inputtype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+			<div v-for="id,ii in s2_sepyt_tupni" class="context_item" v-on:click.stop="s2_tceles_txetnoc(ii,'inputtype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='inputfactortypes2'" >
-			<div v-for="id,ii in s2_2sepyt_tupni" class="context_item" v-on:click.stop="s2_tceles_txetnoc(ii,'inputtype')" ><div style="width:30px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+			<div v-for="id,ii in s2_2sepyt_tupni" class="context_item" v-on:click.stop="s2_tceles_txetnoc(ii,'inputtype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='list'" >
 			<div v-for="id in s2_tsil_txetnoc" class="context_item" v-on:click.stop="s2_tceles_txetnoc(id,'')" >{{ id }}</div>
@@ -573,6 +573,15 @@
 					</div>
 				</template>
 	        	<template v-else-if="s2_epyt_pupop=='MySqlQ'" >
+	        		<div class="code_line" style="overflow: auto; max-width:calc( 100% - 20px );max-height: 400px;" >
+	        		<mysqlq v-bind:v="s2_atad_pupop" v-bind:datafor="s2_rrof_pupop" 
+	        		v-bind:datavar="s2_ravatad_pupop" 
+	        		v-bind:rootdata="s2_eeeeenigne['stages'][ s2_di_egats_pupop ]['d']"  
+	        		v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_di_egats_pupop]" 
+	        		v-on:updated="s2_noitpo_detadpu" ></mysqlq>
+	        		</div>
+	        	</template>
+	        	<template v-else-if="s2_epyt_pupop=='MysqlQ'" >
 	        		<div class="code_line" style="overflow: auto; max-width:calc( 100% - 20px );max-height: 400px;" >
 	        		<mysqlq v-bind:v="s2_atad_pupop" v-bind:datafor="s2_rrof_pupop" 
 	        		v-bind:datavar="s2_ravatad_pupop" 

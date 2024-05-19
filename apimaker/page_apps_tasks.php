@@ -169,7 +169,7 @@ var app = Vue.createApp({
 				"path": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
 				"redispath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/redis/",
 				"app_id" : "<?=$app['_id'] ?>",
-				"settings": <?=json_encode($app['queues']) ?>,
+				"settings": {'internal':[],'external':[]},
 				"smsg": "", "serr":"","msg": "", "err":"","ipmsg": "", "iperr":"","kmsg": "", "kerr":"",
 				keyword: "",
 				token: "",

@@ -85,7 +85,17 @@ if( $_POST['action'] == "get_global_apis" ){
 			]
 		]);
 
-		if( isset( $res2['data']['engine']['input_factors'] ) ){
+		if( $j['input-method'] == "GET" ){
+			$fr = [];
+			foreach( $res2['data']['engine']['input_factors'] as $fi=>$fd){
+				$t = $fd['t'];
+				if( $t == "N" || $t == "TS" ){ $t = "number";}
+				if( $t == "T"||$t == "TT"||$t == "D"||$t == "DT" ){ $t = "text";}
+				if( $t == "B" ){ $t = "boolean";}
+				$fr[ $fi ] = ["type"=>$t, "value"=>$fd['v']];
+			}
+			$j['formdata'] = $fr;
+		}else if( isset( $res2['data']['engine']['input_factors'] ) ){
 			//print_r( $res2['data']['engine']['input_factors'] );
 			$j['vpost'] = json_encode(input_factors_to_values($res2['data']['engine']['input_factors']),JSON_PRETTY_PRINT);
 		}else{

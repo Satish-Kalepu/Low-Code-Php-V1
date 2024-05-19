@@ -633,6 +633,9 @@ class api_engine{
 				if( $s2_ddddegatsf['k']['v'] == "RespondVar" ){
 					$r = false;
 					//var_dump( $s2_ddddegatsf['d']['raw'] );exit;
+					//print_r( $this->s2_tttttluser );
+					// print_r( $s2_ddddegatsf['d']['output'] );
+					// print_r( $this->s2_eeulav_teg( $s2_ddddegatsf['d']['output'] ) );
 					if( isset($s2_ddddegatsf['d']['raw']) ){ if( $s2_ddddegatsf['d']['raw']['v'] === "true" ){$r = true;} }
 					if( isset($this->s2_ssssnoitpo['raw_output']) || $r ){
 						//echo "giving raw";exit;
@@ -849,6 +852,7 @@ class api_engine{
 				}
 				if( $s2_ddddegatsf['k']['v'] == "Internal-Table" ){
 					$val = $this->table_dynamic( $s2_ddddegatsf );
+					//echo "xxx".$val;
 				}
 				if( $s2_ddddegatsf['k']['v'] == "HTTPRequest" ){
 					$val = $this->s2_tseuqeRPTTH( $s2_ddddegatsf );
@@ -2229,6 +2233,29 @@ class api_engine{
 				$v['v'] = date("Y-m-d H:i:s", (int)$v['v'] - ($d) );
 				return $v;
 			}
+		}else if( $v['t'] == "MongoQ" ){
+			if( $vs['v'] == "addCondition" ){
+				// print_r( $this->s2_tttttluser );
+				$v['v'][] = [
+					'f'=>$this->s2_eeulav_teg($inputs['p2']['v']),
+					'c'=>$this->s2_eeulav_teg($inputs['p3']['v']),
+					'v'=>$this->s2_eeulav_teg($inputs['p4']['v']),
+				];
+				return $v;
+				// print_r( $this->s2_tttttluser );
+				// exit;
+				//exit;
+			}
+
+		}else if( $v['t'] == "MysqlQ" ){
+			if( $vs['v'] == "addCondition" ){
+				$v['v'][] = [
+					'f'=>$this->s2_eeulav_teg($inputs['p2']['v']),
+					'c'=>$this->s2_eeulav_teg($inputs['p3']['v']),
+					'v'=>$this->s2_eeulav_teg($inputs['p4']['v']),
+				];
+				return $v;
+			}
 		}
 		return $rt;
 	}
@@ -2978,7 +3005,7 @@ class api_engine{
 		//print_r( $j );
 		if( $j['t'] == "V" ){
 			$j = $this->s2_eeulav_teg( $j );
-			if( $s2_ggggggubed ){  print_r( $j ); }
+			if( $s2_ggggggubed ){ echo "xxx";  print_r( $j ); }
 		}
 		if( gettype($j['v']) == "string" ){
 			if( $this->isBinary($j['v']) ){
@@ -3005,6 +3032,10 @@ class api_engine{
 			$v = null;
 		}else if( $j['t'] == "BIN" ){
 			$v = "BinaryData";
+		}else if( $j['t'] == "MongoQ" ){
+			$v = $this->s2_yarra_ot_etalpmet_yreuq_ognom( $j['v'] );
+		}else if( $j['t'] == "MysqlQ" ){
+			$v = $this->s2_gnirts_ot_etalpmet_erehw_lqsym( $j['v'] );
 		}else{
 			$v = $j['v'];
 		}
@@ -3094,7 +3125,6 @@ class api_engine{
 		$s2_ddddddi_bd = $s2_ddddegatsf['d']['data']['db']['i']['v'];
 		$s2_dddi_elbat = $s2_ddddegatsf['d']['data']['table']['i']['v'];
 		$s2_aaaaamehcs = $s2_ddddegatsf['d']['data']['schema']['v'];
-		$s2_yyyyyyreuq = $s2_ddddegatsf['d']['data']['query']['v'];
 		$project = $s2_ddddegatsf['d']['data']['project']['v'];
 		$s2_tttttttros = $s2_ddddegatsf['d']['data']['sort']['v'];
 		$set = $s2_ddddegatsf['d']['data']['set']['v'];
@@ -3102,13 +3132,36 @@ class api_engine{
 		$inc = $s2_ddddegatsf['d']['data']['inc']['v'];
 		$output = $s2_ddddegatsf['d']['data']['output']['v'];
 
+		if( $s2_ddddegatsf['d']['data']['query']['t'] == "V" ){
+			$s2_yyyyyyreuq = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['query'] );
+			if( $s2_ddddegatsf['d']['data']['query']['v']['t'] != "MongoQ" ){
+				//return ['status'=>"fail", "error"=>];
+				$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+					'status'=>['t'=>"T","v"=>"fail"],
+					"error"=>['t'=>"T","v"=>"Query Variable `".$s2_ddddegatsf['d']['data']['query']['v']['v']."` incorrect format"]
+				]] );
+				return false;
+			}
+			$s2_yyyyyyreuq = $s2_yyyyyyreuq['v'];
+		}else if( $s2_ddddegatsf['d']['data']['query']['t'] != "MongoQ" ){
+			//return ['status'=>"fail", "error"=>"Query Variable `".$s2_ddddegatsf['d']['data']['query']['t']."` incorrect type"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Query Variable `".$s2_ddddegatsf['d']['data']['query']['t']."` incorrect type"]
+			]] );
+			return false;
+		}else{
+			$s2_yyyyyyreuq = $s2_ddddegatsf['d']['data']['query']['v'];
+		}
 		//print_pre( $config_global_engine );exit;
-
 		//print_pre( $s2_ddddegatsf['d'] );exit;
 
 		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) ){
-			return ['status'=>"fail", "error"=>"Database not found"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Database not found"]
+			]] );
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
@@ -3242,7 +3295,6 @@ class api_engine{
 		$s2_ttttttttca = $s2_ddddegatsf['d']['data']['action']['v'];
 		$s2_dddi_elbat = $s2_ddddegatsf['d']['data']['table']['i']['v'];
 		$s2_aaaaamehcs = $s2_ddddegatsf['d']['data']['schema']['v'];
-		$s2_yyyyyyreuq = $s2_ddddegatsf['d']['data']['query']['v'];
 		$project = $s2_ddddegatsf['d']['data']['project']['v'];
 		$s2_tttttttros = $s2_ddddegatsf['d']['data']['sort']['v'];
 		$set = $s2_ddddegatsf['d']['data']['set']['v'];
@@ -3251,9 +3303,36 @@ class api_engine{
 		$inc = $s2_ddddegatsf['d']['data']['inc']['v'];
 		$output = $s2_ddddegatsf['d']['data']['output']['v'];
 
+		if( $s2_ddddegatsf['d']['data']['query']['t'] == "V" ){
+			$s2_yyyyyyreuq = $this->s2_eeulav_teg( $s2_ddddegatsf['d']['data']['query'] );
+			if( $s2_ddddegatsf['d']['data']['query']['v']['t'] != "MongoQ" ){
+				//return ['status'=>"fail", "error"=>];
+				$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+					'status'=>['t'=>"T","v"=>"fail"],
+					"error"=>['t'=>"T","v"=>"Query Variable `".$s2_ddddegatsf['d']['data']['query']['v']['v']."` incorrect format"]
+				]] );
+				return false;
+			}
+			$s2_yyyyyyreuq = $s2_yyyyyyreuq['v'];
+		}else if( $s2_ddddegatsf['d']['data']['query']['t'] != "MongoQ" ){
+			//return ['status'=>"fail", "error"=>"Query Variable `".$s2_ddddegatsf['d']['data']['query']['t']."` incorrect type"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Query Variable `".$s2_ddddegatsf['d']['data']['query']['v']['v']."` incorrect format"]
+			]] );
+			return false;
+		}else{
+			$s2_yyyyyyreuq = $s2_ddddegatsf['d']['data']['query']['v'];
+		}
+
 		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables_dynamic", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) ){
-			return ['status'=>"fail", "error"=>"Database not found"];
+			//return ['status'=>"fail", "error"=>"Database not found"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Database not found"]
+			]] );
+			return false;
 		}else{
 			$s2_eeeeeelbat = $tres['data'];
 		}
@@ -3370,6 +3449,7 @@ class api_engine{
 			$this->s2_tcejbo_ot_tupni( $s2_sssssserbd );$s2_sssssserbd = ['t'=>'O', 'v'=>$s2_sssssserbd];
 			$this->s2_tluser_tes( $output, $s2_sssssserbd );
 		}
+		return true;
 	}
 
 	function s2_gnirts_ot_etalpmet_erehw_lqsym($con, $v ){
@@ -3396,7 +3476,7 @@ class api_engine{
 		$vv = [];
 		if( gettype($v)=="array" ){
 				foreach($v as $k=>$vd){
-					$vv[] = $k;
+					$vv[] = "`".$k."`";
 				}
 		}else{ $this->s2_ggggggggol[] = "get_fields_notation: incorrect type: " .gettype($v); }
 		return implode(", ", $vv );
@@ -3406,7 +3486,7 @@ class api_engine{
 		if( gettype($v)=="array" ){
 			if( array_keys($v)[0] === 0  ){
 				foreach($v as $k=>$vd){
-					$vv[] = $vd['f']['v'] . ($vd['o']['v']=="Desc"?" desc":"");
+					$vv[] = "`".$vd['f']['v']."`" . ($vd['o']['v']=="Desc"?" desc":"");
 				}
 			}else{ $this->s2_ggggggggol[] = "get_fields_notation: not a object "; }
 		}else{ $this->s2_ggggggggol[] = "get_fields_notation: incorrect type: " .gettype($v); }
@@ -3420,7 +3500,6 @@ class api_engine{
 		$s2_ddddddi_bd = $s2_ddddegatsf['d']['data']['db']['i']['v'];
 		$s2_dddi_elbat = $s2_ddddegatsf['d']['data']['table']['i']['v'];
 		$s2_aaaaamehcs = $s2_ddddegatsf['d']['data']['schema']['v'];
-		$s2_eeeeeerehw = $s2_ddddegatsf['d']['data']['where']['v'];
 		$s2_sssssdleif = $s2_ddddegatsf['d']['data']['fields']['v'];
 		$key = $s2_ddddegatsf['d']['data']['key']['v'];
 		$value = $s2_ddddegatsf['d']['data']['value']['v'];
@@ -3431,10 +3510,34 @@ class api_engine{
 
 		//print_pre( $config_global_engine );exit;
 		//print_pre( $keys );exit;
+		if( $s2_ddddegatsf['d']['data']['where']['t'] == "V" ){
+			$s2_eeeeeerehw = $this->s2_eeulav_teg($s2_ddddegatsf['d']['data']['where']);
+			if( $s2_ddddegatsf['d']['data']['where']['v']['t'] != "MysqlQ" ){
+				//return ['status'=>"fail", "error"=>];
+				$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+					'status'=>['t'=>"T","v"=>"fail"],
+					"error"=>['t'=>"T","v"=>"Query Variable `".$s2_ddddegatsf['d']['data']['where']['v']['v']."` incorrect format"]
+				]] );
+				return false;
+			}
+			$s2_eeeeeerehw = $s2_eeeeeerehw['v'];
+		}else if( $s2_ddddegatsf['d']['data']['where']['t'] != "MysqlQ" ){
+			//return ['status'=>"fail", "error"=>"Query Variable `".$s2_ddddegatsf['d']['data']['where']['t']."` incorrect type"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Query Variable type `".$s2_ddddegatsf['d']['data']['where']['t']."` incorrect "]
+			]] );
+			return false;
+		}else{
+			$s2_eeeeeerehw = $s2_ddddegatsf['d']['data']['where']['v'];
+		}
 
 		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) || !$s2_sssssserbd['data'] ){
-			return ['status'=>"fail", "error"=>"Database not found"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Database not found"]
+			]] );
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
@@ -4041,7 +4144,7 @@ class api_engine{
 		}
 		$this->s2_tcejbo_ot_tupni($res);
 		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
-	},
+	}
 	function s2_eueuq_ot_hsup( $s2_ddddegatsf ){
 		global $config_global_engine;
 		if( $s2_ddddegatsf['d']['queue']['v']['i']['v'] ){
