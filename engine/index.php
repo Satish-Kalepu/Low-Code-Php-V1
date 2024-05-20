@@ -87,7 +87,7 @@
 					echo json_encode(["status"=>"fail","error"=>"APP not configured"]);exit;
 				}
 			}
-		}else{
+		}else if( $execution_mode == "cloud_folder" ){
 			if( file_exists("../config_global_engine.php") ){
 				require( "../config_global_engine.php" );
 				if( !isset($config_global_engine) ){
