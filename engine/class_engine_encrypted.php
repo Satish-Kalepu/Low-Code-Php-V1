@@ -1328,19 +1328,25 @@ class api_engine{
 			}
 		}
 		if( $s2_ddddegatsf['fn'] == "JSON Decode" ){
-			$_c = json_decode( $_fn_inputs["p1"]['v'], true );
-			$this->s2_tcejbo_ot_tupni( $_c );
-			if( gettype($_c) == "array" ){
-				if( array_keys($_c)[0] === 0 ){
-					$_ct = "L";
-				}else{
-					$_ct = "O";
-				}
-			}
-			if( json_last_error() ){
-				$this->s2_ggggggggol[] = "JSON Decode Error: " . json_last_error_msg();
+			if( !is_string($_fn_inputs["p1"]['v']) ){
+				$this->s2_ggggggggol[] = "JSON Decode Error: Input is not string";
 				$_ct = "O";
 				$_c = [];
+			}else{
+				$_c = json_decode( $_fn_inputs["p1"]['v'], true );
+				$this->s2_tcejbo_ot_tupni( $_c );
+				if( gettype($_c) == "array" ){
+					if( array_keys($_c)[0] === 0 ){
+						$_ct = "L";
+					}else{
+						$_ct = "O";
+					}
+				}
+				if( json_last_error() ){
+					$this->s2_ggggggggol[] = "JSON Decode Error: " . json_last_error_msg();
+					$_ct = "O";
+					$_c = [];
+				}
 			}
 		}
 		if( $s2_ddddegatsf['fn'] == "HTML Entity Decode" ){

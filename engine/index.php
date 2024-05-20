@@ -1,6 +1,25 @@
 <?php
 	require_once("vendor/autoload.php");
-	require("config.php");
+
+	if( file_exists("../../../config_engine.php") ){
+		require("../../../config_engine.php");
+	}else if( file_exists("../../config_engine.php") ){
+		require("../../config_engine.php");
+	}else if( file_exists("../config_engine.php") ){
+		require("../config_engine.php");
+	}else{
+		http_response_code(500);echo "config_engine missing";exit;
+	}
+
+	if( !isset($deployment_mode) ){
+		http_response_code(500);
+		echo "config deployment_mode missing";exit; 
+	}
+	if( !isset($execution_mode) ){
+		http_response_code(500);
+		echo "config execution_mode missing";exit; 
+	}
+
 	// define globals 
 	$use_encrypted=true;
 	$request_log_id= "";
@@ -57,7 +76,7 @@
 				if( $_SERVER['REQUEST_METHOD'] == "GET" ){
 					if( file_exists("__install.php") ){
 						$v = pathinfo($_SERVER['PHP_SELF'] );
-						if( !isset($v['dirname']) ){
+						if( !isset($v['dirname']) || $v['dirname'] == "/" ){
 							echo "No configuration found!<BR>Please follow installation procedures";exit;
 						}
 						header("Location: " . $v['dirname']. "/__install.php");
@@ -69,11 +88,22 @@
 				}
 			}
 		}else{
-			require( "../config_global_engine.php" );
+			if( file_exists("../config_global_engine.php") ){
+				require( "../config_global_engine.php" );
+				if( !isset($config_global_engine) ){
+					http_response_code(500); echo "config file config_global_engine loaded but config missing";exit;
+				}
+			}else{
+				http_response_code(500); echo "config file config_global_engine missing";exit;
+			}
+		}else{
+			http_response_code(500); echo "incorrect execution_mode: ". htmlspecialchars($execution_mode);exit;
 		}
 
 	}else if( $deployment_mode == "lambda" ){
-		
+		http_response_code(500); echo "Lambda mode not enabled yet ";exit;
+	}else{
+		http_response_code(500); echo "incorrect deployment_mode: ". htmlspecialchars($deployment_mode);exit;
 	}
 
 	require( "common_functions.php" );
