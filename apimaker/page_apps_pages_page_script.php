@@ -296,7 +296,7 @@ var app = s__({
 
 			page_source: "",
 			edit_tab: "html",
-
+			crawl_link : ""
 		};
 	},
 	mounted(){
@@ -348,7 +348,40 @@ var app = s__({
 		console.log("OKKz");
 	},
 	methods: {
-
+		crawl_website: function() {
+			if(this.crawl_link == "") {
+				alert("Please enter link to crawl");
+				return false;
+			}
+			this.msg__ = "Crawling.......";
+			this.err__ = "";
+			axios.post("?",{
+				"action":"crawl_website",
+				"app_id":this.app_id,
+				"page_version_id": this.page_version_id,
+				"crawl_link" : this.crawl_link
+			}).then(response=>{
+				this.msg__ = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								location.reload();
+							}else{
+								alert("Error: " + response.data['error']);
+								this.err__ = "Error: " + response.data['error'];
+							}
+						}else{
+							this.err__ = "Incorrect response";
+						}
+					}else{
+						this.err__ = "Incorrect response Type";
+					}
+				}else{
+					this.err__ = "Response Error: " . response.status;
+				}
+			});
+		},
 		set_preview_urls: function(){
 			console.log("OKK1");
 			var urls = {};
@@ -368,6 +401,10 @@ var app = s__({
 				urls['domains'] = [];
 				for(var d=0;d<this.app__['settings']['domains'].length;d++ ){
 					var u = this.app__['settings']['domains'][ d ]['url'] + this.page__['name'];
+					let pattern = /localhost/gi;
+					if(pattern.test(u) == true) {
+						u = u.replace("https",'http');
+					}
 					urls['domains'].push( u );
 					ulist.push( u );
 				}
@@ -378,6 +415,10 @@ var app = s__({
 		},
 		previewit: function(){	
 			this.url_modal = new bootstrap.Modal(document.getElementById('url_modal'));
+			this.url_modal.show();
+		},
+		import_url: function(){
+			this.url_modal = new bootstrap.Modal(document.getElementById('import_url'));
 			this.url_modal.show();
 		},
 
