@@ -11,6 +11,7 @@
 	<div style="position: fixed;left:150px; top:40px; height: 40px; width:calc( 100% - 150px ); background-color: white; overflow: hidden; border-bottom:1px solid #ccc; " >
 		<div style="padding: 5px 10px;" >
 			<div class="btn btn-outline-dark btn-sm" style="float:right; padding:4px 5px;"  v-on:click="save_page" >Save Page</div>
+			<div class="btn btn-outline-dark btn-sm" v-on:click="import_url" style="float:right; padding:4px 5px; margin-right: 10px;" >Import URL</div>
 
 			<a v-if="vurls_list.length==1" v-bind:href="vurls_list[0]" target="_blank" ><img src="<?=$config_global_apimaker_path ?>edit.png" style="float:right;cursor: pointer; margin-right:20px;" title="Preview" ></a>
 			<div v-else v-on:click="previewit()" style="float:right;cursor: pointer; margin-right:20px;" title="Preview" ><img src="<?=$config_global_apimaker_path ?>edit.png" ></div>
@@ -56,6 +57,29 @@
 			<div v-if="err__" class="text-danger px-3" >{{ err__ }}</div>
 		</div>
 	</div>
+
+	<div class="modal fade" id="import_url" data-backdrop="static" data-keyboard="false">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Crawl</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-bordered table-sm w-100">
+						<tr>
+							<td>Crawl Link</td>
+							<td><input type="text" v-model="crawl_link" class="form-control form-control-sm" placeholder="Enter Crawl Link" ></td>
+						</tr>
+					</table>
+				</div>
+				<div class="modal-footer">
+	        <button type="button" class="btn btn-primary" v-on:click="crawl_website()">Crawl</button>
+	      </div>
+			</div>
+		</div>
+	</div>
+
 	<div class="modal fade" id="ses_expired" data-backdrop="static" data-keyboard="false">
 		<div class="modal-dialog">
 			<div class="modal-content">

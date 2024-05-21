@@ -138,5 +138,68 @@ if( $config_param4 && $main_page ){
 		json_response("success","ok");
 	}
 
+	if($_POST['action'] == "crawl_website") {
+		if( $_POST['page_version_id'] != $config_param4 ||  $_POST['app_id'] != $config_param1 ){
+			json_response("fail","Incorrect URL");
+		}
+		if(!isset($_POST['crawl_link']) || $_POST['crawl_link'] == "") {
+			json_response("fail","Please enter Crawl Link");
+		}
 
+		$url = $_POST['crawl_link'];
+
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+			CURLOPT_URL => $url,
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_ENCODING => '',
+			CURLOPT_MAXREDIRS => 10,
+			CURLOPT_TIMEOUT => 0,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+			CURLOPT_CUSTOMREQUEST => 'GET',
+			CURLOPT_HTTPHEADER => array(),
+		));
+
+		$content = curl_exec($curl);
+		$info = curl_getinfo($curl);
+		$error = curl_error( $curl );
+		$errorno = curl_errno( $curl );
+
+		if(curl_errno($curl)) {
+			json_response("fail",$error);
+		}
+
+		curl_close($curl);
+
+		$Code = "";
+
+		preg_match_all('/<html\b[^>]*>([\s\S]*?)<\/html>/i', $content, $matches);
+		$Code = $Code.implode("\n\n", $matches[1]);
+
+		$pattern = '/<\s*(link|meta)\b[^>]*\/?\s*>/i';
+		$Code = preg_replace($pattern,'',$Code);
+		$Code = preg_replace('/<title\b[^>]*>([\s\S]*?)<\/title>/i','',$Code);
+		$Code = preg_replace('/<script\b[^>]*>([\s\S]*?)<\/script>/i','',$Code);
+		
+		$Code = preg_replace('/\s{2,}/', ' ', $Code);
+		$Code = trim($Code);
+
+		preg_match_all('/<script\b[^>]*>([\s\S]*?)<\/script>/i', $content, $matches);
+		$jsCode = implode("\n\n", $matches[1]);
+
+		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", [
+			"app_id"=> $config_param1,
+			"_id"=>$config_param4
+		],[
+			"html"=>$Code,
+			"script"=>$jsCode,
+			"updated"=>date("Y-m-d H:i:s"),
+		]);
+		if( $res["status"] == "fail" ){
+			json_response("fail",$res["error"]);
+		}
+		json_response("success","ok");
+	}
 }
