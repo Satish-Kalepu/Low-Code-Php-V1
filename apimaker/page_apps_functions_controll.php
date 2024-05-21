@@ -460,36 +460,36 @@ if( $config_param4 && $main_function ){
 	unset($function['engine']);
 	unset($function['test']);
 	if( $_POST['action'] == "edit_function" ){
-		$t = validate_token("edit_function". $_POST['edit_function']['_id'], $_POST['token']);
+		$t = validate_token("edit_function". $_POST['edit_api']['_id'], $_POST['token']);
 		if( $t != "OK" ){
 			json_response("fail", $t);
 		}
-		if( !preg_match("/^[a-z0-9\.\-\_\ ]{3,100}$/i", $_POST['edit_function']['name']) ){
+		if( !preg_match("/^[a-z0-9\.\-\_\ ]{3,100}$/i", $_POST['edit_api']['name']) ){
 			json_response("fail", "Name incorrect");
 		}
-		if( !preg_match("/^[a-z0-9\!\@\%\^\&\*\.\-\_\'\"\n\r\t\ ]{5,250}$/i", $_POST['edit_function']['des']) ){
+		if( !preg_match("/^[a-z0-9\!\@\%\^\&\*\.\-\_\'\"\n\r\t\ ]{5,250}$/i", $_POST['edit_api']['des']) ){
 			json_response("fail", "Description incorrect");
 		}
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_functions", [
-			'name'=>$_POST['edit_function']['name'],
-			'_id'=>['$ne'=>$mongodb_con->get_id($_POST['edit_function']['function_id']) ]
+			'name'=>$_POST['edit_api']['name'],
+			'_id'=>['$ne'=>$mongodb_con->get_id($_POST['edit_api']['function_id']) ]
 		]);
 		if( $res['data'] ){
 			json_response("fail", "Name is already in use");
 		}
 		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_functions", [
-			'_id'=>$_POST['edit_function']['function_id']
+			'_id'=>$_POST['edit_api']['function_id']
 		],[
-			"name"=>$_POST['edit_function']['name'],
-			"des"=>$_POST['edit_function']['des'],
+			"name"=>$_POST['edit_api']['name'],
+			"des"=>$_POST['edit_api']['des'],
 			"updated"=>date("Y-m-d H:i:s"),
 			"active"=>true,
 		]);
 		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
 			'_id'=>$config_param4
 		],[
-			"name"=>$_POST['edit_function']['name'],
-			"des"=>$_POST['edit_function']['des'],
+			"name"=>$_POST['edit_api']['name'],
+			"des"=>$_POST['edit_api']['des'],
 			"updated"=>date("Y-m-d H:i:s"),
 			"active"=>true,
 		]);
