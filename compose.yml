@@ -20,6 +20,12 @@ services:
 
   redis:
     container_name: phpengine_redis
+<<<<<<< HEAD
     image: redis:latest
     ports:
       - "6379:6379"
+=======
+    image: redis
+    ports:
+      - "6379:6379"
+>>>>>>> c2b5a9372a935a8e859be832fffbd76f4f46f7c8

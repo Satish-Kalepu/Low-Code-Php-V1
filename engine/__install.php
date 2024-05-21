@@ -16,7 +16,7 @@ if( !$engine_folder ){
 }
 
 $v = pathinfo( $_SERVER['PHP_SELF'] );
-if( !isset($v['dirname']) ){
+if( !isset($v['dirname']) || $v['dirname'] == "/" ){
 	echo "No configuration found!<BR>Please follow installation procedures";exit;
 }
 $config_engine_path = $v['dirname'] . "/";
