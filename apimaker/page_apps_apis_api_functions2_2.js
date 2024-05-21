@@ -367,5 +367,19 @@ var s2_seitreporp_tcejbo_gifnoc = {
 		"sortByLabel":{"self": true, "replace": true, "return":"B", "inputs":{
 			"p2": {"n": "Order", "types": ["SortOrder"], "m": true, "v":{"t": "SortOrder", "v": "a-z"}},
 		}},
-	}
+	},
+	"MongoQ": {
+		"addCondition":{"self": true, "replace": true, "return":"B", "inputs":{
+			"p2": {"n": "Field", "types": ["T"], "m": true, "v": {"t": "T", "v":"field"}},
+			"p3": {"n": "Operator", "types": ["MongoOp"], "m": true, "v": {"t": "MongoOp", "v":'$eq'}},
+			"p4": {"n": "Value", "types": ["V","T","N","B","NL"], "m": true, "v": {"t": "T", "v":"value"}},
+		}},
+	},
+	"MysqlQ": {
+		"addCondition":{"self": true, "replace": true, "return":"B", "inputs":{
+			"p2": {"n": "Field", "types": ["T"], "m": true, "v": {"t": "T", "v":"field"}},
+			"p3": {"n": "Operator", "types": ["MysqlOp"], "m": true, "v": {"t": "MysqlOp", "v":'='}},
+			"p4": {"n": "Value", "types": ["V","T","N", "B", "NL"], "m": true, "v": {"t": "T", "v":"value"}},
+		}},
+	},
 };

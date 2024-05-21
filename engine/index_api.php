@@ -1,31 +1,25 @@
 <?php
 
-	if( $use_encrypted ){
-		require_once("class_engine_encrypted.php");
-	}else if( file_exists("class_engine.php") ){
-		require_once("class_engine.php");
-	}else{
-		http_response_code(500);
-		echo "File version missing!";exit;
-	}
+function index_api($api_version, $get, $post, $php_input){
+
+	global $mongodb_con;
+	global $app_id;
+	global $db_prefix;
+
 	$test = [];
-	if( $_GET["function_version_id"] ){
+	if( $get["function_version_id"] ){
 		$input_data = $php_input;
 		$test = json_decode($input_data, true);
 	}else{
 		//print_pre( $api_version );exit;
 		if( $api_version['input-method'] == "GET" ){
 			if( $_SERVER['REQUEST_METHOD']=="POST" ){
-				header("Content-type: application/json");
-				http_response_code(400);
-				echo json_encode(["status"=>"fail", "error"=>"Unexpected POST Request" ]);exit;
+				return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Unexpected POST Request"]) ];
 			}
-			$test = $_GET;
+			$test = $get;
 		}else if( $api_version['input-method'] == "POST" ){
 			if( $_SERVER['REQUEST_METHOD']=="GET" ){
-				http_response_code(400);
-				header("Content-type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Unexpected GET Request" ]);exit;
+				return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Unexpected GET Request"]) ];
 			}
 			if( $api_version['input-type'] == "application/json" ){
 				if( preg_match("/json/i", $_SERVER['CONTENT_TYPE']) ){
@@ -33,39 +27,16 @@
 					$test = json_decode($input_data, true);
 					if( json_last_error() ){
 						$e = "JSON Parse Error: " . json_last_error_msg();
-						raw_request_log($e);
-						if( $api_version['output-type'] == "application/json" ){
-							header("Content-type: application/json");
-							echo json_encode(["status"=>"fail", "error"=>$e ]);exit;
-						}else{
-							header("Content-type: " . $api_version['output-type']);
-							echo json_encode(["status"=>"fail", "error"=>$e]);exit;
-						}
+						return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>$e]) ];
 					}
 					if( $test == "" ){
-						$e = "Input missing";
-						raw_request_log($e);
-						if( $api_version['output-type'] == "application/json" ){
-							header("Content-type: application/json");
-							echo json_encode(["status"=>"fail", "error"=>$e ]);exit;
-						}else{
-							header("Content-type: " . $api_version['output-type']);
-							echo json_encode(["status"=>"fail", "error"=>$e]);exit;
-						}
+						return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"input missing"]) ];
 					}
 				}else{
-					$e = "Incorrect Input method/Content-type";
-					raw_request_log($e);
-					if( $api_version['output-type'] == 'application/json' ){
-						header("Content-Type: application/json");
-						echo json_encode(["status"=>"fail", "error"=>$e ]);exit;
-					}else{
-						header("Content-Type: " . $api_version['output-type']);
-						echo json_encode(["status"=>"fail", "error"=>$e ]);exit;
-					}
+					return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Incorrect Input method/Content-type" ]) ];
 				}
 			}else if( $api_version['input-type'] == "application/x-www-form-urlencoded" ){
-				$test = $_POST;
+				$test = $post;
 			}
 		}
 		$test['server_'] = ["ip"=>$_SERVER['REMOTE_ADDR'],"user-agent"=>$_SERVER['HTTP_USER_AGENT']];
@@ -77,29 +48,21 @@
 	if( isset($api_version['auth-type']) ){
 		if( $api_version['auth-type'] == "Access-Key" ){
 			if( !isset($_SERVER['HTTP_ACCESS_KEY']) ){
-				http_response_code(403);
-				header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Access-Key required" ]);exit;
+				return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key required" ]) ];
 			}else if( !preg_match( "/^[0-9a-f]{24}$/", $_SERVER['HTTP_ACCESS_KEY']) ){
-				http_response_code(403);
-				header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Access-Key Incorrect" ]);exit;
+				return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key incorrect" ]) ];
 			}else{
 				$res = $mongodb_con->find_one( $config_global_engine['config_mongo_prefix'] . "_user_keys", [
 					"app_id"=>$api_version['app_id'],
 					"_id"=>$_SERVER['HTTP_ACCESS_KEY']
 				] );
 				if( !$res['data'] ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access-Key not found" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Not found" ]) ];
 				}
 				// echo time();
 				// print_pre( $res['data'] );exit;
 				if( $res['data']['expire'] < time() || $res['data']['active'] != 'y' ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access-Key Expired/InActive" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Expired/Inactive" ]) ];
 				}
 				$ipf = false;
 				$x = explode(".", $_SERVER['REMOTE_ADDR']);
@@ -130,9 +93,7 @@
 					}
 				}
 				if( $ipf == false ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access Key IP rejected" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key IP rejected" ]) ];
 				}
 				$allow_policy = false;
 				if( isset($res['data']['policies']) && is_array($res['data']['policies']) ){
@@ -169,9 +130,7 @@
 					}
 				}
 				if( $allow_policy == false ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access Key Policy Rejected" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Policy Rejected" ]) ];
 				}
 			}
 		}
@@ -180,12 +139,10 @@
 	//print_pre( $test );exit;
 	$api_engine = new api_engine();
 	if( !$api_engine ){
-		$e = "Error initializing api engine!";
-		raw_request_log($e);
-		echo $e;exit;
+		return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Error initializing api engine!" ]) ];
 	}
 	if( !isset($api_version['engine']) ){
-		http_response_code(404);echo "Engine spec missing";exit;
+		return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Engine spec missing" ]) ];
 	}
 	$result = $api_engine->execute( $api_version, $test, ["request_log_id"=>$request_log_id] );
 
@@ -209,74 +166,33 @@
 		}
 		return $r;
 	}
-	//$log = filter_result($result['log']);
-	//print_pre( $_SESSION );exit;
-	raw_request_log("success");
-	function request_log($status, $error, $ctype, $output, $log){
-		global $mongodb_con;
-		global $request_log_id;
-		global $api_version;
-		global $app;
-		global $alias_rec;
-		global $test;
-		$log_data = [
-			"_id"=>$request_log_id,
-			"type"=>"page",
-			"api_key"=>"",
-			"app"=>[
-				"_id"=>$app['_id'], "app"=>$app['name']
-			],
-			"domain"=>($_SERVER['HTTP_REALHOST']?$_SERVER['HTTP_REALHOST']:$_SERVER['HTTP_HOST']),
-			"url"=>$_SERVER['REQUEST_URI'],
-			"page"=>[
-				"_id"=>$api_version['_id'], "version"=>$_GET['version_id'], "reg_url"=>$api_version['reg_url'],
-			],
-			"ctype"=>$ctype,
-			"inputs"=>$test,
-			"status"=>$status,
-			"error"=>$error,
-			"output"=>$output,
-			"log"=>$log,
-			"timestamp" => date('Y-m-d H:i:s'),
-			"ip" => $_SERVER['REMOTE_ADDR'],
-			"user_id"=>$alias_rec['user']['_id'],
-			"app"=>$app,
-		];
-		$log_insert_result = $mongodb_con->insert("log_requests", $log_data );
-	}
-
-	//echo $api_version['output-type'];
-	//print_pre( $result );exit;
 
 	$log = &$api_engine->getlog();
-	if( $_GET["function_version_id"] ){
-		header("content-type: application/json");
+	if( $get["function_version_id"] ){
 		$r = ['status'=>"success", "functionResponse"=>$result['body'] ];
 		if( $test['debug'] ){
 			$r['log'] = $log;
 		}
-		echo json_encode($r,JSON_PRETTY_PRINT);
-		exit;
+		return [200,"application/json",[], json_encode($r,JSON_PRETTY_PRINT) ];
 	}else{
 		$result_content_type = "application/json";
 		if( isset($result['headers']['content-type']) ){
 			$result_content_type = $result['headers']['content-type'];
 		}
+		$statusCode = 200;
+		if( gettype($result['statusCode'])=="integer" && $result['statusCode'] != 200 ){
+			$statusCode = (int)$result['statusCode'];
+		}
+		$h = [];
+		if( isset($result['headers']) && sizeof($result['headers'] ) ){
+			foreach( $result['headers'] as $ii=>$jj ){ if( strtolower($ii) != "content-type" ){
+				$h[ $ii ] = $jj;
+			}}
+		}
 		//echo $result_content_type;exit;
 		if( $api_version['output-type'] == "application/json" || $result_content_type == "application/json" ){	
-			if( gettype($result['statusCode'])=="integer" && $result['statusCode'] != 200 ){
-				http_response_code((int)$result['statusCode']);
-			}
-			header("content-type: application/json");
-			if( isset($result['headers']) && sizeof($result['headers'] ) ){
-				foreach( $result['headers'] as $ii=>$jj ){ if( strtolower($ii) != "content-type" ){
-					header( $ii . ":" . $jj );
-				}}
-			}
 			if( $result['status'] == "fail" ){
-				request_log($result['status'], $result['error'], $api_version['output-type'], "", $log);
-				echo json_encode($result);
-				exit;
+				return [$statusCode,"application/json",[], json_encode($result)];
 			}
 			if( !is_array($result['body']) ){
 				$result['body'] = [];
@@ -296,19 +212,8 @@
 				}
 				$d = json_encode($result['body'],JSON_PRETTY_PRINT);
 			}
-			request_log($result['status'], $result['error'], $api_version['output-type'], substr($d,0,2048), $log);
-			echo $d;
-			exit;
+			return [$statusCode,$api_version['output-type'], $h, $d, $log ];
 		}else if( $api_version['output-type'] == "text/html" ){
-			if( gettype($result['statusCode'])=="integer" && $result['statusCode'] != 200 ){
-				http_response_code((int)$result['statusCode']);
-			}
-			header("content-type: text/html");
-			if( sizeof($result['headers'] ) ){
-				foreach( $result['headers'] as $ii=>$jj ){ if( strtolower($ii) != "content-type" ){
-					header( $ii . ":" . $jj );
-				}}
-			}
 			ob_start();
 			echo "<html>\n";
 			echo "<head>\n";
@@ -393,7 +298,7 @@
 			}else{
 				echo $result['body'];
 			}
-			if( $_GET['debug'] ){
+			if( $get['debug'] ){
 				echo "\n<pre>";
 				print_r( $log );
 				echo "</pre>";
@@ -401,24 +306,15 @@
 			echo "\n</body>\n";
 			echo "</html>";
 			$d = ob_get_clean();
-			request_log("success", "", $api_version['output-type'], substr($d,0,1024), $log);
-			echo $d;
+			return [$statusCode, $result_content_type, $h, $d, $log];
 		}else if( $api_version['output-type'] == "text/plain" ){
-			//print_r( $result );exit;
-			//request_log($result['status'], $result['error'], $api_version['output-type'], substr($result['body'],0,1024), $log);
-			header("content-type: text/plain");
-			echo $result['body'] . "\n";
-			if( $_GET['debug'] ){
-				print_r( $log );
+			if( gettype($result['body']) == "array" ){
+				$result['body'] = json_encode($result['body']);
 			}
+			return [$statusCode, $result_content_type, $h, $result['body'], $log];
 		}else{
-			//require("layout_home.php");
-			//request_log("fail", "unhandled output type", "text/plain", "", []);
-			header("http/1.1 404 not found");
-			header("content-type: text/plain");
-			header("stage: one");
-			echo $_SERVER['HTTP_REALHOST'] . "\n\n" . "/".$path . "\n\nUnhandled output type\n";
-			echo $api_version['output-type'];
-			exit;
+			return [404, "text/plain", [], "Unhandled output-type: ".$api_version['output-type'] ];
 		}
 	}
+
+}

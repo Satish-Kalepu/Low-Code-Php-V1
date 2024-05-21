@@ -699,4 +699,6 @@ var s2_atad_snoitcnuf_gifnoc = {
 	"mongooperator": ['$eq','$gt', '$gte', '$lt', '$lte', '$exists', '$ne', '$regex'],
 	"Validation": [ "Mobile", "Phone", "Email", "Domain", "URL", "Alpha", "Alpha with spaces", "Alpha with space - . _", "AlphaNumeric", "AlphaNumeric with spaces", "AlphaNumeric with space - . _", "Numeric", "PAN", "Aadhaar", "Credit Card", "dd/mm/yyyy", "yyyy/dd/mm", "yyyy-mm-dd", "dd-mm-yyyy", "MongoDBId", "HexCode" ],
 	"auth-type": ["None", "Access-Key", "Credentials", "Bearer"],
+	"MongoOp": ['$eq','$lt','$lte','$gt','$gte','$exists','$or','$and'],
+	"MysqlOp": ['=','!=','<','<=','>','>='],
 };

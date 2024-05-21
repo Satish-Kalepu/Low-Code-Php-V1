@@ -94,31 +94,6 @@ function pass_decrypt( $data ){
 	return $decrypted;
 }
 
-function json_response( $param1, $param2 = "" ){
-	if( is_string($param1 ) ){
-		if( $param1 == "success" ){
-			$st = json_encode( array("status"=>$param1, "data"=>$param2), JSON_PRETTY_PRINT );
-		}else if( $param1 == "fail" ){
-			$st = json_encode( array("status"=>$param1, "error"=>$param2), JSON_PRETTY_PRINT );
-		}else{
-			$st = json_encode( array("status"=>$param1, "data"=>$param2), JSON_PRETTY_PRINT );
-		}
-	}else if( is_array($param1) ){
-		$st = json_encode( $param1, JSON_PRETTY_PRINT );
-	}
-	if( !$st || json_last_error() ){
-		header("http/1.1 500 Error");
-		header("Content-Type: text/plain");
-	    echo "There was an error in output json encode: " . json_last_error_msg();
-	    print_r( $param1 );print_r( $param2 );
-	    exit;
-	}else{
-		header("Content-Type: application/json");
-	    echo $st;
-	}
-	exit;
-}
-
 
 
 function update_app_last_change_date( $app_id ){

@@ -1,51 +1,59 @@
 <?php
-/*
-NOTE:  .htaccess session.cookie_lifetime, session.gc_maxlifetime  and $config_session_timeout  should be same
-redis security host can be common to all applicatins. there is no prefix for keys. 
-$config_redis_security_host  should be same in auto prepend file common security and application config.php file.
-applcation wise redis host should be separate and exclusive to application variables. 
-$config_main_domain = "backendlessapps.com";
-$config_main_default_domain = "www.backendlessapps.com";
- 
-if( $_SERVER['HTTP_HOST'] == "backendlessapps.com" ){
-	$config_mongo_host = "localhost:8889";
-	$config_mongo_port = 8889;
-	$config_mongo_db = "backendlessapps";
-	$config_mongo_debug = true;
 
-	$config_dynamic_host = "localhost:8889";
-	$config_dynamic_port = 8889;
-	$config_dynamic_db = "backendlessapps_user_tables";
-	$config_dynamic_debug = true;
+/* required config for local folder  in config_global_engine.php outside httpdocs
 
-	$config_mongo_task_queue_host = "localhost:8889";
-	$config_mongo_task_queue_port = 8889;
-	$config_mongo_task_queue_db = "backendlessapps_task_queues";
-	$config_mongo_task_queue_debug = true;
+$deployment_mode = "apache"; // apache / lambda / container
+$execution_mode = "local_folder"; // local_folder / cloud_folder
 
-	$config_redis_security_host = "localhost";
-	$config_redis_security_port = 6379;
+$config_global_apimaker_engine = [
 
-	$config_use_dev_otp = "12345";
-	$config_secret_key = '?^SsgZF-^?@cF@h&xr43T4w3w';
-	$config_crypt_type = 'aes256';
-	$config_secret_key_2 = '$#%#sdlkfs#%3';
-	$config_crypt_type_2 = 'aes256';	
+	// default database settings:
+	"config_engine_key" 			=> "",
+	"config_engine_app_id" 			=> "",
+	"config_apimaker_endpoint_url"			=> "http://v2.backendmaker.com/apimaker/",
 
-	$config_task_queue_url= "https://sqs.ap-south-1.amazonaws.com/492602576693/bre_task_queue_testbre4";
+	"config_engine_path"			=> "/engine/",
 
-	$config_pass_encrypt_keys = [
-		"k1"=>["key"=>"abcdef", "comments"=> "added on 2021july31st"],
-		"k2"=>["key"=>"qwerty", "comments"=> "added on 2021july31st"],
-	];
-	$config_pass_encrypt_default_key = "k1";
+	"config_engine_cache_interval"	=>	60, // seconds
+	"config_engine_cache_refresh_action_query_string"	=>	["cache"=>"refresh"], // seconds
 
-}else{
-	echo "<p>Unhandled Domain " . $_SERVER['HTTP_HOST'] . " </p>";
-	exit;
-}
+];
+*/ 
 
-$config_password_salt = "12345QEWER";
-$config_session_timeout = 86400;*/
+/* required config for Cloud folder  in config_global_engine.php outside httpdocs
 
-?>
+$deployment_mode = "apache"; // apache / lambda / container
+$execution_mode = "cloud_folder"; // local_folder / cloud_folder
+
+$config_global_engine = [
+
+	"timezone"						=> "Asia/Kolkata",
+
+	"config_apimaker_endpoint_url"			=> "http://v2.backendmaker.com/apimaker/",
+	"config_engine_cache_interval"	=>	60, // seconds
+	"config_engine_cache_refresh_action_query_string"	=>	["cache"=>"refresh"], // seconds
+
+	// default database settings:
+	"config_mongo_host" 			=> "localhost",
+	"config_mongo_port" 			=> 8889,
+	"config_mongo_db" 				=> "backendmaker_v2",
+	"config_mongo_debug"			=> true,
+	"config_mongo_username" 		=> "stage",
+	"config_mongo_password" 		=> "stage",
+	"config_mongo_authSource" 		=> "admin", // default is always admin
+	"config_mongo_tls" 				=> false,  // used for aws services or mongodb atlas
+	"config_mongo_prefix"			=> "apimaker", // [a-z] no special chars
+
+	//default cache database ( redis ) used for security, sessions
+	"config_use_redis" 				=> false,
+	"config_redis_host" 			=> "localhost",
+	"config_redis_port" 			=> 6379,
+	"config_redis_username" 		=> "",
+	"config_redis_password" 		=> "",
+
+	"config_encrypt_keys" 			=> [
+		"k1"	=>	["key"=>"abcdef", "comments"=> "default"],
+	],
+];
+
+*/

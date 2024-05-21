@@ -1,61 +1,50 @@
 <?php
 
-	/*
-		auth_api/generate_access_token
-		auth_api/user_authentication
-		tables_dynamic/table_id
-		tables/table_id
-	*/
+function engine_api( $method, $content_type, $path_params, $php_input ){
+	global $mongodb_con;
+	global $app_id;
+	global $db_prefix;
 
-	if( $_SERVER['REQUEST_METHOD']!="POST" ){
-		http_response_code(400);header("Coontent-Type:application/json");
-		echo json_encode(["status"=>"fail", "error"=>"Unexpected GET Request" ]);exit;
+
+	if( $method!="POST" ){
+		return [ 400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Unexpected GET Request" ]) ];
 	}
-	if( !preg_match("/(json|multipart)/i", $_SERVER['CONTENT_TYPE']) ){
-		http_response_code(400);header("Coontent-Type:application/json");
-		echo json_encode(["status"=>"fail", "error"=>"Unexpected Payload" ]);exit;
+	if( !preg_match("/(json|multipart)/i", $content_type) ){
+		return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Unexpected payload" ]) ];
 	}
-	if( preg_match("/json/i", $_SERVER['CONTENT_TYPE']) ){
-		$input_data = $php_input;
-		$_POST = json_decode($input_data, true);
+	if( preg_match("/json/i", $content_type) ){
+		$post = json_decode($php_input, true);
 		if( json_last_error() ){
 			$e = "JSON Parse Error: " . json_last_error_msg();
-			http_response_code(400);header("Coontent-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Payload Json Decode Fail" ]);exit;
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Payload Json Decode Fail" ]) ];
 		}
 	}
-	if( preg_match("/multipart/i", $_SERVER['CONTENT_TYPE']) ){
+	if( preg_match("/multipart/i", $content_type) ){
 	}
-
-	//print_r( $_POST );
 
 	if( !isset($path_params[1]) ){
-		http_response_code(404);header("Coontent-Type:application/json");
-		echo json_encode(["status"=>"fail", "error"=>"Are you lost." ]);exit;
+		return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"Are you lost" ]) ];
 	}
 	$action = "";
-	if( $_SERVER['REQUEST_METHOD'] =="POST"){
-		if( !isset($_POST['action']) ){
-			http_response_code(403);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Action missing" ]);exit;
+	if( $method =="POST"){
+		if( !isset($post['action']) ){
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Action Missing" ]) ];
 		}
-		$action = $_POST['action'];
+		$action = $post['action'];
 	}
 	if( $path_params[1] == "tables_dynamic" || $path_params[1] == "tables" ){
 		$options = [];
-		if( isset($_POST['options']) && is_array($_POST['options']) ){
-			$options = $_POST['options'];
-		}else if( isset($_POST['options']) && !is_array($_POST['options']) ){
-			http_response_code(403);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Options incorrect" ]);exit;
+		if( isset($post['options']) && is_array($post['options']) ){
+			$options = $post['options'];
+		}else if( isset($post['options']) && !is_array($post['options']) ){
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Options Incorrect" ]) ];
 		}
 	}
 
 	$thing_type = $path_params[1];
 	if( $path_params[1] == "captcha" ){
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"API Not found" ]);exit;
+			return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"API Not found" ]) ];
 		}
 		if( $path_params[2] == "get" ){
 			$thing_id = "10101";
@@ -65,8 +54,7 @@
 	if( $path_params[1] == "files" ){
 		$thing_type = "file";
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"API Not found" ]);exit;
+			return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"API not found" ]) ];
 		}
 		if( $path_params[2] == "internal" ){
 			$thing_id = "f0010";
@@ -76,8 +64,7 @@
 	if( $path_params[1] == "auth" ){
 		$thing_type = "auth_api";
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"API Not found" ]);exit;
+			return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"API not found" ]) ];
 		}
 		$action = $path_params[2];
 		$api_slug = $path_params[2];
@@ -96,62 +83,53 @@
 	if( $path_params[1] == "tables_dynamic" ){
 		$thing_type = "table_dynamic";
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Not found" ]);exit;
+			return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"API not found" ]) ];
 		}
 		$thing_id = $path_params[2];
 		if( !preg_match("/^[a-f0-9]{24}$/", $thing_id) ){
-			http_response_code(400);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Incorrect URL ID" ]);exit;
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Incorrect Table ID" ]) ];
 		}
 		$table_res = $mongodb_con->find_one( $db_prefix . "_tables_dynamic", [
 			"app_id"=>$app_id, "_id"=>$thing_id
 		]);
+		//print_r( ["app_id"=>$app_id, "_id"=>$thing_id]);
 		if( !$table_res['data'] ){
-			http_response_code(400);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Table not found" ]);exit;
+			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Table not found" ]) ];
 		}
 	}
 	if( $path_params[1] == "tables" ){
 		$thing_type = "table";
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Not found" ]);exit;
+			return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"Not found" ]) ];
 		}
 		$thing_id = $path_params[2];
 		if( !preg_match("/^[a-f0-9]{24}$/", $thing_id) ){
-			http_response_code(400);
-			echo json_encode(["status"=>"fail", "error"=>"Incorrect URL ID" ]);exit;
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Incorrect Table ID" ]) ];
 		}
 		$table_res = $mongodb_con->find_one( $db_prefix . "_tables", [
 			"app_id"=>$app_id, "_id"=>$thing_id
 		]);
 		if( !$table_res['data'] ){
-			http_response_code(400);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Table not found" ]);exit;
+			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Table not found" ]) ];
 		}
 	}
 	if( $path_params[1] == "storage_vaults" ){
 		$thing_type = "storage_vault";
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Not found" ]);exit;
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Not found" ]) ];
 		}
 		$thing_id = $path_params[2];
 		if( !preg_match("/^[a-f0-9]{24}$/", $thing_id) ){
-			http_response_code(400);
-			echo json_encode(["status"=>"fail", "error"=>"Incorrect URL ID" ]);exit;
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Incorrect Vault ID" ]) ];
 		}
 		$res = $mongodb_con->find_one( $db_prefix . "_storage_vaults", [
 			"app_id"=>$app_id, "_id"=>$thing_id
 		]);
 		if( !$res['data'] ){
-			http_response_code(400);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Table not found" ]);exit;
+			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Vault not found" ]) ];
 		}
 		$storage_vault = $res['data'];
 	}
-
 	$config_public_apis = [
 		["auth","verify_session_key"]
 	];
@@ -173,29 +151,19 @@
 
 	if( !$allow_policy ){{
 			if( !isset($_SERVER['HTTP_ACCESS_KEY']) ){
-				http_response_code(403);
-				header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Access-Key required" ]);exit;
+				return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key required" ]) ];
 			}else if( !preg_match( "/^[0-9a-f]{24}$/", $_SERVER['HTTP_ACCESS_KEY']) ){
-				http_response_code(403);
-				header("Content-Type: application/json");
-				echo json_encode(["status"=>"fail", "error"=>"Access-Key Incorrect" ]);exit;
+				return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Incorrect" ]) ];
 			}else{
 				$res = $mongodb_con->find_one( $db_prefix . "_user_keys", [
 					"app_id"=>$app_id,
 					"_id"=>$_SERVER['HTTP_ACCESS_KEY']
 				] );
 				if( !$res['data'] ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access-Key not found" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key not found" ]) ];
 				}
-				// echo time();
-				// print_pre( $res['data'] );exit;
 				if( $res['data']['expire'] < time() || $res['data']['active'] != 'y' ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access-Key Expired/InActive" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Expired/InActive" ]) ];
 				}
 				$ipf = false;
 				$x = explode(".", $_SERVER['REMOTE_ADDR']);
@@ -229,9 +197,7 @@
 					}
 				}
 				if( $ipf == false ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access Key IP rejected" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key IP rejected" ]) ];
 				}
 				//print_r( $res['data']['policies'] );exit;
 				$allow_policy = false;
@@ -268,9 +234,7 @@
 					}
 				}
 				if( $allow_policy == false ){
-					http_response_code(403);
-					header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Access Key Policy Rejected" ]);exit;
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Policy Rejected" ]) ];
 				}else{
 					$resu = $mongodb_con->update_one( $db_prefix . "_user_keys", [
 						"app_id"=>$app_id,
@@ -285,30 +249,25 @@
 
 	if( $thing_type == "captcha" ){
 		if( !isset($path_params[2]) ){
-			http_response_code(404);header("Coontent-Type:application/json");
-			echo json_encode(["status"=>"fail", "error"=>"API Not found" ]);exit;
+			return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"API not found" ]) ];
 		}
 		if( $path_params[2] == "get" ){
-			require("api_captcha.php");exit;
+			return generate_captcha();
 		}
 	}
 
 	if( $thing_type == "table" || $thing_type == "table_dynamic" ){
-		if( isset( $_POST['query'] ) && !is_array($_POST['query']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Query format mismatch" ]);exit;
+		if( isset( $post['query'] ) && !is_array($post['query']) ){
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Query format mismatch" ]) ];
 		}
-		if( isset( $_POST['options'] ) && !is_array($_POST['options']) ){
-			http_response_code(400);header("Content-Type: application/json");
-			echo json_encode(["status"=>"fail", "error"=>"Options format mismatch" ]);exit;
-		}else if( isset( $_POST['options'] ) && is_array($_POST['options']) ){
+		if( isset( $post['options'] ) && !is_array($post['options']) ){
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Options format mismatch" ]) ];
+		}else if( isset( $post['options'] ) && is_array($post['options']) ){
 			if( $action == "findMany" && $action == "updateMany" && $action == "deleteMany" ){
-				if( !isset( $_POST['options']['limit'] ) ){
-					http_response_code(400);header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Options:Limit is required" ]);exit;
-				}else if( !is_numeric( $_POST['options']['limit'] ) ){
-					http_response_code(400);header("Content-Type: application/json");
-					echo json_encode(["status"=>"fail", "error"=>"Options:Limit format mismatch" ]);exit;
+				if( !isset( $post['options']['limit'] ) ){
+					return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Options limit is required" ]) ];
+				}else if( !is_numeric( $post['options']['limit'] ) ){
+					return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Options limit format mismatch" ]) ];
 				}
 			}
 		}
@@ -389,19 +348,17 @@
 	}
 
 	if( $thing_type == "auth_api" ){
-		require_once("index_engine_api_auth_api.php");
+		return engine_auth_api( $api_slug, $post );
 	}else if( $thing_type == "table_dynamic" ){
-		require_once("index_engine_api_table_dynamic.php");
+		return engine_api_table_dynamic($action, $table_res, $options, $post);
 	}else if( $thing_type == "table" ){
-		require_once("index_engine_api_table.php");
+		return engine_api_table($action, $table_res, $options, $post);
 	}else if( $thing_type == "storage_vault" ){
-		require_once("index_engine_api_storage_vault.php");
+		return engine_api_storage_vault( $storage_vault, $action, $post );
 	}else if( $thing_type == "file" ){
-		require_once("index_engine_api_files.php");
+		return engine_api_files( $post );
 	}
 
+	return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access Key Accepted. But action missing","action"=>$post['action'] ]) ];
 
-	header("Content-Type: application/json");
-	echo json_encode(["status"=>"fail", "error"=>"Access Key Accepted. But action missing", "action"=>$_POST['action'] ]);exit;
-
-exit;
+}
