@@ -31,9 +31,7 @@
 
 				  <div class="accordion-item">
 				    <h2 class="accordion-header" id="apis">
-				      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseapis"  aria-controls="collapseapis">
-				        My APIs
-				      </button>
+				      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseapis"  aria-controls="collapseapis">My APIs</button>
 				    </h2>
 				    <div id="collapseapis" class="accordion-collapse collapse" aria-labelledby="apis" data-bs-parent="#main">
 				      <div class="accordion-body">
@@ -51,6 +49,7 @@
 								<div v-bind:id="'collapse'+d['_id']" class="accordion-collapse collapse" v-bind:aria-labelledby="d['_id']" data-bs-parent="#apis_list">
 									<div class="accordion-body">
 										<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="test_user_apis__('apis',ti)">Test</div>
+										<a class="btn btn-outline-dark btn-sm me-2" style="float:right;" v-bind:href="path+'apis/'+d['_id']+'/'+d['version_id']" target="_blank">Edit API</a>
 										<p>{{ d['des'] }}</p>
 										<div>{{ d['input-method'] }} {{ test_url__ }}{{ d['path'] }}{{ d['name'] }}</div>
 								      	<div v-if="d['input-method']=='POST'">Content-Type: {{ d['input-type'] }}</div>
@@ -431,11 +430,10 @@
 			<div>Body</div>
 			<!-- <textarea spellcheck="false" class="form-control form-control-sm" style="height:200px;" v-model="test_data__"></textarea> -->
 			<table v-if="test_api_method__=='GET'" class="table table-bordered table-sm w-auto" >
-				<tr v-for="dd,di in test_thing__" >
+				<tr v-for="dd,di in test_data__" >
 					<td>{{ di }}</td>
 					<td>
-						<input v-if="dd['type']=='file'" type="file" class="form-control form-control-sm" v-bind:id="'form_'+di">
-						<input v-else-if="dd['type']=='boolean'" type="checkbox" class="form-control form-control-sm" v-model="dd['value']">
+						<input v-if="dd['type']=='boolean'" type="checkbox" class="form-control form-control-sm" v-model="dd['value']">
 						<input v-else v-bind:type="dd['type']" class="form-control form-control-sm" v-model="dd['value']">
 					</td>
 				</tr>
@@ -585,6 +583,7 @@ var app = Vue.createApp({
 				return false;
 			}
 
+
 			if( this.test_api_method__ == "POST" ){
 				var multipart = false;
 				if( 'content-type' in this.test_thing__ ){
@@ -620,11 +619,11 @@ var app = Vue.createApp({
 					}
 				}
 			}else{
-				var v = this.ace_editor.getValue();
+				var v = this.test_data__;
 				console.log( JSON.stringify(v) );
 				var vquery = [];
 				for( var i in v ){
-					vquery.push( i + "=" + encodeURIComponent( v[ i ] ) );
+					vquery.push( i + "=" + encodeURIComponent( v[ i ]['value'] ) );
 				}
 				console.log( JSON.stringify(vquery) );
 				vquery = vquery.join("&");
@@ -874,14 +873,16 @@ var app = Vue.createApp({
 			this.test_api_method__ = this.apis[ 'apis' ][ ti ][ 'input-method' ];
 			this.test_path__ = this.apis[ 'apis' ][ ti ]['path'].substr(1,1000)+this.apis[ 'apis' ][ ti ]['name'];
 			if( this.test_api_method__ == "GET" ){
-				this.test_thing__ = this.apis[ 'apis' ][ ti ]['formdata'];
+				this.test_data__ = this.apis[ 'apis' ][ ti ]['formdata'];
 			}else{
 				this.test_data__ = this.apis[ 'apis' ][ ti ][ 'vpost' ];
 			}
 			// console.log( this.test_data__ );
 			this.test_popup__ = new bootstrap.Modal( document.getElementById('popup_test__') );
 			this.test_popup__.show();
-			setTimeout(this.init_ace, 500);
+			if( this.test_api_method__ == "POST" ){
+				setTimeout(this.init_ace, 500);
+			}
 		},
 		show_test6: function(t,ti){
 			this.terr = "";

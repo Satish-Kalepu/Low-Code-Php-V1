@@ -40,6 +40,7 @@
 				</div>
 			</template>
 			<input type="button" class="btn btn-outline-dark btn-sm" style="float:right;" value="SAVE TEST" v-on:click.stop="s2_ttset_evas">
+			<input type="button" class="btn btn-outline-dark btn-sm" style="float:right; margin-right: 5px;" value="Postman Export" v-on:click="s2_postman_export(btoa(s2_tttaen_lru(s2_lllru_tset)))">
 			<div v-if="s2_desu_cnysa"><input type="checkbox" id="vskip_async" v-model="s2_piks_cnysa" value="yes" > <label style="cursor:pointer;" for="vskip_async" >Skip Async! Execute all stages.</label></div>
 			<div><input type="checkbox" id="test_debug" v-model="s2_gubed_tset" v-on:click="s2_tnemnorivne_tset_tceles" title="Note: it would fetch too much data!" value="yes" > <label style="cursor:pointer;" for="test_debug" title="Note: it would fetch too much data!" >Retrieve debugging log!</label></div>
 			<div><input class="btn btn-outline-dark btn-sm" type="button" value="TEST" v-on:click.stop="s2_noitalumis_tset"></div>

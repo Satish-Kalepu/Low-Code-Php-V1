@@ -3,6 +3,7 @@
 function index_api($api_version, $get, $post, $php_input){
 
 	global $mongodb_con;
+	global $config_global_engine;
 	global $app_id;
 	global $db_prefix;
 
@@ -52,6 +53,7 @@ function index_api($api_version, $get, $post, $php_input){
 			}else if( !preg_match( "/^[0-9a-f]{24}$/", $_SERVER['HTTP_ACCESS_KEY']) ){
 				return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key incorrect" ]) ];
 			}else{
+				//echo $config_global_engine['config_mongo_prefix'] . "_user_keys";exit;
 				$res = $mongodb_con->find_one( $config_global_engine['config_mongo_prefix'] . "_user_keys", [
 					"app_id"=>$api_version['app_id'],
 					"_id"=>$_SERVER['HTTP_ACCESS_KEY']
