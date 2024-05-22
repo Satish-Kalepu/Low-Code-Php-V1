@@ -863,4 +863,121 @@ if( $config_param4 && $main_api ){
 		json_response("success", "OK");
 	}
 
+	if($_POST['action'] == "postman_collection_export") {
+		if(!isset($_POST['api_id'])) {
+			json_response("fail", "Page Id should not be empty");
+		}
+		if(!isset($_POST['version_id'])) {	
+			json_response("fail", "Version ID should not be empty");
+		}
+		if( !preg_match("/^[a-f0-9]{24}$/", $_POST['api_id'] ) ){
+			json_response("fail", "Error In Page Id");
+		}
+		if( !preg_match("/^[a-f0-9]{24}$/", $_POST['version_id'] ) ){
+			json_response("fail", "Error In Version Id");
+		}
+
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
+			"_id"=>$_POST['version_id']
+		]);
+		if( $res["status"] == "fail" ){
+			json_response("fail","Error finding version: ".$res["error"]);
+		}else if( !$res['data'] ){
+			json_response("fail","Version record not found");
+		}
+		$version = $res['data'];
+
+		if( $version['api_id'] != $_POST['api_id'] ){
+			json_response("fail","Incorrect version ID mapping");
+		}
+
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
+			"_id"=>$_POST['api_id']
+		]);
+		if( $res["status"] == "fail" ){
+			json_response("fail","Error finding API: ".$res["error"]);
+		}else if( !$res['data'] ){
+			json_response("fail","API record not found");
+		}
+
+		$api = $res['data'];
+
+		if( $api['version_id'] == $version['_id'] ){
+			/*Postman Collection Export Code*/
+			$json_data = array();
+
+			$json_data['info'] = ['_postman_id' => "",'name' => $version['name'],'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json','_exporter_id' => ""];
+
+			/*Post body input fields start*/
+
+			$req_json_data = array();
+
+			foreach($version['engine']['input_factors'] as $k => $v) {
+				if($version['test']['factors']['v'][$k]['v'] != "") {
+					$req_json_data[$k] = $version['test']['factors']['v'][$k]['v'];
+				}else {
+					$req_json_data[$k] = "";
+				}
+			}
+
+
+			$req_data = array();
+			$req_data['mode'] = "raw";
+			$req_data['raw'] = json_encode($req_json_data);
+			$req_data['options']['raw']['language'] = "json";
+
+			/*Post body input fields ends*/
+
+			/*Query string start*/
+
+			$que_data = array();
+			$url = str_replace("\n", "", base64_decode($_POST['engine_url']));
+			$query_str = parse_url($url);
+			parse_str($query_str['query'], $query_params);
+
+			foreach ($query_params as $key => $value) {
+				$que_data[] = ['key' => $key, 'value' => $value];
+			}
+
+			/*Query string ends*/
+
+			$req_url = array();
+			$req_url['raw'] = base64_decode($_POST['engine_url']);
+
+			$url_components = parse_url($req_url['raw']);
+
+			$req_url['protocol'] = $url_components['scheme'];;
+			$req_url['host'] = $url_components['host'];
+
+			$path = $url_components['path'];
+			$path_array = explode('/', trim($path, '/'));
+			$req_url['path'] = $path_array;
+
+			if(count($que_data) > 0) {
+				$req_url['query'] = $que_data;
+			}
+
+			$data_postman = array();
+			$data_postman['name'] = $version['name']." ".$version['des'];
+			$data_postman['request']['method'] = $version['input-method'];
+			$data_postman['request']['header'] = [];
+			if($data_postman['request']['method'] == "POST") {
+				$data_postman['request']['body'] = $req_data;
+			}
+			$data_postman['request']['url'] = $req_url;
+			$data_postman['response'] = [];
+
+			$doc_data = array();
+			$doc_data[] = $data_postman;
+			$json_data['item'] = $doc_data;
+			$json = json_encode($json_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+			$filename = $version['name']." ".$version['des'].".json";
+
+			json_response("success",["file" => $filename,'json_data' => $json]);
+		}else {
+			json_response("fail","Invalid Post Data");
+		}
+
+	}
 }
