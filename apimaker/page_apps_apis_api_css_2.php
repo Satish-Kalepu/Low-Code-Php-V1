@@ -240,6 +240,11 @@
 	.code_line [data-type=dropdown2]{ min-width: 20px;border: 1px solid #bbb; cursor:pointer; }
 	.code_line [data-type=dropdown2]:empty:before{content: "\feff";}
 
+	.code_line [data-type=dropdown3]:empty:before{content: "\feff";}
+	.code_line [data-type=dropdown3]{display: inline-block; position: relative; min-width:50px; min-height: 25px;outline: 0px; padding-left:5px; padding-right:25px;cursor:pointer;}
+	.code_line [data-type=dropdown3]:after{position: absolute; content: ""; top: 10px; right: 5px; width: 0; height: 0; border: 6px solid transparent; border-color: #9490ca transparent transparent transparent;}
+	.code_line [data-type=dropdown3]:hover:after{border-color: #333 transparent transparent transparent;}
+
 	.code_line [data-type=outdropdown]:empty:before{content: "\feff";}
 	.code_line [data-type=outdropdown]{ 
 		display: inline-block; position: relative;
