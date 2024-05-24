@@ -13,8 +13,7 @@
 			<div v-if="saved&&settings['enable']" style="display:flex; height: 40px;">
 				<div>
 					<input type="text" class="form-control form-control-sm w-auto d-inline" v-model="keyword" placeholder="Key">
-					<input type="button" class="mx-3 btn btn-outline-dark btn-sm" value="Search" v-on:click="load_keys()">
-					<input type="button" class="mx-3 btn btn-dark btn-sm" value="Add Key" v-on:click="add_configure()">
+					<input type="button" class="btn btn-outline-dark btn-sm" value="Search" v-on:click="load_keys()">
 				</div>
 			</div>
 			<div style="position:relative;overflow: auto; height: calc( 100% - 130px );">
@@ -73,8 +72,8 @@
 							<td><input type="text" v-model="show_key['key']" readonly class="form-control form-control-sm" placeholder="Token Key" ></td>
 						</tr>
 						<tr>
-							<td>TTL</td>
-							<td><input type="tel" v-model="show_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
+							<td>Time</td>
+							<td><input type="text" v-model="show_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
 						</tr>
 						<tr>
 							<td>Data</td>
@@ -83,36 +82,6 @@
 						<tr>
 							<td></td>
 							<td><input type="button" class="btn btn-outline-dark btn-sm" v-on:click="save_edit_details()" value="EDIT RECORD"></td>
-						</tr>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="modal fade" id="add_modal" tabindex="-1" >
-		<div class="modal-dialog model-sm">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Add Details</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body" >
-					<table class="table table-bordered table-sm w-100" v-if="'data' in add_key">
-						<tr>
-							<td>Token Key</td>
-							<td><input type="text" v-model="add_key['key']" class="form-control form-control-sm" placeholder="Token Key" ></td>
-						</tr>
-						<tr>
-							<td>TTL</td>
-							<td><input type="tel" v-model="add_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
-						</tr>
-						<tr>
-							<td>Data</td>
-							<td><input type="text" v-model="add_key['data']['data']" class="form-control form-control-sm" placeholder="Data" ></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="button" class="btn btn-outline-dark btn-sm" v-on:click="add_record_details()" value="ADD RECORD"></td>
 						</tr>
 					</table>
 				</div>
@@ -177,8 +146,7 @@
 				token: "",
 				saved: <?=($saved?"true":"false") ?>,
 				keys: [], popup: false,
-				show_key: {},
-				add_key : {}
+				show_key: {}
 			};
 		},
 		mounted:function(){
@@ -229,42 +197,6 @@
 			edit_configure: function(){
 				this.popup = new bootstrap.Modal(document.getElementById('edit_modal'));
 				this.popup.show();
-			},
-			add_configure: function(){
-				this.add_key = {
-					"key" : "",
-					"data" : {
-						"ttl" : "",
-						"data" : "",
-					}
-				}
-				this.popup = new bootstrap.Modal(document.getElementById('add_modal'));
-				this.popup.show();
-			},
-			add_record_details: function(){
-				if(this.add_key['key'] == "") {
-					alert("Please enter key name");
-					return
-				}
-				if(this.add_key['data']['ttl'] == "") {
-					alert('Please enter time of the Key');
-					return
-				}
-
-				if(this.add_key['data']['data'] == "") {
-					alert("Please Add Data to store");
-					return
-				}
-
-				this.show_key = {
-					"key" : this.add_key['key'],
-					"data" : {
-						'ttl' : this.add_key['data']['ttl'],
-						'data': this.add_key['data']['data']
-					}
-				}
-
-				this.save_edit_details();
 			},
 			load_key: function(k){
 				this.show_key = {
