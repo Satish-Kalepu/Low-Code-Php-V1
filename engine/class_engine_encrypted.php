@@ -3562,7 +3562,7 @@ class api_engine{
 		}
 		$db['details']['username'] = pass_decrypt($db['details']['username']);
 		$db['details']['password'] = pass_decrypt($db['details']['password']);
-		print_pre( $db );exit;
+		//print_pre( $db );exit;
 		//print_pre( $s2_eeeeeelbat );exit;
 
 		mysqli_report(MYSQLI_REPORT_OFF);
