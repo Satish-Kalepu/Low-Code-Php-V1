@@ -412,7 +412,9 @@
 	      				<span v-else>Active</span>
 	      			</td>
 	      			<td><input type="button" class="btn btn-outline-dark btn-sm" value="Clone" v-on:click="s2_enolc_noisrev(vd['_id'])" ></td>
-	      			<td><input v-if="s2_di_noisrev_tnerruc!=vd['_id']" type="button" class="btn btn-outline-danger btn-sm" value="X" ></td>
+	      			<td>
+	      				<input v-if="s2_di_noisrev_tnerruc!=vd['_id']" type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="s2_eteled_noisrev(vd['_id'])" >
+	      			</td>
 					<td><span v-if="'vn' in vd" >{{ vd['vn'] }}</span></td>
 	      		</tr>
 	      	</table>

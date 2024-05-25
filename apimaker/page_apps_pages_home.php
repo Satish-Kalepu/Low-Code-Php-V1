@@ -15,25 +15,26 @@
 			<div class="h3 mb-3">Pages</div>
 			<div style="clear: both;"></div>
 			<div style="height: calc( 100% - 100px ); overflow: auto;" >
+				<div v-if="msg" class="alert alert-primary py-0" >{{ msg }}</div>
+				<div v-if="err" class="alert alert-danger py-0" >{{ err }}</div>
 
-			<div v-if="msg" class="alert alert-primary py-0" >{{ msg }}</div>
-			<div v-if="err" class="alert alert-danger py-0" >{{ err }}</div>
-
-			<table class="table table-striped table-bordered table-sm" >
-				<tr>
-					<td>ID</td>
-					<td>Name/Path</td>
-					<td></td>
-				</tr>
-				<tr v-for="v,i in pages">
-					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
-					<td width="90%">
-						<div><a v-bind:href="path+'pages/'+v['_id']+'/'+v['version_id']" >/{{ v['name'] }}</a></div>
-						<div class="text-secondary">{{ v['des'] }}</div>
-					</td>
-					<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_page(i)" ></td>
-				</tr>
-			</table>
+				<table class="table table-striped table-bordered table-sm" >
+					<tbody>
+					<tr>
+						<td>ID</td>
+						<td>Name/Path</td>
+						<td></td>
+					</tr>
+					<tr v-for="v,i in pages">
+						<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
+						<td width="90%">
+							<div><a v-bind:href="path+'pages/'+v['_id']+'/'+v['version_id']" >/{{ v['name'] }}</a></div>
+							<div class="text-secondary">{{ v['des'] }}</div>
+						</td>
+						<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_page(i)" ></td>
+					</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>

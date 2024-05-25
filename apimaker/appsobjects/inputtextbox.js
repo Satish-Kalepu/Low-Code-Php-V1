@@ -154,7 +154,7 @@ const inputtextbox = {
 	},
 	template:`<div v-bind:class="'codeline_thing codeline_thing_'+v['t']" >
 		<div class="codeline_thing_pop" data-type="dropdown2" data-list="datatype" v-bind:data-for="datafor" v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]"  >{{ v['t'] }}</div>
-		<varselect2 v-if="v['t']=='V'" v-bind:data-k-type="v['t']" v-bind:data-plg="getplg()" title="Variable" v-bind:datavar="datavar+':v'" v-bind:datafor="datafor" v-bind:vars="vars" v-bind:v="v['v']"  ></varselect2>
+		<varselect2 v-if="v['t']=='V'" v-bind:data-k-type="v['t']" title="Variable" v-bind:datavar="datavar+':v'" v-bind:datafor="datafor" v-bind:vars="vars" v-bind:v="v['v']"  ></varselect2>
 		<div v-else-if="v['t']=='TI'" style="display:flex; gap:10px; " >
 			<div style="display:flex; border:1px solid #999; padding:3px;" >
 				<div>Id:</div>
@@ -166,13 +166,13 @@ const inputtextbox = {
 			</div>
 		</div>
 		<div v-else-if="v['t']=='TH'" style="display:flex; gap:10px; " >
-			<template v-if="'l' in v['v']" >
-			<div title="Thing" 		data-type="dropdown" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'" data-list="list" v-bind:data-list="thing_vars"  >{{ v['v']['th'] }}</div>
-			<div title="ThingItem"	data-type="dropdown" data-list="thing"  v-bind:data-thing="v['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'" v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg"  >{{ v['v']['l']['v'] }}</div>
-			</template><div>error!</div>
+			<template v-if="'l' in v['v']&&'th' in v" >
+				<inputtextbox v-bind:datafor="datafor" v-bind:v="v['th']" v-bind:datavar="datavar+':th'" ></inputtextbox>
+				<div title="ThingItem" data-type="dropdown" data-list="thing" v-bind:data-thing="v['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'"  >{{ v['v']['l']['v'] }}</div>
+			</template>
+			<div v-else>error!</div>
 		</div>
 		<div v-else-if="v['t']=='THL'"  title="Thing List Name" class="editable" v-bind:data-var="datavar+':v:th'" v-bind:data-for="datafor" ><div contenteditable spellcheck="false" placeholder="Thing Name" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'" data-allow="T"  >{{ v['v']['th'] }}</div></div>
-		<div v-else-if="v['t']=='PLG'" data-type="dropdown" data-list="plugins" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" title="Plugin"  >{{ v['v'] }}</div>
 		<div v-else-if="v['t']=='T'" title="Text" class="editable" v-bind:data-var="datavar+':v'" v-bind:data-for="datafor" ><div contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" v-bind:id="datavar+':v'" v-bind:data-allow="v['t']"   >{{ v['v'] }}</div></div>
 		<div v-else-if="v['t']=='TTold'" title="Text" class="editable" v-bind:data-var="datavar+':v'" v-bind:data-for="datafor" ><div contenteditable  spellcheck="false" class="editabletextarea" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" v-bind:data-allow="v['t']"  >{{ v['v'] }}</div></div>
 		<pre v-else-if="v['t']=='TT'" title="Multiline Text" data-type="objecteditable"  editable-type="TT" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"   style="margin-bottom:5px;" >{{ v['v'] }}</pre>
