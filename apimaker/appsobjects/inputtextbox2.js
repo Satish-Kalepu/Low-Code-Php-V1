@@ -16,7 +16,7 @@ const inputtextbox2 = {
 		},
 		types_: [],
 	}},
-	props: ["datafor", "datavar", "v", "types", "dataplg", "dataktype"],
+	props: ["datafor", "datavar", "v", "types"],
 	mounted: function(){
 		if( this.datafor == undefined){
 			this.datafor = "stages";
@@ -150,7 +150,7 @@ const inputtextbox2 = {
 	},
 	template:`<div v-bind:class="'codeline_thing codeline_thing_'+v['t']" >
 		<div v-if="types_.length!=1" class="codeline_thing_pop" data-type="dropdown2" data-list="datatype" v-bind:data-list-filter="types" v-bind:data-for="datafor" v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]" >{{ v['t'] }}</div>
-		<div v-if="v['t']=='V'" title="Variable" data-type="dropdown" data-list="vars" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'" v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg" >{{ v['v']['v'] }}</div>
+		<div v-if="v['t']=='V'" title="Variable" data-type="dropdown" data-list="vars" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'"  >{{ v['v']['v'] }}</div>
 		<div v-else-if="v['t']=='TI'" style="display:flex; gap:10px; " >
 			<div style="display:flex; border:1px solid #999; padding:3px;" >
 				<div>Id:</div>
@@ -162,11 +162,11 @@ const inputtextbox2 = {
 			</div>
 		</div>
 		<div v-else-if="v['t']=='TH'" style="display:flex; gap:10px; " >
-			<div v-if="'thfixed' in v==false" title="Thing" data-type="dropdown" data-list="things" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'" v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg" >{{ v['v']['th'] }}</div>
-			<div title="ThingItem" data-type="dropdown" data-list="thing" v-bind:data-thing="v['v']['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg"  >{{ v['v']['l']['v'] }}</div>
+			<div v-if="'thfixed' in v==false" title="Thing" data-type="dropdown" data-list="things" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'"  >{{ v['v']['th'] }}</div>
+			<div title="ThingItem" data-type="dropdown" data-list="thing" v-bind:data-thing="v['v']['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"   >{{ v['v']['l']['v'] }}</div>
 		</div>
 		<div v-else-if="v['t']=='THL'" placeholder="Thing Name" title="Thing List Name" class="editable" v-bind:data-var="datavar+':v:th'" v-bind:data-for="datafor" ><div placeholder="Thing Name" contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'" data-allow="T" >{{ v['v']['th'] }}</div></div>
-		<div v-else-if="v['t']=='TH'" title="Thing" data-type="dropdown" data-list="things" v-bind:data-thing="v['v']['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'" v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg" >{{ v['v']['v']['l'] }}</div>
+		<div v-else-if="v['t']=='TH'" title="Thing" data-type="dropdown" data-list="things" v-bind:data-thing="v['v']['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'"  >{{ v['v']['v']['l'] }}</div>
 		<div v-else-if="v['t']=='T'" title="Text" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" ><div contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" v-bind:id="datavar+':v'" v-bind:data-allow="v['t']"  >{{ v['v'] }}</div></div>
 		<pre v-else-if="v['t']=='TT'" title="Multiline Text" data-type="objecteditable"  editable-type="TT" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>
 		<pre v-else-if="v['t']=='HT'" title="Html Text" data-type="objecteditable"       editable-type="HT" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>
@@ -181,7 +181,7 @@ const inputtextbox2 = {
 		<div v-else-if="v['t']=='DT'" title="DateTime" data-type="popupeditable" v-bind:data-for="datafor" editable-type="dt" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v']['v'] }} {{ v['v']['tz'] }}</div>
 		<div v-else-if="v['t']=='TS'" title="Unix TimeStamp" data-type="popupeditable" v-bind:data-for="datafor" editable-type="ts" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v'] }}</div>
 		<div v-else-if="v['t']=='NL'" title="Null" ></div>
-		<div v-else v-bind:title="v['t']" data-type="dropdown" v-bind:data-list="v['t']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"  v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg"  >{{ v['v'] }}</div>
+		<div v-else v-bind:title="v['t']" data-type="dropdown" v-bind:data-list="v['t']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"    >{{ v['v'] }}</div>
 		<div v-if="types_.indexOf(v['t'])==-1" style='color:red;' >Type not allowed{{ v['t'] }} {{ types_ }}</div>
 	</div>`
 };

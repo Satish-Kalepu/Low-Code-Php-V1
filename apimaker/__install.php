@@ -477,7 +477,7 @@ if( $_POST['action'] == "saveconf" ){
 			"records"=>[]
 		],
 		"tables_dynamic"=>[
-			"indexes"=>[["keys"=>["app_id"=>1,"db_id"=>1]]],
+			"indexes"=>[["keys"=>["app_id"=>1]]],
 			"records"=>[]
 		],
 		"files"=>[
@@ -508,8 +508,16 @@ if( $_POST['action'] == "saveconf" ){
 			"indexes"=>[["keys"=>["category"=>1, "event"=>1, "date"=>1]]],
 			"records"=>[]
 		],
+		"storage_vaults"=>[
+			"indexes"=>[["keys"=>["app_id"=>1]]],
+			"records"=>[]
+		],
 		"session_tokens"=> [
-			"indexes"=>[["keys"=>["session_id"=>1]],["keys"=>["ip"=>1]],["keys"=>["expire"=>1],"ttl"=>true]],
+			"indexes"=>[
+				["keys"=>["session_id"=>1]],
+				["keys"=>["ip"=>1]],
+				["keys"=>["expire"=>1],"ttl"=>true, "expireAfterSeconds"=>0]
+			],
 			"records"=>[]
 		],
 		"users"=> [
@@ -521,6 +529,21 @@ if( $_POST['action'] == "saveconf" ){
 					'password_date'=>date("Y-m-d H:i:s"),'failed_attempts'=>0,'last_failed_date'=>"0000-00-00",'last_login_date'=>"0000-00-00","active_session_id"=>"none","role"=>"superadmin", // superadmin, admin, readonly
 				]
 			]
+		],
+		"user_keys"=> [
+			"indexes"=>[
+				["keys"=>["app_id"=>1]],
+				["keys"=>["expiret"=>1], "expireAfterSeconds"=>600]
+			],
+			"records"=>[]
+		],
+		"zlog_actions"=> [
+			"indexes"=>[["keys"=>["ip"=>1]]],
+			"records"=>[]
+		],
+		"zlog_requests"=> [
+			"indexes"=>[["keys"=>["app_id"=>1, "_id"=>1]]],
+			"records"=>[]
 		],
 	];
 

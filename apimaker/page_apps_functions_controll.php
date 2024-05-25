@@ -401,6 +401,32 @@ if( $config_param4 && $main_function ){
 		]);
 	}
 
+	if( $_POST['action'] == "app_function_delete" ){
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
+			"app_id"=>$config_param1,
+			"function_id"=>$main_function['_id'],
+			"_id"=>$_POST['version_id']
+		]);
+		if( !$res['data'] ){
+			json_response([
+				"status"=>"fail",
+				"error"=>"Version not found",
+			]);
+		}
+		if( $main_function['version_id'] == $_POST['version_id'] ){
+			json_response([
+				"status"=>"fail",
+				"error"=>"You cannot delete current version",
+			]);
+		}
+		$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
+			"app_id"=>$config_param1,
+			"function_id"=>$main_function['_id'],
+			"_id"=>$_POST['version_id']
+		]);
+		json_response($res);exit;
+	}
+
 	if( $_POST['action'] == "app_function_clone" ){
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
 			"app_id"=>$config_param1,

@@ -14,7 +14,7 @@
 				<div>
 					<input type="text" class="form-control form-control-sm w-auto d-inline" v-model="keyword" placeholder="Key">
 					<input type="button" class="mx-3 btn btn-outline-dark btn-sm" value="Search" v-on:click="load_keys()">
-					<input type="button" class="mx-3 btn btn-dark btn-sm" value="Add Key" v-on:click="add_configure()">
+					<input type="button" class="mx-3 btn btn-outline-dark btn-sm" value="Add Key" v-on:click="add_new_key()">
 				</div>
 			</div>
 			<div style="position:relative;overflow: auto; height: calc( 100% - 130px );">
@@ -230,7 +230,7 @@
 				this.popup = new bootstrap.Modal(document.getElementById('edit_modal'));
 				this.popup.show();
 			},
-			add_configure: function(){
+			add_new_key: function(){
 				this.add_key = {
 					"key" : "",
 					"data" : {

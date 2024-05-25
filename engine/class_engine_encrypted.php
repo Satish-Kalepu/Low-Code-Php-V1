@@ -849,6 +849,7 @@ class api_engine{
 				}
 				if( $s2_ddddegatsf['k']['v'] == "MySql" ){
 					$val = $this->s2_llllllqsym( $s2_ddddegatsf );
+					//print_r( $val );exit;
 				}
 				if( $s2_ddddegatsf['k']['v'] == "Internal-Table" ){
 					$val = $this->table_dynamic( $s2_ddddegatsf );
@@ -3168,6 +3169,7 @@ class api_engine{
 				'status'=>['t'=>"T","v"=>"fail"],
 				"error"=>['t'=>"T","v"=>"Database not found"]
 			]] );
+			return false;
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
@@ -3537,18 +3539,23 @@ class api_engine{
 		}else{
 			$s2_eeeeeerehw = $s2_ddddegatsf['d']['data']['where']['v'];
 		}
-
 		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) || !$s2_sssssserbd['data'] ){
+			//return ['status'=>"fail", "error"=>"Database not found"];
 			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
 				'status'=>['t'=>"T","v"=>"fail"],
 				"error"=>['t'=>"T","v"=>"Database not found"]
 			]] );
+			return false;
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
 		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) || !$tres['data'] ){
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"Database not found"]
+			]] );
 			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{
 			$s2_eeeeeelbat = $tres['data'];
@@ -3558,14 +3565,17 @@ class api_engine{
 		//print_pre( $db );exit;
 		//print_pre( $s2_eeeeeelbat );exit;
 
+		mysqli_report(MYSQLI_REPORT_OFF);
 		$mysql_con = mysqli_connect( $db['details']['host'], $db['details']['username'], $db['details']['password'], $db['details']['database'], (int)$db['details']['port'] ) ;
 		if( mysqli_connect_error() ){
-			$this->s2_tluser_tes( $output, [
-				'status'=>"fail", "error"=>"ConnectError:" . mysqli_connect_error()
-			] );return false;
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"ConnectError:" . mysqli_connect_error()]
+			]] );
+			return ['status'=>"fail", "error"=>"ConnectError:" . mysqli_connect_error()];
 		}
+		//echo "Connected";exit;
 		mysqli_options($mysql_con, MYSQLI_OPT_INT_AND_FLOAT_NATIVE, true); 
-		mysqli_report(MYSQLI_REPORT_OFF);
 
 		if( $s2_ttttttttca == "Insert" ){
 			//print_pre( $set );exit;

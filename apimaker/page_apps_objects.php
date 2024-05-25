@@ -6,7 +6,8 @@
 	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 
-			<div class="btn btn-sm btn-outline-secondary float-end" v-on:click="show_configure()" >Configure</div>
+			<div class="btn btn-sm btn-outline-dark float-end" v-on:click="show_configure()" >Configure</div>
+			<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="show_create()" >Create Node</div>
 			<div class="h3 mb-3"><span class="text-secondary" >Object Store</span></div>
 
 			<div v-if="saved&&settings['enable']" style="display:flex; height: 40px;">
@@ -21,23 +22,175 @@
 				<div v-if="err" class="alert alert-danger" >{{ err }}</div>
 
 
-				<div class="code_row code_line" >
-					<table class="table table-bordered table-sm w-auto" >
-						<tr>
-							<td>Label</td>
-							<td><inputtextbox datafor="new_object" v-bind:v="new_object['l']" datavar="new_object:l" ></inputtextbox></td>
-						</tr>
-						<tr>
-							<td>Instance Of</td>
-							<td><inputtextbox datafor="new_object" v-bind:v="new_object['l']" datavar="new_object:l" ></inputtextbox></td>
-						</tr>
-					</table>
+				<div>
+					<graph_object_new datavar="new_object" v-bind:v="new_object" ></graph_object_new>
+					<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create Object" v-on:click="create_new_object()"></div>
 				</div>
+
+
+				<div class="code_row code_line" >
+					<!-- <graph_object datavar="new_object" v-bind:v="new_object" ></graph_object> -->
+				</div>
+
+				<pre>{{ new_object }}</pre>
 
 				
 			</div>
 
 		</div>
+	</div>
+
+
+
+
+	<div id="context_menu__" data-context="contextmenu" class="context_menu__" v-bind:style="context_style__">
+		<template v-if="context_type__=='datatype'" >
+			<template v-if="context_list_filter__.length>0" >
+				<div v-for="id in context_list_filter__" v-bind:class="{'context_item':true,'cse':context_value__==id}" v-on:click.stop="context_select__(id,'datatype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ id }}</div><div style="display: inline; color:gray;" v-if="id in data_types__" >{{ data_types__[ id ] }}</div></div>
+			</template>
+			<div v-else >
+				<div style="display:flex;gap:20px;" >
+					<div>
+						<div v-for="id,ii in data_types1__" v-bind:class="{'context_item':true,'cse':context_value__==ii}" v-on:click.stop="context_select__(ii,'datatype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+					</div>
+					<div>
+						<div v-for="id,ii in data_types2__" v-bind:class="{'context_item':true,'cse':context_value__==ii}" v-on:click.stop="context_select__(ii,'datatype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+					</div>
+				</div>
+				<div v-if="is_it_let_assign_stage__()" class="context_item" v-on:click.stop="context_select__('ctf__','datatype')" >Convert to Function</div>
+			</div>
+		</template>
+		<template v-else-if="context_type__=='inputfactortypes'" >
+			<div v-for="id,ii in input_types__" class="context_item" v-on:click.stop="context_select__(ii,'inputtype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+		</template>
+		<template v-else-if="context_type__=='inputfactortypes2'" >
+			<div v-for="id,ii in input_types2__" class="context_item" v-on:click.stop="context_select__(ii,'inputtype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
+		</template>
+		<template v-else-if="context_type__=='list'" >
+			<div v-for="id in context_list__" class="context_item" v-on:click.stop="context_select__(id,'')" >{{ id }}</div>
+		</template>
+		<template v-else-if="context_type__=='list2'" >
+			<template v-if="'list2' in global_data__" >
+				<template v-if="typeof(global_data__['list2'])=='object'" >
+					<div v-for="fd,fi in global_data__['list2']" class="context_item" v-on:click.stop="context_select__(fd['k'],'')" >{{ fd['k'] + ': ' + fd['t'] }}</div>
+				</template>
+				<div v-else >List values incorrect</div>
+			</template>
+			<div v-else >List not defined</div>
+		</template>
+		<template v-else-if="context_type__=='vars'" >
+			<div v-if="Object.keys(all_factors_stage_wise__[ context_stage_id__ ]).length==0">No vars found</div>
+			<template v-else >
+				<div v-if="Object.keys(all_factors_stage_wise__[ context_stage_id__ ]).length>5" ><input spellcheck="false" type="text" id="contextmenu_key1"  data-context="contextmenu" data-context-key="contextmenu"  class="form-control form-control-sm" v-model="context_menu_key__"  ></div>
+				<div class="context_menu_list__" data-context="contextmenu" >
+					<template v-for="v,k in all_factors_stage_wise__[ context_stage_id__ ]" >
+						<template v-if="context_menu_key_match__(k)" >
+							<div v-if="v['t']=='O'" style="display:flex;" >
+								<div class="context_item" v-on:click.stop="context_select__(k,'var')" v-html="context_menu_key_highlight__(k)+ ': <abbr>'+data_types__[v['t']]+'</abbr>'" ></div>
+								<div v-if="context_expand_key__!=k" class="context_item_plus__" v-on:click.prevent.stop="context_expand_key__=k" >+</div>
+								<div v-if="context_expand_key__==k" class="context_item_plus__" v-on:click.prevent.stop="context_expand_key__=''" >-</div>
+							</div>
+							<div v-else-if="v['t'] in plugin_data__" style="display:flex;" >
+								<div class="context_item" v-on:click.stop="context_select__(k,'var')" v-html="context_menu_key_highlight__(k)+ ': <abbr>'+v['t']+'</abbr>'" ></div>
+							</div>
+							<div v-else class="context_item" v-on:click.stop="context_select__(k,'var')" v-html="context_menu_key_highlight__(k)+context_get_type_notation__(v)" ></div>
+							<template v-if="context_expand_key__==k" >
+								<template v-for="v2,k2 in get_object_props_list(context_stage_id__,k)" >
+									<div class="context_item" v-on:click.stop="context_select__(k + '->' + v2['k'],'var')" v-html="k + '->' + v2['k'] + ': <abbr>'+data_types__[v2['t']]+ '</abbr>'" ></div>
+								</template>
+							</template>
+						</template>
+					</template>
+				</div>
+			</template>
+		</template>
+		<template v-else-if="context_type__=='varsub'" >
+			<div v-if="context_var_for__ in config_object_properties__==false">No Props found {{ context_var_for__ }}</div>
+			<template v-else >
+				<div class="context_menu_list__" data-context="contextmenu" >
+					<template v-for="v,k in config_object_properties__[ context_var_for__ ]" >
+						<div class="context_item" v-on:click.stop="context_select__(k,'prop')" >{{ k }}</div>
+					</template>
+				</div>
+			</template>
+		</template>
+		<template v-else-if="context_type__=='boolean'" >
+			<div class="context_item" v-on:click.stop="context_select__('true','')" >true</div>
+			<div class="context_item" v-on:click.stop="context_select__('false','')" >false</div>
+		</template>
+		<template v-else-if="context_type__=='order'" >
+			<div class="context_item" v-on:click.stop="context_select__('a-z','')" >a-z</div>
+			<div class="context_item" v-on:click.stop="context_select__('z-a','')" >z-a</div>
+		</template>
+		<template v-else-if="context_type__=='things'" >
+			<div v-for="td,ti in things_used__" class="context_item" v-on:click.stop="context_select__(ti,'thing')" >{{ ti }}</div>
+		</template>
+		<template v-else-if="context_type__=='thing'" >
+			<div>{{ context_thing__ }}</div>
+			<template v-if="context_thing__ in context_thing_list__" >
+				<template v-if="context_thing_list__[context_thing__].length>5" >
+					<div><input spellcheck="false" type="text" id="contextmenu_key1"  data-context="contextmenu" data-context-key="contextmenu"  class="form-control form-control-sm" v-model="context_menu_key__"  ></div>
+				</template>
+			</template>
+			<div class="context_menu_list__" data-context="contextmenu" >
+				<!--<pre>{{ context_thing_list__ }}</pre>-->
+				<div v-if="context_thing_msg__" class="text-success" >{{ context_thing_msg__ }}</div>
+				<div v-if="context_thing_err__" class="text-danger" >{{ context_thing_err__ }}</div>
+				<template v-if="context_thing__ in context_thing_list__" >
+					<template v-for="fv,fi in context_thing_list__[ context_thing__ ]" >
+						<div v-if="context_menu_key_match__(fv['l']['v'])" class="context_item" v-on:click.stop="context_select__(fv,context_type__)" v-html="context_menu_thing_highlight__(fv)" ></div>
+					</template>
+				</template>
+				<div v-else>List undefined</div>
+			</div>
+		</template>
+		<template v-else-if="context_type__=='graph-thing'" >
+			<div>{{ context_thing_label__ }}</div>
+			<template v-if="context_thing__ in context_thing_list__" >
+				<template v-if="context_thing_list__[context_thing__].length>5" >
+					<div><input spellcheck="false" type="text" id="contextmenu_key1"  data-context="contextmenu" data-context-key="contextmenu"  class="form-control form-control-sm" v-model="context_menu_key__"  ></div>
+				</template>
+			</template>
+			<div class="context_menu_list__" data-context="contextmenu" >
+				<!--<pre>{{ context_thing_list__ }}</pre>-->
+				<div v-if="context_thing_msg__" class="text-success" >{{ context_thing_msg__ }}</div>
+				<div v-if="context_thing_err__" class="text-danger" >{{ context_thing_err__ }}</div>
+				<template v-if="context_thing__ in context_thing_list__" >
+					<template v-for="fv,fi in context_thing_list__[ context_thing__ ]" >
+						<div v-if="context_menu_key_match__(fv['l']['v'])" class="context_item" v-on:click.stop="context_select__(fv,context_type__)" v-html="context_menu_thing_highlight__(fv)" ></div>
+					</template>
+				</template>
+				<div v-else>List undefined</div>
+			</div>
+		</template>
+		<div v-else>No list configured {{ context_type__ }}</div>
+	</div>
+
+
+	<div class="modal fade" id="create_popup" tabindex="-1" >
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Create Object</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+		        	<div>Name/Thing/Node</div>
+
+					<div class="code_row code_line" >
+						<graph_object_new datavar="new_object" v-bind:v="new_object" ></graph_object_new>
+						<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create Object"></div>
+					</div>
+
+		        	<div v-if="cmsg" class="alert alert-success" >{{ cmsg }}</div>
+		        	<div v-if="cerr" class="alert alert-success" >{{ cerr }}</div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+		        <button type="button" class="btn btn-primary btn-sm"  v-on:click="createnow">Create</button>
+		      </div>
+		    </div>
+		  </div>
 	</div>
 
 
@@ -48,6 +201,7 @@
 <script>
 <?php
 $components = [
+	"graph_object","graph_object_new",
 	"inputtextbox", "inputtextbox2", 
 	"varselect", "varselect2", 
 	"vobject", "vobject2", "vlist", 
@@ -64,19 +218,33 @@ var app = Vue.createApp({
 			"path": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
 			"objectpath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/",
 			"app_id" : "<?=$app['_id'] ?>",
-			"settings": <?=json_encode($app['internal_redis']) ?>,
-			"smsg": "", "serr":"","msg": "", "err":"","kmsg": "", "kerr":"",
+			"context_api_url__": "?",
+			"smsg": "", "serr":"","msg": "", "err":"","cmsg": "", "cerr":"","kmsg": "", "kerr":"",
 			"keyword": "",
 			"token": "",
 			"saved": <?=($saved?"true":"false") ?>,
-			"keys": [], popup: false,
+			"keys": [], "settings_popup": false, "create_popup": false,
 			"show_key": {},
 			"new_object": {
 				"l": {"t":"T","v":"testing"},
-				"i_of": [{"t":"th","v":{"l": "", "i":""}}],
-				"p_of": [{"t":"th","v":{"l": "", "i":""}}],
+				"i_of": {
+					"t":"GT", 
+					"th":{"l": {"t":"T","v":""}, "i":{"t":"T","v":""} },
+					"v": {"l": {"t":"T","v":""}, "i":{"t":"T","v":""} }
+				}
+			},
+			"edit_object": {
+				"l": {"t":"T","v":"testing"},
+				"i_of": {"t":"L","v":[
+					{
+						"t":"GT", 
+						"th":{"l": {"t":"T","v":""}, "i":{"t":"T","v":""} },
+						"v":{"l": {"t":"T","v":""}, "i":{"t":"T","v":""} }
+					}
+				]},
+				"p_of": [{"t":"TH", "th": "", "v":{"l": {"t":"T","v":""}, "i":{"t":"T","v":""} }}],
 				"props": [
-					{"p": {"t":"T","v":""}, "v": [{"t":"th","v":{"l": "", "i":""}}]}
+					{"p": {"t":"T","v":"" }, "v": [{"t":"TH","v":{"l": {"t":"T","v":""}, "i":{"t":"T","v":""} }}]}
 				]
 			},
 			"is_locked__"			: false,
@@ -126,7 +294,6 @@ var app = Vue.createApp({
 				"B64": "Base64",
 			},
 			context_menu__: false,
-			context_for__: 'stages',
 			context_var_for__: '',
 			context_dependency__: "",
 			context_callback__: "",
@@ -142,6 +309,7 @@ var app = Vue.createApp({
 			context_menu_key__: "",
 			context_expand_key__: "",
 			context_thing__: "",
+			context_thing_label__: "",
 			context_thing_list__: {},
 			context_thing_loaded__: false,
 			context_thing_msg__: "",
@@ -164,7 +332,6 @@ var app = Vue.createApp({
 			doc_popup_doc__: "",
 			doc_popup_text__: "Loading...",
 
-			simple_popup_stage_id__: -1,
 			simple_popup_data__: {},
 			simple_popup_for__: "",
 			simple_popup_datavar__: "",
@@ -191,6 +358,30 @@ var app = Vue.createApp({
 		window.addEventListener("paste", this.event_paste__, true);
 	},
 	methods: {
+
+		create_new_object: function(){
+			this.cerr = "";this.cmsg = "";
+			if( this.new_object['l']['v'] == "" ){
+				this.cerr = "Need label";return false;
+			}else if( this.new_object['l']['v'].match(/^[a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{1,100}$/) == null ){
+				this.cerr = "Label should follow format [a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}";return false;
+			}
+			if( this.new_object['i_of']['th']['i']['v'] == "" ){
+				this.cerr = "Need instance/tag type";return false;
+			}
+			if( this.new_object['i_of']['v']['i']['v'] == "" ){
+				this.cerr = "Need instance/tag";return false;
+			}
+			axios.post("?",{
+				"action": "object_create_object",
+				"data": this.new_object
+			}).then(response=>{
+				
+			}).catch(error=>{
+				
+			});
+		},
+
 		event_scroll__: function(e){
 			if( this.context_menu__ ){
 				this.set_context_menu_style__();
@@ -255,9 +446,7 @@ var app = Vue.createApp({
 			var f = false;
 			var el_context = false;
 			var el_data_type = false;
-			var stage_id = -1;
 			var data_var = "";
-			var data_for = "";
 			var data_var_parent = "";
 			var data_var_l = [];
 			var zindex=0;
@@ -276,23 +465,11 @@ var app = Vue.createApp({
 						if( el.hasAttribute("data-type") && el_data_type == false ){
 							el_data_type = el;
 						}
-						if( el.hasAttribute("data-for") && data_for == '' ){
-							data_for = el.getAttribute("data-for");
-						}
-						if( el.hasAttribute("data-plg") && plugin == '' ){
-							plugin = el.getAttribute("data-plg");
-						}
-						if( el.hasAttribute("data-k-type") && ktype == '' ){
-							ktype = el.getAttribute("data-k-type");
-						}
 						if( el.hasAttribute("data-var") && data_var == false ){
 							data_var = el.getAttribute("data-var");
 						}
 						if( el.hasAttribute("data-var-parent") && data_var_parent == "" ){
 							data_var_parent = el.getAttribute("data-var-parent");
-						}
-						if( el.hasAttribute("data-stagei") ){
-							stage_id = Number(el.getAttribute("data-stagei"));
 						}
 						if( el.className == "help-div" ){
 							doc = el.getAttribute("doc");
@@ -302,7 +479,6 @@ var app = Vue.createApp({
 						if( el.className == "help-div2" ){
 							doc = el.getAttribute("data-help");
 							this.simple_popup_el__ = el;
-							this.simple_popup_stage_id__ = -1;
 							this.simple_popup_datavar__ = "d";
 							this.simple_popup_for__ = "stages";
 							this.simple_popup_data__ = doc;
@@ -320,16 +496,15 @@ var app = Vue.createApp({
 					break;
 				}
 			}
-			//console.log();
+			console.log( el );
+			console.log( el_data_type );
 			if( el_data_type ){
 				var t = el_data_type.getAttribute("data-type");
 				if( t == "type_pop" ){
 
 				}else if( t == "objecteditable" ){
-					this.popup_stage_id__ = stage_id;
 					this.popup_datavar__ = data_var;
-					this.popup_for__ = data_for;
-					var v = this.get_editable_value__({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
+					var v = this.get_editable_value__({'data_var':data_var});
 					if( v === false ){console.log("event_click: value false");return false;}
 					this.popup_data__ = v;
 					this.popup_type__ = el_data_type.getAttribute("editable-type");
@@ -368,10 +543,8 @@ var app = Vue.createApp({
 
 				}else if( t == "popupeditable" ){
 					this.simple_popup_el__ = el_data_type;
-					this.simple_popup_stage_id__ = stage_id;
 					this.simple_popup_datavar__ = data_var;
-					this.simple_popup_for__ = data_for;
-					var v = this.get_editable_value__({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
+					var v = this.get_editable_value__({'data_var':data_var});
 					if( v === false ){console.log("event_click: value false");return false;}
 
 					this.simple_popup_data__ = v;
@@ -381,10 +554,8 @@ var app = Vue.createApp({
 					this.set_simple_popup_style__();
 
 				}else if( t == "payloadeditable" ){
-					this.popup_stage_id__ = stage_id;
 					this.popup_datavar__ = data_var;
-					this.popup_for__ = data_for;
-					var v = this.get_editable_value__({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
+					var v = this.get_editable_value__({'data_var':data_var});
 					if( v === false ){console.log("event_click: value false");return false;}
 					this.popup_data__ = v;
 					this.popup_type__ = 'PayLoad';
@@ -395,18 +566,11 @@ var app = Vue.createApp({
 					this.context_el__ = el_data_type;
 					this.context_value__ = el_data_type.innerHTML;
 					this.context_menu_key__ = "";
-					this.context_for__ = data_for;
 					this.context_datavar__ = data_var;
-					var v = this.get_editable_value__({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
+					var v = this.get_editable_value__({'data_var':data_var});
+					console.log( v );
 					if( v === false ){console.log("event_click: value false");return false;}
-					//console.log("dropdown click: " + data_for + ": " + data_var );
-					this.context_stage_id__ = stage_id;
 					this.context_type__ = el_data_type.getAttribute("data-list");
-					if( this.context_type__ == "varsub" || this.context_type__ == "plgsub" ){
-						this.context_var_for__ = el_data_type.getAttribute("var-for");
-					}else{
-						this.context_var_for__ = "";
-					}
 					if( el_data_type.hasAttribute("data-context-dependency") ){
 						this.context_dependency__ = el_data_type.getAttribute("data-context-dependency");
 					}else{
@@ -426,9 +590,21 @@ var app = Vue.createApp({
 					if( this.context_type__ == "thing" ){
 						if( el_data_type.hasAttribute("data-thing") ){
 							this.context_thing__ = el_data_type.getAttribute("data-thing");
+							console.log( this.context_thing__ );
 							setTimeout(this.context_thing_list_load_check__,300);
 						}else{
 							this.context_thing__ = "UnKnown";
+						}
+					}
+					if( this.context_type__ == "graph-thing" ){
+						if( el_data_type.hasAttribute("data-thing") ){
+							this.context_thing__ = el_data_type.getAttribute("data-thing");
+							this.context_thing_label__ = el_data_type.getAttribute("data-thing-label");
+							console.log( this.context_thing__ );
+							setTimeout(this.context_thing_list_load_check__,300);
+						}else{
+							this.context_thing__ = "UnKnown";
+							this.context_thing_label__ = "Unknown";
 						}
 					}
 					this.context_datavar_parent__ = data_var_parent;
@@ -456,7 +632,7 @@ var app = Vue.createApp({
 					this.set_context_menu_style__();
 
 				}else if( t == "editablebtn" ){
-					setTimeout( this.editablebtn_click__, 100, el_data_type, data_var, data_for, stage_id, e );
+					setTimeout( this.editablebtn_click__, 100, el_data_type, data_var, e );
 				}else{
 					console.log("event_click__Unknown");
 				}
@@ -528,8 +704,12 @@ var app = Vue.createApp({
 			}
 		},
 		show_configure: function(){
-			this.popup = new bootstrap.Modal(document.getElementById('settings_modal'));
-			this.popup.show();
+			this.settings_popup = new bootstrap.Modal(document.getElementById('settings_modal'));
+			this.settings_popup.show();
+		},
+		show_create: function(){
+			this.create_popup = new bootstrap.Modal(document.getElementById('create_popup'));
+			this.create_popup.show();
 		},
 		load_keys: function(){
 			var k = "";
@@ -630,189 +810,22 @@ var app = Vue.createApp({
 			}
 		},
 		context_select__: function(k, t){
-			//console.log( "context select: "+ this.context_for__  + ": " + this.context_datavar__ + ": " + k +  ": " + t );
-			if( this.context_for__ == 'engine' ){
-				this.set_sub_var__( this.engine__, this.context_datavar__, k );
-				if( t == "inputtype" ){
-					this.update_variable_type__( this.engine__, this.context_datavar__, k );
-				}
-			}else if( this.context_for__ == 'test__' ){
-				this.set_sub_var__( this.test__, this.context_datavar__, k );
-				console.log( t );
-				if( t == "datatype" ||  t == "inputtype" ){
-					this.update_variable_type__( this.test__, this.context_datavar__, k );
-				}
-			}else if( this.context_for__ == 'api' ){
-				this.set_sub_var__( this.api__, this.context_datavar__, k );
-				if( this.context_datavar__ == "input-method" ){
-					if( k == 'GET' ){
-						this.set_sub_var__(this.api__, 'input-type', 'query_string' );
-						this.set_sub_var__(this.api__, 'output-type', 'application/json' );
-					}else if( k == 'POST' ){
-						this.set_sub_var__(this.api__, 'input-type', 'application/json' );
-						this.set_sub_var__(this.api__, 'output-type', 'application/json' );
-					}
-				}
-			}else if( this.context_for__ == 'stages' ){
-				if( this.context_datavar__ == "k" ){
-					if( t == 'o' ){
-						var d = this.get_o_sub_var__( this.all_factors_stage_wise__[ this.context_stage_id__ ], k );
-						if( d ){
-							t = d['t'];
-						}else{
-							this.echo__( k + " not found in stage_vars ");
-						}
-					}
-					if( t == 'c' ){
-
-					}
-					var k = {
-						"v": k,
-						"t": t,
-						"vs": false,
-					};
-					this.stage_change_stage__(this.context_stage_id__, k, t);
-					this.hide_context_menu__();
-					this.updated_option__();return;
-
-				}else{
-					if( t == "datatype" && this.context_datavar__ == "d:rhs:t" && k == "ctf__" ){
-						this.stage_change_stage_to_function__( this.context_stage_id__ );
-						this.hide_context_menu__();
-						return;
+			this.set_sub_var__( this, this.context_datavar__, k );
+			if( t == "datatype" ){
+				this.update_variable_type__( this.context_datavar__, k );
+			}
+			if( this.context_callback__ ){
+				var x = this.context_callback__.split(/\:/g);
+				var vref = x.splice(0,1);
+				if( vref in this.$refs ){
+					if( "length" in this.$refs[ vref ] ){
+						this.$refs[ vref ][0].callback__(x.join(":"));
 					}else{
-						if( typeof(k) == "string" || typeof(k) == "number" ){
-							this.set_stage_sub_var__( this.context_stage_id__, this.context_datavar__, k );
-						}
-						if( t == 'prop' ){
-							var vt = this.get_stage_sub_var__( this.context_stage_id__, this.context_datavar_parent__+":t" );
-							if( vt in this.config_object_properties__ ){
-								if( k in this.config_object_properties__[ vt ] ){
-									this.set_stage_sub_var__( this.context_stage_id__, this.context_datavar_parent__+":vs:d", this.json__(this.config_object_properties__[ vt ][k]) );
-								}
-							}
-						}
-						if( t == "plugin" ){
-							if( k in this.plugin_data__ ){
-								var x = this.context_datavar__.split(/\:/g);
-								x.pop(0);
-								var dvp = x.join(":");
-								this.set_stage_sub_var__( this.context_stage_id__, dvp+':vs', {"v": ".", "t": "n", "d": {}} );
-							}else{
-								console.error("selected plugin: " + k + " not found");
-								this.set_stage_sub_var__( this.context_stage_id__, this.context_datavar_, "" );
-							}
-						}
-						if( t == "thing" ){
-							this.set_stage_sub_var__( this.context_stage_id__, this.context_datavar__, k );
-						}
-						if( t == "datatype" ){
-							if( k == "ctf__" ){
-								
-							}else{
-								this.update_variable_type__( this.engine__['stages'][ this.context_stage_id__ ], this.context_datavar__, k );
-								if( this.engine__['stages'][ this.context_stage_id__ ]['k']['v'] == "Let" ){
-									var a = this.engine__['stages'][ this.context_stage_id__ ]['d']['lhs'];
-									if( this.engine__['stages'][ this.context_stage_id__ ]['d']['rhs']['t'] == "Function" ){
-										var t = this.engine__['stages'][ this.context_stage_id__ ]['d']['rhs']['v']['return']+'';
-									}else{
-										var t = this.engine__['stages'][ this.context_stage_id__ ]['d']['rhs']['t'];
-									}
-									if( t == "TT" ){ t = "T"; }
-									if( t != "Function" ){
-										setTimeout(this.update_variable_type_change_in_sub_stages__, 100, this.context_stage_id__, a, t);
-									}
-								}
-							}
-						}
-						if( t == "function" ){
-							if( k != "" ){
-								if( k in this.functions__ ){
-									var vt = this.context_datavar_parent__+":inputs";
-									this.set_stage_sub_var__( this.context_stage_id__, vt, {} );
-									var p__ = this.json__( this.functions__[k]['inputs'] );
-									var r__ = this.functions__[k]['return'];
-									var s__ = this.functions__[k]['self'];
-									setTimeout(this.set_function_inputs__, 100, this.context_datavar_parent__, p__, r__, s__);
-								}else{
-									console.log("function error: " + k + " not found!");
-								}
-							}
-						}
-						if( t == "var" ){
-							var d = this.get_o_sub_var__( this.all_factors_stage_wise__[ this.context_stage_id__ ], k );
-							if( d ){
-								var x = this.context_datavar__.split(/\:/g);
-								x.pop();
-								var new_path = x.join(":");
-								var var_type = d['t'];
-								//console.log( var_type );
-								this.set_stage_sub_var__( this.context_stage_id__, new_path+':t', var_type );
-								this.set_stage_sub_var__( this.context_stage_id__, new_path+':vs', {"v": "","t": "","d": {} } );
-								if( var_type in this.plugin_data__ ){
-									this.set_stage_sub_var__( this.context_stage_id__, new_path+':plg', var_type, true );
-								}else{
-									this.remove_stage_sub_var__( this.context_stage_id__, new_path+':plg' );
-								}
-								var s = this.get_stage_sub_var__( this.context_stage_id__, new_path );
-								this.set_stage_sub_var__( this.context_stage_id__, new_path, this.json__( s ) );
-							}
-						}
-						if( t == "operator" ){
-							var op = this.get_stage_sub_var__( this.context_stage_id__, this.context_datavar__ );
-							x = this.context_datavar__.split(/\:/g);
-							x.pop();
-							var vn = Number(x.pop());
-							var mvar = x.join(":");
-							var mdata = this.get_stage_sub_var__( this.context_stage_id__, mvar );
-							if( mvar == "d:rhs" ){
-								if( op == "." ){
-									while( mdata.length-1 > vn ){
-										mdata.pop();
-									}
-									this.set_stage_sub_var__( this.context_stage_id__, mvar, mdata );
-								}else{
-									if( mdata.length-1 == vn ){
-										mdata.push({ "m": [ {"t":"N","v":"333", "OP":"."} ], "OP": "." });
-										this.set_stage_sub_var__( this.context_stage_id__, mvar, mdata );
-									}else{
-										this.echo__("update existing operator");
-									}
-								}
-							}else{
-								if( op == "." ){
-									while( mdata.length-1 > vn ){
-										mdata.pop();
-									}
-									this.set_stage_sub_var__( this.context_stage_id__, mvar, mdata );
-								}else{
-									if( mdata.length-1 == vn ){
-										mdata.push({"t":"N","v":"333", "OP":"."});
-										this.set_stage_sub_var__( this.context_stage_id__, mvar, mdata );
-									}else{
-										this.echo__("update existing operator");
-									}
-								}
-							}
-						}
-						if( this.context_callback__ ){
-							var x = this.context_callback__.split(/\:/g);
-							var vref = x.splice(0,1);
-							if( vref in this.$refs ){
-								if( "length" in this.$refs[ vref ] ){
-									this.$refs[ vref ][0].callback__(x.join(":"));
-								}else{
-									this.$refs[ vref ].callback__(x.join(":"));
-								}
-							}else{
-								console.error("Ref: " + vref + ": not found");
-								//this.$refs[ x[0] ][ x[1] ]();
-							}
-						}
+						this.$refs[ vref ].callback__(x.join(":"));
 					}
+				}else{
+					console.error("Ref: " + vref + ": not found");
 				}
-			}else{
-				console.error("context_select error: data_for unknown: "+ this.context_for__ );
 			}
 			this.hide_context_menu__();
 			setTimeout(this.updated_option__,100);
@@ -993,10 +1006,8 @@ var app = Vue.createApp({
 		},
 		find_parents__: function(el){
 			var v = {
-				'stage_id':-1,
 				'data_var': '',
 				'data_type': '',
-				'data_for': '',
 				'plugin': '',
 			};
 			var f = false;
@@ -1009,12 +1020,6 @@ var app = Vue.createApp({
 					}
 					if( el.hasAttribute("data-var") && v['data_var'] == '' ){
 						v['data_var'] = el.getAttribute("data-var");
-					}
-					if( el.hasAttribute("data-for") && v['data_for'] == '' ){
-						v['data_for'] = el.getAttribute("data-for");
-					}
-					if( el.hasAttribute("data-stagei") ){
-						v['stage_id'] = Number(el.getAttribute("data-stagei"));
 					}
 					if( el.hasAttribute("data-plg") && v['plugin'] == '' ){
 						v['plugin'] = el.getAttribute("data-plg");
@@ -1061,7 +1066,7 @@ var app = Vue.createApp({
 			this.simple_popup_style__ = "top: "+s.top+"px;left: "+s.left+"px;";
 		},
 
-		editablebtn_click__: function( el_data_type, data_var, data_for, stage_id, e ){
+		editablebtn_click__: function( el_data_type, data_var,e ){
 			var v = el_data_type.previousSibling.innerText;
 			v = v.replace(/[\u{0080}-\u{FFFF}]/gu, "");
 			// v = v.replace( /\&nbsp\;/g, " " );
@@ -1069,7 +1074,7 @@ var app = Vue.createApp({
 			// v = v.replace( /\&lt\;/g,  "<" );
 			vv = this.v_filter__(v, el_data_type.previousSibling );
 			if( vv == v ){
-				this.update_editable_value__({'data_var':data_var,'data_for':data_for,'stage_id':stage_id}, v);
+				this.update_editable_value__({'data_var':data_var}, v);
 				setTimeout( this.editable_check__, 100, e.target );
 				setTimeout( this.updated_option__, 200 );
 				if( e.target.hasAttribute("validation_error") ){
@@ -1090,24 +1095,14 @@ var app = Vue.createApp({
 			return v;
 		},
 		update_editable_value__: function(s, v){
-			if( s['data_for'] in this ){
-				var ov = this.get_sub_var__(this[ s['data_for'] ], s['data_var'], v);
-				if( ov != v ){
-					this.set_sub_var__(this[ s['data_for'] ], s['data_var'], v);
-					this.check_sub_key__(this[ s['data_for'] ], s['data_var'], v);
-				}
-			}else{
-				console.error("update_editable_value__: data_for unknown: " + s['data_for'] + ": " + s['data_var'] );
-				return false;
+			var ov = this.get_sub_var__(this, s['data_var'], v);
+			if( ov != v ){
+				this.set_sub_var__(this, s['data_var'], v);
+				this.check_sub_key__(this, s['data_var'], v);
 			}
 		},
 		get_editable_value__: function(s){
-			if( s['data_for'] in this ){
-				return this.get_sub_var__(this[ s['data_for'] ], s['data_var']);
-			}else{
-				console.error("get_editbale_value: data_for unknown: " + s['data_for'] + ": " + s['data_var'] );
-				return false;
-			}
+			return this.get_sub_var__(this, s['data_var']);
 		},
 		check_sub_key__: function(vv, data_var, v){
 			x = data_var.split(/\:/g);
@@ -1148,6 +1143,48 @@ var app = Vue.createApp({
 				return (v['v']?true:false);
 			}else{
 				return "unknown";
+			}
+		},
+		context_thing_list_load_check__: function(){
+			if( this.context_thing__ in this.context_thing_list__ == false ){
+				this.context_thing_list__[ this.context_thing__ ] = [];
+			}
+			//if( this.context_thing_list__[ this.context_thing__ ].length == 0 )
+			{
+				this.context_thing_msg__ = "Loading...";
+				this.context_thing_err__ = "";
+				this.context_thing_list__[ this.context_thing__ ] = [];
+				axios.post(this.context_api_url__, {
+					"action": "context_load_things",
+					"app_id": "<?=$config_param1 ?>",
+					"thing": this.context_thing__,
+					"depend": this.context_dependency__,
+				}).then(response=>{
+					this.context_thing_msg__ = "";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									if( response.data['things'] == null ){
+										alert("Error context list");
+									}else if( typeof(response.data['things']) == "object" ){
+										this.context_thing_list__[ this.context_thing__ ] = response.data['things'];
+									}
+								}else{
+									this.context_thing_err__ = "Token Error: " + response.data['data'];
+								}
+							}else{
+								this.context_thing_err__ = "Incorrect response";
+							}
+						}else{
+							this.context_thing_err__ = "Incorrect response Type";
+						}
+					}else{
+						this.context_thing_err__ = "Response Error: " + response.status;
+					}
+				}).catch(error=>{
+					this.context_thing_err__ = "Error Loading";
+				});
 			}
 		},
 	}
