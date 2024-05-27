@@ -8,6 +8,41 @@ $property_type = "api";
 // 	update_app_pages( $j['_id'] );
 // }
 
+
+function input_factors_to_values($v,$test_val){
+	$vv = [];
+	foreach( $v as $k=>$val ){
+		if( $val['t'] == "T" ){
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
+		}else if( $val['t'] == "N" ){
+			$vv[$k] = ($test_val[$k]['v']?(int)$test_val[$k]['v']:0);
+		}else if( $val['t'] == "D" ){
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
+		}else if( $val['t'] == "DT" ){
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
+		}else if( $val['t'] == "TS" ){
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
+		}else if( $val['t'] == "L" ){
+			$vvv = [];
+			foreach( $val['v'] as $li=>$lv ){
+				$vvv[] = input_factors_to_values( $lv['v'] , $test_val[$k][$li]);
+			}
+			$vv[$k] = $vvv;
+		}else if( $val['t'] == "O" ){
+			$vv[$k] = input_factors_to_values( $val['v'] , $test_val[$k][$li]);
+		}else if( $val['t'] == "B" ){
+			if($val['v'] == true) {
+				$vv[$k] = true;
+			}else{
+				$vv[$k] = false;
+			}
+		}else if( $val['t'] == "NL" ){
+			$vv[$k] = null;
+		}
+	}
+	return $vv;
+}
+
 if( $_POST['action'] == "get_apis" ){
 	$t = validate_token("getapis.". $config_param1, $_POST['token']);
 	if( $t != "OK" ){
@@ -675,33 +710,6 @@ if( $config_param4 && $main_api ){
 		]);
 	}
 
-	if( $_POST['action'] == "app_api_delete" ){
-		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
-			"app_id"=>$config_param1,
-			"api_id"=>$main_api['_id'],
-			"_id"=>$_POST['version_id']
-		]);
-		if( !$res['data'] ){
-			json_response([
-				"status"=>"fail",
-				"error"=>"Version not found",
-			]);
-		}
-		if( $main_api['version_id'] == $_POST['version_id'] ){
-			json_response([
-				"status"=>"fail",
-				"error"=>"You cannot delete current version",
-			]);
-		}
-		$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
-			"app_id"=>$config_param1,
-			"api_id"=>$main_api['_id'],
-			"_id"=>$_POST['version_id']
-		]);
-		json_response($res);
-		exit;
-	}
-
 	if( $_POST['action'] == "app_api_clone" ){
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
 			"app_id"=>$config_param1,
@@ -939,13 +947,15 @@ if( $config_param4 && $main_api ){
 
 			$req_json_data = array();
 
-			foreach($version['engine']['input_factors'] as $k => $v) {
+			/*foreach($version['engine']['input_factors'] as $k => $v) {
 				if($version['test']['factors']['v'][$k]['v'] != "") {
 					$req_json_data[$k] = $version['test']['factors']['v'][$k]['v'];
 				}else {
 					$req_json_data[$k] = "";
 				}
-			}
+			}*/
+
+			$req_json_data = input_factors_to_values($version['engine']['input_factors'],$version['test']['factors']['v']);
 
 
 			$req_data = array();
@@ -976,7 +986,16 @@ if( $config_param4 && $main_api ){
 			$req_url['protocol'] = $url_components['scheme'];;
 			$req_url['host'] = $url_components['host'];
 
-			$path = $url_components['path'];
+			if($url_components['port'] != "") {
+				$req_url['port'] = $url_components['port'];
+			}
+
+			if($url_components['path'] != "" && $url_components['path'] != "/") {
+				$path = $url_components['path'];
+			}else {
+				$path = $url_components['path'].$j['name'];
+			}
+			
 			$path_array = explode('/', trim($path, '/'));
 			$req_url['path'] = $path_array;
 
@@ -1005,6 +1024,5 @@ if( $config_param4 && $main_api ){
 		}else {
 			json_response("fail","Invalid Post Data");
 		}
-
 	}
 }
