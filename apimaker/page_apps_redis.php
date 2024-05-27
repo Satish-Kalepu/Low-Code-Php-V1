@@ -14,7 +14,7 @@
 				<div>
 					<input type="text" class="form-control form-control-sm w-auto d-inline" v-model="keyword" placeholder="Key">
 					<input type="button" class="mx-3 btn btn-outline-dark btn-sm" value="Search" v-on:click="load_keys()">
-					<input type="button" class="mx-3 btn btn-outline-dark btn-sm" value="Add Key" v-on:click="add_new_key()">
+					<input type="button" class="mx-3 btn btn-outline-dark btn-sm" value="Add Key" v-on:click="add_configure()">
 				</div>
 			</div>
 			<div style="position:relative;overflow: auto; height: calc( 100% - 130px );">
@@ -73,7 +73,7 @@
 							<td><input type="text" v-model="show_key['key']" readonly class="form-control form-control-sm" placeholder="Token Key" ></td>
 						</tr>
 						<tr>
-							<td>TTL</td>
+							<td>Expiry</td>
 							<td><input type="tel" v-model="show_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
 						</tr>
 						<tr>
@@ -103,7 +103,7 @@
 							<td><input type="text" v-model="add_key['key']" class="form-control form-control-sm" placeholder="Token Key" ></td>
 						</tr>
 						<tr>
-							<td>TTL</td>
+							<td>Expiry</td>
 							<td><input type="tel" v-model="add_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
 						</tr>
 						<tr>
@@ -137,6 +137,15 @@
 						<tr>
 							<td>Port</td>
 							<td><input v-model="settings['port']" type="number" class="form-control form-control-sm" placeholder="Port" ></td>
+						</tr>
+						<tr>
+							<td>Database</td>
+							<td>
+								<select v-model="settings['db']" class="form-select">
+									<option value="">Select Database</option>
+									<option v-for="d in 20" v-bind:value="d" >Database {{d}}</option>
+								</select>
+							</td>
 						</tr>
 						<tr>
 							<td>Username</td>
@@ -230,7 +239,7 @@
 				this.popup = new bootstrap.Modal(document.getElementById('edit_modal'));
 				this.popup.show();
 			},
-			add_new_key: function(){
+			add_configure: function(){
 				this.add_key = {
 					"key" : "",
 					"data" : {
