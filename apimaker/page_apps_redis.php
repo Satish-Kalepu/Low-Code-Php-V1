@@ -119,6 +119,7 @@
 			</div>
 		</div>
 	</div>
+	
 	<div class="modal fade" id="settings_modal" tabindex="-1" >
 		<div class="modal-dialog model-sm">
 			<div class="modal-content">

@@ -168,6 +168,7 @@ if( $_POST['action'] == 'redis_load_key' ){
 	exit;
 }
 
+
 if($_POST['action'] == "redis_key_delete") {
 	if( $app['internal_redis']['enable'] === false ){
 		json_response("fail", "Key Value store is not enabled");
