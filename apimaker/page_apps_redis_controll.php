@@ -161,7 +161,8 @@ if( $_POST['action'] == 'redis_load_key' ){
 	}else if( $type == "zset" ){
 		$fields = array();
 		$data['field_length'] = $redis_con->zCard($key);
-		$data['data'] = $redis_con->zscan($key, null, "*", 1000);
+		$data['data'] = $redis_con->zrangebyscore($key, 0, 1000);
+		// $data['data'] = $redis_con->zscan($key, 0, "*", 1000);
 	}else if( $type == "hash" ){
 		$data['data'] = $redis_con->hgetall($key);
 	}else if( $type == "set" ){
@@ -227,6 +228,25 @@ if($_POST['action'] == "redis_key_edit") {
 	if( !isset($_POST['key']) ){
 		json_response("fail", "Key input missing");
 	}
+	if( !isset($_POST['type']) ){
+		json_response("fail", "Type input missing");
+	}
+	if( !isset($_POST['data']) ){
+		json_response("fail", "Data input missing");
+	}
+	if( !isset($_POST['time']) ){
+		json_response("fail", "Expiry input missing");
+	}
+	if(!preg_match('/^[0-9]+$/',$_POST['time'])) {
+		json_response("fail", "Expiry must be a number");
+	}
+
+	$types = ['string','set','list','zset','hash'];
+
+	if(!in_array($_POST['type'],$types)) {
+        json_response("fail", "Type must be one of the following: ".implode(", ",$types));
+    }
+
 	$key = $_POST['key'];
 
 	$ops = [
@@ -251,12 +271,105 @@ if($_POST['action'] == "redis_key_edit") {
 		$redis_con->select((int)$app['internal_redis']['db']);
 	}
 
-	$edit_record = $redis_con->set($key,$_POST['data']);
-	$edit_record_time = $redis_con->expire($key,$_POST['time']);
+	$type = $_POST['type'];
+	$value = $_POST['data'];
 
-	json_response([
-		"status"=> "success", 
-		"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
-	]);
+	switch ($type) {
+        case 'string':
+            if (trim($value) === "") {
+				json_response('fail','String value cannot be empty');
+            }
+
+			$edit_record = $redis_con->set($key,$value);
+			$edit_record_time = $redis_con->expire($key,$_POST['time']);
+
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+			break;
+
+        case 'set':
+            $values = explode(',', $value);
+            $valueSet = [];
+            foreach ($values as $val) {
+                $val = trim($val);
+                if ($val === "") {
+                    json_response("fail","Set values cannot be empty.");
+                }
+                if (in_array($val, $valueSet)) {
+                    json_response("fail","Set values must be unique. Duplicate value found: " . $val);
+                }
+                $valueSet[] = $val;
+            }
+            foreach ($valueSet as $val) {
+                $edit_record[] = $redis_con->sadd($key, $val);
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        case 'list':
+            $values = explode(',', $value);
+            foreach ($values as $val) {
+                if (trim($val) === "") {
+                    json_response("fail","List values cannot be empty.");
+                }
+            }
+            foreach ($values as $val) {
+                $edit_record[] = $redis_con->rpush($key, trim($val));
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        case 'zset':
+            $values = explode(',', $value);
+            foreach ($values as $val) {
+                list($score, $member) = explode(':', $val);
+                $score = trim($score);
+                $member = trim($member);
+                if ($score === "" || $member === "") {
+                    json_response("fail","Each score and member in a zset must be non-empty.");
+                }
+                if (!is_numeric($score)) {
+                    json_response("fail","Score must be a number.");
+                }
+                $edit_record[] = $redis_con->zadd($key, floatval($score), $member);
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        case 'hash':
+            $values = explode(',', $value);
+            foreach ($values as $val) {
+                list($field, $fieldValue) = explode(':', $val);
+                $field = trim($field);
+                $fieldValue = trim($fieldValue);
+                if ($field === "" || $fieldValue === "") {
+                    json_response("fail","Each field and value in a hash must be non-empty.");
+                }
+                $edit_record[] = $redis_con->hset($key, $field, $fieldValue);
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+            json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        default:
+			json_response('fail','Invalid type selected');
+    }
 	exit;
 }

@@ -25,7 +25,7 @@
 					<div class="btn btn-outline-dark btn-sm" v-on:click="show_configure()">Configure Redis</div>
 				</div>
 				<template v-else >
-					<div style="display:flex; ">
+					<div style="display:flex; " class="w-100">
 						<div style="height:calc( 100% - 150px ); height: 30px; min-width:300px; padding:0px 20px; border:1px solid #ccc;">
 							<div>Key</div>
 						</div>
@@ -33,7 +33,7 @@
 							<div v-if="'key' in show_key"><b>{{ show_key['key'] }}</b>&nbsp;<i style="cursor: pointer;" v-on:click="deletekey(show_key['key'])" class="fa fa-trash text-danger" title="Delete"></i>&nbsp;&nbsp;<i style="cursor: pointer;" v-on:click="edit_configure()" class="fa fa-edit text-success" title="Edit"></i></div>
 						</div>
 					</div>
-					<div style="display:flex; ">
+					<div style="display:flex; " class="w-100">
 						<div style="height:calc( 100% - 150px ); min-height: 300px; min-width:300px; overflow:auto; padding:0px 20px; border:1px solid #ccc;">
 							<div class="redisk" v-for="k in keys" v-on:click="load_key(k)">{{ k }}</div>
 						</div>
@@ -73,12 +73,27 @@
 							<td><input type="text" v-model="show_key['key']" readonly class="form-control form-control-sm" placeholder="Token Key" ></td>
 						</tr>
 						<tr>
+							<td>Type</td>
+							<td>
+								<select id="type" name="type" class="form-select" v-model="show_key['data']['type']" readonly>
+									<option value="">Please select Type</option>
+									<option value="string">String</option>
+									<option value="set">Set</option>
+									<option value="list">List</option>
+									<option value="zset">Sorted Set (ZSet)</option>
+									<option value="hash">Hash</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
 							<td>Expiry</td>
-							<td><input type="tel" v-model="show_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
+							<td><input type="tel" v-model="show_key['data']['ttl']" class="form-control form-control-sm" placeholder="Expiry Time" ></td>
 						</tr>
 						<tr>
 							<td>Data</td>
-							<td><input type="text" v-model="show_key['data']['data']" class="form-control form-control-sm" placeholder="Data" ></td>
+							<td>
+								<textarea name="data" id="data" v-model="show_key['data']['data']" class="form-control form-control-sm" placeholder="Data to be store"></textarea>
+							</td>
 						</tr>
 						<tr>
 							<td></td>
@@ -103,12 +118,27 @@
 							<td><input type="text" v-model="add_key['key']" class="form-control form-control-sm" placeholder="Token Key" ></td>
 						</tr>
 						<tr>
+							<td>Type</td>
+							<td>
+								<select id="type" name="type" class="form-select" required v-model="add_key['type']">
+									<option value="">Please select Type</option>
+									<option value="string">String</option>
+									<option value="set">Set</option>
+									<option value="list">List</option>
+									<option value="zset">Sorted Set (ZSet)</option>
+									<option value="hash">Hash</option>
+								</select>
+							</td>
+						</tr>
+						<tr>
 							<td>Expiry</td>
-							<td><input type="tel" v-model="add_key['data']['ttl']" class="form-control form-control-sm" placeholder="Time" ></td>
+							<td><input type="tel" v-model="add_key['data']['ttl']" class="form-control form-control-sm" placeholder="Expiry Time" ></td>
 						</tr>
 						<tr>
 							<td>Data</td>
-							<td><input type="text" v-model="add_key['data']['data']" class="form-control form-control-sm" placeholder="Data" ></td>
+							<td>
+							<textarea name="data" id="data" v-model="add_key['data']['data']" class="form-control form-control-sm" placeholder="Data to be store"></textarea>
+							</td>
 						</tr>
 						<tr>
 							<td></td>
@@ -203,6 +233,7 @@
 				axios.post("?",{
 					"action": "redis_key_edit",
 					"key" : this.show_key['key'],
+					"type" : this.show_key['type'],
 					"time" : this.show_key['data']['ttl'],
 					"data" : this.show_key['data']['data'],
 				}).then(response=>{
@@ -216,7 +247,10 @@
 									this.keyword = "";
 									this.load_keys();
 								}else{
-									this.serr = response.data['error'];
+									this.popup.hide();
+									/*this.serr = response.data['error'];*/
+									alert(response.data['error']);
+									window.location.reload();
 								}
 							}else{
 								this.serr = "Invalid response";
@@ -242,6 +276,7 @@
 			add_configure: function(){
 				this.add_key = {
 					"key" : "",
+					"type" : "",
 					"data" : {
 						"ttl" : "",
 						"data" : "",
@@ -253,20 +288,91 @@
 			add_record_details: function(){
 				if(this.add_key['key'] == "") {
 					alert("Please enter key name");
-					return
+					return;
+				}
+				if(this.add_key['type'] == "") {
+					alert("Please enter key type");
+                    return;
 				}
 				if(this.add_key['data']['ttl'] == "") {
 					alert('Please enter time of the Key');
-					return
+					return;
 				}
-
+				if(!/^[0-9]+$/.test(this.add_key['data']['ttl'])) {
+					alert('Please enter valid time of the Key');
+                    return;
+				}
 				if(this.add_key['data']['data'] == "") {
 					alert("Please Add Data to store");
-					return
+					return;
+				}
+				let type = this.add_key['type'];
+				let value = this.add_key['data']['data'];
+
+				if(type == "string") {
+					if (value.trim() === "") {
+						alert("String value cannot be empty.");
+						return false;
+					}
+				}else if(type == "set") {
+					let values = value.split(',');
+					let valueSet = new Set();
+					for (let i = 0; i < values.length; i++) {
+						let val = values[i].trim();
+						if (val === "") {
+							alert("Set values cannot be empty.");
+							return false;
+						}
+						if (valueSet.has(val)) {
+							alert("Set values must be unique. Duplicate value found: " + val);
+							return false;
+						}
+						valueSet.add(val);
+					}
+				}else if(type == "list") {
+					let values = value.split(',');
+					for (let i = 0; i < values.length; i++) {
+						if (values[i].trim() === "") {
+							alert("List values cannot be empty.");
+							return false;
+						}
+					}
+				}else if(type == "zset") {
+					let pairs = value.split(',');
+					for (let i = 0; i < pairs.length; i++) {
+						let pair = pairs[i].split(':');
+						if (pair.length !== 2) {
+							alert("Each zset value must be in the format 'score:member'.");
+							return false;
+						}
+						let score = pair[0].trim();
+						let member = pair[1].trim();
+						if (score === "" || member === "") {
+							alert("Each score and member in a zset must be non-empty.");
+							return false;
+						}
+						if (isNaN(score)) {
+							alert("Score must be a number.");
+							return false;
+						}
+					}
+				}else if(type == "hash") {
+					let pairs = value.split(',');
+					for (let i = 0; i < pairs.length; i++) {
+						let pair = pairs[i].split(':');
+						if (pair.length !== 2 || pair[0].trim() === "" || pair[1].trim() === "") {
+							alert("Each hash value must be in the format 'field:value' with non-empty field and value.");
+							return false;
+						}
+					}
+				}else {
+					alert("Type is not allowed");
+					return;
 				}
 
 				this.show_key = {
 					"key" : this.add_key['key'],
+					"type" : this.add_key['type'],
 					"data" : {
 						'ttl' : this.add_key['data']['ttl'],
 						'data': this.add_key['data']['data']
