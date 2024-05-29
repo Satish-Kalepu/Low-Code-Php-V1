@@ -9,6 +9,7 @@ if( !isset($app['internal_redis']) ){
 	$saved = true;
 }
 
+
 function convertTTLToReadable($ttlSeconds = ""){
 	$readable_time = "";
 	$days = floor($ttlSeconds / 86400);

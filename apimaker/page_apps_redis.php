@@ -98,7 +98,7 @@
 										<template v-if="edit_key_ttl">
 											<input type="tel" class="form-control-sm" v-model="show_key['data']['ttl']">
 											<div class="m-1"></div>
-											<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;save_edit_details()" class="fa fa-solid fa-edit text-success p-1" title="Edit"></i>
+											<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;save_edit_details()" class="fa fa-floppy-o text-success p-1" title="SAVE"></i>
 											<div class="m-1"></div>
 											<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;load_key(show_key['key'])" class="fa fa-times p-1" title="close"></i>
 										</template>
