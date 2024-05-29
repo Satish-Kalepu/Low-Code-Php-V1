@@ -2,19 +2,40 @@
 
 if( !isset($app['internal_redis']) ){
 	$app['internal_redis'] = [
-		"host"=>"localhost", "port"=>6379, "username"=>"", "password"=>"", "tls"=>false, "enable"=>false
+		"host"=>"localhost", "port"=>6379, "db" => "", "username"=>"", "password"=>"", "tls"=>false, "enable"=>false
 	];
 	$saved = false;
 }else{
 	$saved = true;
 }
 
-/*$redis_con = new Redis();
-$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
-for ($x = 0; $x <= 100; $x++) {
-	$set = $redis_con->set("token:function:conversion:".$x,10);
-	$set = $redis_con->expire("token:function:conversion:".$x,6000);
-}*/
+
+function convertTTLToReadable($ttlSeconds = ""){
+	$readable_time = "";
+	$days = floor($ttlSeconds / 86400);
+	if($days <= 0) {
+		$hours = floor(($ttlSeconds % 86400) / 3600);
+		if($hours <= 0) {
+			$minutes = floor(($ttlSeconds % 3600) / 60);
+			if($minutes <= 0) {
+				$seconds = $ttlSeconds % 60;	
+				if($seconds <= 0) {
+					$readable_time = $seconds." sec";
+				}else {
+					$readable_time = $ttlSeconds;
+				}
+			}else {
+				$readable_time = $minutes." min";	
+			}
+		}else {
+			$readable_time = $hours." hour";	
+		}
+	}else {
+		$readable_time = $days." days";	
+	}
+	
+	return $readable_time;
+}
 
 function v_type($vt){
 	if( $vt == 1 ){return "string";}else 
@@ -44,6 +65,13 @@ if( $_POST['action'] == 'redis_save_settings' ){
 			json_response("fail", "Port incorrect");
 		}else{
 			$settings["port"] = (int)$_POST['settings']['port'];
+		}
+	}
+	if( isset($_POST['settings']['db']) ) {
+		if( $_POST['settings']['db'] != "" && !preg_match("/^[0-9]{1}$/",$_POST['settings']['db']) ) {
+			json_response("fail","Database incorrect");
+		}else {
+			$settings['db'] = (int)$_POST['settings']['db'];
 		}
 	}
 	if( isset($_POST['settings']['username']) ){
@@ -82,6 +110,14 @@ if( $_POST['action'] == 'redis_load_keys' ){
 		json_response("fail", "Key Value store is not enabled");
 	}
 
+	$dat_key_set = ['string','set','list','zset','hash'];
+
+	if($_POST['data_type'] != ""){
+		if(!in_array($_POST['data_type'],$dat_key_set)) {
+			json_response('fail', "Invalid data type");
+		}
+	}
+
 	$ops = [
 		'host' => $app['internal_redis']['host'],
 		'port' => (int)$app['internal_redis']['port'],
@@ -94,21 +130,39 @@ if( $_POST['action'] == 'redis_load_keys' ){
 		$ops['ssl'] = ['verify_peer' => true];
 	}
 
+
 	$redis_con = new Redis();
 	if( $app['internal_redis']['username'] && $app['internal_redis']['password'] ){
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1, '', 0, 0, ['auth'=>[ $app['internal_redis']['username'], $app['internal_redis']['password'] ]] );
 	}else{
-		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
+		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'],  );
+	}
+
+	if($app['internal_redis']['db'] != "" && $app['internal_redis']['db'] > 0) {
+		$redis_con->select((int)$app['internal_redis']['db']);
 	}
 
 	if($_POST['keyword'] == "") {
 		$pattern = "*";
 	}else {
-		$pattern = $_POST['keyword'];
+		$pattern = $_POST['keyword']."*";
 	}
 	$k = $redis_con->keys($pattern);
 	
-	json_response(["status"=> "success", "keys"=>$k]);
+	$data_key = [];
+	foreach($k as $key) {
+		if($_POST['data_type'] != "") {
+			if(v_type( $redis_con->type($key) ) == $_POST['data_type']) {
+				$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),'time' => convertTTLToReadable($redis_con->ttl($key))];
+			}
+		}else {;
+			$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),"time" => convertTTLToReadable($redis_con->ttl($key))];
+		}
+	}
+	$key_count = count($data_key);
+
+	
+	json_response(["status"=> "success", "keys"=>$data_key,'count' => $key_count]);
 
 	exit;
 }
@@ -141,10 +195,15 @@ if( $_POST['action'] == 'redis_load_key' ){
 	}else{
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
 	}
+	if($app['internal_redis']['db'] != "" && $app['internal_redis']['db'] > 0) {
+		$redis_con->select((int)$app['internal_redis']['db']);
+	}
 
+	$size = $redis_con->rawCommand('MEMORY', 'USAGE', $key);
 	$type = v_type( $redis_con->type($key) );
 	$data = [
 		"type"=>$type,
+		"size"=>$size,
 		"ttl"=>$redis_con->ttl($key),
 	];
 
@@ -153,7 +212,8 @@ if( $_POST['action'] == 'redis_load_key' ){
 	}else if( $type == "zset" ){
 		$fields = array();
 		$data['field_length'] = $redis_con->zCard($key);
-		$data['data'] = $redis_con->zscan($key, null, "*", 1000);
+		$data['data'] = $redis_con->zrangebyscore($key, 0, 1000);
+		// $data['data'] = $redis_con->zscan($key, 0, "*", 1000);
 	}else if( $type == "hash" ){
 		$data['data'] = $redis_con->hgetall($key);
 	}else if( $type == "set" ){
@@ -161,14 +221,12 @@ if( $_POST['action'] == 'redis_load_key' ){
 	}else if( $type == "list" ){
 		$data['data'] = $redis_con->lrange($key, 0, 500);
 	}
-	
 	json_response([
 		"status"=> "success", 
 		"data"=>$data
 	]);
 	exit;
 }
-
 
 if($_POST['action'] == "redis_key_delete") {
 	if( $app['internal_redis']['enable'] === false ){
@@ -190,12 +248,19 @@ if($_POST['action'] == "redis_key_delete") {
 	if( $app['internal_redis']['tls'] === true ){
 		$ops['ssl'] = ['verify_peer' => true];
 	}
+	$redis_db = 1;
+	if($app['internal_redis']['db'] != "") {
+		$redis_db = (int)$app['internal_redis']['db'];
+	}
 
 	$redis_con = new Redis();
 	if( $app['internal_redis']['username'] && $app['internal_redis']['password'] ){
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1, '', 0, 0, ['auth'=>[ $app['internal_redis']['username'], $app['internal_redis']['password'] ]] );
 	}else{
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
+	}
+	if($app['internal_redis']['db'] != "" && $app['internal_redis']['db'] > 0) {
+		$redis_con->select((int)$app['internal_redis']['db']);
 	}
 
 	$redis_delete = $redis_con->del($_POST['key']);
@@ -214,6 +279,25 @@ if($_POST['action'] == "redis_key_edit") {
 	if( !isset($_POST['key']) ){
 		json_response("fail", "Key input missing");
 	}
+	if( !isset($_POST['type']) ){
+		json_response("fail", "Type input missing");
+	}
+	if( !isset($_POST['data']) ){
+		json_response("fail", "Data input missing");
+	}
+	if( !isset($_POST['time']) ){
+		json_response("fail", "Expiry input missing");
+	}
+	if(!preg_match('/^[0-9]+$/',$_POST['time'])) {
+		json_response("fail", "Expiry must be a number");
+	}
+
+	$types = ['string','set','list','zset','hash'];
+
+	if(!in_array($_POST['type'],$types)) {
+        json_response("fail", "Type must be one of the following: ".implode(", ",$types));
+    }
+
 	$key = $_POST['key'];
 
 	$ops = [
@@ -234,13 +318,109 @@ if($_POST['action'] == "redis_key_edit") {
 	}else{
 		$redis_con->connect( $app['internal_redis']['host'], (int)$app['internal_redis']['port'], 1 );
 	}
+	if($app['internal_redis']['db'] != "" && $app['internal_redis']['db'] > 0) {
+		$redis_con->select((int)$app['internal_redis']['db']);
+	}
 
-	$edit_record = $redis_con->set($key,$_POST['data']);
-	$edit_record_time = $redis_con->expire($key,$_POST['time']);
+	$type = $_POST['type'];
+	$value = $_POST['data'];
 
-	json_response([
-		"status"=> "success", 
-		"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
-	]);
+	switch ($type) {
+        case 'string':
+            if (trim($value) === "") {
+				json_response('fail','String value cannot be empty');
+            }
+
+			$edit_record = $redis_con->set($key,$value);
+			$edit_record_time = $redis_con->expire($key,$_POST['time']);
+
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+			break;
+
+        case 'set':
+            $values = explode(',', $value);
+            $valueSet = [];
+            foreach ($values as $val) {
+                $val = trim($val);
+                if ($val === "") {
+                    json_response("fail","Set values cannot be empty.");
+                }
+                if (in_array($val, $valueSet)) {
+                    json_response("fail","Set values must be unique. Duplicate value found: " . $val);
+                }
+                $valueSet[] = $val;
+            }
+            foreach ($valueSet as $val) {
+                $edit_record[] = $redis_con->sadd($key, $val);
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        case 'list':
+            $values = explode(',', $value);
+            foreach ($values as $val) {
+                if (trim($val) === "") {
+                    json_response("fail","List values cannot be empty.");
+                }
+            }
+            foreach ($values as $val) {
+                $edit_record[] = $redis_con->rpush($key, trim($val));
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        case 'zset':
+            $values = explode(',', $value);
+            foreach ($values as $val) {
+                list($score, $member) = explode(':', $val);
+                $score = trim($score);
+                $member = trim($member);
+                if ($score === "" || $member === "") {
+                    json_response("fail","Each score and member in a zset must be non-empty.");
+                }
+                if (!is_numeric($score)) {
+                    json_response("fail","Score must be a number.");
+                }
+                $edit_record[] = $redis_con->zadd($key, floatval($score), $member);
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+			json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        case 'hash':
+            $values = explode(',', $value);
+            foreach ($values as $val) {
+                list($field, $fieldValue) = explode(':', $val);
+                $field = trim($field);
+                $fieldValue = trim($fieldValue);
+                if ($field === "" || $fieldValue === "") {
+                    json_response("fail","Each field and value in a hash must be non-empty.");
+                }
+                $edit_record[] = $redis_con->hset($key, $field, $fieldValue);
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+            }
+            json_response([
+				"status"=> "success", 
+				"data"=>["record" => $edit_record,"record_time" => $edit_record_time]
+			]);
+            break;
+
+        default:
+			json_response('fail','Invalid type selected');
+    }
 	exit;
 }
