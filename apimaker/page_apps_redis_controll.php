@@ -161,6 +161,7 @@ if( $_POST['action'] == 'redis_load_key' ){
 	}else if( $type == "list" ){
 		$data['data'] = $redis_con->lrange($key, 0, 500);
 	}
+	
 	json_response([
 		"status"=> "success", 
 		"data"=>$data

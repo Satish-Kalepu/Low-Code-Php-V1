@@ -306,7 +306,6 @@
 				if( this.keyword != "" ){
 					k = this.keyword+'';
 				}
-
 				this.msg = "Loading...";
 				axios.post("?", {
 					"action" 		: "redis_load_keys",
