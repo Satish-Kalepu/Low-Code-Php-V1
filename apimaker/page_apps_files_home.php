@@ -15,6 +15,7 @@
 		</div>
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_crawl_form()" >Crawl</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_create_form()" >Create File</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_folder_form()" >Create Folder</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_upload_form()" >Upload</button>
@@ -98,6 +99,27 @@
 		      <div class="modal-footer">
 		        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
 		        <button type="button" class="btn btn-primary btn-sm"  v-on:click="createnow">Create</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="crawl_file_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">CRAWL</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+		        	<div>Crawl Link</div>
+		        	<input type="text" class="form-control form-control-sm" v-model="crawl_link" placeholder="Name" v-on:keyup="nchange" >
+		        	<div v-if="cmsg" class="alert alert-success" >{{ cmsg }}</div>
+		        	<div v-if="cerr" class="alert alert-success" >{{ cerr }}</div>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+		        <button type="button" class="btn btn-primary btn-sm"  v-on:click="crawlnow">Crawl</button>
 		      </div>
 		    </div>
 		  </div>
@@ -238,6 +260,8 @@ var app = Vue.createApp({
 			create_file_modal: false,
 			upload_file_modal: false,
 			create_folder_modal: false,
+			crawl_file_modal: false,
+			crawl_link: "",
 			new_mount: {
 				"vault_id": "", "vault_name": "",
 				"vault_path": "/", "local_path": "/mount_folder/"
@@ -488,6 +512,11 @@ var app = Vue.createApp({
 				}
 			});
 		},
+		file_show_crawl_form(){
+			this.crawl_file_modal = new bootstrap.Modal(document.getElementById('crawl_file_modal'));
+            this.crawl_file_modal.show();
+            this.cmsg = ""; this.cerr = "";
+		},
 		file_show_create_form(){
 			this.create_file_modal = new bootstrap.Modal(document.getElementById('create_file_modal'));
 			this.create_file_modal.show();
@@ -526,6 +555,40 @@ var app = Vue.createApp({
 			v = v.replace( /[\-]{2,5}/g, "-" );
 			v = v.replace( /[\_]{2,5}/g, "_" );
 			return v;
+		},
+		crawlnow(){
+			this.cerr = "";
+			if(this.crawl_link == "") {
+				this.cerr = "Please enter a website link to crawl";
+                return false;
+			}
+			this.cmsg = "Crawling...";
+			axios.post("?", {
+				"action": "crawl_website", 
+				"crawl_link": this.crawl_link,
+				"current_path": this.current_path,
+			}).then(response=>{
+				this.cmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.cmsg = "Success";
+								this.crawl_file_modal.hide();
+								this.load_files();
+							}else{
+								this.cerr = response.data['error'];
+							}
+						}else{
+							this.cerr = "Incorrect response";
+						}
+					}else{
+						this.cerr = "Incorrect response Type";
+					}
+				}else{
+					this.cerr = "Response Error: " . response.status;
+				}
+			});
 		},
 		createnow(){
 			this.cerr = "";

@@ -9,6 +9,33 @@ if( !isset($app['internal_redis']) ){
 	$saved = true;
 }
 
+function convertTTLToReadable($ttlSeconds = ""){
+	$readable_time = "";
+	$days = floor($ttlSeconds / 86400);
+	if($days <= 0) {
+		$hours = floor(($ttlSeconds % 86400) / 3600);
+		if($hours <= 0) {
+			$minutes = floor(($ttlSeconds % 3600) / 60);
+			if($minutes <= 0) {
+				$seconds = $ttlSeconds % 60;	
+				if($seconds <= 0) {
+					$readable_time = $seconds." sec";
+				}else {
+					$readable_time = $ttlSeconds;
+				}
+			}else {
+				$readable_time = $minutes." min";	
+			}
+		}else {
+			$readable_time = $hours." hour";	
+		}
+	}else {
+		$readable_time = $days." days";	
+	}
+	
+	return $readable_time;
+}
+
 function v_type($vt){
 	if( $vt == 1 ){return "string";}else 
 	if( $vt == 2 ){return "set";} else
@@ -82,6 +109,14 @@ if( $_POST['action'] == 'redis_load_keys' ){
 		json_response("fail", "Key Value store is not enabled");
 	}
 
+	$dat_key_set = ['string','set','list','zset','hash'];
+
+	if($_POST['data_type'] != ""){
+		if(!in_array($_POST['data_type'],$dat_key_set)) {
+			json_response('fail', "Invalid data type");
+		}
+	}
+
 	$ops = [
 		'host' => $app['internal_redis']['host'],
 		'port' => (int)$app['internal_redis']['port'],
@@ -109,11 +144,24 @@ if( $_POST['action'] == 'redis_load_keys' ){
 	if($_POST['keyword'] == "") {
 		$pattern = "*";
 	}else {
-		$pattern = $_POST['keyword'];
+		$pattern = $_POST['keyword']."*";
 	}
 	$k = $redis_con->keys($pattern);
 	
-	json_response(["status"=> "success", "keys"=>$k]);
+	$data_key = [];
+	foreach($k as $key) {
+		if($_POST['data_type'] != "") {
+			if(v_type( $redis_con->type($key) ) == $_POST['data_type']) {
+				$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),'time' => convertTTLToReadable($redis_con->ttl($key))];
+			}
+		}else {;
+			$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),"time" => convertTTLToReadable($redis_con->ttl($key))];
+		}
+	}
+	$key_count = count($data_key);
+
+	
+	json_response(["status"=> "success", "keys"=>$data_key,'count' => $key_count]);
 
 	exit;
 }
@@ -150,9 +198,11 @@ if( $_POST['action'] == 'redis_load_key' ){
 		$redis_con->select((int)$app['internal_redis']['db']);
 	}
 
+	$size = $redis_con->rawCommand('MEMORY', 'USAGE', $key);
 	$type = v_type( $redis_con->type($key) );
 	$data = [
 		"type"=>$type,
+		"size"=>$size,
 		"ttl"=>$redis_con->ttl($key),
 	];
 

@@ -67,7 +67,7 @@
 					</h2>
 					<div id="collapseauthapis" class="accordion-collapse collapse" aria-labelledby="auth_apis" data-bs-parent="#main">
 						<div class="accordion-body">
-							<p>
+							<p>-
 								<input type="button" class="btn btn-outline-dark btn-sm" style="float:right; margin-right: 5px;" v-on:click="postman_export('auth')" value="Postman Export">
 							</p>
 							<div class="accordion" id="auth_apis_list">
@@ -102,7 +102,7 @@
 					</h2>
 					<div id="collapsecaptchaapis" class="accordion-collapse collapse" aria-labelledby="captcha_apis" data-bs-parent="#main">
 						<div class="accordion-body">
-							<p>
+							<p>-
 								<input type="button" class="btn btn-outline-dark btn-sm" style="float:right; margin-right: 5px;" v-on:click="postman_export('captcha')" value="Postman Export">
 							</p>
 							<div class="accordion" id="captcha_apis_list">

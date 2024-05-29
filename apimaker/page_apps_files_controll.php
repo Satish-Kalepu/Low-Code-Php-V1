@@ -62,6 +62,13 @@ if( $_POST['action'] == "delete_file" ){
 	json_response($res);
 }
 
+if( $_POST['action'] == "crawl_website" ){
+	if( $_POST['crawl_link'] == "" ) {
+		json_response("fail", "Link is required");
+	}
+	json_response("Ok","Still in process");	
+}
+
 if( $_POST['action'] == "create_file" ){
 	if( !preg_match("/^[a-z0-9\.\-\_\/]{3,100}\.[a-z]{2,4}$/i", $_POST['new_file']['name']) ){
 		json_response("fail", "Name incorrect");
