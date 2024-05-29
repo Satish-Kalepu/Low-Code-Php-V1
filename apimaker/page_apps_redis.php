@@ -60,7 +60,7 @@
 							<div class="d-flex">
 								<div v-if="'key' in show_key"><b>{{show_key['key'] }}</b></div>
 								<div class="m-2"></div>
-								<span class="badge bg-dark m-auto" style="font-size: 10px;" v-if="'data' in show_key && show_key['data']['type'] != ''">{{show_key['data']['type']}}</span>
+								<span class="badge bg-dark p-2 m-auto" style="font-size: 10px;" v-if="'data' in show_key && show_key['data']['type'] != ''">{{show_key['data']['type']}}</span>
 							</div>
 							<div class="">
 								<i style="cursor: pointer;" v-on:click="show_key = []" class="fa fa-times" title="close"></i>
@@ -122,13 +122,58 @@
 							</div>
 							<div>Data: </div>
 							<div v-if="'data' in show_key['data']">
-								<pre v-if="show_key['data']['type']=='string'" >{{ show_key['data']['data'] }}</pre>
-								<table v-else-if="show_key['data']['type']=='hash'" class="table table-bordered table-sm w-auto" >
-									<tr v-for="d,k in show_key['data']['data']" >
-										<td>{{ k }}</td><td><pre>{{ d }}</pre></td>
-									</tr>
-								</table>
-								<pre v-else>{{ show_key['data']['data'] }}</pre>
+								<template v-if="show_key['data']['type']=='string'">
+									<textarea name="key_name" id="key_name" class="form-control" v-model="show_key['data']['data']"></textarea>
+								</template>
+								<template v-else-if="show_key['data']['type']=='list'">
+									<table class="table table-bordered w-100">
+										<thead>
+											<tr>
+												<th>Index</th>
+												<th>Element</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="d,k in show_key['data']['data']">
+												<td>{{ k }}</td>
+												<td>{{ d }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</template>
+								<template v-else-if="show_key['data']['type']=='set'">
+									<table class="table table-bordered w-100">
+										<thead>
+											<tr>
+												<th>Member</th>
+											</tr>
+										</thead>
+										<tbody>
+											<tr v-for="d,k in show_key['data']['data']">
+												<td>{{ d }}</td>
+											</tr>
+										</tbody>
+									</table>
+								</template>
+								<template v-else-if="show_key['data']['type']=='hash'">
+									<table class="table table-bordered w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>Field</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="d,k in show_key['data']['data']">
+                                                <td>{{ k }}</td>
+                                                <td>{{ d }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </template>
+								<template v-else>
+									<pre >{{ show_key['data']['data'] }}</pre>
+								</template>
 							</div>
 						</div>
 					</div>
@@ -198,7 +243,7 @@
 						<tr>
 							<td>Type</td>
 							<td>
-								<select id="type" name="type" class="form-select" required v-model="add_key['type']">
+								<select id="type" name="type" class="form-select" required v-model="add_key['data']['type']">
 									<option value="">Please select Type</option>
 									<option value="string">String</option>
 									<option value="set">Set</option>
@@ -357,8 +402,8 @@
 			add_configure: function(){
 				this.add_key = {
 					"key" : "",
-					"type" : "",
 					"data" : {
+						"type" : "",
 						"ttl" : "",
 						"data" : "",
 					}
@@ -371,7 +416,7 @@
 					alert("Please enter key name");
 					return;
 				}
-				if(this.add_key['type'] == "") {
+				if(this.add_key['data']['type'] == "") {
 					alert("Please enter key type");
                     return;
 				}
@@ -387,7 +432,7 @@
 					alert("Please Add Data to store");
 					return;
 				}
-				let type = this.add_key['type'];
+				let type = this.add_key['data']['type'];
 				let value = this.add_key['data']['data'];
 
 				if(type == "string") {
@@ -453,8 +498,8 @@
 
 				this.show_key = {
 					"key" : this.add_key['key'],
-					"type" : this.add_key['type'],
 					"data" : {
+						"type" : this.add_key['data']['type'],
 						'ttl' : this.add_key['data']['ttl'],
 						'data': this.add_key['data']['data']
 					}
