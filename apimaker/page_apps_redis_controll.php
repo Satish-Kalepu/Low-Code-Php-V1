@@ -341,10 +341,9 @@ if($_POST['action'] == "redis_key_edit") {
 			break;
 
         case 'set':
-            $values = explode(',', $value);
             $valueSet = [];
-            foreach ($values as $val) {
-                $val = trim($val);
+            foreach ($value as $i => $val) {
+                $val = trim($val['val']);
                 if ($val === "") {
                     json_response("fail","Set values cannot be empty.");
                 }
@@ -353,7 +352,7 @@ if($_POST['action'] == "redis_key_edit") {
                 }
                 $valueSet[] = $val;
             }
-            foreach ($valueSet as $val) {
+            foreach ($valueSet as $i => $val) {
                 $edit_record[] = $redis_con->sadd($key, $val);
 				$edit_record_time = $redis_con->expire($key,$_POST['time']);
             }
@@ -364,14 +363,13 @@ if($_POST['action'] == "redis_key_edit") {
             break;
 
         case 'list':
-            $values = explode(',', $value);
-            foreach ($values as $val) {
-                if (trim($val) === "") {
+            foreach ($value as $i => $val) {
+                if (trim($val['val']) === "") {
                     json_response("fail","List values cannot be empty.");
                 }
             }
-            foreach ($values as $val) {
-                $edit_record[] = $redis_con->rpush($key, trim($val));
+            foreach ($value as $i => $val) {
+                $edit_record[] = $redis_con->rpush($key, trim($val['val']));
 				$edit_record_time = $redis_con->expire($key,$_POST['time']);
             }
 			json_response([
@@ -381,11 +379,9 @@ if($_POST['action'] == "redis_key_edit") {
             break;
 
         case 'zset':
-            $values = explode(',', $value);
-            foreach ($values as $val) {
-                list($score, $member) = explode(':', $val);
-                $score = trim($score);
-                $member = trim($member);
+            foreach ($value as $i => $val) {
+                $score = trim($val['key']);
+                $member = trim($val['val']);
                 if ($score === "" || $member === "") {
                     json_response("fail","Each score and member in a zset must be non-empty.");
                 }
@@ -402,11 +398,9 @@ if($_POST['action'] == "redis_key_edit") {
             break;
 
         case 'hash':
-            $values = explode(',', $value);
-            foreach ($values as $val) {
-                list($field, $fieldValue) = explode(':', $val);
-                $field = trim($field);
-                $fieldValue = trim($fieldValue);
+            foreach ($value as $i => $val) {
+                $field = trim($val['key']);
+                $fieldValue = trim($val['val']);
                 if ($field === "" || $fieldValue === "") {
                     json_response("fail","Each field and value in a hash must be non-empty.");
                 }
