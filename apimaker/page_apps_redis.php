@@ -2,6 +2,7 @@
 	.redisk{ padding:0px 5px; border-bottom:1px solid #ccc; cursor:pointer; }
 	.redisk:hover{ background-color:#f8f8f8; }
 	.redisk_key{ padding:0px 5px; border-bottom:1px solid #ccc;}
+	.fs-10 { width: 70px; }
 </style>
 <div id="app" >
 	<div class="leftbar" >
@@ -13,219 +14,244 @@
 				<div class="col-6 h3"><span class="text-secondary" >Key Value Store</span></div>
 				<div class="col-6"><div class="btn btn-sm btn-outline-secondary float-end" v-on:click="show_configure()" >Configure</div></div>
 			</div>
+
+			<!-- filter search and add button element start -->
 			<div class="row mt-2" v-if="saved&&settings['enable']">
-				<div class="col-3">
-					<select id="type" name="type" class="form-select w-100" v-model="data_type">
-						<option value="">All key Types</option>
-						<option value="string">String</option>
-						<option value="set">Set</option>
-						<option value="list">List</option>
-						<option value="zset">Sorted Set (ZSet)</option>
-						<option value="hash">Hash</option>
-					</select>
-				</div>
 				<div class="col-6">
-					<input type="text" class="form-control w-100" v-model="keyword" placeholder="Filter by Key Name or Pattern">
+					<input type="text" class="form-control form-control-sm w-100" v-model="keyword" placeholder="Filter by Key Name or Pattern">
 				</div>
 				<div class="col-3">
 					<div class="d-flex">
-						<input type="button" class="mx-2 btn btn-outline-dark" value="Search" v-on:click="load_keys()">
-						<input type="button" class="btn btn-outline-dark" value="Add Key" v-on:click="add_configure()">
+						<input type="button" class="btn-sm btn btn-outline-dark" value="Search" v-on:click="load_keys()">
+						<input type="button" class="mx-2 btn btn-sm btn-outline-dark" value="Add Key" v-on:click="show_key = {};expire_minits = '';add_edit_configure()">
 					</div>
 				</div>
+				<div class="col-3">
+				</div>
 			</div>
-			<div class="row mt-3 mx-1">
+			<!-- filter search and add button element start -->
+			<div class="row mt-3 mx-1 table-responsive" style="overflow: auto;height: auto;max-height: 500px;">
 				<div v-if="msg" class="alert alert-primary col-12" >{{ msg }}</div>
 				<div v-if="err" class="alert alert-danger col-12" >{{ err }}</div>
-				<div v-if="saved==false||settings['enable']==false" style="padding:50px; margin: 50px; border: 1px solid #ccc;" >
-					<p>Key Value store is not enabled</p>
-					<div class="btn btn-outline-dark btn-sm" v-on:click="show_configure()">Configure Redis</div>
-				</div>
-				<template v-else>
-					<div class="row">
-						<div :class="'key' in show_key?'col-6 p-2':'col-12 p-2'" style="border: 1px solid #ccc;">
-							<div class="d-flex justify-content-between">
-								<div><b>Key</b></div>
+				<table v-if="saved==false||settings['enable']==false" class="table table-bordered w-100">
+					<thead>
+						<tr>
+							<th><p>Key Value store is not enabled</p></th>
+							<th><div class="btn btn-outline-dark btn-sm" v-on:click="show_configure()">Configure Redis</div></th>
+						</tr>
+					</thead>
+				</table>
+				<table v-else class="table table-bordered w-100">
+					<thead>
+						<tr>
+							<td width="50%">
 								<div class="d-flex justify-content-between">
-									<div>Records Count : <b>{{ key_count }}</b></div>
-									<div class="m-2"></div>
-									<div class="m-auto p-1">
-										<i style="cursor: pointer;" class="fa fa-solid fa-rotate-right text-dark" v-on:click="load_keys()" title="Refresh"></i>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div :class="'key' in show_key?'col-6 p-2':'d-none'" style="border: 1px solid #ccc;">
-							<div class="d-flex justify-content-between">
-								<div class="d-flex">
-									<div v-if="'key' in show_key"><b>{{show_key['key'] }}</b></div>
-									<div class="m-2"></div>
-									<span class="badge bg-dark p-2 m-auto" style="font-size: 10px;" v-if="'data' in show_key && show_key['data']['type'] != ''">{{show_key['data']['type']}}</span>
-								</div>
-								<div class="">
-									<i style="cursor: pointer;" v-on:click="show_key = []" class="fa fa-times" title="close"></i>
-								</div>
-							</div>
-						</div>
-						<div :class="'key' in show_key?'col-6 p-2':'col-12 p-2'" style="height:calc( 100% - 150px ); min-height: 500px;overflow:auto; border:1px solid #ccc;">
-							<div class="d-flex justify-content-between redisk" v-for="k in keys" v-on:click="load_key(k['key'])">
-								<div class="">
-									<div class="p-2">{{ k['key'] }}</div>
-								</div>
-								<div class="">
-									<div class="d-flex justify-content-between p-2">
-										<span class="badge rounded-pill bg-danger m-auto p-2" style="font-size: 10px;width: 70px">{{k['time']}}</span>
+									<div>Key</div>
+									<div class="d-flex justify-content-between">
+										<div>Records Count : {{ key_count }}</div>
 										<div class="m-2"></div>
-										<span class="badge rounded-pill bg-dark m-auto p-2" style="font-size: 10px;width: 70px">{{k['size']}} B</span>
-										<div class="m-2"></div>
-										<span class="badge bg-secondary p-2 text-white" style="font-size: 12px;width: 70px">{{ k['type'] }}</span> 
-										<div class="m-2"></div>
-										<span class="p-2 float-end"><i style="cursor: pointer;" v-on:click="deletekey(k['key']);show_key = {}" class="fa fa-trash text-danger" title="Delete"></i></span>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div :class="'key' in show_key?'col-6 p-2':'d-none'" style="height:calc( 100% - 150px );min-height: 500px;overflow:auto; padding:0px 20px; border:1px solid #ccc;">
-							<div v-if="'data' in show_key==false" >Loading</div>
-							<div v-if="'data' in show_key">
-								<div class="redisk_key d-flex justify-content-between">
-									<div class="d-flex">
-										<div>Size : <span class="fw-bold fs-10">{{ show_key['data']['size'] }} B</span></div>
-										<div class="m-2"></div>
-										<div>Type : <span class="fw-bold fs-10">{{ show_key['data']['type'] }}</span></div>
-										<div class="m-2"></div>
-										<div class="d-flex">TTL (Expiry): 
-											<template v-if="edit_key_ttl">
-												<input type="tel" class="form-control-sm" v-model="show_key['data']['ttl']">
-												<div class="m-1"></div>
-												<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;save_edit_details()" class="fa fa-floppy-o text-success p-1" title="SAVE"></i>
-												<div class="m-1"></div>
-												<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;load_key(show_key['key'])" class="fa fa-times p-1" title="close"></i>
-											</template>
-											<template v-else>
-												<div class="d-flex">
-													<div class="m-2"></div>
-													<span class="fw-bold fs-10">{{ show_key['data']['ttl'] }}</span>
-													<div class="m-2"></div>
-													<i style="cursor: pointer;" v-on:click="edit_key_ttl = true" class="fa fa-pencil p-1" aria-hidden="true" title="Edit Key"></i>
-												</div>
-											</template>
+										<div class="m-auto p-1">
+											<i style="cursor: pointer;" class="fa fa-solid fa-rotate-right text-dark" v-on:click="load_keys()" title="Refresh"></i>
 										</div>
 									</div>
-									<div class="d-flex float-end">
-										<i style="cursor: pointer;" class="fa fa-solid fa-rotate-right text-secondary" v-on:click="load_key(show_key['key'])" title="Refresh"></i>
+								</div>
+							</td>
+							<td v-if="'key' in show_key && show_key['key'] != ''" width="50%">
+								<div class="d-flex justify-content-between">
+									<div class="d-flex">
+										<div v-if="'key' in show_key">{{ show_key['key'] }}</div>
 										<div class="m-2"></div>
-										<i style="cursor: pointer;" v-on:click="edit_configure()" class="fa fa-solid fa-edit text-success" title="Edit"></i>
-										<div class="m-2"></div>
-										<i style="cursor: pointer;" v-on:click="deletekey(show_key['key'])" class="fa fa-solid fa-trash text-danger" title="Delete"></i>
+										<button class="btn btn-sm btn-outline-dark fs-10" v-if="'data' in show_key && show_key['data']['type'] != ''">{{show_key['data']['type']}}</button>
+									</div>
+									<div class="">
+										<i style="cursor: pointer;" v-on:click="show_key = []" class="fa fa-times" title="close"></i>
 									</div>
 								</div>
-								<div class="m-2"></div>
-								<div><b>Data: </b></div>
-								<div v-if="'data' in show_key['data']">
-									<template v-if="show_key['data']['type']=='string'">
-										<textarea name="key_name" id="key_name" class="form-control" v-model="show_key['data']['data']"></textarea>
-									</template>
-									<template v-else-if="show_key['data']['type']=='list'">
-										<table class="table table-bordered w-100">
-											<thead>
-												<tr>
-													<th>Index</th>
-													<th>Element</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr v-for="d,k in show_key['data']['data']">
-													<td>{{ k }}</td>
-													<td>
-														<input type="text" class="form-control form-control-sm w-100" name="data" v-model="d['val']">
-													</td>
-												</tr>
-											</tbody>
-											<tfoot>
-												<tr>
-													<td colspan="2">
-														<button class="btn btn-sm btn-dark float-end" v-on:click="save_edit_details()">Add</button>
-														<button class="btn btn-sm btn-danger float-end" v-on:click="show_key['data']['data'].push({'val' : ''})">+</button>
-													</td>
-												</tr>
-											</tfoot>
-										</table>
-									</template>
-									<template v-else-if="show_key['data']['type']=='set'">
-										<table class="table table-bordered w-100">
-											<thead>
-												<tr>
-													<th>Member</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr v-for="d,k in show_key['data']['data']">
-													<td>{{ d['val'] }}</td>
-												</tr>
-											</tbody>
-											<tfoot>
-												<tr>
-													<td colspan="2">
-														<button class="btn btn-sm btn-dark float-end" v-on:click="save_edit_details()">Add</button>
-														<button class="btn btn-sm btn-danger float-end" v-on:click="show_key['data']['data'].push({'val' : ''})">+</button>
-													</td>
-												</tr>
-											</tfoot>
-										</table>
-									</template>
-									<template v-else-if="show_key['data']['type']=='hash' || show_key['data']['type']=='zset'">
-										<table class="table table-bordered w-100">
-											<thead>
-												<tr>
-													<th>Field</th>
-													<th>Value</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr v-for="d,k in show_key['data']['data']">
-													<td>{{ d['key'] }}</td>
-													<td>{{ d['val'] }}</td>
-												</tr>
-											</tbody>
-											<tfoot>
-												<tr>
-													<td colspan="2">
-														<button class="btn btn-sm btn-dark float-end" v-on:click="save_edit_details()">Add</button>
-														<button class="btn btn-sm btn-danger float-end" v-on:click="show_key['data']['data'].push({'key' :'','val' : ''})">+</button>
-													</td>
-												</tr>
-											</tfoot>
-										</table>
-									</template>
-									<template v-else>
-										<pre >{{ show_key['data']['data'] }}</pre>
-									</template>
-								</div>
-							</div>
-						</div>
-					</div>
-				</template>
+							</td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="padding: 0px">
+								<table class="table table-bordered w-100 m-auto">
+									<tr v-for="k in keys" v-on:click="load_key(k['key'])" style="cursor:pointer;">
+										<td width="80%">{{ k['key'] }}</td>
+										<td width="5%"><button class="btn btn-sm btn-outline-info fs-10">{{k['time']}}</button></td>
+										<td width="5%"><button class="btn btn-sm btn-outline-success fs-10">{{k['size']}} B</button></td>
+										<td width="5%"><button class="btn btn-sm btn-outline-dark fs-10">{{ k['type'] }}</button></td>
+										<td width="5%"><span class="p-2 float-end"><i v-on:click="show_key = {};deletekey(k['key']);" class="fa fa-trash text-danger" title="Delete"></i></span></td>
+									</tr>
+								</table>
+							</td>
+							<td v-if="'key' in show_key && show_key['key'] != '' && 'data' in show_key">
+								<table class="table table-borderless w-100">
+									<tr>
+										<td>
+											<div class="d-flex justify-content-between">
+												<div class="d-flex">
+													<div>Size : <span class="fs-10">{{ show_key['data']['size'] }} B</span></div>
+													<div class="m-2"></div>
+													<div>Type : <span class="fs-10">{{ show_key['data']['type'] }}</span></div>
+													<div class="m-2"></div>
+													<div class="d-flex">TTL (Expiry): 
+														<template v-if="edit_key_ttl">
+															<input type="tel" class="form-control-sm" v-model="show_key['data']['ttl']" v-on:keypress="handleKeyPress($event)">
+															<div class="m-1"></div>
+															<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;save_details()" class="fa fa-floppy-o text-success p-1" title="SAVE"></i>
+															<div class="m-1"></div>
+															<i style="cursor: pointer;" v-on:click="edit_key_ttl = false;load_key(show_key['key'])" class="fa fa-times p-1" title="close"></i>
+														</template>
+														<template v-else>
+															<div class="d-flex">
+																<div class="m-2"></div>
+																<span class="fs-10">{{ show_key['data']['ttl'] }}</span>
+																<div class="m-2"></div>
+																<i style="cursor: pointer;" v-on:click="edit_key_ttl = true" class="fa fa-pencil p-1" aria-hidden="true" title="Edit Key"></i>
+															</div>
+														</template>
+													</div>
+												</div>
+												<div class="d-flex float-end">
+													<i style="cursor: pointer;" class="fa fa-solid fa-rotate-right text-secondary" v-on:click="load_key(show_key['key'])" title="Refresh"></i>
+													<div class="m-2"></div>
+													<i style="cursor: pointer;" v-on:click="add_edit_configure()" class="fa fa-solid fa-edit text-success" title="Edit"></i>
+													<div class="m-2"></div>
+													<i style="cursor: pointer;" v-on:click="deletekey(show_key['key'])" class="fa fa-solid fa-trash text-danger" title="Delete"></i>
+												</div>
+											</div>
+											<hr>
+										</td>
+									</tr>
+									<tr>
+										<td>Data:</td>
+									</tr>
+									<tr>
+										<td>
+											<template v-if="show_key['data']['type']=='string'">
+												<textarea name="key_name" id="key_name" class="form-control" v-model="show_key['data']['data']"></textarea>
+												<div class="m-2"></div>
+												<button class="btn btn-sm btn-outline-dark float-end" v-on:click="save_details()">Add</button>
+											</template>
+											<template v-else-if="show_key['data']['type']=='list'">
+												<table class="table table-bordered w-100">
+													<thead>
+														<tr>
+															<th>Index</th>
+															<th>Element</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr v-for="d,k in show_key['data']['data']">
+															<td>{{ k }}</td>
+															<td>
+																<div class="d-flex justify-content-between">
+																	<input type="text" class="form-control form-control-sm w-100 mx-2" name="data" v-model="show_key['data']['data'][k]">
+																	<button class="btn btn-sm btn-outline-danger" v-on:click="remove_inline_field(k)">X</button>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+													<tfoot>
+														<tr>
+															<td colspan="2">
+																<button class="btn btn-sm btn-outline-dark float-end mx-2" v-on:click="save_details()">Add</button>
+																<button class="btn btn-sm btn-outline-primary float-end" v-on:click="show_key['data']['data'][Object.keys(show_key['data']['data']).length] = '';">+</button>
+															</td>
+														</tr>
+													</tfoot>
+												</table>
+											</template>
+											<template v-else-if="show_key['data']['type']=='set'">
+												<table class="table table-bordered w-100">
+													<thead>
+														<tr>
+															<th>Member</th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr v-for="d,k in show_key['data']['data']">
+															<td>
+																<div class="d-flex justify-content-between">
+																	<input type="text" name="set" class="form-control form-control-sm mx-2" v-model="show_key['data']['data'][k]">
+																	<button class="btn btn-sm btn-outline-danger" v-on:click="remove_inline_field(k)">X</button>
+																</div>
+															</td>
+														</tr>
+													</tbody>
+													<tfoot>
+														<tr>
+															<td colspan="2">
+																<button class="btn btn-sm btn-outline-dark float-end" v-on:click="save_details()">Add</button>
+																<button class="btn btn-sm btn-outline-primary float-end mx-2" v-on:click="show_key['data']['data'][Object.keys(show_key['data']['data']).length] = '';">+</button>
+															</td>
+														</tr>
+													</tfoot>
+												</table>
+											</template>
+											<template v-else-if="show_key['data']['type']=='hash' || show_key['data']['type']=='zset'">
+												<table class="table table-bordered w-100">
+													<thead>
+														<tr>
+															<th>Field</th>
+															<th>Value</th>
+															<th></th>
+														</tr>
+													</thead>
+													<tbody>
+														<tr v-for="d,k in show_key['data']['data']">
+															<td>
+																<input type="text" name="hash" class="form-control form-control-sm w-100" v-model="show_key['data']['data'][k]['key']">
+															</td>
+															<td>
+																<input type="text" name="hash" class="form-control form-control-sm w-100" v-model="show_key['data']['data'][k]['val']">
+															</td>
+															<td class="text-center">
+																<button class="btn btn-sm btn-outline-danger" v-on:click="remove_inline_field(k)">X</button>
+															</td>
+														</tr>
+													</tbody>
+													<tfoot>
+														<tr>
+															<td colspan="3">
+																<button class="btn btn-sm btn-outline-dark float-end mx-2" v-on:click="save_details()">Add</button>
+																<button class="btn btn-sm btn-outline-primary float-end" v-on:click="show_key['data']['data'].push({'key' :'','val' : ''})">+</button>
+															</td>
+														</tr>
+													</tfoot>
+												</table>
+											</template>
+											<template v-else>
+												<pre >{{ show_key['data']['data'] }}</pre>
+											</template>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>
-	<div class="modal fade" id="edit_modal" tabindex="-1" >
+
+	<!-- Added or edit model popup start -->
+	<div class="modal fade" id="add_edit_modal" tabindex="-1" >
 		<div class="modal-dialog modal-lg">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Edit Details</h5>
+					<h5 class="modal-title">{{ 'key' in show_key && show_key['key'] != '' ?'Edit Details':'Add Details' }}</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body" >
-					<table class="table table-bordered table-sm w-100" v-if="'data' in show_key">
+					<table class="table table-bordered table-sm w-100" v-if="'data' in add_edit_key">
 						<tr>
 							<td>Token Key</td>
-							<td><input type="text" v-model="show_key['key']" readonly class="form-control form-control-sm" placeholder="Token Key" ></td>
+							<td><input type="text" v-model="add_edit_key['key']" class="form-control form-control-sm" placeholder="Token Key" ></td>
 						</tr>
 						<tr>
 							<td>Type</td>
 							<td>
-								<select id="type" name="type" class="form-select" v-model="show_key['data']['type']" readonly>
+								<select id="type" name="type" class="form-select form-select-sm" required v-model="add_edit_key['data']['type']" v-on:change="add_change_field_types()">
 									<option value="">Please select Type</option>
 									<option value="string">String</option>
 									<option value="set">Set</option>
@@ -237,119 +263,70 @@
 						</tr>
 						<tr>
 							<td>Expiry</td>
-							<td><input type="tel" v-model="show_key['data']['ttl']" class="form-control form-control-sm" placeholder="Expiry Time" ></td>
+							<td>
+								<table>
+									<tr>
+										<td>
+											<input type="tel" v-model="add_edit_key['data']['ttl']" class="form-control form-control-sm" placeholder="Enter Custome Expiry Time" v-on:keypress="handleKeyPress($event)">
+										</td>
+										<td>
+											<select v-model="expire_minits" class="form-select form-select-sm">
+												<option value="">Select default time</option>
+												<option value="5">5 Minits</option>
+												<option value="10">10 Minits</option>
+												<option value="20">20 Minits</option>
+												<option value="60">1 Hour</option>
+												<option value="120">2 Hours</option>
+												<option value="360">6 Hours</option>
+												<option value="720">12 Hours</option>
+												<option value="1440">1 Day</option>
+												<option value="21600">15 Days</option>
+												<option value="43200">1 Month</option>
+												<option value="259200">6 Months</option>
+												<option value="518400">1 Year</option>
+												<option value="-1">Never</option>
+											</select>
+										</td>
+										<td>
+											<input type="button" class="mx-2 btn btn-sm btn-outline-dark" v-on:click="ak_record_timestamp" value="SET" >
+										</td>
+									</tr>
+								</table>
+							</td>
 						</tr>
 						<tr>
 							<td>Data</td>
 							<td>
-								<template v-if="show_key['data']['type'] == 'string' || show_key['data']['type'] == ''">
-									<textarea name="data" id="data" v-model="show_key['data']['data']" class="form-control form-control-sm w-100" placeholder="Data to be store"></textarea>
+								<template v-if="add_edit_key['data']['type'] == 'string' || add_edit_key['data']['type'] == ''">
+									<textarea name="data" id="data" v-model="add_edit_key['data']['data']" class="form-control form-control-sm w-100" placeholder="Data to be store"></textarea>
 								</template>
-								<template v-else-if="show_key['data']['type'] == 'set' || show_key['data']['type'] == 'list'">
+								<template v-else-if="add_edit_key['data']['type'] == 'set' || add_edit_key['data']['type'] == 'list'">
 									<table class="table table-sm w-100">
-										<tbody v-for="k,i in show_key['data']['data']">
+										<tbody v-for="k,i in add_edit_key['data']['data']">
 											<tr>
-												<td><input type="text" class="form-control w-100" v-model="show_key['data']['data'][i]['val']" placeholder="Enter Value"></td>
-												<td><button class="btn btn-sm btn-danger" v-on:click="remove_field_types(i)">X</button></td>
+												<td><input type="text" class="form-control form-select-sm" v-model="add_edit_key['data']['data'][i]" placeholder="Enter Value"></td>
+												<td><button class="btn btn-sm btn-outline-danger" v-on:click="remove_field_types(i)">X</button></td>
 											</tr>
 										</tbody>
 										<tfoot>
 											<tr>
-												<td colspan=2 class="float-end"><button class="btn btn-sm btn-dark" v-on:click="add_field_types()">+</button></td>
+												<td colspan=3 class="float-end"><button class="btn btn-sm btn-outline-dark" v-on:click="add_edit_key['data']['data'][Object.keys(add_edit_key['data']['data']).length] = '';">+</button></td>
 											</tr>
 										</tfoot>
 									</table>
 								</template>
-								<template v-else-if="show_key['data']['type'] == 'hash' || show_key['data']['type'] == 'zset'">
+								<template v-else-if="add_edit_key['data']['type'] == 'hash' || add_edit_key['data']['type'] == 'zset'">
 									<table class="table table-sm w-100">
-										<tbody v-for="k,i in show_key['data']['data']">
+										<tbody v-for="k,j in add_edit_key['data']['data']">
 											<tr>
-												<td><input type="text" class="form-control w-100" v-model="show_key['data']['data'][i]['key']" placeholder="Enter Field"></td>
-												<td><input type="text" class="form-control w-100" v-model="show_key['data']['data'][i]['val']" placeholder="Enter Value"></td>
-												<td><button class="btn btn-sm btn-danger" v-on:click="remove_field_types(i)">X</button></td>
+												<td><input type="text" class="form-control form-select-sm" v-model="add_edit_key['data']['data'][j]['key']" placeholder="Enter Field"></td>
+												<td><input type="text" class="form-control form-select-sm" v-model="add_edit_key['data']['data'][j]['val']" placeholder="Enter Value"></td>
+												<td><button class="btn btn-sm btn-outline-danger" v-on:click="remove_field_types(j)">X</button></td>
 											</tr>
 										</tbody>
 										<tfoot>
 											<tr>
-												<td colspan=3 class="float-end"><button class="btn btn-sm btn-dark" v-on:click="add_field_types()">+</button></td>
-											</tr>
-										</tfoot>
-									</table>
-								</template>
-							</td>
-						</tr>
-						<tr>
-							<td></td>
-							<td><input type="button" class="btn btn-outline-dark btn-sm" v-on:click="save_edit_details()" value="EDIT RECORD"></td>
-						</tr>
-					</table>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="modal fade" id="add_modal" tabindex="-1" >
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Add Details</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body" >
-					<table class="table table-bordered table-sm w-100" v-if="'data' in add_key">
-						<tr>
-							<td>Token Key</td>
-							<td><input type="text" v-model="add_key['key']" class="form-control form-control-sm" placeholder="Token Key" ></td>
-						</tr>
-						<tr>
-							<td>Type</td>
-							<td>
-								<select id="type" name="type" class="form-select" required v-model="add_key['data']['type']" v-on:change="change_field_types()">
-									<option value="">Please select Type</option>
-									<option value="string">String</option>
-									<option value="set">Set</option>
-									<option value="list">List</option>
-									<option value="zset">Sorted Set (ZSet)</option>
-									<option value="hash">Hash</option>
-								</select>
-							</td>
-						</tr>
-						<tr>
-							<td>Expiry</td>
-							<td><input type="tel" v-model="add_key['data']['ttl']" class="form-control form-control-sm" placeholder="Expiry Time" ></td>
-						</tr>
-						<tr>
-							<td>Data</td>
-							<td>
-								<template v-if="add_key['data']['type'] == 'string' || add_key['data']['type'] == ''">
-									<textarea name="data" id="data" v-model="add_key['data']['data']" class="form-control form-control-sm w-100" placeholder="Data to be store"></textarea>
-								</template>
-								<template v-else-if="add_key['data']['type'] == 'set' || add_key['data']['type'] == 'list'">
-									<table class="table table-sm w-100">
-										<tbody v-for="k,i in add_key['data']['data']">
-											<tr>
-												<td><input type="text" class="form-control w-100" v-model="add_key['data']['data'][i]['val']" placeholder="Enter Value"></td>
-												<td><button class="btn btn-sm btn-danger" v-on:click="remove_field_types(i)">X</button></td>
-											</tr>
-										</tbody>
-										<tfoot>
-											<tr>
-												<td colspan=2 class="float-end"><button class="btn btn-sm btn-dark" v-on:click="add_field_types()">+</button></td>
-											</tr>
-										</tfoot>
-									</table>
-								</template>
-								<template v-else-if="add_key['data']['type'] == 'hash' || add_key['data']['type'] == 'zset'">
-									<table class="table table-sm w-100">
-										<tbody v-for="k,i in add_key['data']['data']">
-											<tr>
-												<td><input type="text" class="form-control w-100" v-model="add_key['data']['data'][i]['key']" placeholder="Enter Field"></td>
-												<td><input type="text" class="form-control w-100" v-model="add_key['data']['data'][i]['val']" placeholder="Enter Value"></td>
-												<td><button class="btn btn-sm btn-danger" v-on:click="remove_field_types(i)">X</button></td>
-											</tr>
-										</tbody>
-										<tfoot>
-											<tr>
-												<td colspan=3 class="float-end"><button class="btn btn-sm btn-dark" v-on:click="add_field_types()">+</button></td>
+												<td colspan=3 class="float-end"><button class="btn btn-sm btn-outline-dark" v-on:click="add_edit_key['data']['data'][Object.keys(add_edit_key['data']['data']).length] = {'key' : '','val' :''};">+</button></td>
 											</tr>
 										</tfoot>
 									</table>
@@ -365,6 +342,9 @@
 			</div>
 		</div>
 	</div>
+	<!-- Added or edit model popup end -->
+
+	<!-- Configure model popup start -->
 	<div class="modal fade" id="settings_modal" tabindex="-1" >
 		<div class="modal-dialog model-sm">
 			<div class="modal-content">
@@ -418,6 +398,7 @@
 			</div>
 		</div>
 	</div>
+	<!-- Configure model popup end -->
 </div>
 <script>
 	var app = Vue.createApp({
@@ -433,10 +414,18 @@
 				saved: <?=($saved?"true":"false") ?>,
 				keys: [], popup: false,
 				show_key: {},
-				add_key : {},
+				add_edit_key : {
+					"key" : "",
+					"data" : {
+						"type" : "",
+						'ttl' : "",
+						'data': ""
+					}
+				},
 				key_count: "",
 				edit_key_ttl: false,
-				data_type : ""
+				expire_minits : "",
+				expire_project : ""
 			};
 		},
 		mounted:function(){
@@ -445,64 +434,82 @@
 			}
 		},
 		methods: {
-			change_field_types: function() {
-				let key = "";
-				if(this.show_key['key'] == "") {
-					key = "show_key";
-				}else {
-					key = "add_key";
-				}
-				if(this[key]['data']['type'] == 'string') {
-					this[key]['data']['data'] = '';
-				}else if(this[key]['data']['type'] == 'set' || this[key]['data']['type'] == 'list') {
-					this[key]['data']['data'] = [];
-					let data_type_set = {};
-					this[key]['data']['data'].push(data_type_set);
-				}else if(this[key]['data']['type'] == 'zset' || this[key]['data']['type'] == 'hash') {
-					this[key]['data']['data'] = [];
-					let data_type_hash = {
-						'key' : "",
-						'val' : ""
-					};
-					this[key]['data']['data'].push(data_type_hash);
-				}else {
-					alert('Please select data type');
+			handleKeyPress :function(evt) {
+				evt = evt || window.event;
+				var charCode = evt.which || evt.keyCode;
+				if ((charCode > 31 && (charCode < 48 || charCode > 57)) && charCode !== 46) {
+					evt.preventDefault();
+				} else {
+					return true;
 				}
 			},
-			add_field_types: function() {
-				let key = "";
-				if(this.show_key['key'] == "") {
-					key = "show_key";
-				}else {
-					key = "add_key";
+			ak_record_timestamp: function() {
+				if(this.expire_minits == "") {
+					alert("Please select defaault time");
+					return;
 				}
-				if(this[key]['data']['type'] == 'set' || this[key]['data']['type'] == 'list') {
-					let data_type_set = {};
-					this[key]['data']['data'].push(data_type_set);
-				}else if(this[key]['data']['type'] == 'zset' || this[key]['data']['type'] == 'hash') {
-					let data_type_hash = {
-						'key' : "",
-						'val' : ""
-					};
-					this[key]['data']['data'].push(data_type_hash);
-				}else {
-					alert('Please select data type');
-				}
+				this.add_edit_key['data']['ttl'] = (this.expire_minits > 1 ? this.expire_minits*60 : this.expire_minits);
 			},
 			remove_field_types: function(k) {
-				let key = "";
-				if(this.show_key['key'] == "") {
-					key = "show_key";
-				}else {
-					key = "add_key";
-				}
-				if(this[key]['data']['type'] == 'set' || this[key]['data']['type'] == 'list' || this[key]['data']['type'] == 'zset' || this[key]['data']['type'] == 'hash') {
-					this[key]['data']['data'].splice(k,1);
-				}else {
-					alert('Please select data type');
+				if(confirm("Are you sure to delete this Key?") === true) {
+					delete this.add_edit_key['data']['data'][k];
 				}
 			},
-			save_edit_details : function(){
+			remove_inline_field: function(k) {
+				if(confirm("Are you sure to delete this Key?") === true) {
+					this.show_key['data']['data'].splice(k,1);
+					this.save_details();
+				}
+			},
+			add_edit_configure: function(){
+				this.add_edit_key = {
+					"key" : "",
+					"data" : {
+						"type" : "",
+						'ttl' : "",
+						'data': ""
+					}
+				}
+				if("key" in this.show_key && this.show_key['key'] != "") {
+					this.add_edit_key = {
+						"key" : this.show_key['key'],
+						"data" : {
+							"type" : this.show_key['data']['type'],
+							'ttl' : this.show_key['data']['ttl'],
+							'data': this.show_key['data']['data']
+						}
+					}
+				}
+
+				this.popup = new bootstrap.Modal(document.getElementById('add_edit_modal'));
+				this.popup.show();
+			},
+			add_change_field_types: function() {
+				if(this.add_edit_key['data']['type'] == "") {
+					alert('Please select data type');
+				}else if(this.add_edit_key['data']['type'] == "string") {
+					this.add_edit_key['data']['data'] = '';
+				}else if(this.add_edit_key['data']['type'] == "zset" || this.add_edit_key['data']['type'] == "hash"){
+					this.add_edit_key['data']['data'] = {};
+					this.add_edit_key['data']['data'][0] = {"key" : "",'val' : ""};
+				}else {
+					this.add_edit_key['data']['data'] = {};
+					this.add_edit_key['data']['data'][0] = "";
+				}
+			},
+			add_record_details: function(){
+				this.show_key = {
+					"key" : this.add_edit_key['key'],
+					"data" : {
+						"type" : this.add_edit_key['data']['type'],
+						'ttl' : this.add_edit_key['data']['ttl'],
+						'data': this.add_edit_key['data']['data']
+					}
+				}
+
+				this.save_details();
+			},
+			save_details : function(){
 				if(this.show_key['key'] == "") {
 					alert("Please enter key name");
 					return;
@@ -515,7 +522,7 @@
 					alert('Please enter time of the Key');
 					return;
 				}
-				if(!/^[0-9]+$/.test(this.show_key['data']['ttl'])) {
+				if(!/^[0-9\-]+$/.test(this.show_key['data']['ttl'])) {
 					alert('Please enter valid time of the Key');
 					return;
 				}
@@ -532,17 +539,17 @@
 						return false;
 					}
 				}else if(type == "list" || type == "set") {
-					for (let i = 0; i < value.length; i++) {
-						if (value[i]['val'].trim() === "") {
+					for (let [key, val] of Object.entries(value)) {
+						if(val.trim() === "") {
 							alert("List values cannot be empty.");
 							return false;
 						}
 					}
 				}else if(type == "zset" || type == "hash") {
-					for (let i = 0; i < value.length; i++) {
-						let key = value[i]['key'].trim();
-						let pair = value[i]['val'].trim();
-						if(key == "" || pair == "") {
+					for (let [i, j] of Object.entries(value)) {
+						let key = j['key'];
+						let val = j['val'];
+						if(key.trim() === "" || val.trim() === "") {
 							alert("Each score and member in a zset must be non-empty.");
 							return false;
 						}
@@ -567,15 +574,13 @@
 						if( typeof(response.data) == "object" ){
 							if( 'status' in response.data ){
 								if( response.data['status'] == "success" ){
+									this.load_keys();
 									this.popup.hide();
 									this.smsg = "Saving";
 									this.keyword = "";
-									this.load_keys();
 								}else{
 									this.popup.hide();
-									/*this.serr = response.data['error'];*/
 									alert(response.data['error']);
-									window.location.reload();
 								}
 							}else{
 								this.serr = "Invalid response";
@@ -594,34 +599,6 @@
 				this.popup = new bootstrap.Modal(document.getElementById('settings_modal'));
 				this.popup.show();
 			},
-			edit_configure: function(){
-				this.popup = new bootstrap.Modal(document.getElementById('edit_modal'));
-				this.popup.show();
-			},
-			add_configure: function(){
-				this.add_key = {
-					"key" : "",
-					"data" : {
-						"type" : "",
-						"ttl" : "",
-						"data" : "",
-					}
-				}
-				this.popup = new bootstrap.Modal(document.getElementById('add_modal'));
-				this.popup.show();
-			},
-			add_record_details: function(){
-				this.show_key = {
-					"key" : this.add_key['key'],
-					"data" : {
-						"type" : this.add_key['data']['type'],
-						'ttl' : this.add_key['data']['ttl'],
-						'data': this.add_key['data']['data']
-					}
-				}
-
-				this.save_edit_details();
-			},
 			load_key: function(k){
 				this.show_key = {
 					"key": k+'',
@@ -630,7 +607,7 @@
 				this.kmsg = "Loading...";
 				this.kerr = "";
 				axios.post("?", {
-					"action" 		: "redis_load_key",
+					"action" : "redis_load_key",
 					"key": k,
 				}).then(response=>{
 					this.kmsg = "";
@@ -639,17 +616,12 @@
 							if( 'status' in response.data ){
 								if( response.data['status'] == "success" ){
 									this.show_key['data'] = response.data['data'];
-									if(this.show_key['data']['type'] != "string") {
+									if(this.show_key['data']['type'] == "hash" || this.show_key['data']['type'] == "zset") {
 										let data = this.show_key['data']['data'];
 										this.show_key['data']['data'] = [];
 										for(const [i,j] of Object.entries(data)) {
-											if(this.show_key['data']['type'] == "list" || this.show_key['data']['type'] == "set") {
-												let new_value = {'val' : j};
-												this.show_key['data']['data'].push(new_value);
-											}else {
-												let new_value = {'key' : i,'val' : j};
-												this.show_key['data']['data'].push(new_value);
-											}
+											let new_value = {'key' : i,'val' : j};
+											this.show_key['data']['data'].push(new_value);
 										}
 									}
 								}else{
@@ -678,8 +650,7 @@
 				this.msg = "Loading...";
 				axios.post("?", {
 					"action" 		: "redis_load_keys",
-					"keyword": k,
-					"data_type" : this.data_type
+					"keyword": k
 				}).then(response=>{
 					this.msg = "";
 					if( response.status == 200 ){
@@ -688,9 +659,6 @@
 								if( response.data['status'] == "success" ){
 									this.keys = response.data['keys'];
 									this.key_count = response.data['count'];
-									/*for(var i=0;i<this.keys.length;i++){
-									this.keys.splice(i,1);break;
-									}*/
 								}else{
 									this.err = response.data['error'];
 								}
@@ -708,36 +676,38 @@
 				});
 			},
 			deletekey: function(key) {
-				this.smsg = "deleting...";
-				this.serr = "";
+				if(confirm("Are you sure to delete this Key?") === true) {
+					this.smsg = "deleting...";
+					this.serr = "";
 
-				axios.post("?",{
-					"action": "redis_key_delete",
-					"key" : key
-				}).then(response=>{
-					this.smsg = "";
-					if( response.status == 200 ){
-						if( typeof(response.data) == "object" ){
-							if( 'status' in response.data ){
-								if( response.data['status'] == "success" ){
-									this.smsg = "Deleted";
-									this.keyword = "";
-									this.load_keys();
+					axios.post("?",{
+						"action": "redis_key_delete",
+						"key" : key
+					}).then(response=>{
+						this.smsg = "";
+						if( response.status == 200 ){
+							if( typeof(response.data) == "object" ){
+								if( 'status' in response.data ){
+									if( response.data['status'] == "success" ){
+										this.smsg = "Deleted";
+										this.keyword = "";
+										this.load_keys();
+									}else{
+										this.serr = response.data['error'];
+									}
 								}else{
-									this.serr = response.data['error'];
+									this.serr = "Invalid response";
 								}
 							}else{
-								this.serr = "Invalid response";
+								this.serr = "Incorrect response";
 							}
 						}else{
-							this.serr = "Incorrect response";
+							this.serr = "http:"+response.status;
 						}
-					}else{
-						this.serr = "http:"+response.status;
-					}
-				}).catch(error=>{
-					this.serr = error.message;
-				});
+					}).catch(error=>{
+						this.serr = error.message;
+					});
+				}
 			},
 			saveit: function(){
 				this.smsg = "Saving...";

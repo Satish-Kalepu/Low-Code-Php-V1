@@ -296,7 +296,13 @@ var app = s__({
 
 			page_source: "",
 			edit_tab: "html",
-			crawl_link : ""
+			crawl_link : "",
+			crawl_dtls : {
+				"css_type" : "inline",
+				"css_links" : [""],
+				"js_type" : "inline",
+				"js_links" : [""]
+			}
 		};
 	},
 	mounted(){
@@ -335,17 +341,11 @@ var app = s__({
 		this.frame.document.body.innerHTML = ``;
 
 		global_frame = this.frame;
-		<?php 
-		//require("page_apps_pages_page_script2.js");
-		?>
-		console.log("OKK");
 		setTimeout(this.init,500);
 		setTimeout(this.initialize_events,1000);
 		setTimeout(this.initialize_tables,2000);
 		setInterval(this.vmtt_set,300);
-		console.log("OKK");
 		this.set_preview_urls();
-		console.log("OKKz");
 	},
 	methods: {
 		crawl_website: function() {
@@ -359,7 +359,8 @@ var app = s__({
 				"action":"crawl_website",
 				"app_id":this.app_id,
 				"page_version_id": this.page_version_id,
-				"crawl_link" : this.crawl_link
+				"crawl_link" : this.crawl_link,
+				"crawl_dtls" : this.crawl_dtls
 			}).then(response=>{
 				this.msg__ = "";
 				if( response.status == 200 ){
@@ -380,10 +381,11 @@ var app = s__({
 				}else{
 					this.err__ = "Response Error: " . response.status;
 				}
+			}).catch(error=>{
+				console.log(error.message);
 			});
 		},
 		set_preview_urls: function(){
-			console.log("OKK1");
 			var urls = {};
 			var ulist = [];
 			if( 'cloud' in this.app__['settings'] ){if( this.app__['settings']['cloud'] ){
@@ -396,7 +398,6 @@ var app = s__({
 					ulist.push( u );
 				}}
 			}}
-			console.log("OKK2");
 			if( 'domains' in this.app__['settings'] ){
 				urls['domains'] = [];
 				for(var d=0;d<this.app__['settings']['domains'].length;d++ ){
@@ -429,7 +430,6 @@ var app = s__({
 			}
 		},
 		switch_tab: function(v){
-			console.log("Switching tab: " + v);
 			if( this.edit_tab == 'source' ){
 				if( this.ace_editor2 ){
 					this.page__['html'] = this.ace_editor2.getValue();
@@ -450,7 +450,6 @@ var app = s__({
 				this.init_ace3();
 			}
 			if( v == "control" ){
-				console.log( this.control_frame );
 				this.control_frame.src = this.path + "codeeditor/pagecontrol/" + this.page_version_id;
 			}
 			if( v == "html" ){
@@ -459,7 +458,6 @@ var app = s__({
 			this.edit_tab = v;
 		},
 		init_ace2: function(){
-			console.log("Ace initialized");
 			this.ace_editor2 = ace.edit("page_source_block");
 			this.ace_editor2.session.setMode("ace/mode/html");
 			this.ace_editor2.setOptions({
@@ -470,7 +468,6 @@ var app = s__({
 			this.ace_editor2.setValue( html_beautify(this.page__['html']) );
 		},
 		init_ace3: function(){
-			console.log("Ace initialized");
 			this.ace_editor3 = ace.edit("page_script_block");
 			this.ace_editor3.session.setMode("ace/mode/javascript");
 			this.ace_editor3.setOptions({
@@ -481,7 +478,6 @@ var app = s__({
 			this.ace_editor3.setValue( js_beautify(this.page__['script']) );
 		},
 		insert_inside: function(){
-			console.log("insert inside");
 			this.vm_insert_bar_el = this.focused;
 			this.vm_insert_bar_pos = "inside";
 			this.insert_item_form();
@@ -517,7 +513,6 @@ var app = s__({
 					this.vmtt_focus = false;
 				}
 			}catch(e){}
-			//console.log( this.vmtt_focus_c );
 		},
 		set_focus_to: function( vi ){
 			this.set_focused2( this.focused_tree[ vi ]['v'] );
@@ -736,7 +731,6 @@ var app = s__({
 				setTimeout(this.init_ace,100);
 			},
 			init_ace: function(){
-				console.log("Ace initialized");
 				//ace.config.setModuleLoader('ace/ext/beautify', () => import("<?=$config_global_apimaker_path ?>ace/src/ext-beautify.js"));
 				this.ace_editor = ace.edit("raw_html_block");
 				this.ace_editor.session.setMode("ace/mode/html");
@@ -1102,7 +1096,6 @@ var app = s__({
 			},
 			td_calc_cells: function(){
 				if( !this.focused_table ){
-					console.log("td_calc_cells: table not in focus");
 					return false;
 				}
 				var vtot_tr = Number( this.focused_table.children[0].children.length );
@@ -1317,7 +1310,6 @@ var app = s__({
 				const blob2 = new Blob([vtxt2], { type: "text/plain" });
 				const richTextInput = new ClipboardItem({ "text/html": blob, "text/plain": blob2 });
 				navigator.clipboard.write([richTextInput]);
-				console.log("Table copied");
 				this.hide_other_menus();
 			},
 			quotetype_change: function(e){

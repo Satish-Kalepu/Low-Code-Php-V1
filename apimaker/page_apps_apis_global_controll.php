@@ -105,10 +105,15 @@ function build_postman_schema( $v , $url ) {
 	if(count($que_data) > 0) {
 		$req_url['query'] = $que_data;
 	}
+
+	$header = [];
+	if($v['auth'] != "None") {
+		$header[] = ['key' => $v['auth'],"value" => "XXXXXXXXXXXXXXXXXXXXXXXX"];
+	}
 	
 	$data_postman['name'] = $v['name'];
 	$data_postman['request']['method'] = $v['method'];
-	$data_postman['request']['header'] = [];
+	$data_postman['request']['header'] = $header;
 	if($data_postman['request']['method'] == "POST") {
 		$data_postman['request']['body'] = $req_data;
 	}
@@ -871,7 +876,7 @@ if(isset($_POST['action']) && $_POST['action'] == "postman_export") {
 		json_response("fail","From event should not be empty");
 	}
 
-	$from_event_list = ['apis','auth','captcha','internal','external','files','storage'];
+	$from_event_list = ['apis','auth','captcha','internal','external','files','storage','universal'];
 
 	if(!in_array($_POST['from'], $from_event_list)) {
 		json_response("fail",'Fail to export due to from event');
@@ -900,7 +905,7 @@ if(isset($_POST['action']) && $_POST['action'] == "postman_export") {
 			$global_api_schema['testing_data'] = [];
 			$global_api_schema['method'] = $kkk['input-method'];
 			$global_api_schema['api_path'] = "";
-			$global_api_schema['auth'] = "None";
+			$global_api_schema['auth'] = "Access-Key";
 			$global_api_schema['input-type'] = "application/json";
 
 			$gloabl_api_schema_data[$i]['API'][] = $global_api_schema;
@@ -946,12 +951,15 @@ if(isset($_POST['action']) && $_POST['action'] == "postman_export") {
 		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
 	}else if($_POST['from'] == "storage") {
 		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
-	}else if($_POST['from'] == "universal") {
-		foreach($common_api_names as $ii => $iii) {
-			$api_export_details[$iii['name']]['data'] = $gloabl_api_schema_data[$iii['key']];
-		}
 	}else {
 		json_response("fail","Fail to export due to from event");
+	}
+	if($_POST['from'] == "universal") {
+		foreach($common_api_names as $ii => $iii) {
+			if($ii == "auth" || $ii == "captcha") {
+				$api_export_details[$iii['name']]['data'] = $gloabl_api_schema_data[$iii['key']];
+			}
+		}
 	}
 
 	/*Postman Collection Export Code*/

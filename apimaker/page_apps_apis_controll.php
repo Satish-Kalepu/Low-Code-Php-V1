@@ -947,16 +947,7 @@ if( $config_param4 && $main_api ){
 
 			$req_json_data = array();
 
-			/*foreach($version['engine']['input_factors'] as $k => $v) {
-				if($version['test']['factors']['v'][$k]['v'] != "") {
-					$req_json_data[$k] = $version['test']['factors']['v'][$k]['v'];
-				}else {
-					$req_json_data[$k] = "";
-				}
-			}*/
-
 			$req_json_data = input_factors_to_values($version['engine']['input_factors'],$version['test']['factors']['v']);
-
 
 			$req_data = array();
 			$req_data['mode'] = "raw";
@@ -1003,10 +994,15 @@ if( $config_param4 && $main_api ){
 				$req_url['query'] = $que_data;
 			}
 
+			$header = [];
+			if($version['auth-type'] != "None") {
+				$header[] = ['key' => $version['auth-type'],"value" => "XXXXXXXXXXXXXXXXXXXXXXXX"];
+			}
+
 			$data_postman = array();
 			$data_postman['name'] = $version['name']." ".$version['des'];
 			$data_postman['request']['method'] = $version['input-method'];
-			$data_postman['request']['header'] = [];
+			$data_postman['request']['header'] = $header;
 			if($data_postman['request']['method'] == "POST") {
 				$data_postman['request']['body'] = $req_data;
 			}

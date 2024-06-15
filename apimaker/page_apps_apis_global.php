@@ -20,7 +20,10 @@
 					<option v-for="d,i in test_envs__" v-bind:value="d['d']" >{{ d['d'] }} ({{d['t']}})</option>
 				</select>
 			</p>
-			<p>{{ test_url__ }}</p>
+			<!-- <div class="d-flex justify-content-between mb-2">
+				<p>{{ test_url__ }}</p>
+				<div><input type="button" class="btn btn-outline-dark btn-sm" style="float:right; margin-right: 5px;" v-on:click="postman_export('universal')" value="Postman Export"></div>
+			</div> -->
 			<div class="accordion" id="main" v-if="'apis' in apis" >
 				<div class="accordion-item">
 					<h2 class="accordion-header" id="apis">
@@ -307,7 +310,7 @@
 					<div id="collapsestorage" class="accordion-collapse collapse" aria-labelledby="storage" data-bs-parent="#main">
 						<div class="accordion-body">
 							<p>Cloud storage services
-								<input type="button" class="btn btn-outline-dark btn-sm" style="float:right; margin-right: 5px;" v-on:click="postman_export('files')" value="Postman Export">
+								<!-- <input type="button" class="btn btn-outline-dark btn-sm" style="float:right; margin-right: 5px;" v-on:click="postman_export('files')" value="Postman Export"> -->
 							</p>
 							<template v-if="apis['storage'].length==0" >
 								<p>Not configured</p>

@@ -34,6 +34,10 @@ function convertTTLToReadable($ttlSeconds = ""){
 		$readable_time = $days." days";	
 	}
 	
+	if($readable_time == "-1 sec") {
+		$readable_time = "No limit";
+	}
+
 	return $readable_time;
 }
 
@@ -110,14 +114,6 @@ if( $_POST['action'] == 'redis_load_keys' ){
 		json_response("fail", "Key Value store is not enabled");
 	}
 
-	$dat_key_set = ['string','set','list','zset','hash'];
-
-	if($_POST['data_type'] != ""){
-		if(!in_array($_POST['data_type'],$dat_key_set)) {
-			json_response('fail', "Invalid data type");
-		}
-	}
-
 	$ops = [
 		'host' => $app['internal_redis']['host'],
 		'port' => (int)$app['internal_redis']['port'],
@@ -151,16 +147,9 @@ if( $_POST['action'] == 'redis_load_keys' ){
 	
 	$data_key = [];
 	foreach($k as $key) {
-		if($_POST['data_type'] != "") {
-			if(v_type( $redis_con->type($key) ) == $_POST['data_type']) {
-				$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),'time' => convertTTLToReadable($redis_con->ttl($key))];
-			}
-		}else {;
-			$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),"time" => convertTTLToReadable($redis_con->ttl($key))];
-		}
+		$data_key[] = ['key' => $key,'type' => v_type( $redis_con->type($key) ),'size' => $redis_con->rawCommand('MEMORY', 'USAGE', $key),"time" => convertTTLToReadable($redis_con->ttl($key))];
 	}
 	$key_count = count($data_key);
-
 	
 	json_response(["status"=> "success", "keys"=>$data_key,'count' => $key_count]);
 
@@ -288,7 +277,7 @@ if($_POST['action'] == "redis_key_edit") {
 	if( !isset($_POST['time']) ){
 		json_response("fail", "Expiry input missing");
 	}
-	if(!preg_match('/^[0-9]+$/',$_POST['time'])) {
+	if(!preg_match('/^[0-9\-]+$/',$_POST['time'])) {
 		json_response("fail", "Expiry must be a number");
 	}
 
@@ -332,7 +321,9 @@ if($_POST['action'] == "redis_key_edit") {
             }
 
 			$edit_record = $redis_con->set($key,$value);
-			$edit_record_time = $redis_con->expire($key,$_POST['time']);
+			if($_POST['time'] > 0) {
+				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+			}
 
 			json_response([
 				"status"=> "success", 
@@ -343,7 +334,7 @@ if($_POST['action'] == "redis_key_edit") {
         case 'set':
             $valueSet = [];
             foreach ($value as $i => $val) {
-                $val = trim($val['val']);
+                $val = trim($val);
                 if ($val === "") {
                     json_response("fail","Set values cannot be empty.");
                 }
@@ -352,9 +343,12 @@ if($_POST['action'] == "redis_key_edit") {
                 }
                 $valueSet[] = $val;
             }
+            $redis_delete = $redis_con->del($key);
             foreach ($valueSet as $i => $val) {
                 $edit_record[] = $redis_con->sadd($key, $val);
-				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+                if($_POST['time'] > 0) {
+					$edit_record_time = $redis_con->expire($key,$_POST['time']);
+				}
             }
 			json_response([
 				"status"=> "success", 
@@ -364,13 +358,16 @@ if($_POST['action'] == "redis_key_edit") {
 
         case 'list':
             foreach ($value as $i => $val) {
-                if (trim($val['val']) === "") {
+                if (trim($val) === "") {
                     json_response("fail","List values cannot be empty.");
                 }
             }
+            $redis_delete = $redis_con->del($key);
             foreach ($value as $i => $val) {
-                $edit_record[] = $redis_con->rpush($key, trim($val['val']));
-				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+                $edit_record[] = $redis_con->rpush($key, trim($val));
+				if($_POST['time'] > 0) {
+					$edit_record_time = $redis_con->expire($key,$_POST['time']);
+				}
             }
 			json_response([
 				"status"=> "success", 
@@ -379,17 +376,25 @@ if($_POST['action'] == "redis_key_edit") {
             break;
 
         case 'zset':
-            foreach ($value as $i => $val) {
-                $score = trim($val['key']);
-                $member = trim($val['val']);
+            foreach ($value as $i => $j) {
+                $score = trim($j['key']);
+                $member = trim($j['val']);
                 if ($score === "" || $member === "") {
                     json_response("fail","Each score and member in a zset must be non-empty.");
                 }
                 if (!is_numeric($score)) {
                     json_response("fail","Score must be a number.");
                 }
+            }
+            $redis_delete = $redis_con->del($key);
+            foreach ($value as $i => $j) {
+                $score = trim($j['key']);
+                $member = trim($j['val']);
+                
                 $edit_record[] = $redis_con->zadd($key, floatval($score), $member);
-				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+				if($_POST['time'] > 0) {
+					$edit_record_time = $redis_con->expire($key,$_POST['time']);
+				}
             }
 			json_response([
 				"status"=> "success", 
@@ -398,14 +403,22 @@ if($_POST['action'] == "redis_key_edit") {
             break;
 
         case 'hash':
-            foreach ($value as $i => $val) {
-                $field = trim($val['key']);
-                $fieldValue = trim($val['val']);
+            foreach ($value as $i => $j) {
+                $field = trim($j['key']);
+                $fieldValue = trim($j['val']);
                 if ($field === "" || $fieldValue === "") {
                     json_response("fail","Each field and value in a hash must be non-empty.");
                 }
+            }
+            $redis_delete = $redis_con->del($key);
+            foreach ($value as $i => $j) {
+                $field = trim($j['key']);
+                $fieldValue = trim($j['val']);
+                
                 $edit_record[] = $redis_con->hset($key, $field, $fieldValue);
-				$edit_record_time = $redis_con->expire($key,$_POST['time']);
+				if($_POST['time'] > 0) {
+					$edit_record_time = $redis_con->expire($key,$_POST['time']);
+				}
             }
             json_response([
 				"status"=> "success", 
