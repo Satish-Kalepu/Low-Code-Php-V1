@@ -3924,6 +3924,10 @@ var app = s2_ssssssssss({
 				alert("Invalid URL");
 				return false;
 			}
+			if(url == "") {
+				alert("Please select Engine Environment");
+				return false;
+			}
 			let post_data = {
 				"action" : "postman_collection_export",
 				"version_id" : "<?=$config_param4 ?>",

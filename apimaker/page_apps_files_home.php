@@ -15,6 +15,7 @@
 		</div>
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
+				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_crawl_form()" >Crawl</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_create_form()" >Create File</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_folder_form()" >Create Folder</button>
 				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="file_show_upload_form()" >Upload</button>
@@ -101,6 +102,78 @@
 		      </div>
 		    </div>
 		  </div>
+		</div>
+
+		<div class="modal fade" id="crawl_file_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">CRAWL</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+		      		<table class="table table-bordered w-100">
+		      			<tbody>
+			      			<tr>
+			      				<td width="30%">Crawl Link</td>
+			      				<td width="70%"><input type="text" class="form-control form-control-sm" v-model="crawl_dtls['link']" placeholder="Name"></td>
+			      			</tr>
+			      			<tr>
+			      				<td width="30%">Need to crawl dependency</td>
+			      				<td width="70%">
+			      					<div class="d-flex">
+										<div class="form-check">
+											<input class="form-check-input" type="radio" name="download" id="flexRadioDefault1" value="yes" v-model="crawl_dtls['download']">
+											<label class="form-check-label" for="flexRadioDefault1">
+												Yes
+											</label>
+										</div>
+										<div class="mx-3"></div>
+										<div class="form-check">
+											<input class="form-check-input" type="radio" name="download" id="flexRadioDefault2" value="no" v-model="crawl_dtls['download']">
+											<label class="form-check-label" for="flexRadioDefault2">
+												No
+											</label>
+										</div>
+									</div>
+			      				</td>
+			      			</tr>
+		      			</tbody>
+		      			<tfoot>
+		      				<tr>
+		      					<td v-if="cmsg" colspan="2">
+		      						<div v-if="cmsg" class="alert alert-success" >{{ cmsg }}</div>				
+		      					</td>
+		      					<td v-if="cerr" colspan="2">
+		      						<div v-if="cerr" class="alert alert-danger" >{{ cerr }}</div>
+		      					</td>
+		      				</tr>
+		      			</tfoot>
+		      		</table>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+		        <button type="button" class="btn btn-primary btn-sm"  v-on:click="crawlnow">Crawl</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		<div class="modal fade" id="file_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body" id="modal-content">
+						<div id="file_upload_content"></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" v-on:click="upload_zip_files()">Upload</button>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<div class="modal fade" id="upload_file_modal" tabindex="-1" >
@@ -238,6 +311,12 @@ var app = Vue.createApp({
 			create_file_modal: false,
 			upload_file_modal: false,
 			create_folder_modal: false,
+			crawl_file_modal: false,
+			file_modal: false,
+			crawl_dtls: {
+				"link" : "",
+				"download" : "yes"
+			},
 			new_mount: {
 				"vault_id": "", "vault_name": "",
 				"vault_path": "/", "local_path": "/mount_folder/"
@@ -245,6 +324,7 @@ var app = Vue.createApp({
 			storage_vaults: [],
 			token: "",
 			dropdiv: false,dropdiv2: false,
+			file_name : ""
 		};
 	},
 	mounted(){
@@ -254,6 +334,70 @@ var app = Vue.createApp({
 		//document.addEventListener("drop", function(e){e.preventDefault();e.stopPropagation();app.dropit(e);}, true);
 	},
 	methods: {
+		upload_zip_files: function() {
+			let selectedFiles = [];
+			document.querySelectorAll("input[name='selected_files[]']:checked").forEach(function(el) {
+				selectedFiles.push(el.value);
+			});
+			this.msg = "Loading...";
+			this.err = "";
+			axios.post("?", {
+				"action":"get_token",
+				"event":"upload_zip_files."+this.app_id,
+				"expire":2
+			}).then(response=>{
+				this.msg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.token = response.data['token'];
+								if( this.is_token_ok(this.token) ){
+									this.msg = "extracting...";
+									this.err = "";
+									axios.post("?",{
+										"action":"upload_zip_files",
+										"app_id":this.app_id,
+										"token":this.token,
+										"current_path": this.current_path,
+										"file" : selectedFiles
+									}).then(response=>{
+										this.msg = "";
+										if( response.status == 200 ){
+											if( typeof(response.data) == "object" ){
+												if( 'status' in response.data ){
+													if( response.data['status'] == "success" ){
+														window.location.reload();
+													}else{
+														alert("Token error: " + response.data['error']);
+														this.err = "Token Error: " + response.data['error'];
+													}
+												}else{
+													this.err = "Incorrect response";
+												}
+											}else{
+												this.err = "Incorrect response Type";
+											}
+										}else{
+											this.err = "Response Error: " . response.status;
+										}
+									});
+								}
+							}else{
+								alert("Token error: " + response.dat['error']);
+								this.err = "Token Error: " + response.data['error'];
+							}
+						}else{
+							this.err = "Incorrect response";
+						}
+					}else{
+						this.err = "Incorrect response Type";
+					}
+				}else{
+					this.err = "Response Error: " . response.status;
+				}
+			});
+		},
 		getc: function(v){
 			if( 'm_i' in v ){
 				return v['m_i'].substr(0,10);
@@ -271,7 +415,6 @@ var app = Vue.createApp({
 			}
 		},
 		dragenter: function(e){
-			console.log("dragenter: " + e.target.nodeName );
 			var v = e.target;
 			for(var i=0;i<10;i++){
 				if( v.nodeName == "BODY" || v.nodeName == "#html" ){
@@ -488,6 +631,11 @@ var app = Vue.createApp({
 				}
 			});
 		},
+		file_show_crawl_form(){
+			this.crawl_file_modal = new bootstrap.Modal(document.getElementById('crawl_file_modal'));
+            this.crawl_file_modal.show();
+            this.cmsg = ""; this.cerr = "";
+		},
 		file_show_create_form(){
 			this.create_file_modal = new bootstrap.Modal(document.getElementById('create_file_modal'));
 			this.create_file_modal.show();
@@ -526,6 +674,43 @@ var app = Vue.createApp({
 			v = v.replace( /[\-]{2,5}/g, "-" );
 			v = v.replace( /[\_]{2,5}/g, "_" );
 			return v;
+		},
+		crawlnow(){
+			this.cerr = "";
+			if(this.crawl_dtls['link'] == "") {
+				this.cerr = "Please enter a website link to crawl";
+                return false;
+			}
+			this.cmsg = "Crawling...";
+			axios.post("?", {
+				"action": "crawl_website", 
+				"crawl_link": this.crawl_dtls['link'],
+				'crawl_dtls': this.crawl_dtls,
+				"current_path": this.current_path,
+			}).then(response=>{
+				this.cmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.cmsg = "Success";
+								this.crawl_file_modal.hide();
+								this.load_files();
+							}else{
+								this.cerr = response.data['error'];
+							}
+						}else{
+							this.cerr = "Incorrect response";
+						}
+					}else{
+						this.cerr = "Incorrect response Type";
+					}
+				}else{
+					this.cerr = "Response Error: " . response.status;
+				}
+			}).catch(error=>{
+				console.log(error.message);
+			});
 		},
 		createnow(){
 			this.cerr = "";
@@ -751,7 +936,7 @@ var app = Vue.createApp({
 						}
 					}
 					if( this.upload_list[ i ]['st'] != "error" ){
-						if( this.upload_list[ i ]['s'] > (1024*1024*5) ){
+						if( this.upload_list[ i ]['s'] > (1024*1024*100) ){
 							this.upload_list[ i ]['er'] = "Too Big";
 							this.upload_list[ i ]['st'] = "error";
 						}else if( this.active_uploads < 1 ){
@@ -760,6 +945,52 @@ var app = Vue.createApp({
 					}
 				}
 			}
+		},
+		upload_zip_file: function( vi ){
+			var vf = new FormData();
+			vf.append("action", "zip_file_upload");
+			vf.append("file", this.upload_list[ vi ]['o'] );
+			vf.append("name", this.upload_list[ vi ]['n'] );
+			vf.append("token", this.upload_list[ vi ]['token'] );
+			vf.append("path", this.current_path );
+			this.upload_list[ vi ]['ax'] = axios.post("?",vf,{
+				onUploadProgress: function (e) {
+					var l = (e.loaded/e.total*100).toFixed(0);
+					app.upload_list[ vi ]['pg'] = l;
+				}
+			}).then(response=>{
+				this.active_uploads--;
+				if( response.status == 200 ){
+					if( typeof(response.data)=="object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.upload_file_modal.hide();
+								document.getElementById("file_upload_content").innerHTML = response.data['data'];
+								/*this.file_name = response.data['detail'];*/
+								this.file_modal = new bootstrap.Modal(document.getElementById('file_modal'));
+								this.file_modal.show();
+								this.cmsg = ""; this.cerr = "";
+							}else{
+								this.upload_list[ vi ]['st'] = "error";
+								this.upload_list[ vi ]['er'] = response.data['error'];
+							}
+						}else{
+							this.upload_list[ vi ]['st'] = "error";
+							this.upload_list[ vi ]['er'] = 'Incorrect Response';
+						}
+					}else{
+						this.upload_list[ vi ]['st'] = "error";
+						this.upload_list[ vi ]['er'] = 'Incorrect Response';
+					}
+				}else{
+					this.upload_list[ vi ]['st'] = "error";
+					this.upload_list[ vi ]['er'] = 'http:'+response.status;
+				}
+			}).catch(error=>{
+				this.active_uploads--;
+				this.upload_list[ vi ]['st'] = "error";
+				this.upload_list[ vi ]['er'] = "upload fail";
+			});
 		},
 		start_upload: function(vi){
 
@@ -778,7 +1009,11 @@ var app = Vue.createApp({
 							if( response.data['status'] == "success" ){
 								if( this.is_token_ok(response.data['token']) ){
 									this.upload_list[ vi ]['token'] = response.data['token'];
-									this.start_upload2(vi);
+									if(this.upload_list[ vi ]['t'] == "application/x-zip-compressed") {
+										this.upload_zip_file(vi);
+									}else {
+										this.start_upload2(vi);
+									}
 								}
 							}else{
 								this.active_uploads--;

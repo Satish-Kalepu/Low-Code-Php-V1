@@ -71,6 +71,92 @@
 							<td>Crawl Link</td>
 							<td><input type="text" v-model="crawl_link" class="form-control form-control-sm" placeholder="Enter Crawl Link" ></td>
 						</tr>
+						<tr>
+							<td>CSS</td>
+							<td>
+								<div class="d-flex">
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="css_type" id="flexRadioDefault1" value="inline" v-model="crawl_dtls['css_type']">
+										<label class="form-check-label" for="flexRadioDefault1">
+											Inline
+										</label>
+									</div>
+									<div class="mx-3"></div>
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="css_type" id="flexRadioDefault2" value="external" v-model="crawl_dtls['css_type']">
+										<label class="form-check-label" for="flexRadioDefault2">
+											External
+										</label>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr v-if="crawl_dtls['css_type'] == 'external'">
+							<td>CSS link's</td>
+							<td>
+								<table class="table table-bordered m-0 w-100">
+									<tbody>
+										<tr v-for="i, j in crawl_dtls['css_links']">
+											<td>
+												<div class="d-flex">
+													<input type="text" class="form-control form-control-sm w-100" name="css_link" v-model="crawl_dtls['css_links'][j]">
+													<div class="mx-2"></div>
+													<div><button class="btn btn-outline-danger btn-sm" v-on:click="crawl_dtls['css_links'].splice(i,1)">X</button></div>
+												</div>
+											</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<td><button class="btn btn-sm btn-outline-dark float-end" v-on:click="crawl_dtls['css_links'][Object.keys(crawl_dtls['css_links']).length] = '';">+</button></td>
+										</tr>
+									</tfoot>
+								</table>
+							</td>
+						</tr>
+						<tr>
+							<td>Javascript</td>
+							<td>
+								<div class="d-flex">
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="js_type" id="flexRadioDefault1" value="inline" v-model="crawl_dtls['js_type']">
+										<label class="form-check-label" for="flexRadioDefault1">
+											Inline
+										</label>
+									</div>
+									<div class="mx-3"></div>
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="js_type" id="flexRadioDefault2" value="external" v-model="crawl_dtls['js_type']">
+										<label class="form-check-label" for="flexRadioDefault2">
+											External
+										</label>
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr v-if="crawl_dtls['js_type'] == 'external'">
+							<td>JS link's</td>
+							<td>
+								<table class="table table-bordered m-0 w-100">
+									<tbody>
+										<tr v-for="i, j in crawl_dtls['js_links']">
+											<td>
+												<div class="d-flex">
+													<input type="text" class="form-control form-control-sm w-100" name="css_link" v-model="crawl_dtls['js_links'][j]">
+													<div class="mx-2"></div>
+													<div><button class="btn btn-outline-danger btn-sm" v-on:click="crawl_dtls['js_links'].splice(i,1)">X</button></div>
+												</div>
+											</td>
+										</tr>
+									</tbody>
+									<tfoot>
+										<tr>
+											<td><button class="btn btn-sm btn-outline-dark float-end" v-on:click="crawl_dtls['js_links'][Object.keys(crawl_dtls['js_links']).length] = '';">+</button></td>
+										</tr>
+									</tfoot>
+								</table>
+							</td>
+						</tr>
 					</table>
 				</div>
 				<div class="modal-footer">

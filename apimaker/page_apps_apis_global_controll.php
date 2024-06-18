@@ -1,37 +1,38 @@
 <?php
 
-function input_factors_to_values($v){
-	//echo "input_factors_to_values\n";
-	//print_r( $v );
+function input_factors_to_values($v,$test_val){
 	$vv = [];
 	foreach( $v as $k=>$val ){
 		if( $val['t'] == "T" ){
-			$vv[$k] = "";
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
 		}else if( $val['t'] == "N" ){
-			$vv[$k] = 0;
+			$vv[$k] = ($test_val[$k]['v']?(int)$test_val[$k]['v']:0);
 		}else if( $val['t'] == "D" ){
-			$vv[$k] = "";
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
 		}else if( $val['t'] == "DT" ){
-			$vv[$k] = "";
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
 		}else if( $val['t'] == "TS" ){
-			$vv[$k] = "";
+			$vv[$k] = ($test_val[$k]['v']?(string)$test_val[$k]['v']:"");
 		}else if( $val['t'] == "L" ){
 			$vvv = [];
 			foreach( $val['v'] as $li=>$lv ){
-				$vvv[] = input_factors_to_values( $lv['v'] );
+				$vvv[] = input_factors_to_values( $lv['v'] , $test_val[$k][$li]);
 			}
 			$vv[$k] = $vvv;
 		}else if( $val['t'] == "O" ){
-			$vv[$k] = input_factors_to_values( $val['v'] );
+			$vv[$k] = input_factors_to_values( $val['v'] , $test_val[$k][$li]);
 		}else if( $val['t'] == "B" ){
-			$vv[$k] = false;
+			if($val['v'] == true) {
+				$vv[$k] = true;
+			}else{
+				$vv[$k] = false;
+			}
 		}else if( $val['t'] == "NL" ){
 			$vv[$k] = null;
 		}
 	}
 	return $vv;
 }
-
 
 function schema_to_values( $v  ){
 	$vv = [];
@@ -53,59 +54,79 @@ function schema_to_values( $v  ){
 	return $vv;
 }
 
-
-if( $_POST['action'] == "get_global_apis" ){
-	$t = validate_token("get_global_apis.". $config_param1, $_POST['token']);
-	if( $t != "OK" ){
-		json_response("fail", $t);
+function build_postman_schema( $v , $url ) {
+	$req_json_data = array();
+	$data_postman = array();
+	
+	if(isset($v['inputs']) && gettype($v['inputs']) == 'string') {
+		$req_json_data = json_decode($v['inputs'],true);
+	}else if(isset($v['inputs']) && count($v['inputs']) > 0 && gettype($v['inputs']) == 'array') {
+		$req_json_data = input_factors_to_values($v['inputs'],$v['testing_data']);	
+	}else {
+		$req_json_data = [];
 	}
-	$apis = [
-		"apis"=>[],
-		"auth_apis"=>[],
-		"captcha"=>[],
-		"tables_dynamic"=>[],
-		"databases"=>[],
-		"files"=>[],
-		"storage"=>[],
-	];
-	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
-		'app_id'=>$config_param1
-	],[
-		'sort'=>['name'=>1],
-		'limit'=>200,
-	]);
-	//print_r( $res['data'] );exit;
-	foreach( $res['data'] as $i=>$j ){
 
-		$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
-			'_id'=>$j['version_id'],
-		],[
-			'projection'=>[
-				'engine.stages'=>false
-			]
-		]);
+	$req_data = array();
+	$req_data['mode'] = "raw";
+	$req_data['raw'] = json_encode($req_json_data,JSON_PRETTY_PRINT);
+	$req_data['options']['raw']['language'] = "json";
 
-		if( $j['input-method'] == "GET" ){
-			$fr = [];
-			foreach( $res2['data']['engine']['input_factors'] as $fi=>$fd){
-				$t = $fd['t'];
-				if( $t == "N" || $t == "TS" ){ $t = "number";}
-				if( $t == "T"||$t == "TT"||$t == "D"||$t == "DT" ){ $t = "text";}
-				if( $t == "B" ){ $t = "boolean";}
-				$fr[ $fi ] = ["type"=>$t, "value"=>$fd['v']];
-			}
-			$j['formdata'] = $fr;
-		}else if( isset( $res2['data']['engine']['input_factors'] ) ){
-			//print_r( $res2['data']['engine']['input_factors'] );
-			$j['vpost'] = json_encode(input_factors_to_values($res2['data']['engine']['input_factors']),JSON_PRETTY_PRINT);
-		}else{
-			$j['vpost'] = '{}';
+	/*Post body input fields ends*/
+
+	$req_url = array();
+	$que_data = array();
+	$req_url['raw'] = $url.$v['name'];
+
+	$url_components = parse_url($req_url['raw']);
+
+	if($url_components['query'] != "") {
+		parse_str($url_components['query'], $query_params);
+
+		foreach ($query_params as $key => $value) {
+			$que_data[] = ['key' => $key, 'value' => $value];
 		}
-		//$j["path"] = ,
-		$apis['apis'][] = $j;
 	}
 
-	$apis['auth_apis'][] = [
+	$req_url['protocol'] = $url_components['scheme'];;
+	$req_url['host'] = $url_components['host'];
+	if($url_components['port'] != "") {
+		$req_url['port'] = $url_components['port'];
+	}
+
+	if($url_components['path'] != "" && $url_components['path'] != "/") {
+		$path = $url_components['path'];
+	}else {
+		$path = $url_components['path'].$v['name'];
+	}
+	
+	$path_array = explode('/', trim($path, '/'));
+	$req_url['path'] = $path_array;
+
+	if(count($que_data) > 0) {
+		$req_url['query'] = $que_data;
+	}
+
+	$header = [];
+	if($v['auth'] != "None") {
+		$header[] = ['key' => $v['auth'],"value" => "XXXXXXXXXXXXXXXXXXXXXXXX"];
+	}
+	
+	$data_postman['name'] = $v['name'];
+	$data_postman['request']['method'] = $v['method'];
+	$data_postman['request']['header'] = $header;
+	if($data_postman['request']['method'] == "POST") {
+		$data_postman['request']['body'] = $req_data;
+	}
+	$data_postman['request']['url'] = $req_url;
+	$data_postman['response'] = [];
+
+	return $data_postman;
+}
+
+function get_global_api_data($app_id = "") {
+	global $mongodb_con,$config_global_apimaker;
+	$vvv = [];
+	$vvv['auth_apis'][] = [
 		"_id"=>"10001",
 		"path" => "_api/auth/generate_access_token",
 		"name"=>"generate_access_token",
@@ -118,13 +139,13 @@ if( $_POST['action'] == "get_global_apis" ){
 			'client_ip'=>'192.168.1.1/32'
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
-	"action"=>"generate_access_token",
-	"access_key": "",
-	"expire_minutes": 2 //optional
-	"client_ip": "192.168.1.1/32" //optional
-}',
+			"action"=>"generate_access_token",
+			"access_key": "",
+			"expire_minutes": 2 //optional
+			"client_ip": "192.168.1.1/32" //optional
+		}',
 	];
-	$apis['auth_apis'][] = [
+	$vvv['auth_apis'][] = [
 		"_id"=>"10005",
 		"path" => "_api/auth/assume_session_key",
 		"name"=>"assume_session_key",
@@ -141,17 +162,17 @@ if( $_POST['action'] == "get_global_apis" ){
 			'hits_per_minute'=>2
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
-	"action"=>"assume_session_key",
-	"role_id": "",
-	"expire_type"=>"In", //In,At
-	"expire_minutes"=>2,
-	"expire_at"=>"2025-12-12 10:10:10",
-	"client_ip": "192.168.1.1/32" //optional
-	"max_hits"=>10,
-	"hits_per_minute"=>2
-}',
+			"action"=>"assume_session_key",
+			"role_id": "",
+			"expire_type"=>"In", //In,At
+			"expire_minutes"=>2,
+			"expire_at"=>"2025-12-12 10:10:10",
+			"client_ip": "192.168.1.1/32" //optional
+			"max_hits"=>10,
+			"hits_per_minute"=>2
+		}',
 	];
-	$apis['auth_apis'][] = [
+	$vvv['auth_apis'][] = [
 		"_id"=>"10002",
 		"path" => "_api/auth/user_auth",
 		"name"=>"user_auth",
@@ -164,13 +185,13 @@ if( $_POST['action'] == "get_global_apis" ){
 			'expire_minutes'=>2 
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
-	"action"=>"user_auth",
-	"username": "",
-	"password": "",
-	"expire_minutes": 2 //optional
-}',
+			"action"=>"user_auth",
+			"username": "",
+			"password": "",
+			"expire_minutes": 2 //optional
+		}',
 	];
-	$apis['auth_apis'][] = [
+	$vvv['auth_apis'][] = [
 		"_id"=>"10003",
 		"path" => "_api/auth/user_auth_captcha",
 		"name"=>"user_auth_captcha",
@@ -185,15 +206,15 @@ if( $_POST['action'] == "get_global_apis" ){
 			'expire_minutes'=>2 
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
-	"action"=>"user_auth_captcha",
-	"username": "",
-	"password": "",
-	"captcha": "",
-	"code": "",
-	"expire_minutes": 2 //optional
-}',
+			"action"=>"user_auth_captcha",
+			"username": "",
+			"password": "",
+			"captcha": "",
+			"code": "",
+			"expire_minutes": 2 //optional
+		}',
 	];
-	$apis['auth_apis'][] = [
+	$vvv['auth_apis'][] = [
 		"_id"=>"10004",
 		"path" => "_api/auth/verify_session_key",
 		"name"=>"verify_session_key",
@@ -204,34 +225,30 @@ if( $_POST['action'] == "get_global_apis" ){
 			'session_key'=>"",
 		],JSON_PRETTY_PRINT),
 		"vpost_help"=>'{
-	"action"=>"verify_session_key",
-	"session_key": "",
-}',
+			"action"=>"verify_session_key",
+			"session_key": "",
+		}',
 	];
 
-	$apis['captcha'][] = [
+	$vvv['captcha'][] = [
 		"_id"=>"10101",
 		"path" => "_api/captcha/get",
 		"name"=>"get",
 		"des"=>"Generate Captcha",
 		'input-method'=>"POST",
 		"vpost"=>'{"action": "captcha_get", "ok":"ok"}',
-		//"vpost_help"=>'{"ok":"ok"}',
 	];
 
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", [
-		'app_id'=>$config_param1
+		'app_id'=>$app_id
 	],[
 		'sort'=>['table'=>1],
 		'limit'=>200,
 	]);
 	foreach( $res['data'] as $i=>$j ){
-
-		//print_r( $j['schema']['default']['fields'] );
 		$schema = schema_to_values( $j['schema']['default']['fields'] );
 		$schema2 = $schema;
 		unset($schema2['_id']);
-		//print_r( $schema );exit;
 		$j['getSchema'] = [
 			"action"=> "getSchema"
 		];
@@ -312,21 +329,20 @@ if( $_POST['action'] == "get_global_apis" ){
 		unset($j['schema']);
 		$j['show'] = "";
 		$j["path"] = "_api/tables_dynamic/".$j['_id'];
-		$apis['tables_dynamic'][] = $j;
+		$vvv['tables_dynamic'][] = $j;
 	}
 
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_databases", [
-		'app_id'=>$config_param1
+		'app_id'=>$app_id
 	],[
 		'sort'=>['des'=>1],
 		'limit'=>200,
 		'projection'=>['details'=>false, 'm_i'=>false, 'user_id'=>false]
 	]);
-	//print_r( $res['data'] );exit;
 	foreach( $res['data'] as $i=>$j ){
 
 		$res2 = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables", [
-			'app_id'=>$config_param1,
+			'app_id'=>$app_id,
 			"db_id"=>$j['_id']
 		],[
 			'sort'=>['des'=>1],
@@ -343,7 +359,6 @@ if( $_POST['action'] == "get_global_apis" ){
 				$primary_key_type = "text";
 			}else if( $j['engine'] == "MySql" ){
 				if( isset($jj['keys']) ){
-					//print_r( $jj['source_schema'] );exit;
 					$primary_keys = $jj['keys']['PRIMARY']['keys'];
 					$primary_key = $primary_keys[0]['name'];
 					$primary_key_type = $primary_keys[0]['type'];
@@ -453,11 +468,11 @@ if( $_POST['action'] == "get_global_apis" ){
 			$res2['data'][$ii]['show'] = "";
 			$res2['data'][$ii]['path'] = "_api/tables/".$jj['_id'];
 		}
-		$apis['databases'][ $j['_id'] ] = [ 'db'=>$j, 'tables'=> $res2['data'], "show"=> "" ];
+		$vvv['databases'][ $j['_id'] ] = [ 'db'=>$j, 'tables'=> $res2['data'], "show"=> "" ];
 	}
 	
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
-		'app_id'=>$config_param1
+		'app_id'=>$app_id
 	],[
 		'sort'=>['des'=>1],
 		'limit'=>200,
@@ -561,7 +576,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			]
 		];
 		$j['show'] = "";
-		$apis['storage'][] = $j;
+		$vvv['storage'][] = $j;
 	}
 
 	$d = [
@@ -590,7 +605,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"error"=>""
 		]
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
 	$d = [
 		"_id"=>"f0010",
 		"name"=>"get_file", "des"=>"Get file as base64 string",
@@ -608,7 +623,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"error"=>""
 		]
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
 	$d = [
 		"_id"=>"f0010",
 		"name"=>"get_raw_file", "des"=>"Get file as binary",
@@ -622,7 +637,7 @@ if( $_POST['action'] == "get_global_apis" ){
 		"response-type"=>"application/json",
 		"response-body"=>"BinaryData",
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
 	$d = [
 		"_id"=>"f0010",
 		"name"=>"get_file_by_id", "des"=>"Get file as base64 string",
@@ -640,7 +655,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"error"=>""
 		]
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
 	$d = [
 		"_id"=>"f0010",
 		"name"=>"get_raw_file_by_id", "des"=>"Get file as binary",
@@ -654,7 +669,7 @@ if( $_POST['action'] == "get_global_apis" ){
 		"response-type"=>"application/json",
 		"response-body"=>"BinaryData",
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
 	$d = [
 		"_id"=>"f0010",
 		"name"=>"put_file", "des"=>"Upload a file",
@@ -679,7 +694,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"error"=>""
 		]
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
 	$d = [
 		"_id"=>"f0010",
 		"name"=>"delete_file", "des"=>"Delete a file",
@@ -696,11 +711,74 @@ if( $_POST['action'] == "get_global_apis" ){
 			"error"=>""
 		]
 	];
-	$apis['files'][] = $d;
+	$vvv['files'][] = $d;
+
+	return $vvv;
+}
+
+if( $_POST['action'] == "get_global_apis" ){
+	$t = validate_token("get_global_apis.". $config_param1, $_POST['token']);
+	if( $t != "OK" ){
+		json_response("fail", $t);
+	}
+	$apis = [
+		"apis"=>[],
+		"auth_apis"=>[],
+		"captcha"=>[],
+		"tables_dynamic"=>[],
+		"databases"=>[],
+		"files"=>[],
+		"storage"=>[],
+	];
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
+		'app_id'=>$config_param1
+	],[
+		'sort'=>['name'=>1],
+		'limit'=>200,
+	]);
+
+	foreach( $res['data'] as $i=>$j ){
+
+		$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
+			'_id'=>$j['version_id'],
+		],[
+			'projection'=>[
+				'engine.stages'=>false
+			]
+		]);
+
+		if( $j['input-method'] == "GET" ){
+			$fr = [];
+			foreach( $res2['data']['engine']['input_factors'] as $fi=>$fd){
+				$t = $fd['t'];
+				if( $t == "N" || $t == "TS" ){ $t = "number";}
+				if( $t == "T"||$t == "TT"||$t == "D"||$t == "DT" ){ $t = "text";}
+				if( $t == "B" ){ $t = "boolean";}
+				$fr[ $fi ] = ["type"=>$t, "value"=>$fd['v']];
+			}
+			$j['formdata'] = $fr;
+		}else if( isset( $res2['data']['engine']['input_factors'] ) ){
+			$j['vpost'] = json_encode(input_factors_to_values($res2['data']['engine']['input_factors'],$res2['data']['test']['factors']['v']),JSON_PRETTY_PRINT);
+		}else{
+			$j['vpost'] = '{}';
+		}
+		$apis['apis'][] = $j;
+	}
+
+	$predefined_apis = get_global_api_data($config_param1);
+
+	foreach($apis as $i => $j) {
+		if(in_array($i,array_keys($predefined_apis))) {
+			$apis[$i] = $predefined_apis[$i];
+		}else {
+			$apis[$i] = $j;
+		}
+	}
 
 	json_response([
 		'status'=>"success", 
-		"apis"=>$apis
+		"apis"=>$apis,
+		"data" => $data
 	]);
 	exit;
 }
@@ -780,4 +858,140 @@ if( $_POST['action'] == "generate_access_token" ){
 		"key"=>$key_id
 	]);
 
+}
+
+if(isset($_POST['action']) && $_POST['action'] == "postman_export") {
+	if(!isset($_POST['app_id'])) {
+		json_response("fail", "Page Id should not be empty");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['app_id'] ) ){
+		json_response("fail", "Error In Page Id");
+	}
+
+	if($_POST['app_id'] != $config_param1) {
+		json_response("fail", "Error in page id");
+	}	
+
+	if(!isset($_POST['from']) || $_POST['from'] == "") {
+		json_response("fail","From event should not be empty");
+	}
+
+	$from_event_list = ['apis','auth','captcha','internal','external','files','storage','universal'];
+
+	if(!in_array($_POST['from'], $from_event_list)) {
+		json_response("fail",'Fail to export due to from event');
+	}
+
+	$api_export_details = array();
+
+	$common_api_names = array(
+		"auth" => array('name' => "Authentication",'key' => 'auth_apis'),
+		"captcha" => array('name' => "Captcha",'key' => 'captcha'),
+		"internal" => array('name' => "Internal Tables",'key' => 'tables_dynamic'),
+		"externaal" => array('name' => "External Database",'key' => 'databases'),
+		"files" => array('name' => "Internal Files",'key' => 'files'),
+		"storage" => array('name' => "Storage Vault",'key' => 'storage'),
+	);
+
+	$global_api_data = get_global_api_data($config_param1);
+
+	$internal_tables_api = ['getSchema','findOne','findMany','insertOne','insertMany','updateOne', 'updateMany', 'deleteOne', 'deleteMany'];
+	$gloabl_api_schema_data = array();
+	foreach($global_api_data as $i => $k) {
+		foreach($k as $kk => $kkk) {
+			$global_api_schema = array();
+			$global_api_schema['name'] = $kkk['path'];
+			$global_api_schema['inputs'] = $kkk['vpost'];
+			$global_api_schema['testing_data'] = [];
+			$global_api_schema['method'] = $kkk['input-method'];
+			$global_api_schema['api_path'] = "";
+			$global_api_schema['auth'] = "Access-Key";
+			$global_api_schema['input-type'] = "application/json";
+
+			$gloabl_api_schema_data[$i]['API'][] = $global_api_schema;
+		}
+	}
+
+	if($_POST['from'] == "apis" || $_POST['from'] == "universal") {
+		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
+			'app_id'=>$config_param1,
+			'type' => 'api'
+		],[
+			'sort'=>['name'=>1],
+			'limit'=>200,
+		]);
+
+		if($res['status'] == "success") {
+			$api_export_data = array();
+			foreach( $res['data'] as $i=>$j ){
+				$api_data = [];
+				$api_data['name'] = $j['name'];
+				$api_data['inputs'] = ($j['engine']['input_factors']?$j['engine']['input_factors']:[]);
+				$api_data['testing_data'] = ($j['test']['factors']['v']?$j['test']['factors']['v']:[]);
+				$api_data['method'] = $j['input-method'];
+				$api_data['api_path'] = str_replace("/", "", $j['path']);
+				$api_data['auth'] = $j['auth-type'];
+				$api_data['input-type'] = $j['input-type'];
+
+				$api_export_data['data'][(str_replace("/", "", $j['path']) == ""?"API":str_replace("/", "", $j['path']))][] = $api_data;
+			}
+			$api_export_details["My API's"] = $api_export_data;
+		}else {
+			json_response("fail","No Data found with given details 1");
+		}
+	}else if($_POST['from'] == "auth") {
+		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
+	}else if($_POST['from'] == "captcha") {
+		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
+	}else if($_POST['from'] == "internal") {
+		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
+	}else if($_POST['from'] == "external") {
+		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
+	}else if($_POST['from'] == "files") {
+		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
+	}else if($_POST['from'] == "storage") {
+		$api_export_details[$common_api_names[$_POST['from']]['name']]['data'] = $gloabl_api_schema_data[$common_api_names[$_POST['from']]['key']];
+	}else {
+		json_response("fail","Fail to export due to from event");
+	}
+	if($_POST['from'] == "universal") {
+		foreach($common_api_names as $ii => $iii) {
+			if($ii == "auth" || $ii == "captcha") {
+				$api_export_details[$iii['name']]['data'] = $gloabl_api_schema_data[$iii['key']];
+			}
+		}
+	}
+
+	/*Postman Collection Export Code*/
+	$json_data = array();
+
+	$json_data['info'] = ['_postman_id' => "",'name' => $_POST['from'],'schema' => 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json','_exporter_id' => ""];
+
+	$doc_data = array();
+
+	foreach($api_export_details as $k => $l) {
+		$doc_data['name'] = $k;
+
+		foreach($l['data'] as $i => $j) {
+			if($i == 'API') {
+				foreach($j as $l => $ll) {
+					$doc_data['item'][] = build_postman_schema($ll,$_POST['engine_path'],'');
+				}
+			}else {
+				$vv = [];
+				$vv['name'] = $i;
+				foreach($j as $l => $ll) {
+					$vv['item'][] = build_postman_schema($ll,$_POST['engine_path'].$i."/");
+				}
+				$doc_data['item'][] = $vv;
+			}
+		}
+	}
+
+	$json_data['item'][] = $doc_data;
+	$json = json_encode($json_data, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+
+	$filename = $_POST['from'].".json";
+
+	json_response("success",["file" => $filename,'json_data' => $json]);
 }

@@ -1,5 +1,9 @@
 <?php
 
+$mime_types = array("aac" => "audio/aac","abw" => "application/x-abiword","apng" => "image/apng","arc" => "application/x-freearc","avif" => "image/avif","avi" => "video/x-msvideo","azw" => "application/vnd.amazon.ebook","bin" => "application/octet-stream","bmp" => "image/bmp","bz" => "application/x-bzip","bz2" => "application/x-bzip2","cda" => "application/x-cdf","csh" => "application/x-csh","css" => "text/css","csv" => "text/csv","doc" => "application/msword","docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document","eot" => "application/vnd.ms-fontobject","epub" => "application/epub+zip","gz" => "application/gzip","gif" => "image/gif","htm" => "text/html","html" => "text/html","ico" => "image/vnd.microsoft.icon","ics" => "text/calendar","jar" => "application/java-archive","jpeg" => "image/jpeg","jpg" => "image/jpeg","js" => "text/javascript","json" => "application/json","jsonld" => "application/ld+json","mid" => "audio/midi,audio/x-midi","midi" => "audio/midi,audio/x-midi","mjs" => "text/javascript","mp3" => "audio/mpeg","mp4" => "video/mp4","mpeg" => "video/mpeg","mpkg" => "application/vnd.apple.installer+xml","odp" => "application/vnd.oasis.opendocument.presentation","ods" => "application/vnd.oasis.opendocument.spreadsheet","odt" => "application/vnd.oasis.opendocument.text","oga" => "audio/ogg","ogv" => "video/ogg","ogx" => "application/ogg","opus" => "audio/opus","otf" => "font/otf","png" => "image/png","pdf" => "application/pdf","php" => "application/x-httpd-php","ppt" => "application/vnd.ms-powerpoint","pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation","rar" => "application/vnd.rar","rtf" => "application/rtf","sh" => "application/x-sh","svg" => "image/svg+xml","tar" => "application/x-tar","tif" => "image/tiff","tiff" => "image/tiff","ts" => "video/mp2t","ttf" => "font/ttf","txt" => "text/plain","vsd" => "application/vnd.visio","wav" => "audio/wav","weba" => "audio/webm","webm" => "video/webm","webp" => "image/webp","woff" => "font/woff","woff2" => "font/woff2","xhtml" => "application/xhtml+xml","xls" => "application/vnd.ms-excel","xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","xml" => "application/xml","xul" => "application/vnd.mozilla.xul+xml","zip" => "application/zip","3gp" => "video/3gpp; audio/3gpp","3g2" => "video/3gpp2; audio/3gpp2","7z" => "application/x-7z-compressed");
+
+$media_file_types = array('ico' => 'image/vnd.microsoft.icon','jpeg' => 'image/jpeg','jpg'  => 'image/jpeg','png'  => 'image/png','gif'  => 'image/gif','bmp'  => 'image/bmp','svg'  => 'image/svg+xml','mp3'  => 'audio/mpeg','wav'  => 'audio/wav','ogg'  => 'audio/ogg','flac' => 'audio/flac','mp4'  => 'video/mp4','avi'  => 'video/x-msvideo','mov'  => 'video/quicktime','mkv'  => 'video/x-matroska','webm' => 'video/webm','pdf'  => 'application/pdf','doc'  => 'application/msword','docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document','xls'  => 'application/vnd.ms-excel','xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','txt'  => 'text/plain','rtf'  => 'application/rtf','md'   => 'text/markdown','zip'  => 'application/zip','gz'   => 'application/gzip','tar'  => 'application/x-tar','rar'  => 'application/vnd.rar','7z'   => 'application/x-7z-compressed','exe'  => 'application/vnd.microsoft.portable-executable','dll'  => 'application/x-msdownload','ttf'  => 'font/ttf','otf'  => 'font/otf','woff' => 'font/woff');
+
 if( $_POST['action'] == "load_storage_vaults" ){
 
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
@@ -60,6 +64,437 @@ if( $_POST['action'] == "delete_file" ){
 	]);
 	update_app_pages( $config_param1 );
 	json_response($res);
+}
+
+function execute_curl_request($apidata = array(),$postbody = ""){
+	$timeout = ((int)$apidata["timeout"]>0?$apidata["timeout"]:20);
+
+	if(!$apidata["headers"] || !is_array($apidata["headers"])){
+		$return_result = ["status"=>"fail","data"=>"headers parameter  is empty"];
+		return $return_result ;
+		exit;
+	}
+
+	if(!$apidata["method"] || $apidata["method"] ==""){
+		$return_result = ["status"=>"fail","data"=>"action parameter  is empty"];
+		return $return_result ;
+		exit;
+	}
+
+	if(!$apidata["url"] || $apidata["url"] ==""){
+		$return_result = ["status"=>"fail","data"=>"url parameter  is empty"];
+		return $return_result ;
+		exit;
+	}
+
+	$ch = curl_init();
+	$options = array(
+		CURLOPT_HEADER => 0,
+		CURLOPT_URL => $apidata['url'],
+		CURLOPT_CONNECTTIMEOUT_MS=> 5000,
+		CURLOPT_TIMEOUT => (int)$timeout,
+		CURLOPT_RETURNTRANSFER =>true,
+		CURLOPT_AUTOREFERER=>true,
+		CURLOPT_SSL_VERIFYHOST=>false,
+		CURLOPT_SSL_VERIFYPEER=>false
+	);
+	$request_headers = [];
+	$is_user_agent=false;
+	$is_content_type=false;
+	foreach( $apidata['headers'] as $i=>$j ){
+		$request_headers[] = $i.": ". $j;
+		if( strtolower((string)$i) == "user-agent" ){
+			$is_user_agent=true;
+		}
+		if( strtolower((string)$i) == "content-type" ){
+			$is_content_type=true;
+		}
+	}
+	if( !$is_user_agent ){
+		$request_headers[] = "User-Agent: ".$_SERVER['HTTP_USER_AGENT'];
+	}
+	$url_parts = parse_url($apidata['url']);
+
+	if( $apidata['method'] == "POST" ){
+		$options[CURLOPT_POST] = 1;
+		$options[CURLOPT_POSTFIELDS] = $postbody;
+		if( !$is_content_type ){
+			if( $apidata['content-type'] ){
+				if( $api['content-type']  == "multipart/form-data" ){
+					return false;
+				}else{
+					$request_headers[] = "Content-Type: " . $apidata['content-type'];
+				}
+			}
+		}
+	}else if( $apidata['method'] == "GET" ){
+		$options[CURLOPT_HTTPGET] =1;
+	}else if( $apidata['method'] == "PUT" ){
+		return ["status"=>"fail", "error"=>"Method not implemented"];
+		$options[CURLOPT_PUT] =1;
+	}
+	if( sizeof($request_headers) ){
+		$options[CURLOPT_HTTPHEADER] = $request_headers;
+	}
+
+	curl_setopt_array( $ch, $options );
+	$result = curl_exec( $ch );
+	$info = curl_getinfo( $ch );
+	if( $info["content_type"] ){
+		$content_type=explode(";",$info["content_type"])[0];
+	}else{
+		$content_type="text/plain";
+	}
+	
+	$status = "ok";
+	$errtxt = curl_error( $ch );
+	$errno = curl_errno( $ch );
+
+	if( $errno ){
+		$status = "CurlError";
+		$error = $errno .":" .$errtxt;
+	}else if($info["http_code"] == 0 && round($info["total_time"]) >= $timeout){
+		$status = "timeout";
+	}else if($info["http_code"] == 0){
+		$status = "timeout";
+	} 
+
+	$return_result = [
+		"status"=>$status,
+		"curl_info"=>$info,
+		"response"=>$result,
+		"http_code"=>$info['http_code'],
+		"error"=>$error,
+		"content_type"=>$info['content_type'],
+		"total_time"=>$info['total_time']
+	];
+	
+	return $return_result;
+}
+
+function save_file_upload_data($data = []) {
+	global $mongodb_con,$config_global_apimaker;
+
+	if(!isset($data['app_id']) || $data['app_id'] == "") {
+		json_response("fail","App ID should not be empty");
+	}else {
+		if( !preg_match("/^[a-f0-9]{24}$/i", $data['app_id']) ) {
+			json_response("fail","Invalid App ID");
+		}
+	}
+
+	if($data['name'] == "" || $data['vt'] == "" || $data['path'] == "" || $data['t'] == "" ) {
+		return ['status' => 'fail','message' => "Invalid data"];
+	}
+
+	$save_data = [];
+	$save_data['app_id'] = $data['app_id'];
+	$save_data['name'] = $data['name'];
+	$save_data['type'] = $data['type'];
+	$save_data['vt'] = $data["vt"];
+	$save_data['path'] = $data['path'];
+	$save_data['t'] = $data['t'];
+	$save_data['ext'] = $data['extension'];
+	$save_data['data'] = $data['code'];
+	$save_data['sz'] = strlen($data['code']);
+	$save_data['vars_used'] = [];
+	$save_data["updated"] = date("Y-m-d H:i:s");
+
+	$cond = [];
+	$cond['name'] = $data['name'];
+	$cond['app_id'] = $data['app_id'];
+	$cond['path'] = $data['path'];
+	$cond['vt'] = $data['vt'];
+
+	$duplicate_check = $mongodb_con->find_one($config_global_apimaker['config_mongo_prefix'] . "_files", $cond);
+
+	if($duplicate_check['data']['_id'] != "") {
+		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['_id' => $duplicate_check['data']['_id']] , $save_data );
+	}else {
+		$save_data["created"] = date("Y-m-d H:i:s");
+		
+		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", $save_data );
+		if($res['status'] == "success") {
+			update_app_pages( $data['app_id'] );
+		}
+	}
+
+	return $res;
+}
+
+function replaceDomainCallback_2($matches) {
+	global $mongodb_con,$config_param1,$mime_types,$media_file_types;
+
+	$url = "";
+	if (parse_url($matches[2], PHP_URL_HOST)) {
+		$url = $matches[2];
+	} else {
+		$url = $_POST['crawl_link'] . $matches[2];
+	}
+
+	if($_POST['crawl_dtls']['download'] == "yes") {
+		
+
+		if (parse_url($url, PHP_URL_HOST)) {
+			$parse_url = [];
+			$parse_url = parse_url($url);
+
+			$newurl = "";
+			$newurl = ((isset($parsed_url['path']) ? str_replace("/","",$parsed_url['path']) : '').(isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '').(isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : ''));
+			if($newurl != "") {
+				$url = "";
+				$url = $newurl;
+			}
+		} else {
+			$url = $url;
+		}
+
+		$url = str_replace($_POST['crawl_link'],"",$url);
+		$url = ltrim($url, '/');
+
+		return $matches[1]."="."'".$url."'";
+	}else {
+		$url = ltrim($url, '/');
+		return $matches[1]."="."'".$url."'";
+	}
+}
+
+function replaceDomainCallback($matches) {
+	global $mongodb_con,$config_param1,$mime_types,$media_file_types;
+
+	$url = "";
+	if (parse_url($matches[2], PHP_URL_HOST)) {
+		$url = $matches[2];
+	} else {
+		$url = $_POST['crawl_link'] . $matches[2];
+	}
+
+	$skip_links = false;
+	if(preg_match("/favicon/g",$url)) {
+		$skip_links = true;
+	}
+
+	if($_POST['crawl_dtls']['download'] == "yes" && $skip_links == false) {
+		set_time_limit(30);
+		$file_name = "";$type = "";$t = "";$extension = "";
+		$path = parse_url($url, PHP_URL_PATH);
+		$path_info = pathinfo($path);
+		$file_name = ($path_info['basename']?$path_info['basename']:"index");
+		$type = (isset($mime_types[$path_info['extension']])?$mime_types[$path_info['extension']]:"text/html");
+		$extension = ($path_info['extension']?$path_info['extension']:"html");
+		$t = isset($media_file_types[$extension])?"base64":"inline";
+
+		$newcontent = "";
+		$apidata = [];
+		$apidata = [
+			'url' => $url,
+			'method' => 'GET',
+			'headers' => ["User-Agent: {$_SERVER['HTTP_USER_AGENT']}"]
+		];
+		$curl_response = execute_file_get_contents_request($apidata);
+
+		/*if($t == "base64") {
+			$curl_response = execute_file_get_contents_request($apidata);
+		}else {
+			$curl_response = execute_curl_request($apidata);
+		}*/
+
+		if( $curl_response['status'] == "ok" && $curl_response['response'] != "" ) {
+			$newcontent = $curl_response['response'];
+		}
+
+		if($newcontent != "") {
+			$newcode = $newcontent;
+			$newcode = trim($newcode);
+
+			/*$newcode = preg_replace_callback('/(href|src)="([^"]*)"/i','replaceDomainCallback',$newcode);*/
+			$newcode = preg_replace_callback('/(href|src)="((?!mailto|javascript|en-in)[^"]*)"/i','replaceDomainCallback_2',$newcode);
+
+			$folder_path = "";
+			foreach(explode("/",$path_info['dirname']) as $i => $j) {
+				if($i > 0) {
+					$file_path = "";
+					$file_path = str_replace("/","",$j);
+					if($i == 1) {
+						$folder_path = $_POST['current_path'];
+					}else {
+						$folder_path = $folder_path;
+					}
+
+					$folder_path = str_replace("//","/",$folder_path);
+					
+					save_file_upload_data([
+						"app_id" => $config_param1,
+						"name" => strtolower($j),
+						"type" => "",
+						"vt" => "folder",
+						"path" => strtolower($folder_path),
+						"t" => "inline"
+					]);
+					$folder_path = $folder_path . $file_path."/";
+				}
+			}
+
+			$folder_path = str_replace("//","/",$folder_path);
+
+			if($t == "base64") {
+				$newcode = base64_encode($newcode);
+			}
+
+			$save_data = [];
+			$save_data['name'] = strtolower($file_name);
+			$save_data['type'] = $type;
+			$save_data['vt'] = "file";
+			$save_data['path'] = strtolower($folder_path);
+			$save_data['t'] = $t;
+			$save_data['extension'] = $extension;
+			$save_data['code'] = $newcode;
+			$save_data['app_id'] = $config_param1;
+
+			save_file_upload_data($save_data);
+		}
+
+		if (parse_url($url, PHP_URL_HOST)) {
+			$parse_url = [];
+			$parse_url = parse_url($url);
+
+			$newurl = "";
+			$newurl = ((isset($parsed_url['path']) ? str_replace("/","",$parsed_url['path']) : '').(isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '').(isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : ''));
+			if($newurl != "") {
+				$url = "";
+				$url = $newurl;
+			}
+		} else {
+			$url = $url;
+		}
+
+		$url = str_replace($_POST['crawl_link'],"",$url);
+		$url = ltrim($url, '/');
+
+		return $matches[1]."="."'".$url."'";
+	}else {
+		$url = ltrim($url, '/');
+		return $matches[1]."="."'".$url."'";
+	}
+}
+
+function execute_file_get_contents_request($apidata = array(), $postbody = "") {
+	$timeout = ((int)$apidata["timeout"] > 0 ? $apidata["timeout"] : 10);
+
+	if (empty($apidata["headers"]) || !is_array($apidata["headers"])) {
+		return ["status" => "fail", "data" => "headers parameter is empty"];
+	}
+
+	if (empty($apidata["method"])) {
+		return ["status" => "fail", "data" => "method parameter is empty"];
+	}
+
+	if (empty($apidata["url"])) {
+		return ["status" => "fail", "data" => "url parameter is empty"];
+	}
+
+	$start_time = microtime(true);
+	$context = stream_context_create([
+		'http' => [
+			'method' => strtoupper($apidata['method']),
+			'header' => $apidata['headers'],
+			'content' => $postbody,
+			'timeout' => $timeout,
+			'ignore_errors' => true
+		]
+	]);
+	$content = @file_get_contents($apidata['url'], false, $context);
+
+	if ($content === false) {
+		$error = error_get_last();
+		return [
+			"status" => "fail",
+			"error" => $error ? $error['message'] : "Failed to fetch content"
+		];
+	}
+
+	$http_response_header = $http_response_header ?? [];
+	$http_code = null;
+	$content_type = null;
+	foreach ($http_response_header as $header) {
+		if (preg_match('/^HTTP\/\d+\.\d+\s+(\d+)/', $header, $matches)) {
+			$http_code = intval($matches[1]);
+		} elseif (strpos($header, 'Content-Type: ') === 0) {
+			$content_type = trim(substr($header, 14));
+		}
+	}
+
+	$total_time = microtime(true) - $start_time;
+
+	return [
+		"status" => "ok",
+		"response" => $content,
+		"http_code" => $http_code,
+		"content_type" => $content_type,
+		"total_time" => $total_time
+	];
+}
+
+if( $_POST['action'] == "crawl_website" ){
+	if( $_POST['crawl_link'] == "" ) {
+		json_response("fail", "Link is required");
+	}
+	set_time_limit(60);
+
+	$content = "";
+	$file_name = "";$type = "";$t = "";$extension = "";
+
+	$path = parse_url($_POST['crawl_link'], PHP_URL_PATH);
+	$path_info = pathinfo($path);
+	$file_name = ($path_info['basename']?$path_info['basename']:"index");
+	$type = (isset($mime_types[$path_info['extension']])?$mime_types[$path_info['extension']]:"text/html");
+	$extension = ($path_info['extension']?$path_info['extension']:"html");
+	$t = isset($media_file_types[$extension])?"base64":"inline";
+
+	$apidata = [];
+	$apidata['url'] = $_POST['crawl_link'];
+	$apidata['method'] = "GET";
+	$apidata['headers'] = ["User-Agent: ".$_SERVER['HTTP_USER_AGENT']];
+	$curl_response = execute_file_get_contents_request($apidata);
+	/*if($t == "base64") {
+		$curl_response = execute_file_get_contents_request($apidata);
+	}else {
+		$curl_response = execute_curl_request($apidata);
+	}*/
+
+	if( $curl_response['status'] == "ok" && $curl_response['http_code'] == 200 ) {
+		$content = $curl_response['response'];
+	}else {
+		json_response("fail",$curl_response['error']);
+	}
+
+	$code = "";
+	$code = $content;
+	$code = preg_replace('/\s{2,}/', ' ', $code);
+	$code = preg_replace('/<!--(.|\\s)*?-->/', '', $code);
+	$code = trim($code);
+	
+	$code = preg_replace_callback('/(href|src)="((?!mailto|javascript|en-in)[^"]*)"/i','replaceDomainCallback',$code);
+
+	$storing_path = $_POST['current_path'];
+
+	if($t == "base64") {
+		$code = base64_encode($code);
+	}
+
+	$save_data = [];
+	$save_data['name'] = strtolower($file_name.".".$extension);
+	$save_data['type'] = $type;
+	$save_data['vt'] = "file";
+	$save_data['path'] = strtolower($storing_path);
+	$save_data['t'] = $t;
+	$save_data['extension'] = $extension;
+	$save_data['code'] = $code;
+	$save_data['app_id'] = $config_param1;
+
+	save_file_upload_data($save_data);
+
+	json_response("success","Still in process");	
 }
 
 if( $_POST['action'] == "create_file" ){
@@ -147,6 +582,124 @@ if( $_POST['action'] == "files_create_folder" ){
 	exit;
 }
 
+
+function getFileExtension($filename) {
+    $basename = basename($filename);
+    $pos = strrpos($basename, '.');
+    if ($pos !== false) {
+        return substr($basename, $pos + 1);
+   } else {
+        return 'no_extenstion';
+   }
+}
+
+if( $_POST['action'] == "upload_zip_files" ) {
+	$t = validate_token( "upload_zip_files.".$config_param1, $_POST['token'] );
+	if( $t != "OK" ){
+		json_response("fail", $t);
+	}
+
+	if($_POST['file'] == "") {
+		json_response("fail","Invalid File list");
+	}else{
+		if(count($_POST['file']) == 0) {
+			json_response("fail","Please select file list to upload");
+		}
+	}
+
+	$path = '/tmp/';
+	$file_path = $_POST['current_path'];
+
+	$temp_zip_path = $_SESSION['temp_zip_path'];
+	if (!file_exists($temp_zip_path)) {
+		json_response("fail","Zip file not found");
+	}
+
+	$selected_files = $_POST['file'];
+	$zip = new ZipArchive;
+	if ($zip->open($temp_zip_path) === true) {
+		foreach ($selected_files as $file) {
+			$zip->extractTo($path, $file);
+			$ext = getFileExtension($file);
+			$content = "";
+			$t = "";
+			$mime_type ="";
+			if(isset($media_file_types[$ext])){
+				$file_content = file_get_contents($path.$file);
+				$content = base64_encode($file_content);
+				$t = "base64";
+				$mime_type = $media_file_types[$ext];
+			}else{
+				$file_content = file_get_contents($path.$file);
+				$content = $file_content;
+				$t = "inline";
+				$mime_type = $mime_types[$ext];
+			}
+
+			unlink($path.$file);
+
+			$path_file = str_replace(basename($file),"",$file);
+
+			$path_file = $file_path.$path_file;
+			$check_path = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['path' => $path_file],['projection' => ['path' => 1]]);
+
+			if($path_file != "/" && $path_file != "" && $check_path['data']['_id'] == "") {
+				$exploded_path = explode("/",$path_file);
+
+				$check_paath = "";
+				foreach($exploded_path as $kk => $kkk) {
+					if($kk == 0) {
+						$check_paath = $check_paath."/";
+					}else {
+						$check_paath.= $exploded_path[$kk -1]."/";
+					}
+					$check_paath = str_replace("//","/",$check_paath);
+
+					$check_path = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['path' => $check_paath,'name' => $kkk],['projection' => ['path' => 1]]);
+					
+					if( $check_path['data']['_id'] == "" && $kkk != "") {
+						$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+							"app_id"=>$config_param1,
+							"name"=>$kkk,
+							'type'=>$type,
+							'vt'=>"folder",
+							'path'=>$check_paath,
+							't'=>'inline',
+							"created"=>date("Y-m-d H:i:s"),
+							"updated"=>date("Y-m-d H:i:s"),
+						]);
+					}
+				}
+			}
+
+			/*print_pre($mime_types);exit;*/
+
+			$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+				"app_id" => $config_param1,
+				"name" => basename($file),
+				'type' => $mime_type,
+				'vt' => "file",
+				"path" => $path_file,
+				't' => $t,
+				"data" => $content,
+				"sz" => strlen($content),
+				'ext' => $ext,
+				"created" => date("Y-m-d H:i:s"),
+				"updated" => date("Y-m-d H:i:s"),
+			]);
+
+			if( $res['status'] == "success" ){
+				update_app_pages( $config_param1 );
+			}
+		}
+		$zip->close();
+		unlink($temp_zip_path);
+		json_response("success",$res);
+	} else {
+		json_response("fail",'Failed to open the zip file.');
+	}
+}
+
 if( $_POST['action'] == "apps_file_upload" ){
 	$t = validate_token( "file.upload.".$config_param1, $_POST['token'] );
 	if( $t != "OK" ){
@@ -199,6 +752,44 @@ if( $_POST['action'] == "apps_file_upload" ){
 	exit;
 }
 
+if( $_POST['action'] == "zip_file_upload" ){
+	$t = validate_token( "file.upload.".$config_param1, $_POST['token'] );
+	if( $t != "OK" ){
+		json_response("fail", $t);
+	}
+	if( file_exists( $_FILES['file']['tmp_name'] ) && filesize($_FILES['file']['tmp_name']) > 0  ){
+		if($_FILES['file']['name'] != ''){
+			$temp_path = $_FILES['file']['tmp_name'];
+			$zip = new ZipArchive;
+			if ($zip->open($temp_path) === true) {
+				$file_names = [];
+				for ($i = 0; $i < $zip->numFiles; $i++) {
+					$fileInfo = $zip->statIndex($i);
+					if (substr($fileInfo['name'], -1) != '/') {
+						$file_names[] = $fileInfo['name'];
+					}
+				}
+				$zip->close();
+				$output_data = "";
+				foreach ($file_names as $file) {
+					$output_data.='<label><input type="checkbox" class="me-2" name="selected_files[]" value="' . $file . '" checked="true">' . $file . '</label><br>';
+				}
+				$temp_dir = sys_get_temp_dir();
+				$temp_zip_path = $temp_dir . '/' . $_FILES['file']['name'];
+				move_uploaded_file($temp_path, $temp_zip_path);
+				$_SESSION['temp_zip_path'] = $temp_zip_path;
+				json_response(['status'=>"success", "data"=>$output_data]);
+			} else {
+				json_response(['status'=>"fail", "error"=>"Invalid zip file."]);
+			}
+		}else {
+			json_response(['status'=>"fail", "error"=>"Invalid zip file."]);
+		}
+	}else{
+		json_response(['status'=>"fail", "error"=>"server error"]);
+	}
+	exit;
+}
 
 if( $_POST['action'] == "mount_storage_vault" ){
 
