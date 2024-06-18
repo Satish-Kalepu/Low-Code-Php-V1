@@ -184,7 +184,7 @@ function save_file_upload_data($data = []) {
 	}
 
 	if($data['name'] == "" || $data['vt'] == "" || $data['path'] == "" || $data['t'] == "" ) {
-		json_response("fail","Invalid data");
+		return ['status' => 'fail','message' => "Invalid data"];
 	}
 
 	$save_data = [];
@@ -210,27 +210,20 @@ function save_file_upload_data($data = []) {
 
 	if($duplicate_check['data']['_id'] != "") {
 		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['_id' => $duplicate_check['data']['_id']] , $save_data );
-		if($res['status'] == "fail") {
-			json_response("fail","Fail to Update data " . json_encode($save_data));
-		}
 	}else {
 		$save_data["created"] = date("Y-m-d H:i:s");
 		
 		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", $save_data );
-		if($res['status'] == "fail") {
-			$data = [];
-			$data['error'] = "Fail to Insert data";
-			$data['db_error'] = $res;
-			json_response("fail",$data);
+		if($res['status'] == "success") {
+			update_app_pages( $data['app_id'] );
 		}
-		update_app_pages( $data['app_id'] );
 	}
 
 	return $res;
 }
 
-function replaceDomainCallback($matches) {
-	global $mongodb_con,$config_param1;
+function replaceDomainCallback_2($matches) {
+	global $mongodb_con,$config_param1,$mime_types,$media_file_types;
 
 	$url = "";
 	if (parse_url($matches[2], PHP_URL_HOST)) {
@@ -240,64 +233,119 @@ function replaceDomainCallback($matches) {
 	}
 
 	if($_POST['crawl_dtls']['download'] == "yes") {
+		
+
+		if (parse_url($url, PHP_URL_HOST)) {
+			$parse_url = [];
+			$parse_url = parse_url($url);
+
+			$newurl = "";
+			$newurl = ((isset($parsed_url['path']) ? str_replace("/","",$parsed_url['path']) : '').(isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '').(isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : ''));
+			if($newurl != "") {
+				$url = "";
+				$url = $newurl;
+			}
+		} else {
+			$url = $url;
+		}
+
+		$url = str_replace($_POST['crawl_link'],"",$url);
+		$url = ltrim($url, '/');
+
+		return $matches[1]."="."'".$url."'";
+	}else {
+		$url = ltrim($url, '/');
+		return $matches[1]."="."'".$url."'";
+	}
+}
+
+function replaceDomainCallback($matches) {
+	global $mongodb_con,$config_param1,$mime_types,$media_file_types;
+
+	$url = "";
+	if (parse_url($matches[2], PHP_URL_HOST)) {
+		$url = $matches[2];
+	} else {
+		$url = $_POST['crawl_link'] . $matches[2];
+	}
+
+	$skip_links = false;
+	if(preg_match("/favicon/g",$url)) {
+		$skip_links = true;
+	}
+
+	if($_POST['crawl_dtls']['download'] == "yes" && $skip_links == false) {
+		set_time_limit(30);
+		$file_name = "";$type = "";$t = "";$extension = "";
+		$path = parse_url($url, PHP_URL_PATH);
+		$path_info = pathinfo($path);
+		$file_name = ($path_info['basename']?$path_info['basename']:"index");
+		$type = (isset($mime_types[$path_info['extension']])?$mime_types[$path_info['extension']]:"text/html");
+		$extension = ($path_info['extension']?$path_info['extension']:"html");
+		$t = isset($media_file_types[$extension])?"base64":"inline";
+
 		$newcontent = "";
 		$apidata = [];
-		$apidata['url'] = $url;
-		$apidata['method'] = "GET";
-		$apidata['headers'] = ["User-Agent: ".$_SERVER['HTTP_USER_AGENT']];
-		$curl_response = execute_curl_request($apidata,"");
+		$apidata = [
+			'url' => $url,
+			'method' => 'GET',
+			'headers' => ["User-Agent: {$_SERVER['HTTP_USER_AGENT']}"]
+		];
+		$curl_response = execute_file_get_contents_request($apidata);
 
-		if( $curl_response['status'] == "ok" && $curl_response['http_code'] == 200 ) {
+		/*if($t == "base64") {
+			$curl_response = execute_file_get_contents_request($apidata);
+		}else {
+			$curl_response = execute_curl_request($apidata);
+		}*/
+
+		if( $curl_response['status'] == "ok" && $curl_response['response'] != "" ) {
 			$newcontent = $curl_response['response'];
 		}
 
 		if($newcontent != "") {
 			$newcode = $newcontent;
-			$newcode = preg_replace('/\s{2,}/', ' ', $newcode);
 			$newcode = trim($newcode);
 
-			$newcode = preg_replace_callback('/(href|src)="([^"]*)"/i','replaceDomainCallback',$newcode);
-
-			$file_name = "";$type = "";$t = "";$extension = "";
-			$path = parse_url($url, PHP_URL_PATH);
-			$path_info = pathinfo($path);
-			$file_name = ($path_info['basename']?$path_info['basename']:"index");
-			$type = (isset($mime_types[$path_info['extension']])?$mime_types[$path_info['extension']]:"text/html");
-			$extension = ($path_info['extension']?$path_info['extension']:"html");
-			$t = isset($media_file_types[$extension])?"base64":"inline";
-
-			if($path_info['dirname'] != "/") {
-				$storing_path = $_POST['current_path'].$path_info['dirname'];
-			}else {
-				$storing_path = $_POST['current_path'];
-			}
+			/*$newcode = preg_replace_callback('/(href|src)="([^"]*)"/i','replaceDomainCallback',$newcode);*/
+			$newcode = preg_replace_callback('/(href|src)="((?!mailto|javascript|en-in)[^"]*)"/i','replaceDomainCallback_2',$newcode);
 
 			$folder_path = "";
-			$folder_path = $_POST['current_path'];
-			foreach(explode(" ",$path_info['dirname']) as $i => $j) {
-				$j = str_replace("/","",$j);
-				$folder_path.= "/".$j;
-				$folder_path = str_replace("//","/",$folder_path);
-				$save_data = [];
-				$save_data['name'] = $j;
-				$save_data['type'] = "";
-				$save_data['vt'] = "folder";
-				$save_data['path'] = $_POST['current_path'];
-				$save_data['t'] = "inline";
-				$save_data['extension'] = "";
-				$save_data['code'] = "";
-				$save_data['app_id'] = $config_param1;
+			foreach(explode("/",$path_info['dirname']) as $i => $j) {
+				if($i > 0) {
+					$file_path = "";
+					$file_path = str_replace("/","",$j);
+					if($i == 1) {
+						$folder_path = $_POST['current_path'];
+					}else {
+						$folder_path = $folder_path;
+					}
 
-				save_file_upload_data($save_data);
+					$folder_path = str_replace("//","/",$folder_path);
+					
+					save_file_upload_data([
+						"app_id" => $config_param1,
+						"name" => strtolower($j),
+						"type" => "",
+						"vt" => "folder",
+						"path" => strtolower($folder_path),
+						"t" => "inline"
+					]);
+					$folder_path = $folder_path . $file_path."/";
+				}
 			}
-			$storing_path = str_replace("///","/",$storing_path);
-			$storing_path = str_replace("//","/",$storing_path);
+
+			$folder_path = str_replace("//","/",$folder_path);
+
+			if($t == "base64") {
+				$newcode = base64_encode($newcode);
+			}
 
 			$save_data = [];
-			$save_data['name'] = $file_name.".".$extension;
+			$save_data['name'] = strtolower($file_name);
 			$save_data['type'] = $type;
 			$save_data['vt'] = "file";
-			$save_data['path'] = $storing_path."/";
+			$save_data['path'] = strtolower($folder_path);
 			$save_data['t'] = $t;
 			$save_data['extension'] = $extension;
 			$save_data['code'] = $newcode;
@@ -306,24 +354,113 @@ function replaceDomainCallback($matches) {
 			save_file_upload_data($save_data);
 		}
 
-		return preg_replace('#https?://[^/]+/#', "", $matches[1]."="."'".$url."'");
+		if (parse_url($url, PHP_URL_HOST)) {
+			$parse_url = [];
+			$parse_url = parse_url($url);
+
+			$newurl = "";
+			$newurl = ((isset($parsed_url['path']) ? str_replace("/","",$parsed_url['path']) : '').(isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '').(isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : ''));
+			if($newurl != "") {
+				$url = "";
+				$url = $newurl;
+			}
+		} else {
+			$url = $url;
+		}
+
+		$url = str_replace($_POST['crawl_link'],"",$url);
+		$url = ltrim($url, '/');
+
+		return $matches[1]."="."'".$url."'";
 	}else {
+		$url = ltrim($url, '/');
 		return $matches[1]."="."'".$url."'";
 	}
+}
+
+function execute_file_get_contents_request($apidata = array(), $postbody = "") {
+	$timeout = ((int)$apidata["timeout"] > 0 ? $apidata["timeout"] : 10);
+
+	if (empty($apidata["headers"]) || !is_array($apidata["headers"])) {
+		return ["status" => "fail", "data" => "headers parameter is empty"];
+	}
+
+	if (empty($apidata["method"])) {
+		return ["status" => "fail", "data" => "method parameter is empty"];
+	}
+
+	if (empty($apidata["url"])) {
+		return ["status" => "fail", "data" => "url parameter is empty"];
+	}
+
+	$start_time = microtime(true);
+	$context = stream_context_create([
+		'http' => [
+			'method' => strtoupper($apidata['method']),
+			'header' => $apidata['headers'],
+			'content' => $postbody,
+			'timeout' => $timeout,
+			'ignore_errors' => true
+		]
+	]);
+	$content = @file_get_contents($apidata['url'], false, $context);
+
+	if ($content === false) {
+		$error = error_get_last();
+		return [
+			"status" => "fail",
+			"error" => $error ? $error['message'] : "Failed to fetch content"
+		];
+	}
+
+	$http_response_header = $http_response_header ?? [];
+	$http_code = null;
+	$content_type = null;
+	foreach ($http_response_header as $header) {
+		if (preg_match('/^HTTP\/\d+\.\d+\s+(\d+)/', $header, $matches)) {
+			$http_code = intval($matches[1]);
+		} elseif (strpos($header, 'Content-Type: ') === 0) {
+			$content_type = trim(substr($header, 14));
+		}
+	}
+
+	$total_time = microtime(true) - $start_time;
+
+	return [
+		"status" => "ok",
+		"response" => $content,
+		"http_code" => $http_code,
+		"content_type" => $content_type,
+		"total_time" => $total_time
+	];
 }
 
 if( $_POST['action'] == "crawl_website" ){
 	if( $_POST['crawl_link'] == "" ) {
 		json_response("fail", "Link is required");
 	}
+	set_time_limit(60);
 
 	$content = "";
+	$file_name = "";$type = "";$t = "";$extension = "";
+
+	$path = parse_url($_POST['crawl_link'], PHP_URL_PATH);
+	$path_info = pathinfo($path);
+	$file_name = ($path_info['basename']?$path_info['basename']:"index");
+	$type = (isset($mime_types[$path_info['extension']])?$mime_types[$path_info['extension']]:"text/html");
+	$extension = ($path_info['extension']?$path_info['extension']:"html");
+	$t = isset($media_file_types[$extension])?"base64":"inline";
 
 	$apidata = [];
 	$apidata['url'] = $_POST['crawl_link'];
 	$apidata['method'] = "GET";
 	$apidata['headers'] = ["User-Agent: ".$_SERVER['HTTP_USER_AGENT']];
-	$curl_response = execute_curl_request($apidata,"");
+	$curl_response = execute_file_get_contents_request($apidata);
+	/*if($t == "base64") {
+		$curl_response = execute_file_get_contents_request($apidata);
+	}else {
+		$curl_response = execute_curl_request($apidata);
+	}*/
 
 	if( $curl_response['status'] == "ok" && $curl_response['http_code'] == 200 ) {
 		$content = $curl_response['response'];
@@ -334,24 +471,22 @@ if( $_POST['action'] == "crawl_website" ){
 	$code = "";
 	$code = $content;
 	$code = preg_replace('/\s{2,}/', ' ', $code);
+	$code = preg_replace('/<!--(.|\\s)*?-->/', '', $code);
 	$code = trim($code);
+	
+	$code = preg_replace_callback('/(href|src)="((?!mailto|javascript|en-in)[^"]*)"/i','replaceDomainCallback',$code);
 
-	$code = preg_replace_callback('/(href|src)="([^"]*)"/i','replaceDomainCallback',$code);
-
-	$file_name = "";$type = "";$t = "";$extension = "";
-	$path = parse_url($_POST['crawl_link'], PHP_URL_PATH);
-	$path_info = pathinfo($path);
-	$file_name = ($path_info['basename']?$path_info['basename']:"index");
-	$type = (isset($mime_types[$path_info['extension']])?$mime_types[$path_info['extension']]:"text/html");
-	$extension = ($path_info['extension']?$path_info['extension']:"html");
-	$t = isset($media_file_types[$extension])?"base64":"inline";
 	$storing_path = $_POST['current_path'];
 
+	if($t == "base64") {
+		$code = base64_encode($code);
+	}
+
 	$save_data = [];
-	$save_data['name'] = $file_name.".".$extension;
+	$save_data['name'] = strtolower($file_name.".".$extension);
 	$save_data['type'] = $type;
 	$save_data['vt'] = "file";
-	$save_data['path'] = $storing_path."/";
+	$save_data['path'] = strtolower($storing_path);
 	$save_data['t'] = $t;
 	$save_data['extension'] = $extension;
 	$save_data['code'] = $code;
@@ -505,24 +640,22 @@ if( $_POST['action'] == "upload_zip_files" ) {
 
 			$path_file = str_replace(basename($file),"",$file);
 
-			$check_path = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['path' => $file_path.$path_file],['projection' => ['path' => 1]]);
+			$path_file = $file_path.$path_file;
+			$check_path = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['path' => $path_file],['projection' => ['path' => 1]]);
 
 			if($path_file != "/" && $path_file != "" && $check_path['data']['_id'] == "") {
 				$exploded_path = explode("/",$path_file);
 
 				$check_paath = "";
-				$check_paath = $file_path;
 				foreach($exploded_path as $kk => $kkk) {
-					if($check_paath == $kkk) {
-						$check_paath = "/";
+					if($kk == 0) {
+						$check_paath = $check_paath."/";
 					}else {
-						if($kk == 0) {
-							$check_paath = $check_paath;
-						}else {
-							$check_paath.= $exploded_path[$kk -1];
-						}
+						$check_paath.= $exploded_path[$kk -1]."/";
 					}
-					$check_path = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['path' => $check_paath],['projection' => ['path' => 1]]);
+					$check_paath = str_replace("//","/",$check_paath);
+
+					$check_path = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", ['path' => $check_paath,'name' => $kkk],['projection' => ['path' => 1]]);
 					
 					if( $check_path['data']['_id'] == "" && $kkk != "") {
 						$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", [
@@ -546,7 +679,7 @@ if( $_POST['action'] == "upload_zip_files" ) {
 				"name" => basename($file),
 				'type' => $mime_type,
 				'vt' => "file",
-				"path" => $file_path.$path_file,
+				"path" => $path_file,
 				't' => $t,
 				"data" => $content,
 				"sz" => strlen($content),

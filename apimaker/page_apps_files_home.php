@@ -141,11 +141,11 @@
 		      			</tbody>
 		      			<tfoot>
 		      				<tr>
-		      					<td v-if="cmsg">
+		      					<td v-if="cmsg" colspan="2">
 		      						<div v-if="cmsg" class="alert alert-success" >{{ cmsg }}</div>				
 		      					</td>
-		      					<td v-if="cerr">
-		      						<div v-if="cerr" class="alert alert-success" >{{ cerr }}</div>
+		      					<td v-if="cerr" colspan="2">
+		      						<div v-if="cerr" class="alert alert-danger" >{{ cerr }}</div>
 		      					</td>
 		      				</tr>
 		      			</tfoot>
