@@ -210,7 +210,7 @@ function index_page( $page_version, $get, $post ){
 	if( $page_version['script'] ){
 		echo $page_version['script'];
 	}else{ ?>
-		<?php foreach( $comps as $i=>$j ){$fn="components/component_".$j.".js"; if( file_exists($fn) ){ require($fn); } } ?>
+		<?php if(count($comps) > 0) { foreach( $comps as $i=>$j ){$fn="components/component_".$j.".js"; if( file_exists($fn) ){ require($fn); } } ?>
 		var app = Vue.createApp({
 			data: function(){return{}},
 			mounted: function(){},
@@ -218,7 +218,7 @@ function index_page( $page_version, $get, $post ){
 		});
 		<?php foreach( $comps as $i=>$j ){$fn="components/component_".$j.".js"; if( file_exists($fn) ){ ?>app.component("app_<?=strtolower($j) ?>", app_<?=$j ?>);<?php } } ?>
 		var app1 = app.mount("#app");
-	<?php } ?>
+	<?php } } ?>
 	</script>
 	</html>
 	<script>

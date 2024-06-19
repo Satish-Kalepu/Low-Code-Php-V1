@@ -56,6 +56,10 @@
 		        	<div>&nbsp;</div>
 		        	<div>Use Template</div>
 		        	<select v-model="new_page['template']" class="form-select form-select-sm" >
+		        		<option value="count-down">count-down</option>
+		        		<option value="showcase-gallery">showcase-gallery</option>
+		        		<option value="wave-animation">wave-animation</option>
+		        		<option value="wave-animation-img">wave-animation-images</option>
 		        		<option value="home">Home</option>
 		        		<option value="sample1">Sample</option>
 		        		<option value="static_form">Static Form</option>

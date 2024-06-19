@@ -158,10 +158,15 @@ if( $_POST['action'] == "create_page" ){
 	}
 
 	if( file_exists("page_themes/". $_POST['new_page']['template'] . ".html" ) ){
-		$html = file_get_contents("page_themes/". $_POST['new_page']['template'] . ".html");
+		$content = file_get_contents("page_themes/". $_POST['new_page']['template'] . ".html");
 	}else{
-		$html = file_get_contents("page_themes/blog.html");
+		$content = file_get_contents("page_themes/blog.html");
 	}
+
+	$explode_content = explode("#####", $content);
+	$html = $explode_content[0];
+	$script = $explode_content[1];
+	$script = preg_replace('/<script\b[^>]*>|<\/script>/is', "", $script);
 
 	$version_id = $mongodb_con->generate_id();
 	$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
@@ -185,7 +190,8 @@ if( $_POST['action'] == "create_page" ){
 			"updated"=>date("Y-m-d H:i:s"),
 			"active"=>true,
 			"version"=>1,
-			"html"=>$html
+			"html"=>$html,
+			"script"=>$script
 		]);
 		update_app_pages( $config_param1 );
 		json_response($res);
