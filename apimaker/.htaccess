@@ -23,8 +23,8 @@ RewriteCond %{REQUEST_METHOD} !^(POST|GET|OPTIONS)
 RewriteRule .* - [F,L]
 
 RewriteCond %{REQUEST_URI} \.php$ [NC]
-RewriteRule !^(index\.php|__install\.php)$ - [F,NC,L]
-##RewriteRule \.php$ - [F,L]
+RewriteRule !^(index\.php|__install\.php|pages_builder/save\.php)$ - [F,NC,L]
+#RewriteRule \.php$ - [F,L]
 
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f

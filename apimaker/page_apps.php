@@ -40,6 +40,20 @@ if( $config_param2 == "" ){
 		require("page_apps_pages_home.php");
 	}
 
+}else if( $config_param2 == "pages_v2" ){
+	if( $config_param3 && $config_param4 ){
+		require("page_apps_pages_v2_page.php");
+	}else{
+		require("page_apps_pages_v2_home.php");
+	}
+
+}else if( $config_param2 == "pages_v3" ){
+	if( $config_param3 && $config_param4 ){
+		require("page_apps_pages_v3_page.php");
+	}else{
+		require("page_apps_pages_v3_home.php");
+	}
+
 }else if( $config_param2 == "files" ){
 	if( $config_param3 && $config_param4 ){
 		require("page_apps_files_file.php");

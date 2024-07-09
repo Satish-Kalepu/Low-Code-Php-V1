@@ -7,7 +7,7 @@
 	<div class="leftbar" >
 		<?php require("page_apps_leftbar.php"); ?>
 	</div>
-	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " data-id="draggable" v-on:drop.prevent="dropit" v-on:dragenter.prevent="dragenter" v-on:dragover.prevent="dragover" draggable   >
+	<div style="position: fixed;left:165px; top:60px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " data-id="draggable" v-on:drop.prevent="dropit" v-on:dragenter.prevent="dragenter" v-on:dragover.prevent="dragover" draggable   >
 		<div v-if="dropdiv" style="position:absolute; margin-top:-2px; margin-left:-2px; padding:10px; padding:40px; width: calc( 100% + 5px ); height: calc( 100% + 5px ); background-color: rgba(255, 255, 255, 0.5); " v-on:dragenter.prevent="" v-on:dragover.prevent=""   v-on:dragleave.prevent="dragleave" >
 			<div style="width: calc( 100% - 10px ); height: calc( 100% - 10px ); border:15px dashed #bbb; text-align: center; line-height: 300px; color:#bbb; font-size:5rem; " v-on:dragenter.prevent="" v-on:dragover.prevent="" >
 				Drop files here

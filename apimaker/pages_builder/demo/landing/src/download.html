@@ -1,0 +1,109 @@
+@@include('./_includes/html-head.html', {
+	"title": "Vvveb - Download", 
+	"path": "", 
+	"path": "", 
+	'google_fonts':'',
+	'style':"\
+	 section.d-flex.showcase-1 {\
+		background-image: linear-gradient(10deg, var(--bs-body-bg) 29%, var(--bs-body-bg) 37%, rgba(var(--bs-body-color-rgb), 0.05)  100%);\
+	}\
+	section.d-flex.showcase-1:nth-child(even) {\
+		background-image: linear-gradient(200deg, var(--bs-body-bg) 29%, var(--bs-body-bg) 37%, rgba(var(--bs-body-color-rgb), 0.05) 100%);\
+	}"
+})
+
+
+<body class="download">
+	  
+  @@include('./sections/navigation/navigation-1.html')
+
+	<!--
+	@@include('./sections/hero/hero-1.html')
+	-->
+		
+		
+	<header class="hero-1 mb-5" title="hero-1" data-v-component-post>
+
+		<div class="container text-start">
+			
+			<div data-v-post-content>
+			</div>
+			
+			<div class="row g-5">
+				<div class="col" style="border-right:1px dashed var(--bs-border-color)">
+					
+					<div class="p-2">
+						<h2 class="display-5 my-2">Download and install</h2>
+						
+						<p>Install yourself on your server or shared hosting</p>
+					</div>
+					
+					<a class="btn btn-primary" href="/download.php" role="button">
+					<span>&#9889;</span> 
+					<!--
+					<img src="../../admin/default/img/logo-small.png"> 
+					-->
+					Free Download
+					<b>›</b></a>
+					
+					
+					<a class="btn btn-outline-primary nav-link dropdown-toggle" href="//docs.vvveb.com/installation" role="button">Installation instructions <b>›</b></a>
+					
+					<p class="text-muted">Php 7.4+/8.x+ | Mysql/MariaDb/SQLite/PostgreSQL</p>
+				</div>
+				<div class="col">
+					
+						<div class="p-2">
+							<h2 class="display-5 my-2">Choose a hosting service</h2>
+							
+							<p>Automatic install using a hosting service</p>
+						</div>
+						
+						<a class="btn btn-primary" href="/page/hosting" role="button">
+						<span>🌎</span>	
+						Hosting providers list
+						<b>›</b></a>
+				</div>
+			</div>
+		</div>
+
+		
+	</header>
+	
+	
+@@include('./_includes/footer.html')
+
+@@include('./_includes/footer-scripts.html')
+<script>
+/*
+var options = {
+    //root: document.body,
+    rootMargin: '0px',
+    threshold: 1.0 // trigger only when element comes into view completely
+};
+
+var previousVideo = false;
+var currentVideo = false;
+var ob = new IntersectionObserver((entries, observer) => {
+  currentVideo = entries[0].target;
+
+  if (previousVideo) {
+	  previousVideo.pause();
+	  previousVideo.parentNode.classList.toggle('play');
+  }
+  previousVideo = entries[0].target;
+  currentVideo.play();
+  currentVideo.parentNode.classList.toggle('play');
+  //console.log(entries[0].target);
+  
+}, options);
+
+// observe all paragraphs, when coming into view, change color
+document.querySelectorAll('video').forEach((item) => {
+  ob.observe(item);
+});
+*/
+</script>
+
+</body>
+</html>

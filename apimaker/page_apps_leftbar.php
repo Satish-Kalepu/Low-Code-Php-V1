@@ -6,6 +6,7 @@
 	<a class="left_btn <?=$config_param2=='apis_global'?"left_btn_active":"" ?>" v-bind:href="path+'apis_global'">Global APIs</a>
 	<a class="left_btn <?=$config_param2=='functions'?"left_btn_active":"" ?>" v-bind:href="path+'functions'">Functions</a>
 	<a class="left_btn <?=$config_param2=='pages'?"left_btn_active":"" ?>" v-bind:href="path+'pages'">Pages</a>
+	<a class="left_btn <?=$config_param2=='pages_v2'?"left_btn_active":"" ?>" v-bind:href="path+'pages_v2'">Pages V2</a>
 	<a class="left_btn <?=$config_param2=='files'?"left_btn_active":"" ?>" v-bind:href="path+'files'">Files</a>
 	<a class="left_btn <?=$config_param2=='global_files'?"left_btn_active":"" ?>" v-bind:href="path+'global_files'">Global Files</a>
 	<a class="left_btn <?=$config_param2=='tables_dynamic'?"left_btn_active":"" ?>" v-bind:href="path+'tables_dynamic'">Internal Tables</a>
