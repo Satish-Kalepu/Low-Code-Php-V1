@@ -1,6 +1,6 @@
 <?php
 
-/* Last updated on 2024-05-23 12:39:06*/
+/* Last updated on 2024-07-09 16:23:10*/
 
 $config_global_apimaker_path = '/apimaker/';
 

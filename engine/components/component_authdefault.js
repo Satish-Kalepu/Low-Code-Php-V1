@@ -39,12 +39,12 @@ const app_AuthDefault = {
 				this.msg = "Submitting...";
 				this.err = "";
 				axios.post(page_data['global_api_url'] + "auth/user_auth_captcha", {
-					"action": "user_auth_captcha",
-					"username": this.user,
-					"password": this.pass,
-					"captcha": this.captcha,
-					"code": this.captcha_code,
-					"token": this.token,
+						"action": "user_auth_captcha",
+						"username": this.user,
+						"password": this.pass,
+						"captcha": this.captcha,
+						"code": this.captcha_code,
+						"token": this.token,
 				}, {"headers":{"Access-Key": page_data['login_session_token']} }).then(response=>{
 					this.msg = "";
 					if( response.status == 200 ){
@@ -54,6 +54,10 @@ const app_AuthDefault = {
 									this.msg = "Login successfull";
 									this.login = true;
 									this.session_key = response.data['access-key'];
+									// var d = new Date();
+									// var d = new Date(d.getTime() + (86400 * 1000));
+									// document.cookie = "app1_session_key=" + this.session_key + "; expires=" + d.toUTCString() + "; path=/";
+									// document.cookie = "username=" + this.user + "; expires=" + d.toUTCString() + "; path=/";
 									this.captcha = "";
 								}else if( response.data['status'] == "TokenError" ){
 									this.err = "Error: TokenError: " + response.data['error'] + ". Please reload page...";
@@ -88,7 +92,7 @@ const app_AuthDefault = {
 			}
 		},
 		get_captcha: function(){
-			this.msg = "Loading capthca ...";
+			this.msg = "Loading captcha ...";
 			this.cap_img = "";
 			this.cerr = "";
 			axios.post(page_data['global_api_url'] + "captcha/get", {
