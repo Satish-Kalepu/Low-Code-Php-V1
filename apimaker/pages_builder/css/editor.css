@@ -17926,7 +17926,8 @@ body {
 
 #vvveb-builder {
   display: block;
-  height: 100%; }
+  /* height: 100%; */
+ }
   #vvveb-builder #left-panel, #vvveb-builder #right-panel {
     border-color: var(--bs-border-color);
     border-style: solid;
@@ -17938,6 +17939,7 @@ body {
     z-index: 10; }
   #vvveb-builder #left-panel {
     float: left;
+    top: 90px !important;
     border-right-width: 1px;
     /*
 		box-shadow: 1px 0px 2px rgba(var(--bs-body-color-rgb),.1);
@@ -18016,8 +18018,12 @@ body {
     border-bottom: 1px solid var(--bs-border-color);
     text-align: center;
     background-color: rgba(var(--bs-secondary-color-rgb), 0.03);
+    /* background: #ffffff; */
     overflow: hidden;
-    width: 100%; }
+    width: 100%;
+    z-index: 999;
+    position: fixed;
+    top: 40px; }
     #vvveb-builder #top-panel .btn-group .btn.btn-light {
       padding: 0.25rem 0.5rem;
       --bs-btn-active-bg: var(--bs-primary-bg-subtle);
@@ -18310,7 +18316,9 @@ body {
     height: calc( 100vh - (var(--builder-header-top-height) + var(--builder-bottom-panel-height)));
     top: var(--builder-header-top-height);
     position: fixed;
-    transition: width 0.35s, left 0.35s; }
+    transition: width 0.35s, left 0.35s;
+    top: 90px !important;
+    background: #fff; }
     #vvveb-builder #canvas #iframe-wrapper, #vvveb-builder #canvas iframe, #vvveb-builder #canvas iframe body {
       width: 100%;
       height: 100%;
@@ -19522,7 +19530,7 @@ img.preview {
   left: 80%;
   left: calc(100% - 300px);
   border-radius: 2px;
-  z-index: 100;
+  z-index: 1000;
   width: 250px;
   min-width: 250px;
   min-height: 250px;

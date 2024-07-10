@@ -12,7 +12,7 @@
 </head>
 <body>
 
-<div style="background-color:white; position: fixed; width:100%; padding:5px; height: 40px; border-bottom:1px solid #999;" >
+<div style="background-color:white; position: fixed; width:100%; padding:5px; height: 40px;z-index:99; border-bottom:1px solid #999;" >
 	<?php if( $_SESSION['apimaker_login_ok'] ){ ?>
 	<div style="float:right; padding:0px 10px;" >
 		<a href="<?=$config_global_apimaker_path ?>settings" class="btn btn-outline-dark btn-sm" >Settings</a>&nbsp;

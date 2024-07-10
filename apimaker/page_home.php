@@ -4,7 +4,7 @@
 		<a class="left_btn" href="<?=$config_global_apimaker_path ?>users">Users</a>
 		<a class="left_btn" href="<?=$config_global_apimaker_path ?>settings">Settings</a>
 	</div>
-	<div style="position: fixed;left:165px; top:60px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
+	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 20px;" >
 			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
 			<div v-if="err" class="alert alert-danger" >{{ err }}</div>

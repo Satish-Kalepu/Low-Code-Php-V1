@@ -53,9 +53,6 @@ if( $config_param2 == "codeeditor" ){
 if( $config_param2 == "pages" ){
 	require("page_apps_pages_controll.php");
 }
-if( $config_param2 == "pages_v2" ){
-	require("page_apps_pages_v2_controll.php");
-}
 if( $config_param2 == "pages_v3" ){
 	require("page_apps_pages_v3_controll.php");
 }

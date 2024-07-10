@@ -52,10 +52,10 @@ if( $_POST['action'] == "create_page" ){
 		json_response("fail", "Already exists");
 	}
 
-	if( file_exists("pages_builder/". $_POST['new_page']['template'] . ".html" ) ){
-		$html = file_get_contents("pages_builder/". $_POST['new_page']['template'] . ".html");
+	if( file_exists("page_themes/". $_POST['new_page']['template'] . ".html" ) ){
+		$html = file_get_contents("page_themes/". $_POST['new_page']['template'] . ".html");
 	}else{
-		$html = file_get_contents("pages_builder/editor.html");
+		$html = file_get_contents("page_themes/blog.html");
 	}
 
 	$version_id = $mongodb_con->generate_id();

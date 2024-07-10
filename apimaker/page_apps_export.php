@@ -2,7 +2,7 @@
 	<div class="leftbar" >
 		<?php require("page_apps_leftbar.php"); ?>
 	</div>
-	<div style="position: fixed;left:165px; top:60px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
+	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
 				<!-- <button class="btn btn-outline-secondary btn-sm" v-on:click="api_show_create_form()" >Create API</button> -->

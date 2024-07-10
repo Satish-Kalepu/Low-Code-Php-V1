@@ -2,7 +2,7 @@
 <body>
 	<div id="vvveb-builder">
 				<div id="top-panel">
-					<img src="/apimaker/pages_builder/img/logo.png" alt="Vvveb" class="float-start" id="logo">
+					<!-- <img src="/apimaker/pages_builder/img/logo.png" alt="Vvveb" class="float-start" id="logo"> -->
 					
 					<div class="btn-group float-start" role="group">
 					  <button class="btn btn-light" title="Toggle file manager" id="toggle-file-manager-btn" data-vvveb-action="toggleFileManager" data-bs-toggle="button" aria-pressed="false">
@@ -110,8 +110,8 @@
 								<span class="text-secondary"><i class="la la-file la-lg"></i> Pages</span>
 
 									<div class="btn-group responsive-btns me-1 float-end" role="group">
-									  <button class="btn btn-outline-primary btn-sm  btn-add" title="New file" id="new-file-btn" data-vvveb-action="newPage" data-vvveb-shortcut="">
-										   <span>New page</span> <i class="icon-duplicate-outline"></i>
+									  <button class="btn btn-outline-secondary btn-sm  btn-add" title="New file" id="new-file-btn" data-vvveb-action="newPage" data-vvveb-shortcut="">
+										   <span>Back to Pages</span> <i class="icon-duplicate-outline"></i>
 									  </button>
 									  
 									  <!--  &ensp;

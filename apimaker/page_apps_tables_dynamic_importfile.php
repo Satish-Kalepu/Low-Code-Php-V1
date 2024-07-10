@@ -31,7 +31,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 	<div class="leftbar" >
 		<?php require( "page_apps_leftbar.php" ); ?>
 	</div>
-	<div style="position: fixed;left:165px; top:60px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
+	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 
 			<div style="float:right;"><a class="btn btn-outline-secondary btn-sm" v-bind:href="path+'tables_dynamic'">Back</a></div>
