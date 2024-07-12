@@ -88,15 +88,9 @@ const inputvaluebox = {
 	},
 	template:`<div v-bind:class="'codeline_thing codeline_thing_'+v['t']" >
 		<div class="codeline_thing_pop" data-type="dropdown2" data-list="inputfactortypes" v-bind:data-for="datafor" v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]" >{{ v['t'] }}</div>
-		<div v-if="v['t']=='TI'" style="display:flex; gap:10px; " >
-			<div style="display:flex; border:1px solid #999; padding:3px;" >
-				<div>Id:</div>
-				<div title="Thing ID" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:i'"  v-bind:fnparam="fnparam"><div contenteditable data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:i'" v-bind:data-allow="text" v-bind:fn="fn" v-bind:fnparam="fnparam" >{{ v['v']['i'] }}</div></div>
-			</div>
-			<div style="display:flex; border:1px solid #999; padding:3px;" >
-				<div>Label:</div>
-				<div title="Thing Label" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:l'"  v-bind:fnparam="fnparam"><div contenteditable data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:l'" v-bind:data-allow="text"  v-bind:fn="fn" v-bind:fnparam="fnparam">{{ v['v']['l'] }}</div></div>
-			</div>
+		<div v-if="v['t']=='GT'" >
+			<div v-if="typeof(v['v'])=='object'" title="Thing" data-type="dropdown" v-bind:data-var="datavar" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" >{{ v['v']['l']['v'] }}</div>
+			<div v-else>GT value need object</div>
 		</div>
 		<div v-else-if="v['t']=='TH'" style="display:flex; gap:10px; " >
 			<div title="Thing" 		data-type="dropdown" data-list="things" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'" v-bind:data-k-type="dataktype" v-bind:data-plg="dataplg"  v-bind:fn="fn" v-bind:fnparam="fnparam">{{ v['v']['th'] }}</div>

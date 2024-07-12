@@ -33,6 +33,8 @@ if( isset($config_global_apimaker['config_mongo_username']) && $config_global_ap
 
 //echo $config_global_apimaker['config_mongo_prefix'] . "_settings";exit;
 
+$db_prefix = $config_global_apimaker['config_mongo_prefix'];
+
 $res = $mongodb_con->find($config_global_apimaker['config_mongo_prefix'] . "_settings");
 //print_pre( $res );exit;
 $config_settings = [];

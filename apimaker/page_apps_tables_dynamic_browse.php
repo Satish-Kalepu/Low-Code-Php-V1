@@ -129,7 +129,7 @@ td pre{margin-bottom: 0px;}
 							</td>
 							<td></td>
 							<td>
-								<i class="fa fa-trash text-danger" v-on:click="Delete_Record_Multi" v-if="show_delete"></i>
+								<i class="fa-regular fa-trash-can text-danger" v-on:click="Delete_Record_Multi" v-if="show_delete"></i>
 							</td>
 							<td  v-for="ff,fi in table['schema'][selected_schema]['fields']"  >{{ ff['name'] }}</td>
 						</tr>
@@ -140,10 +140,10 @@ td pre{margin-bottom: 0px;}
 								<input type="checkbox" v-bind:value="dd['_id']" v-model="D_Rs" >
 							</td>
 							<td>
-								<i class="fa fa-edit text-success"  v-on:click="edit_record( di )" title="Edit"></i>
+								<i class="fa-regular fa-pen-to-square text-success"  v-on:click="edit_record( di )" title="Edit"></i>
 							</td>
 							<td>
-								<i class="fa fa-trash text-danger"  v-on:click="delete_record( di )" title="Delete"></i>
+								<i class="fa-regular fa-trash-can text-danger"  v-on:click="delete_record( di )" title="Delete"></i>
 							</td>
 							<td class="text-nowrap" v-for="ff,fi in table['schema'][selected_schema]['fields']" v-on:dblclick="edit_record(di)" ><div class="zz">{{dd[ fi ]}}</div></td>
 						</tr>

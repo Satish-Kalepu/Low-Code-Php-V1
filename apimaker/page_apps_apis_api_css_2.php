@@ -195,6 +195,9 @@
 	.stagedisp::-webkit-scrollbar-thumb:hover {background:#666;}
 	.stagedisp:hover{ background-color:#f8f8f0; }
 
+	.codeline_gt_link{ display:inline-block; min-width:30px; padding:0px 5px; border:1px solid #ccc; }
+	.codeline_gt_link:hover{ background-color:#666; color:white; }
+
 	.codeline_thing_pop{
 		background-color: #f8f8f8; color:#999;
 		padding:0px 3px; text-align: center; min-height: 25px;
@@ -209,7 +212,7 @@
 	.codeline_thing_pop2:hover{color:black; background-color: #f0deff;}
 
 	.codeline_thing{
-		background-color: white; color:black; display: flex; align-items: flex-start;
+		background-color: white; color:black; display: flex; align-items: center;
 	}
 	.codeline_thing_sub{
 		background-color: #f8f8f0; color:#666; border:1px solid #f0f0e8; padding:0px 5px;
@@ -239,6 +242,11 @@
 	}
 	.code_line [data-type=dropdown2]{ min-width: 20px;border: 1px solid #bbb; cursor:pointer; }
 	.code_line [data-type=dropdown2]:empty:before{content: "\feff";}
+
+	.code_line [data-type=dropdown3]:empty:before{content: "\feff";}
+	.code_line [data-type=dropdown3]{display: inline-block; position: relative; min-width:50px; min-height: 25px;outline: 0px; padding-left:5px; padding-right:25px;cursor:pointer;}
+	.code_line [data-type=dropdown3]:after{position: absolute; content: ""; top: 10px; right: 5px; width: 0; height: 0; border: 6px solid transparent; border-color: #9490ca transparent transparent transparent;}
+	.code_line [data-type=dropdown3]:hover:after{border-color: #333 transparent transparent transparent;}
 
 	.code_line [data-type=outdropdown]:empty:before{content: "\feff";}
 	.code_line [data-type=outdropdown]{ 

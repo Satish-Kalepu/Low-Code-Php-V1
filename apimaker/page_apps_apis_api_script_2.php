@@ -489,6 +489,37 @@ var app = s2_ssssssssss({
 			this.s2_ladom_noisrev = new bootstrap.Modal(document.getElementById('s2_ladom_noisrev'));
 			this.s2_ladom_noisrev.show();
 		},
+		s2_eteled_noisrev: function(vid){
+			if( confirm("Are you sure to delete the version snapshot?") ){
+				this.s2_gggggggsmv = "Deleting version";
+				axios.post("?", {
+					"action": "app_"+this.property_type+"_delete", 
+					"version_id": vid
+				}).then(response=>{
+					this.s2_gggggggsmv = "";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.s2_ofni_snoisrev_daol();
+								}else{
+									this.s2_rrrrrrrrev = ( "Error: " + response.data['error'] );
+								}
+							}else{
+								this.s2_rrrrrrrrev = ("Incorrect response");
+							}
+						}else{
+							this.s2_rrrrrrrrev = ("Incorrect response Type");
+						}
+					}else{
+						this.s2_rrrrrrrrev = ("Response Error: " + response.status );
+					}
+				}).catch(error=>{
+					console.log( error );
+					this.s2_rrrrrrrrev = ( "Error Exporting" );
+				});
+			}
+		},
 		s2_enolc_noisrev: function(vid){
 			if( confirm("Are you sure?\nIt will create a new version") ){
 				this.s2_gggggggsmv = "Creating new version";
@@ -742,7 +773,7 @@ var app = s2_ssssssssss({
 			if( v != el.innerText ){
 				if( el.nextSibling ){
 				}else{
-					el.insertAdjacentHTML("afterend", `<div class="inlinebtn" data-type="editablebtn" ><i class="fa fa-check-square-o" ></i></div>` );
+					el.insertAdjacentHTML("afterend", `<div class="inlinebtn" data-type="editablebtn" ><i class="fa-solid fa-square-check" ></i></div>` );
 				}
 			}else{
 				if( el.nextSibling ){

@@ -87,10 +87,14 @@ function pass_decrypt( $data ){
 		return $data;
 	}
 	if( !$config_global_engine['config_encrypt_keys'][ $key ] ){
+		return "pass_decrypt key not found";
 		echo "Error in pass_decrypt key";exit;
 	}
 	$secret = $config_global_engine['config_encrypt_keys'][ $key ]['key'];
 	$decrypted =  openssl_decrypt(base64_decode($data), "aes256", $secret );
+	if( !$decrypted ){
+		return "DecryptFailed";
+	}
 	return $decrypted;
 }
 
