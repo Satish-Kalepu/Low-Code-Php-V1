@@ -14,13 +14,34 @@ const inputtextbox2 = {
 			"BIN": "Binary",
 			"V": "Variable",
 		},
-		types_: [],
+		"types_": [],
+		"l": false,
+		"ik": "",
 	}},
-	props: ["datafor", "datavar", "v", "types"],
-	mounted: function(){
-		if( this.datafor == undefined){
-			this.datafor = "stages";
+	props: ["datavar", "v", "types","linkable","initial_keyword"],
+	watch: {
+		initial_keyword: function(){
+			if( typeof(this.initial_keyword) != "undefined" ){
+				this.ik = this.initial_keyword+'';
+				console.log("Initial keyword: " + this.ik);
+			}else{
+				this.ik = "";
+				console.log("Initial keyword: " + this.ik);
+			}
 		}
+	},
+	mounted: function(){
+		if( typeof(this.linkable)=="undefined" ){
+			this.l = false;
+		}else{
+			this.l = true;
+		}
+		if( typeof(this.initial_keyword)=="undefined" ){
+			this.ik = "";
+		}else{
+			this.ik = this.initial_keyword+'';
+		}
+		console.log("Initial keyword: " + this.ik);
 		if( 'types' in this ){
 			if( typeof(this.types) == "object" ){
 				if( "length" in this.types ){
@@ -135,6 +156,8 @@ const inputtextbox2 = {
 				return this.get_list_notation__(v['v']);
 			}else if( v['t'] == 'NL' ){
 				return null;
+			}else if( v['t'] == 'GT' ){
+				return this.get_object_notation__(v['v']);
 			}else if( v['t'] == 'B' ){
 				return (v['v']?true:false);
 			}else if( v['t'] == 'DT' ){
@@ -147,41 +170,47 @@ const inputtextbox2 = {
 				return "unknown: "+ v['t'];
 			}
 		},
+		getlink: function(vi){
+			this.$root.getlink(vi);
+		},
+		createlink: function(e){
+			this.$root.convert_to_link(e.target, this.datavar );
+		},
+		removelink: function(){
+			if( confirm("Are you sure?") ){
+				this.v['t'] = "T";
+				delete(this.v['i']);
+			}
+		},
 	},
 	template:`<div v-bind:class="'codeline_thing codeline_thing_'+v['t']" >
-		<div v-if="types_.length!=1" class="codeline_thing_pop" data-type="dropdown2" data-list="datatype" v-bind:data-list-filter="types" v-bind:data-for="datafor" v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]" >{{ v['t'] }}</div>
-		<div v-if="v['t']=='V'" title="Variable" data-type="dropdown" data-list="vars" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'"  >{{ v['v']['v'] }}</div>
-		<div v-else-if="v['t']=='TI'" style="display:flex; gap:10px; " >
-			<div style="display:flex; border:1px solid #999; padding:3px;" >
-				<div>Id:</div>
-				<div title="Thing ID" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:i'" ><div contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:i'" v-bind:id="datavar+':v:i'" v-bind:data-allow="text" >{{ v['v']['i'] }}</div></div>
-			</div>
-			<div style="display:flex; border:1px solid #999; padding:3px;" >
-				<div>Label:</div>
-				<div title="Thing Label" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:l'" ><div contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:l'" v-bind:data-allow="text" >{{ v['v']['l'] }}</div></div>
-			</div>
+		<div v-if="types_.length!=1" class="codeline_thing_pop" data-type="dropdown2" data-list="datatype" v-bind:data-list-filter="types"  v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]" >{{ v['t'] }}</div>
+		<div v-if="v['t']=='GT'" style="display:flex;align-items:center;" >
+			<template v-if="'v' in v&&'i' in v" >
+				<div title="Thing" data-type="dropdown" v-bind:data-var="datavar+':v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" v-bind:data-thing-initial-keyword="ik" >{{ v['v'] }}</div>
+				<a class="btn btn-link btn-sm"  v-if="v['i']" href="#" v-on:click.prevent.stop="getlink(v['i'])" v-bind:title="'Goto Thing: '+v['i']" >#</a>
+				<div class="btn btn-link btn-sm" v-if="'i' in v&&l" v-on:click.prevent.stop="removelink()" title="Remove Link" ><i class="fa-solid fa-unlink"></i></div>
+			</template>
+			<div v-else>GT v,i need object</div>
 		</div>
-		<div v-else-if="v['t']=='TH'" style="display:flex; gap:10px; " >
-			<div v-if="'thfixed' in v==false" title="Thing" data-type="dropdown" data-list="things" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'"  >{{ v['v']['th'] }}</div>
-			<div title="ThingItem" data-type="dropdown" data-list="thing" v-bind:data-thing="v['v']['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"   >{{ v['v']['l']['v'] }}</div>
+		<div v-else-if="v['t']=='T'" style="display:flex;align-items:center;" >
+			<div title="Text" class="editable" v-bind:data-var="datavar+':v'"  ><div style="white-space:nowrap;" contenteditable spellcheck="false" data-type="editable"  v-bind:data-var="datavar+':v'" v-bind:id="datavar+':v'" v-bind:data-allow="v['t']" >{{ v['v'] }}</div></div>
+			<div class="btn btn-link btn-sm" v-if="'i' in v==false&&l" v-on:click.prevent.stop="createlink" title="Create Link" ><i class="fa-solid fa-link"></i></div>
 		</div>
-		<div v-else-if="v['t']=='THL'" placeholder="Thing Name" title="Thing List Name" class="editable" v-bind:data-var="datavar+':v:th'" v-bind:data-for="datafor" ><div placeholder="Thing Name" contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:th'" data-allow="T" >{{ v['v']['th'] }}</div></div>
-		<div v-else-if="v['t']=='TH'" title="Thing" data-type="dropdown" data-list="things" v-bind:data-thing="v['v']['th']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v:v'"  >{{ v['v']['v']['l'] }}</div>
-		<div v-else-if="v['t']=='T'" title="Text" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" ><div contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" v-bind:id="datavar+':v'" v-bind:data-allow="v['t']"  >{{ v['v'] }}</div></div>
-		<pre v-else-if="v['t']=='TT'" title="Multiline Text" data-type="objecteditable"  editable-type="TT" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>
-		<pre v-else-if="v['t']=='HT'" title="Html Text" data-type="objecteditable"       editable-type="HT" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>
-		<div v-else-if="v['t']=='N'" title="Number" class="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" ><div contenteditable spellcheck="false" data-type="editable" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" v-bind:data-allow="v['t']" >{{ v['v'] }}</div></div>
-		<pre v-else-if="v['t']=='L'" title="Object List" data-type="objecteditable" editable-type="L" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ get_list_notation__(v['v']) }}</pre>
-		<pre v-else-if="v['t']=='O'" title="Object or Associative List" data-type="objecteditable" editable-type="O" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ get_object_notation__(v['v']) }}</pre>
-		<pre v-else-if="v['t']=='MongoQ'" title="MongoDb Query Condition" data-type="objecteditable" editable-type="MongoQ" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"  style="margin-bottom:5px;" >{{ get_object_notation__(v['v']) }}</pre>
-		<pre v-else-if="v['t']=='MongoP'" title="MongoDb Output Projection" data-type="objecteditable" editable-type="MongoP" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"  style="margin-bottom:5px;" >{{ get_object_notation__(v['v']) }}</pre>
-		<pre v-else-if="v['t']=='DBCondObject'" title="Database Condition Object" data-type="objecteditable" editable-type="DBCondObject" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" style="margin-bottom:5px;">{{ get_dbcond_object_notation__(v['v']) }}</pre>
-		<div v-else-if="v['t']=='B'" title="Boolean" data-type="dropdown" data-list="boolean" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'" >{{ v['v'] }}</div>
-		<div v-else-if="v['t']=='D'" title="Date" data-type="popupeditable" v-bind:data-for="datafor" editable-type="d" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v'] }}</div>
-		<div v-else-if="v['t']=='DT'" title="DateTime" data-type="popupeditable" v-bind:data-for="datafor" editable-type="dt" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v']['v'] }} {{ v['v']['tz'] }}</div>
-		<div v-else-if="v['t']=='TS'" title="Unix TimeStamp" data-type="popupeditable" v-bind:data-for="datafor" editable-type="ts" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v'] }}</div>
+		<pre v-else-if="v['t']=='TT'" title="Multiline Text" data-type="objecteditable"  editable-type="TT"  v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>
+		<pre v-else-if="v['t']=='HT'" title="Html Text" data-type="objecteditable"       editable-type="HT"  v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>
+		<div v-else-if="v['t']=='N'" title="Number" class="editable"  v-bind:data-var="datavar+':v'" ><div contenteditable spellcheck="false" data-type="editable"  v-bind:data-var="datavar+':v'" v-bind:data-allow="v['t']" >{{ v['v'] }}</div></div>
+		<pre v-else-if="v['t']=='LL'" title="Object List" data-type="objecteditable" editable-type="L"  v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ get_list_notation__(v['v']) }}</pre>
+		<pre v-else-if="v['t']=='OO'" title="Object or Associative List" data-type="objecteditable" editable-type="O"  v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ get_object_notation__(v['v']) }}</pre>
+		<div v-else-if="v['t']=='O'" >
+			<vobject v-bind:datavar="datavar+':v'" v-bind:v="v['v']" ></vobject>
+		</div>
+		<div v-else-if="v['t']=='B'" title="Boolean" data-type="dropdown" data-list="boolean"  v-bind:data-var="datavar+':v'" >{{ v['v'] }}</div>
+		<div v-else-if="v['t']=='D'" title="Date" data-type="popupeditable"  editable-type="d" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v'] }}</div>
+		<div v-else-if="v['t']=='DT'" title="DateTime" data-type="popupeditable"  editable-type="dt" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v']['v'] }} {{ v['v']['tz'] }}</div>
+		<div v-else-if="v['t']=='TS'" title="Unix TimeStamp" data-type="popupeditable"  editable-type="ts" v-bind:data-var="datavar+':v'" style="border:1px solid #888; padding:0px 5px;cursor:pointer;" >{{ v['v'] }}</div>
 		<div v-else-if="v['t']=='NL'" title="Null" ></div>
-		<div v-else v-bind:title="v['t']" data-type="dropdown" v-bind:data-list="v['t']" v-bind:data-for="datafor" v-bind:data-var="datavar+':v'"    >{{ v['v'] }}</div>
+		<div v-else v-bind:title="v['t']" data-type="dropdown" v-bind:data-list="v['t']"  v-bind:data-var="datavar+':v'"    >{{ v['v'] }}</div>
 		<div v-if="types_.indexOf(v['t'])==-1" style='color:red;' >Type not allowed{{ v['t'] }} {{ types_ }}</div>
 	</div>`
 };

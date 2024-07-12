@@ -195,6 +195,9 @@
 	.stagedisp::-webkit-scrollbar-thumb:hover {background:#666;}
 	.stagedisp:hover{ background-color:#f8f8f0; }
 
+	.codeline_gt_link{ display:inline-block; min-width:30px; padding:0px 5px; border:1px solid #ccc; }
+	.codeline_gt_link:hover{ background-color:#666; color:white; }
+
 	.codeline_thing_pop{
 		background-color: #f8f8f8; color:#999;
 		padding:0px 3px; text-align: center; min-height: 25px;
@@ -209,7 +212,7 @@
 	.codeline_thing_pop2:hover{color:black; background-color: #f0deff;}
 
 	.codeline_thing{
-		background-color: white; color:black; display: flex; align-items: flex-start;
+		background-color: white; color:black; display: flex; align-items: center;
 	}
 	.codeline_thing_sub{
 		background-color: #f8f8f0; color:#666; border:1px solid #f0f0e8; padding:0px 5px;

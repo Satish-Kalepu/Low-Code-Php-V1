@@ -1,0 +1,32 @@
+<style>
+.thing_search_bar{
+	min-width: 250px;
+	min-height: 30px;
+	outline: 0px;
+	cursor: pointer;
+	padding:0px 10px;
+	background-color: #f8f8f8; 
+	width:calc( 100% - 25px );
+}
+.thing_search_bar::empty{
+	content: '&nbsp;';
+}
+table.customborder td,table.customborder th{
+	border:1px solid #666;
+}
+table.customborder2 td,table.customborder2 th{
+	border:1px solid #999;
+}
+table.customborder3 td,table.customborder3 th{
+	border:1px solid #ccc;
+}
+.simple_popup__{
+	position: absolute;
+    border: 1px solid #bbcccc;
+    box-shadow: 2px 2px 5px black;
+    z-index: 2000;
+    background-color: white;
+    min-height: 50px;
+    min-width: 50px;
+}
+</style>

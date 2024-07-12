@@ -3,7 +3,7 @@ const vlist =  {
 		return {
 		}
 	},
-	props: ['datafor', 'v','datavar', 'vars'],
+	props: ['v','datavar', 'vars'],
 	methods: {
 		echo__: function(v__){
 			if( typeof(v__)=="object" ){
@@ -32,11 +32,11 @@ const vlist =  {
 		<div v-else-if="'length' in v==false" style="margin-left:10px;">list expected {{ v }}</div>
 		<template v-for="ld,li in v" >
 			<div v-if="typeof(ld)=='object'" style="margin-left:10px; display:flex;">
-				<div><input type="button" class="btn btn-secondary btn-sm me-2" style="padding:0px 5px;" value="X" v-on:click="deletenode__(li)" ></div>
-				<vfield v-bind:datafor="datafor" v-bind:vars="vars" v-bind:v="ld" v-bind:datavar="datavar+':'+li" ></vfield>
+				<div><input type="button" class="btn btn-outline-secondary btn-sm me-2" style="padding:0px 5px;" value="X" v-on:click="deletenode__(li)" ></div>
+				<vfield  v-bind:vars="vars" v-bind:v="ld" v-bind:datavar="datavar+':'+li" ></vfield>
 			</div>
 		</template>
-		<div><input class="btn btn-secondary btn-sm" style="margin-left:10px; padding:0px 5px;" type="button" v-on:click="add_new_item__" value="+"></div>
+		<div><input class="btn btn-outline-secondary btn-sm py-0" style="margin-left:10px; padding:0px 5px;" type="button" v-on:click="add_new_item__" value="+"></div>
 		<div>]</div>
 	</div>`
 };

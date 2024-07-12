@@ -5,7 +5,7 @@ const vobject =  {
 			new_item_name__: "",
 		}
 	},
-	props: ['datafor', 'v','datavar', 'vars'],
+	props: ['v','datavar', 'vars'],
 	methods: {
 		echo__: function(v__){
 			if( typeof(v__)=="object" ){
@@ -37,25 +37,23 @@ const vobject =  {
 			}
 		},
 	},
-	template: `<div>
-		<div>{</div>
+	template: `<div style="border:1px solid #ccc; padding:5px 10px;">
 		<div v-if="typeof(v)!='object'||v==undefined||v==null" style="margin-left:30px;">vobject error</div>
-		<div v-else style="margin-left:10px;">
-			<div v-for="vkey in Object.keys(v)" style="display:flex; margin-bottom:5px;" >
-				<div><input type="button" class="btn btn-secondary btn-sm me-2" style="padding:0px 5px;" value="X" v-on:click="deletenode__(vkey,$event)" ></div>
+		<div v-else>
+			<div v-for="vkey in Object.keys(v)" style="display:flex; border-bottom:1px solid #ccc; margin-bottom:5px;" >
+				<div><input type="button" class="btn btn-outline-secondary btn-sm me-2" style="padding:0px 5px;" value="X" v-on:click="deletenode__(vkey,$event)" ></div>
 				<div style="display:flex;align-self:flex-start;">
 					<div>"</div>
-					<div class="editable" style="min-width:30px;" ><div spellcheck="false" contenteditable data-type="editable" v-bind:data-var="datavar+':'+vkey+':k'" v-bind:data-for="datafor" data-allow="text" >{{ v[vkey]['k'] }}</div></div>
+					<div class="editable" style="min-width:30px;" ><div spellcheck="false" contenteditable data-type="editable" v-bind:data-var="datavar+':'+vkey+':k'"  data-allow="text" >{{ v[vkey]['k'] }}</div></div>
 					<div>"</div>
 				</div>
 				<div>&nbsp;:&nbsp;&nbsp;</div>
-				<vfield v-bind:v="v[vkey]" v-bind:datafor="datafor" v-bind:datavar="datavar+':'+vkey" v-bind:vars="vars" ></vfield>
+				<vfield v-bind:v="v[vkey]"  v-bind:datavar="datavar+':'+vkey" v-bind:vars="vars" ></vfield>
 			</div>
-			<div v-if="add_new_item__==false"><input class="btn btn-secondary btn-sm" style="padding:0px 5px;" type='button' v-on:click="add_new_item__=true" value='+'></div>
+			<div v-if="add_new_item__==false"><input class="btn btn-outline-secondary btn-sm py-0" style="padding:0px 5px;" type='button' v-on:click="add_new_item__=true" value='+'></div>
 			<div v-if="add_new_item__">
-				<input spellcheck="false" type='text' v-model="new_item_name__" placeholder="New Property" style="width:100px;border:1px solid #999;" ><input class="btn btn-success btn-sm p-1" type='button' v-on:click="addit__" value='+'>
+				<input spellcheck="false" type='text' v-model="new_item_name__" placeholder="New Property" style="width:100px;border:1px solid #999;" ><input class="btn btn-outline-success btn-sm py-0"  style="padding:0px 5px;" type='button' v-on:click="addit__" value='+'>
 			</div>
 		</div>
-		<div>}</div>
 	</div>`
 };

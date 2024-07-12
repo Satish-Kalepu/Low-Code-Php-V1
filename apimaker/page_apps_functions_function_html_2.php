@@ -7,7 +7,7 @@
 		<div style="padding: 10px;" >
 			<div>
 				<h5 class="d-inline">Function: {{ s2_nnnoitcnuf['name'] }}</h5>
-				<div v-on:click="open_edit_form" class="btn btn-default btn-sm" style="float:right;" ><i class="fa fa-lg fa-pencil-square-o" ></i></div>
+				<div v-on:click="open_edit_form" class="btn btn-default btn-sm" style="float:right;" ><i class="fa-solid fa-square-check" ></i></div>
 			</div>
 			<div class="d-inline" >{{ s2_nnnoitcnuf['des'] }}</div>
 			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
@@ -23,10 +23,10 @@
 			</div>
 		</div>
 		<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true"  >
-			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
+			<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
 		</div>
 		<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
-			<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
+			<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
 		</div>
 		<div class="test_menu_div_b" v-if="s2_bat_tset_wohs" >
 			<?php require("page_apps_functions_function_html_test_2.php"); ?>

@@ -472,7 +472,7 @@ var app = Vue.createApp({
 			if( v != el.innerText ){
 				if( el.nextSibling ){
 				}else{
-					el.insertAdjacentHTML("afterend", `<div class="inlinebtn" data-type="editablebtn" ><i class="fa fa-check-square-o" ></i></div>` );
+					el.insertAdjacentHTML("afterend", `<div class="inlinebtn" data-type="editablebtn" ><i class="fa-solid fa-square-check" ></i></div>` );
 				}
 			}else{
 				if( el.nextSibling ){

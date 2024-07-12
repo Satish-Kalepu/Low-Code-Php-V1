@@ -42,7 +42,7 @@
 						<a v-bind:href="path+'apis/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a>
 						<div style="float:right;" ><span  class="badge bg-secondary" >{{ v['count'] }}</span></div>
 					</td>
-					<td><div class="btn btn-outline-dark btn-sm" v-on:click="folder_settings(i)" ><i class="fa fa-edit"></i></div></td>
+					<td><div class="btn btn-outline-dark btn-sm" v-on:click="folder_settings(i)" ><i class="fa-regular fa-pen-to-square"></i></div></td>
 					<td><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
 				</tr>
 				</template>
@@ -55,7 +55,7 @@
 						<div style="float:right;" >{{ getc(v) }}</div>
 						<div class="text-secondary">{{ v['des'] }}</div>
 					</td>
-					<td><div class="btn btn-outline-dark btn-sm" v-on:click="api_settings(i)" ><i class="fa fa-edit"></i></div></td>
+					<td><div class="btn btn-outline-dark btn-sm" v-on:click="api_settings(i)" ><i class="fa-regular fa-pen-to-square"></i></div></td>
 					<td><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
 				</tr>
 				</template>

@@ -73,29 +73,33 @@ function index_api($api_version, $get, $post, $php_input){
 				$ip4 = $x[0];
 				if( isset($res['data']['ips']) && is_array($res['data']['ips']) ){
 					foreach( $res['data']['ips'] as $ii=>$ip ){
-						$x = explode("/", $ip);
-						$x2 = explode(".",$x[0]);
-						if( $x[1] == "32" ){
-							if( $_SERVER['REMOTE_ADDR'] == $x[0] ){
-								$ipf = true;break;
-							}
-						}else if( $x[1] == "24" ){
-							if( $ip2 == implode(".",[ $x2[0],$x2[1],$x2[2] ] ) ){
-								$ipf = true;break;
-							}
-						}else if( $x[1] == "16" ){
-							if( $ip3 == implode(".",[ $x2[0],$x2[1] ] ) ){
-								$ipf = true;break;
-							}
-						}else if( $x[1] == "8" ){
-							if( $ip4 == $x2[0] ){
-								$ipf = true;break;
+						if( $ip == "*" ){
+							$ipf = true;break;
+						}else{
+							$x = explode("/", $ip);
+							$x2 = explode(".",$x[0]);
+							if( $x[1] == "32" ){
+								if( $_SERVER['REMOTE_ADDR'] == $x[0] ){
+									$ipf = true;break;
+								}
+							}else if( $x[1] == "24" ){
+								if( $ip2 == implode(".",[ $x2[0],$x2[1],$x2[2] ] ) ){
+									$ipf = true;break;
+								}
+							}else if( $x[1] == "16" ){
+								if( $ip3 == implode(".",[ $x2[0],$x2[1] ] ) ){
+									$ipf = true;break;
+								}
+							}else if( $x[1] == "8" ){
+								if( $ip4 == $x2[0] ){
+									$ipf = true;break;
+								}
 							}
 						}
 					}
 				}
 				if( $ipf == false ){
-					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key IP rejected" ]) ];
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key IP rejected", "ip"=>$_SERVER['REMOTE_ADDR'] ]) ];
 				}
 				$allow_policy = false;
 				if( isset($res['data']['policies']) && is_array($res['data']['policies']) ){

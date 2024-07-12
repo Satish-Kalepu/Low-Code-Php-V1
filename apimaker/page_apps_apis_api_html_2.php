@@ -30,13 +30,13 @@
 				</div>
 			</div>
 			<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true"  >
-				<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
+				<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
 			</div>
 			<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false&&s2_evas_tsrif==true" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
-				<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
+				<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
 			</div>
 			<div class="test_menu_div_a" v-else-if="s2_bat_tset_wohs==false" v-on:click="s2_aatad_evas" >
-				<div style="padding:5px; text-align:center;"><i class="fa fa-bars" ></i><BR/>S<BR/>A<BR/>V<BR/>E</div>
+				<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>S<BR/>A<BR/>V<BR/>E</div>
 			</div>
 			<div class="test_menu_div_b" v-if="s2_bat_tset_wohs" >
 				<?php require("page_apps_apis_api_html_test_2.php"); ?>
