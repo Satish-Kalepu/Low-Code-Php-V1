@@ -7,6 +7,7 @@ if( !is_dir( "/tmp/apimaker" ) ){
 if( $execution_mode == "local_folder" ){
 
 	$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
+//	echo $engine_cache_path;exit;
 	if( file_exists($engine_cache_path) ){
 		$cache_refresh = false;
 		require_once($engine_cache_path);

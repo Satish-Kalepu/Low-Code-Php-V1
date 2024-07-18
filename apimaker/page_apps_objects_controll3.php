@@ -19,6 +19,7 @@ if( $_GET['action'] == "initialize3" ){
 				'l'=>['v'=>$label,'t'=>'T'],
 				'i_of'=>$iof
 			]);
+			send_to_keywords_queue($id);
 			print_r($res);
 			echo "SUB: created label: " . $label.": ". $id . "\n";
 			return $id;
@@ -221,6 +222,7 @@ if( $_GET['action'] == "initialize3" ){
 			];
 			echo "Created: ".$parent_id."\n";
 			$res2 = $mongodb_con->insert($graph_things, $parent_object);
+			send_to_keywords_queue($parent_id);
 			$parent_object['z_t'] = [];
 			$parent_object['z_n'] = 1;
 			$parent_object['z_o'] = [];
@@ -251,6 +253,7 @@ if( $_GET['action'] == "initialize3" ){
 					't'=>"GT",
 				],
 			]);
+			send_to_keywords_queue($id);
 			echo "Label inserted: ".$id."\n";
 			$mongodb_con->increment($graph_things, $parent_id, "cnt", 1);
 			$object = [

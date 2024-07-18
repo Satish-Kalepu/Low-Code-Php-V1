@@ -21,6 +21,7 @@ class api_engine{
 	public $s2_nnngissaer = false;
 	public $s2_lmth_tuptuo = "";
 	public $s2_rrrrrrorre = "";
+	public $task_insert_id = 1000;
 	public $s2_sssssspmuj = 0;
 	public $s2_egats_ot_pmuj = "";
 	public $s2_dddddi_ppa = "";
@@ -4163,23 +4164,45 @@ class api_engine{
 	}
 	function s2_eueuq_ot_hsup( $s2_ddddegatsf ){
 		global $config_global_engine;
-		if( $s2_ddddegatsf['d']['queue']['v']['i']['v'] ){
-			$_c = $this->s2_nnnnnnnnoc->generate_id();
-			$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_queue_".$s2_ddddegatsf['d']['queue']['v']['i']['v'], [
-				'_id'=>$s2_ddddegatsf['d']['queue']['v']['i']['v'].":".$_c,
-				'app_id'=>$this->s2_dddddi_ppa,
-				'q_id'=>$s2_ddddegatsf['d']['queue']['v']['i']['v'],
+		$queue_id = $s2_ddddegatsf['d']['queue']['v']['i']['v'];
+		$output = $s2_ddddegatsf['d']['output']['v'];
+		if( $queue_id ){
+
+			$task_id = $this->generate_task_queue_id();
+			$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_zd_queue_".$queue_id, [
+				'_id'=>$task_id,
+				'id'=>$task_id,
 				'data'=>$this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['inputs'] ),
 				'm_i'=>date("Y-m-d H:i:s")
 			]);
 			if( $res['status'] == "success" ){
 				$res = [
 					"status"=>"success",
-					"session_key"=>$res['inserted_id']
+					"task_id"=>$task_id
 				];
 			}
+
+		}else{
+			$res = [
+				"status"=>"fail",
+				"error"=>"queue info missing"
+			];
 		}
+		$this->s2_tcejbo_ot_tupni($res);
+		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
 	}
+
+	function generate_task_queue_id($delay=0){
+		if( gettype($delay) != "integer" ){
+			$delay = 0;
+		}else if( $delay > (600) ){
+			$delay =600; // max is 10 minutes
+		}
+		return date("YmdHis",time()+$delay).":".rand(100,999).":".$this->task_insert_id;
+		$this->task_insert_id++;
+	}
+
+
 }
 
 function s2_aaaaaaaotb($v){return base64_decode($v);}

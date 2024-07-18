@@ -98,6 +98,18 @@ function pass_decrypt( $data ){
 	return $decrypted;
 }
 
+function pass_encrypt_static( $data, $key= "abcdefghijklmnop" ){
+	$encrypted = openssl_encrypt($data, "aes256", $key);
+	if( !$encrypted ){
+		return "";
+	}
+	return $encrypted;
+}
+function pass_decrypt_static( $data, $key= "abcdefghijklmnop" ){
+	$decrypted =  openssl_decrypt($data, "aes256", $key);
+	return $decrypted;
+}
+
 
 
 function update_app_last_change_date( $app_id ){

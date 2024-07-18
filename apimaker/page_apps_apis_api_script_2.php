@@ -2034,6 +2034,7 @@ var app = s2_ssssssssss({
 		},
 		s2_selbairav_llif: function(){
 			var used_outputs = {};
+			var engine_outputs = {};
 			var o = {
 				"server_": {
 					"t": "O",
@@ -2511,10 +2512,35 @@ var app = s2_ssssssssss({
 					}
 				}
 				if( typeof(s2_dddddegats['d']) == "object" ){
-					if( 'struct' in s2_dddddegats['d'] ){
+					if( 'struct_' in s2_dddddegats['d'] ){
 						var oo = s2_dddddegats['d']['output']['v']+'';
-						o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['_struct'] );
+						o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['struct_'] );
 					}
+				}
+				if( s2_dddddegats['k']['v'] == "RespondVar" ){
+					var out_template = this.s2_rav_bus_o_teg(o, s2_dddddegats['d']['output']['v']['v']);
+					// this.s2_ooooooohce( "respondvar" );
+					// this.s2_ooooooohce( out_template );
+					if( out_template['t'] == 'O' ){
+						if( 't' in engine_outputs ){
+							if( engine_outputs['t'] == 'O' ){
+								for( var ov in out_template['_'] ){
+									engine_outputs['_'][ ov ] = out_template['_'][ ov ];
+								}
+							}else{
+								this.s2_eeeeenigne['stages'][ s2_iiiiiegats ]['er'] += ";Conflicting variable types for output";
+							}
+						}else{
+							for( var ov in out_template ){
+								engine_outputs[ ov ] = out_template[ ov ];
+							}
+						}
+					}else{
+						for( var ov in out_template ){
+							engine_outputs[ ov ] = out_template[ ov ];
+						}
+					}
+					//this.s2_ooooooohce( engine_outputs );
 				}
 
 				this.s2_eeeeenigne['stages'][ s2_iiiiiegats ]['er'] = er;
@@ -2530,6 +2556,8 @@ var app = s2_ssssssssss({
 					}
 				}
 			}
+
+			this.s2_eeeeenigne['outputs'] = engine_outputs;
 
 			var ol= [];
 			for( var i=0; i<this.s2_eeeeenigne['stages'].length; i++ ){
@@ -2785,7 +2813,8 @@ var app = s2_ssssssssss({
 			alert( this.s2_eeeeenigne['stages'][ i ]['er'] + "\n" + this.s2_eeeeenigne['stages'][ i ]['wr'] );
 		},
 		s2_tupni_sa_mrof_lanif_elbairav_teg: function( v ){
-			//console.log("Get variable finaal form:" );this.s2_ooooooohce( v );
+			//console.log("Get variable finaal form:" );
+			//this.s2_ooooooohce( v );
 			var t = v['t']+'';
 			if( t == "TT" ){ t = "T"; }
 			var vv = {"t": t+''};

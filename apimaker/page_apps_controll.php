@@ -5,12 +5,60 @@ if( !$config_param1 ){
 }else if( !preg_match("/^[a-f0-9]{24}$/", $config_param1) ){
 	echo404("Incorrect App ID");
 }
-$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", ['_id'=>$config_param1] );
+$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
+	'_id'=>$config_param1
+], [
+	'settings'=>true,
+]);
 if( !$res['data'] ){
 	echo404("App not found!");
 }
 $app = $res['data'];
 
+$test_environments = [];
+if( isset($app['settings']) ){
+	if( $app['settings']['host'] ){
+		foreach( $app['settings']['domains'] as $di=>$dd ){
+			$test_environments[] = [
+				"t"=> "custom",
+				"u"=> $dd['url'],
+				"d"=> $dd['domain'],
+				"e"=> $dd['path'],
+			];
+		}
+	}
+	if( isset($app['settings']['cloud']) && $app['settings']['cloud'] ){
+		if( $app['settings']['cloud'] ){
+			$d = $app['settings']['cloud-subdomain'] . "." . $app['settings']['cloud-domain'];
+			$test_environments[] = [
+				"t"=> "cloud",
+				"u"=> "https://" . $d . "/",
+				"d"=> $d,
+			];
+		}
+	}
+	if( isset($app['settings']['alias']) && $app['settings']['alias'] ){
+		$test_environments[] = [
+			"t"=> "cloud-alias",
+			"d"=> $app['settings']['alias-domain'],
+			"u"=> "https://" . $app['settings']['alias-domain'] . "/",
+		];
+	}
+
+}
+
+if( isset($app['settings']) ){
+	if( isset($app['host']) && $app['host'] == true ){
+		foreach( $app['settings']['domains'] as $i=>$j ){
+			if( $j['domain'] == $_SERVER['HTTP_HOST'] ){
+				$config_engine_api_url_internal = "http://" . $j['domain'] . $j['path'] . "_api_system/";
+			}
+		}
+	}
+	if( isset($app['cloud']) && $app['cloud'] == true ){
+		$config_engine_api_url_external = "http://" . $j['cloud-subdomain'] . "." . $j['cloud-domain'] . "/_api_system/";
+	}
+}
 // if( !isset($app['patch1']) ){
 // 	$res  = $mongodb_con->update_many( $config_global_apimaker['config_mongo_prefix'] . "_apis", [], ['path'=>'/', 'vt'=>'api'] );
 // 	print_r($res);

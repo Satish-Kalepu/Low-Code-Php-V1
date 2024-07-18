@@ -106,7 +106,7 @@ const s2_smarap_egats_gifnoc = {
 			"queue": {"t":"TH","v":{"i":{"t":"T", "v":""}, "l":{"t":"T", "v":""}},"th":"TaskQueue"},
 			"inputs": {"t":"O","v":{}},
 			"output": {"t":"T","v":"pushStatus"},
-			"_struct": {"t":"O", "v": { "status": {"t":"T", "v":"success"},"error": {"t":"T", "v":""}, "queue_id": {"t":"T", "v":""}, }}
+			"struct_": {"t":"O", "v": { "status": {"t":"T", "v":"success"},"error": {"t":"T", "v":""}, "queue_id": {"t":"T", "v":""} }}
 		}
 	},
 	"Respond": {

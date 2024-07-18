@@ -1,3 +1,10 @@
+<style>
+	.mongoid{ display:block; cursor:pointer; width:30px; }
+	.mongoid:hover{ background-color:#eee; }
+	.mongoid div{ display:none; }
+	.mongoid:hover div{ display: block; position:absolute; background-color:white; box-shadow:2px 2px 5px #666; border:1px solid #999; padding:0px 10px; }
+</style>
+
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="check-circle-fill" viewBox="0 0 16 16">
     <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
@@ -31,8 +38,8 @@
 				<div>Configure app settings to continue</div>
 			</div>
 
-			<div style="border: 1px solid #ccc; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 10px;">Cloud Hosting</div>
+			<div style="border: 1px solid #999; margin-bottom: 20px; " >
+				<div style="background-color:#e8e8e8; padding: 10px;">Application</div>
 				<div style="padding:10px;">
 					<!-- <pre>{{ settings }}</pre> -->
 
@@ -54,7 +61,7 @@
 				</div>
 			</div>
 
-			<div style="border: 1px solid #ccc; margin-bottom: 20px; " >
+			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px;">Cloud Hosting</div>
 				<div style="padding:10px;">
 
@@ -115,7 +122,7 @@
 				</div>
 			</div>
 
-			<div style="border: 1px solid #ccc; margin-bottom: 20px; " >
+			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px;">Custom Hosting</div>
 				<div style="padding:10px;">
 					<p><label style="cursor: pointer;">Enable custom hosting <input type="checkbox" v-model="settings['host']" ></label></p>
@@ -170,7 +177,7 @@
 				</div>
 			</div>
 
-			<div style="border: 1px solid #ccc; margin-bottom: 20px; " >
+			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px;">Other Settings</div>
 				<div style="padding:10px;">
 					<p>Home page </p>
@@ -205,7 +212,7 @@
 			</div>
 
 			<template v-if="host_saved&&'host' in settings" >
-			<div v-if="settings['host']===true" style="border: 1px solid #ccc; margin-bottom: 20px; " >
+			<div v-if="settings['host']===true" style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px;">Engine</div>
 				<div style="padding:10px;">
 
@@ -226,8 +233,216 @@
 			</div>
 			</template>
 
+			<div style="border: 1px solid #999; margin-bottom: 20px; " >
+				<div style="background-color:#e8e8e8; padding: 5px 10px;">TaskScheduler Engine</div>
+				<div style="padding:10px;">
+
+
+						<div style="float:right;"><input type="button" class="btn btn-outline-dark btn-sm" value="View Log" v-on:click="tasks_view_log()" ></div>
+						<p>TaskScheduler Worker daemon</p>
+
+						<template v-if="is_scheduler_running()" >
+							<p style="color:blue;" >Daemon is Running</p>
+							<!-- <pre style="background-color:#333; color:white; padding:10px;overflow:auto;">{{ settings['tasks'] }}</pre> -->
+							<div><input type="button" class="btn btn-outline-danger btn-sm" value="Stop Daemon" v-on:click="stop_background_job()" ></div>
+						</template>
+						<div v-else>
+							<p style="color:red;">Daemon is not running</p>
+							<p>Click here to auto start the daemon</p>
+							<div><input type="button" class="btn btn-outline-dark btn-sm" value="START" v-on:click="start_background_job()" ></div>
+							<div>This is a AdHoc script which can be stopped by any system event. This will not auto start when the system is rebooted or application configuration is updated.</div>
+							<p>AutoStart</p>
+							<div>Create a cronjob in the system where you have installed your engine. </div>
+							<pre style="background-color:#333; color:white; padding:10px;overflow:auto;">@reboot curl --location http://domain/enginepath/_api_service \
+--header 'Access-Key: <?=$akey ?>' \
+--header 'Content-type: application/json' \
+--data '{
+	"action": "start_taskscheduler",
+	"app_id": "<?=$config_param1 ?>"
+}'</pre>
+						</div>
+
+				</div>
+			</div>
+
+			<div style="border: 1px solid #999; margin-bottom: 20px; " >
+				<div style="background-color:#e8e8e8; padding: 5px 10px;">Other background jobs</div>
+				<div style="padding:10px;">
+
+					<table class="table table-bordered table-striped table-sm w-auto">
+						<tbody>
+							<tr>
+								<td>Name</td>
+								<td>Status</td>
+								<td>Workers</td>
+								<td>-</td>
+							</tr>
+							<tr v-for="d,dd in background_jobs"  >
+								<td>{{ d['name'] }}</td>
+								<td>{{ d['run'] }}</td>
+								<td>{{ d['workers'] }}</td>
+								<td><input type="button" class="btn btn-outline-dark btn-sm py-0" value="View Log" v-on:click="display_background_log(dd)" ></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<p>&nbsp;</p>
+
+				</div>
+			</div>
+
+
+
+			<p>&nbsp;</p>-<p>&nbsp;</p>
+
 		</div>
 	</div>
+
+
+		<div class="modal fade" id="start_backgroundjob_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Start Background Job Scheduler</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+					<div class="modal-body" >
+						<p>Select Execution Environment: </p>
+						<p><select v-model="qei" class="form-select form-select-sm w-auto" >
+							<option value="-1" >Select environment</option>
+							<template v-for="d,i in test_environments" ><option v-if="d['t']!='cloud-alias'" v-bind:value="i" >{{ d['u'] }}</option></template>
+						</select></p>
+						<div><input type="button" value="Start Worker" class="btn btn-outline-dark btn-sm" v-on:click="start_background_job2" ></div>
+
+						<div v-if="jmsg" class="alert alert-primary" >{{ jmsg }}</div>
+						<div v-if="jerr" class="alert alert-danger" >{{ jerr }}</div>		      	
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="internal_queue_log_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg modal-xl">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Scheduler Job Log</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<div style="height: 40px; display: flex; column-gap:10px;">
+		      		<div>
+		      			<div title="Refresh" v-on:click="load_internal_queue_log()"  class="btn btn-outline-dark btn-sm" ><i class="fa-solid fa-arrows-rotate"></i></div>
+		      		</div>
+		      		<div>
+		      			<div style="display:flex; column-gap: 5px;">
+		      				<span>Task ID: </span>
+			      			<input type="text" class="form-control form-control-sm w-auto" v-model="queue_log_keyword" placeholder="Search Task">
+			      			<input type="button" class="btn btn-outline-dark btn-sm" value="Search" v-on:click="load_internal_queue_log()">
+			      			<input v-if="internal_log.length>=100" type="button" class="btn btn-outline-dark btn-sm" value="Next" v-on:click="load_internal_queue_next()">
+		      			</div>
+		      		</div>
+		      		<div>
+								<div v-if="qlmsg" class="alert alert-primary py-0" >{{ qlmsg }}</div>
+								<div v-if="qlerr" class="alert alert-danger py-0" >{{ qlerr }}</div>
+							</div>
+						</div>
+
+						<div style="overflow: auto; height: 500px;">
+							<table class="table table-bordered table-striped table-sm w-auto" >
+								<tbody>
+									<tr style="position: sticky; top:0px; background-color: white;">
+										<td>#</td>
+										<td>Thread</td>
+										<td>Date</td>
+										<td>Event</td>
+										<td>Message</td>
+										<td>TaskId</td>
+										<td>Info</td>
+									</tr>
+									<tr v-for="d,i in internal_log">
+										<td><div class="mongoid" ><div>{{ d['_id'] }}</div><span>#</span></div></td>
+										<td><span v-if="'tid' in d" >{{ d['tid'] }}</span></td>
+										<td nowrap>{{ d['date'] }}</td>
+										<td nowrap>{{ d['event'] }}</td>
+										<td nowrap>{{ d['message'] }}</td>
+										<td nowrap><span v-if="'task_id' in d" >{{ d['task_id'] }}</td>
+										<td>
+											 <template v-for="dd,ii in d" ><div v-if="ii!='message'&&ii!='task_id'&&ii!='tid'&&ii!='_id'&&ii!='event'&&ii!='date'&&ii!='m_i'" style="white-space: nowrap;" >{{ ii }}: {{ dd }}</div></template>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<!-- <pre>{{ internal_log }}</pre> -->
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="background_job_log_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg modal-xl">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Background Job Log</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<p><b>{{ background_job_popup_title }}</b></p>
+
+		      	<div style="height: 40px; display: flex; column-gap:10px;">
+		      		<div>
+		      			<div title="Refresh" v-on:click="load_background_job_log()"  class="btn btn-outline-dark btn-sm" ><i class="fa-solid fa-arrows-rotate"></i></div>
+		      		</div>
+		      		<div>
+		      			<div style="display:flex; column-gap: 5px;">
+		      				<span>Task ID: </span>
+			      			<input type="text" class="form-control form-control-sm w-auto" v-model="queue_log_keyword" placeholder="Search Task">
+			      			<input type="button" class="btn btn-outline-dark btn-sm" value="Search" v-on:click="load_background_job_log()">
+			      			<input v-if="background_job_log.length>=100" type="button" class="btn btn-outline-dark btn-sm" value="Next" v-on:click="load_background_job_log_next()">
+		      			</div>
+		      		</div>
+		      		<div>
+								<div v-if="qlmsg" class="alert alert-primary py-0" >{{ qlmsg }}</div>
+								<div v-if="qlerr" class="alert alert-danger py-0" >{{ qlerr }}</div>
+							</div>
+						</div>
+
+						<div style="overflow: auto; height: 500px;">
+							<table class="table table-bordered table-striped table-sm w-auto" >
+								<tbody>
+									<tr style="position: sticky; top:0px; background-color: white;">
+										<td>#</td>
+										<td>Thread</td>
+										<td>Date</td>
+										<td>Event</td>
+										<td>Message</td>
+										<td>TaskId</td>
+										<td>Info</td>
+									</tr>
+									<tr v-for="d,i in background_job_log">
+										<td><div class="mongoid" ><div>{{ d['_id'] }}</div><span>#</span></div></td>
+										<td><span v-if="'tid' in d" >{{ d['tid'] }}</span></td>
+										<td nowrap>{{ d['date'] }}</td>
+										<td nowrap>{{ d['event'] }}</td>
+										<td nowrap>{{ d['message'] }}</td>
+										<td nowrap><span v-if="'task_id' in d" >{{ d['task_id'] }}</td>
+										<td>
+											 <template v-for="dd,ii in d" ><div v-if="ii!='message'&&ii!='task_id'&&ii!='tid'&&ii!='_id'&&ii!='event'&&ii!='date'&&ii!='m_i'" style="white-space: nowrap;" >{{ ii }}: {{ dd }}</div></template>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<!-- <pre>{{ internal_log }}</pre> -->
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
 
 
 </div>
@@ -241,7 +456,7 @@ var app = Vue.createApp({
 			edit_app: {"app":"", "des":""},
 			cd: <?=isset($config_global_apimaker['config_cloud_domains'])?json_encode($config_global_apimaker['config_cloud_domains']):'[]' ?>,
 			alb_cname: "<?=$config_global_apimaker['config_cloud_alb_cname'] ?>",
-			msg1: "",err1: "",msg2: "",err2: "",msg3: "",err3: "",msg4: "",err4: "",
+			msg1: "",err1: "",msg2: "",err2: "",msg3: "",err3: "",msg4: "",err4: "",jmsg: "",jerr: "",
 			pages:[],files:[],
 			enginep: "<?=$enginep ?>", 
 			engined: <?=json_encode([$engined]) ?>,
@@ -250,9 +465,21 @@ var app = Vue.createApp({
 			show_create_api: false,
 			new_api: { "name": "", "des": "" },
 			create_app_modal: false,
+			test_environments: <?=json_encode($test_environments) ?>,
+			start_queue_popup: false,	
+			qlmsg: "", "qlerr":"",
+			internal_queue_log_popup: false,
+			internal_log: [],
+			queue_log_keyword: "",
+			qei: -1,
 			token: "",
 			custom_edited: false, cloud_edited: false, other_edited: false,
 			alias_saved: false,host_saved: false,
+			background_jobs: <?=json_encode($background_jobs) ?>,
+			background_job_popup: false,
+			background_job_set: {},
+			background_job_log: [],
+			background_job_popup_title: "",
 		};
 	},
 	watch: {
@@ -295,10 +522,185 @@ var app = Vue.createApp({
 		this.load_pages();
 	},
 	methods: {
+		display_background_log: function(d){
+			this.background_job_set = d;
+			this.queue_log_keyword = "";
+			this.background_job_popup_title = this.background_jobs[ d ]['name'];
+			this.background_job_popup = new bootstrap.Modal( document.getElementById('background_job_log_modal') );
+			this.background_job_popup.show();
+			this.load_background_job_log();
+		},
+		load_background_job_log: function(){
+			this.qlmsg = "Loading...";
+			this.background_job_log = [];
+			this.qlerr = "";
+			axios.post("?", {
+				"action":"settings_load_background_job_log", 
+				"task_id": this.queue_log_keyword,
+				"logtype": this.background_job_set,
+			}).then(response=>{
+				this.qlmsg = "";
+				if( 'status' in response.data ){
+					if( response.data['status']=="success"){
+						this.background_job_log=response.data['data'];
+					}else{
+						this.qlerr = response.data['error'];
+					}
+				}else{
+					this.qlerr = ( "Error: incorrect response" );
+				}
+			}).catch(error=>{
+				this.qlerr = ("Error: "+error.message);
+			});
+		},
+		load_background_job_log_next: function(){
+			this.qlmsg = "Loading...";
+			var last = this.background_job_log[ this.background_job_log.length-1 ]['_id'];
+			this.background_job_log = [];
+			this.qlerr = "";
+			axios.post("?", {
+				"action":"settings_load_background_job_log", 
+				"task_id": this.queue_log_keyword,
+				"logtype": this.background_job_set,
+				"last": last
+			}).then(response=>{
+				this.qlmsg = "";
+				if( 'status' in response.data ){
+					if( response.data['status']=="success"){
+						this.background_job_log=response.data['data'];
+					}else{
+						this.qlerr = response.data['error'];
+					}
+				}else{
+					this.qlerr = ( "Error: incorrect response" );
+				}
+			}).catch(error=>{
+				this.qlerr = ("Error: "+error.message);
+			});
+		},
+		tasks_view_log: function(di){
+			this.queue_log_keyword = "";
+			this.internal_queue_log_popup = new bootstrap.Modal( document.getElementById('internal_queue_log_modal') );
+			this.internal_queue_log_popup.show();
+			this.load_internal_queue_log();
+		},
+		load_internal_queue_log: function(){
+			this.qlmsg = "Loading...";
+			this.internal_log = [];
+			this.qlerr = "";
+			axios.post("?", {
+				"action":"settings_load_tasks_log", 
+				"task_id": this.queue_log_keyword,
+			}).then(response=>{
+				this.qlmsg = "";
+				if( 'status' in response.data ){
+					if( response.data['status']=="success"){
+						this.internal_log=response.data['data'];
+					}else{
+						this.qlerr = response.data['error'];
+					}
+				}else{
+					this.qlerr = ( "Error: incorrect response" );
+				}
+			}).catch(error=>{
+				this.qlerr = ("Error: "+error.message);
+			});
+		},
+		load_internal_queue_next: function(){
+			this.qlmsg = "Loading...";
+			var last = this.internal_log[ this.internal_log.length-1 ]['_id'];
+			this.internal_log = [];
+			this.qlerr = "";
+			axios.post("?", {
+				"action":"settings_load_tasks_log", 
+				"task_id": this.queue_log_keyword,
+				"last": last
+			}).then(response=>{
+				this.qlmsg = "";
+				if( 'status' in response.data ){
+					if( response.data['status']=="success"){
+						this.internal_log=response.data['data'];
+					}else{
+						this.qlerr = response.data['error'];
+					}
+				}else{
+					this.qlerr = ( "Error: incorrect response" );
+				}
+			}).catch(error=>{
+				this.qlerr = ("Error: "+error.message);
+			});
+		},
+		is_scheduler_running: function(){
+			if( 'tasks' in this.settings == false ){
+				return false;
+			}else if( 'run' in this.settings['tasks'] == false ){
+				return false;
+			}else if( this.settings['tasks']['run'] == false ){
+				return false;
+			}
+			return true;
+		},
+		stop_background_job: function(){
+			axios.post("?", {
+				"action": "app_settings_stop_job",
+			}).then(response=>{
+				this.jmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								alert("Job stopped successfully");
+								this.settings['tasks']['run'] = false;
+							}else{
+								alert( response.data['error'] );
+							}
+						}else{
+							alert( "Incorrect response" );
+						}
+					}else{
+						alert( "Incorrect response Type" );
+					}
+				}else{
+					alert( "Response Error: " . response.status );
+				}
+			});
+		},
+		start_background_job: function(){
+			this.start_queue_popup = new bootstrap.Modal( document.getElementById('start_backgroundjob_modal') );
+			this.start_queue_popup.show();
+		},
+		start_background_job2: function(){
+			this.jmsg = "";this.jerr = "";
+			this.jmsg = "Connecting...";
+			axios.post("?", {
+				"action": "app_settings_start_job",
+				"env": this.test_environments[ Number(this.qei) ],
+			}).then(response=>{
+				this.jmsg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.jmsg = "job started successfully";
+								this.settings['tasks']['run'] = true;
+								this.settings['tasks']['env'] = this.test_environments[ Number(this.qei) ];
+							}else{
+								this.jerr = response.data['error'];
+							}
+						}else{
+							this.jerr = "Incorrect response";
+						}
+					}else{
+						this.jerr = "Incorrect response Type";
+					}
+				}else{
+					this.jerr = "Response Error: " . response.status;
+				}
+			});
+		},
 		getclouddomain: function(){
 			return 'https://'+this.settings['cloud-subdomain'] + '.' + this.settings['cloud-domain'] +'/'+ (this.settings['cloud-enginepath']!=''?this.settings['cloud-enginepath']+'/':'');
 		},
-		
 		load_pages: function(){
 			axios.post("?", {
 				"action":"get_token",

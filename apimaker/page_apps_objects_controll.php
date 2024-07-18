@@ -1,5 +1,15 @@
 <?php
 
+/*
+
+keywords:
+_id
+parent_id:permutation   permutation   label   tid   parent_id  parentlabel  main y/n
+index: permutation, 
+index: tid
+
+*/
+
 // echo time(). "<BR>";
 // echo dechex( time()  ). "<BR>";
 // for($i=0;$i<1000;$i++){
@@ -17,13 +27,164 @@ $graph_instances 	= $db_prefix . "_graph_instances";
 $graph_keywords 	= $db_prefix . "_graph_keywords";
 $graph_links 		= $db_prefix . "_graph_links";
 $graph_props 		= $db_prefix . "_graph_props";
+$graph_queue 		= $db_prefix . "_zd_queue_objects";
 
 //echo $graph_things;exit;
 
+$objects_enabled = false;
+if( isset($app['settings']['objects']['enabled']) ){
+	if( $app['settings']['objects']['enabled'] ){
+		$objects_enabled = true;
+	}
+}
+
+if( $_GET['action'] == "uninstall" ){
+	$mongodb_con->drop_collection($graph_things);
+	$mongodb_con->drop_collection($graph_things2);
+	$mongodb_con->drop_collection($graph_queue);
+	$mongodb_con->drop_collection($graph_keywords);
+}
+
+if( $_POST['action'] == "objects_disable" ){
+
+	$mongodb_con->drop_collection($graph_things);
+	$mongodb_con->drop_collection($graph_things2);
+	$mongodb_con->drop_collection($graph_queue);
+	$mongodb_con->drop_collection($graph_keywords);
+	$res = $mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$config_param1],[
+		'$set'=>["settings.objects.enabled" => false ],
+		'$unset'=>["settings.objects.run" => true ] 
+	]);
+
+	json_response($res);
+}
+
+function send_to_keywords_queue($object_id){
+	global $mongodb_con;global $db_prefix;global $graph_queue;
+	$task_id = generate_task_queue_id();
+	$mongodb_con->insert( $graph_queue, [
+		'_id'=>$task_id,
+		'id'=>$task_id,
+		'data'=>[
+			"action"=> "thing_update",
+			"graph_id"=>$object_id
+		],
+		'm_i'=>date("Y-m-d H:i:s")
+	]);
+}
+
+if( $_POST['action'] == "objects_enable" ){
+
+	if( isset($app['settings']['objects']['enabled']) ){
+		if( $app['settings']['objects']['enabled'] ){
+			json_response("fail", "Objects are already enabled");
+		}
+	}
+
+	$res = $mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$config_param1],[
+		"settings.objects.enabled" => true
+	]);
+
+	$mongodb_con->drop_collection($graph_things );
+	$mongodb_con->drop_collection($graph_things2 );
+	$mongodb_con->drop_collection($graph_queue);
+	$mongodb_con->drop_collection($graph_keywords);
+
+	$mongodb_con->create_collection($graph_things );
+	$mongodb_con->create_collection($graph_things2 );
+	$mongodb_con->create_index($graph_things,  ["l.v"=>1], ["sparse"=>true]);
+	$mongodb_con->create_index($graph_things,  ["cnt"=>1], ["sparse"=>true]);
+	$mongodb_con->create_index($graph_things,  ["i_of.i"=>1,"l.v"=>1], ["unique"=>true,"sparse"=>true]);
+	$mongodb_con->create_index($graph_things,  ["i_of.i"=>1,"_id"=>1], ["index"=>true,"sparse"=>true]);
+	//$mongodb_con->create_index($graph_things2, ["t_id"=>1,"l"=>1], ["sparse"=>true]);
+	$mongodb_con->create_collection($graph_keywords);
+	$mongodb_con->create_index($graph_keywords,  ["p"=>1], ["sparse"=>true]);
+	$mongodb_con->create_index($graph_keywords,  ["tid"=>1, "p"=>1], ["sparse"=>true]);
+
+	$initial_id = 1;
+	function getinitialid(){
+		global $initial_id;
+		$initial_id++;
+		return "T".str_pad($initial_id,5,"0",STR_PAD_LEFT);
+	}
+
+	$things = [
+		["_id"=>"T1",  "l"=>["t"=>"T", "v"=>"Root"              ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T2",  "l"=>["t"=>"T", "v"=>"Person"            ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T3",  "l"=>["t"=>"T", "v"=>"City"              ],	 		"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T4",  "l"=>["t"=>"T", "v"=>"Country"           ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T5",  "l"=>["t"=>"T", "v"=>"Movie"             ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T6",  "l"=>["t"=>"T", "v"=>"Directors"         ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T7",  "l"=>["t"=>"T", "v"=>"Pincode"           ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T8",  "l"=>["t"=>"T", "v"=>"State"             ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T11", "l"=>["t"=>"T", "v"=>"Kalepu Satish"            ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T12", "l"=>["t"=>"T", "v"=>"Kalepu Sagar"             ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T13", "l"=>["t"=>"T", "v"=>"Pichika Purna Bindu"             ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T14", "l"=>["t"=>"T", "v"=>"Allaka Padmavathi"           ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T15", "l"=>["t"=>"T", "v"=>"Veera Raghavulu"           ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T16", "l"=>["t"=>"T", "v"=>"Surya Kumari"            ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T17", "l"=>["t"=>"T", "v"=>"Pavan Veerendra"            ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T18", "l"=>["t"=>"T", "v"=>"Surya Siddharth"        ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T19", "l"=>["t"=>"T", "v"=>"Hasini Sruthi"     ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T20", "l"=>["t"=>"T", "v"=>"Sai Navadeep"         ],			"i_of"=> ["t"=>"GT", "i"=> "T2", "v"=>"Person"] 	],
+		["_id"=>"T21", "l"=>["t"=>"T", "v"=>"Kakinada"          ],			"i_of"=> ["t"=>"GT", "i"=> "T3", "v"=>"City"] 	],
+		["_id"=>"T22", "l"=>["t"=>"T", "v"=>"Rajahmundry"       ],			"i_of"=> ["t"=>"GT", "i"=> "T3", "v"=>"City"] 	],
+		["_id"=>"T23", "l"=>["t"=>"T", "v"=>"Hyderabad"         ],			"i_of"=> ["t"=>"GT", "i"=> "T3", "v"=>"City"] 	],
+		["_id"=>"T24", "l"=>["t"=>"T", "v"=>"Pitapuram"         ],			"i_of"=> ["t"=>"GT", "i"=> "T3", "v"=>"City"] 	],
+		["_id"=>"T25", "l"=>["t"=>"T", "v"=>"Amalapuram"        ],			"i_of"=> ["t"=>"GT", "i"=> "T3", "v"=>"City"] 	],
+		["_id"=>"T31", "l"=>["t"=>"T", "v"=>"India"             ],			"i_of"=> ["t"=>"GT", "i"=> "T4", "v"=>"Country"] 	],
+		["_id"=>"T32", "l"=>["t"=>"T", "v"=>"Srilanka"          ],			"i_of"=> ["t"=>"GT", "i"=> "T4", "v"=>"Country"] 	],
+		["_id"=>"T33", "l"=>["t"=>"T", "v"=>"Russia"            ],			"i_of"=> ["t"=>"GT", "i"=> "T4", "v"=>"Country"] 	],
+		["_id"=>"T34", "l"=>["t"=>"T", "v"=>"Thailand"          ],			"i_of"=> ["t"=>"GT", "i"=> "T4", "v"=>"Country"] 	],
+		["_id"=>"T35", "l"=>["t"=>"T", "v"=>"Singapore"         ],			"i_of"=> ["t"=>"GT", "i"=> "T4", "v"=>"Country"] 	],
+		["_id"=>"T41", "l"=>["t"=>"T", "v"=>"Bahubali"          ],			"i_of"=> ["t"=>"GT", "i"=> "T5", "v"=>"Movie"] 	],
+		["_id"=>"T42", "l"=>["t"=>"T", "v"=>"RRR"               ],			"i_of"=> ["t"=>"GT", "i"=> "T5", "v"=>"Movie"] 	],
+		["_id"=>"T43", "l"=>["t"=>"T", "v"=>"Titanic"           ],			"i_of"=> ["t"=>"GT", "i"=> "T5", "v"=>"Movie"] 	],
+		["_id"=>"T44", "l"=>["t"=>"T", "v"=>"True Lies"         ],			"i_of"=> ["t"=>"GT", "i"=> "T5", "v"=>"Movie"] 	],
+		["_id"=>"T45", "l"=>["t"=>"T", "v"=>"Jurassic Park"     ],			"i_of"=> ["t"=>"GT", "i"=> "T5", "v"=>"Movie"] 	],
+		["_id"=>"T60", "l"=>["t"=>"T", "v"=>"Andhra Pradesh"    ],			"i_of"=> ["t"=>"GT", "i"=> "T8", "v"=>"State"] 	],
+		["_id"=>"T65", "l"=>["t"=>"T", "v"=>"Telangana"         ],			"i_of"=> ["t"=>"GT", "i"=> "T8", "v"=>"State"] 	],
+	];
+
+	//  label can be a link as well. 
+	//  i_of is single per object
+
+	foreach( $things as $i=>$j ){
+		$j["props"]=[
+			"p1"=>[["t"=>"T", "v"=>$j['l']['v'] ]],
+		];
+		$j["z_t"]=[
+			//label , editable, mandatory
+			"p1"=>["l"=>["t"=>"T","v"=>"Description"], "t"=>["t"=>"KV", "v"=>"Text", "k"=>"T"], "e"=>false, "m"=>false],
+		];
+		$j["z_o"]=["p1"];
+		$j["z_n"]=2;
+		$j['m_i']=date("Y-m-d H:i:s");
+		$j['m_u']=date("Y-m-d H:i:s");
+		//$j['cnt']=0;
+		$mongodb_con->insert($graph_things, $j);
+		$mongodb_con->increment($graph_things, $j['i_of']['i'], "cnt", 1);
+		// $d = $j;
+		// $d['t_id'] = $d['_id'];
+		// $d['_id'] = $j['i_of']['i'] . ":" . $d['l']['v'];
+		// echo $d['_id'] . "<BR>";
+		// $mongodb_con->insert($graph_things2, $d);
+	}
+
+	$res = $mongodb_con->find( $graph_things );
+	foreach( $res['data'] as $i=>$j ){
+		send_to_keywords_queue($j['_id']);
+	}
+
+	json_response("success");
+	exit;
+}
 if( $_GET['action'] == "initialize" ){
 
 	$mongodb_con->drop_collection($graph_things);
 	$mongodb_con->drop_collection($graph_things2);
+	$mongodb_con->drop_collection($graph_queue);
+	$mongodb_con->drop_collection($graph_keywords);
 
 	$mongodb_con->create_collection($graph_things);
 	$mongodb_con->create_collection($graph_things2);
@@ -102,6 +263,10 @@ if( $_GET['action'] == "initialize" ){
 		// echo $d['_id'] . "<BR>";
 		// $mongodb_con->insert($graph_things2, $d);
 	}
+	$res = $mongodb_con->find( $graph_things );
+	foreach( $res['data'] as $i=>$j ){
+		send_to_keywords_queue($j['_id']);
+	}
 	echo "Initialized Database";
 	exit;
 }
@@ -115,7 +280,63 @@ if( $_GET['action'] == "initialize3" ){
 	exit;
 }
 
+if( $_GET['action'] == "buildkeywords" ){
+	$res= $mongodb_con->find( $graph_things );
+	foreach( $res['data'] as $i=>$j ){
+		echo $j['_id'] . ": " . $j['l']['v'] . "<BR>";
+		send_to_keywords_queue( $j['_id'] );
+	}
+	exit;
+}
+
 $apps_folder = "appsobjects";
+
+if( $_POST['action'] == "context_load_things" ){
+	$things = [];
+	if( $_POST['thing'] == "GT-ALL" ){
+		$cond = [];
+		$sort = [];
+		if( $_POST['keyword'] ){
+			$cond['p'] = ['$gte'=>$_POST['keyword'], '$lte'=>$_POST['keyword']."zzz" ];
+			$sort = ['p'=>1];
+			$res = $mongodb_con->find( $graph_keywords, $cond, [
+				"sort"=>$sort, 
+				"limit"=>100,
+			]);
+			//print_r( $res );
+			foreach( $res['data'] as $i=>$j ){
+				$things[] = [
+					'l'=>['t'=>'T', 'v'=>$j['p']],
+					'i_of'=>['i'=>$j['pid'],'v'=>$j['pl'],'t'=>"GT"],
+					'i'=>$j['tid'],
+					'ol'=>$j['l'],
+					'm'=>isset($j['m'])?true:false,
+					't'=>$j['t'],
+				];
+			}
+		}else{
+			$cond['cnt'] = ['$gt'=>1];
+			$sort = ['cnt'=>-1];
+			$res = $mongodb_con->find( $graph_things, $cond, [
+				"sort"=>$sort, 
+				"projection"=>['l'=>true, 'i'=>true,'i_of'=>true,'i'=>'$_id', '_id'=>false],
+				"limit"=>100,
+			]);
+			foreach( $res['data'] as $i=>$j ){
+				$things[] = $j;
+			}
+		}
+		//$cond['l.v'] = ['$gt'=>"pe", '$lt'=>"pezzz" ];
+
+	}else{
+		$things = [];
+	}
+	json_response([
+		"status"=>"success",
+		"things"=>$things,
+		"keyword"=>$_POST['keyword']??'',
+	]);
+}
 
 if( $_POST['action'] == "context_load_things" ){
 	$things = [];
@@ -335,8 +556,9 @@ if( $_POST['action'] == "object_create_object" ){
 		json_response("fail", "Duplicate Node");
 	}
 
+	$id = uniqid();
 	$v = [
-		"_id"=>uniqid(),
+		"_id"=>$id,
 		"l"=>$_POST['data']['l'],
 		"i_of"=>$_POST['data']['i_of'],
 	];
@@ -348,6 +570,7 @@ if( $_POST['action'] == "object_create_object" ){
 			json_response($res);
 		}
 	}
+	send_to_keywords_queue($id);
 	$res2 = $mongodb_con->increment( $graph_things, $_POST['data']['i_of']['i'], "cnt", 1 );
 	json_response($res);
 	exit;
@@ -384,6 +607,9 @@ if( $_POST['action'] == "objects_edit_label" ){
 		'l'=>$label,
 		'updated'=>date("Y-m-d H:i:s")
 	]);
+
+	send_to_keywords_queue($object_id);
+
 	json_response( $res );
 	exit;
 }
@@ -435,6 +661,7 @@ if( $_POST['action'] == "objects_edit_alias" ){
 			'$set'=>['updated'=>date("Y-m-d H:i:s")],
 		]);
 	}
+	send_to_keywords_queue($object_id);
 	json_response( $res );
 	exit;
 }
@@ -476,6 +703,7 @@ if( $_POST['action'] == "objects_edit_i_of" ){
 		'i_of'=>$i_of,
 		'updated'=>date("Y-m-d H:i:s")
 	]);
+	send_to_keywords_queue($object_id);
 
 	$res2 = $mongodb_con->increment( $graph_things, $object['i_of']['i'], "cnt", -1 );
 	$res2 = $mongodb_con->increment( $graph_things, $_POST['data']['i_of']['i'], "cnt", 1 );
@@ -762,3 +990,37 @@ if( 1==2 ){
 	}
 	exit;
 }
+
+
+
+function find_permutations( $label ){
+	//echo "===" . $label . "<BR>";
+	$perms = [];
+	$perms[ $label ] = 1;
+	$x = preg_split("/[\W]+/", $label);
+	if( sizeof($x) > 1 ){
+		for($i=0;$i<sizeof($x);$i++){
+			$v = array_pop($x);
+			//echo "last word: " . $v . "-<BR>";
+			if( sizeof($x) > 1 ){
+				$subperms = find_permutations( implode(" ", $x) );
+				//echo "sub permutations: <BR>";
+				//print_r( $subperms );
+				foreach( $subperms as $si=>$sv ){
+					//echo "perm: " . $v . " " . $si . "<BR>";
+					$perms[ $v . " " . $si ] = 1;
+				}
+				array_splice($x,0,0,$v);
+			}else{
+				array_splice($x,0,0,$v);
+				//echo "perm: " . implode(" ", $x) . "<BR>";
+				$perms[ implode(" ", $x) ]= 1;
+			}
+		}
+	}
+	return $perms;
+}
+
+// $v = find_permutations("Mohandas");
+// echo "final perms<BR>";
+// print_r($v);exit;
