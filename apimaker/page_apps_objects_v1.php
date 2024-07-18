@@ -1,4 +1,3 @@
-<?php require("page_apps_apis_api_css.php"); ?>
 <?php require("page_apps_objects.css"); ?>
 
 <style>
