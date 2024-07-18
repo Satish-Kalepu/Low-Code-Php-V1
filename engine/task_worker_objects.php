@@ -1,19 +1,6 @@
 <?php
 
-ini_set( "display_startup_errors", "On" );
-ini_set( "display_errors", "On" );
-ini_set( "html_errors", "Off" );
-ini_set( "log_errors", "On" );
-ini_set( "short_open_tag", "1" );
-ini_set( "error_reporting", "373" );
-
-$sysip = gethostbyname( gethostname() );
-
-/*
-php task_worker_objects.php app_id 
-config_deamon_run_mode = all/single // same deamon for all apps,  single app
-config_deamon_app_id = "" // null for all apps, required for single app
-*/
+require("cron_daemon_config.php");
 
 if( !isset($argv) ){
 	echo "Need Arguments";exit;
@@ -28,101 +15,10 @@ if( !$app_id){
 	echo "Need Arguments: app_id";exit;
 }
 
-require_once("vendor/autoload.php");
-
-if( file_exists("../../../config_engine.php") ){
-	require("../../../config_engine.php");
-}else if( file_exists("../../config_engine.php") ){
-	require("../../config_engine.php");
-}else if( file_exists("../config_engine.php") ){
-	require("../config_engine.php");
-}else{
-	echo "config_engine missing";exit;
-}
-
 require("task_worker_objects_functions.php");
 $obpr = new objects_processor();
 
-if( $execution_mode == "local_folder" ){
-
-	$config_paths = [
-		"./config_global_engine.php",
-		"../config_global_engine.php",
-		"../../config_global_engine.php",
-		"/var/tmp/config_global_engine.php",
-	];
-	foreach( $config_paths as $j ){
-		if( file_exists($j) ){
-			require($j);
-			break;
-		}
-	}
-
-	$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
-	if( !file_exists($engine_cache_path) ){
-		echo "engine is not initialized..x " . $engine_cache_path;exit;
-	}
-	require_once($engine_cache_path);
-
-	if( $app_id != $config_global_apimaker_engine["config_engine_app_id"] ){
-		echo "engine app_id and argument app_id not matching\n";
-		echo $app_id . ": " . $config_global_apimaker_engine["config_engine_app_id"];
-		exit;
-	}
-
-	$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
-	if( file_exists($engine_cache_path) ){
-		$cache_refresh = false;
-		require_once($engine_cache_path);
-		if( !$config_global_engine ){
-			$cache_refresh = true;
-		}
-		if( filemtime($engine_cache_path) < time()-(int)$config_global_apimaker_engine["config_engine_cache_interval"] ){
-			$cache_refresh = true;
-		}
-		$k = $config_global_apimaker_engine["config_engine_cache_refresh_action_query_string"];
-		if( $k ){
-			if( $_GET[ array_keys($k)[0] ] ){
-				if( $_GET[ array_keys($k)[0] ] == $k[ array_keys($k)[0] ] ){
-					$cache_refresh = "yes";
-				}
-			}
-		}
-	}else{
-		echo "Error: Engine is not initialized";exit;
-	}
-}else{
-	echo "Scenario Pending";exit;
-}
-
-if( $config_global_engine['timezone'] ){
-	date_default_timezone_set($config_global_engine['timezone']);
-}
-
-/* Mongo DB connection */
-require("class_mongodb.php");
-
-if( $config_global_engine['config_mongo_username'] ){
-	$mongodb_con = new mongodb_connection( 
-		$config_global_engine['config_mongo_host'], 
-		$config_global_engine['config_mongo_port'], 
-		$config_global_engine['config_mongo_db'], 
-		$config_global_engine['config_mongo_username'], 
-		$config_global_engine['config_mongo_password'], 
-		$config_global_engine['config_mongo_authSource'], 
-		$config_global_engine['config_mongo_tls']
-	);
-}else{
-	$mongodb_con = new mongodb_connection( 
-		$config_global_engine['config_mongo_host'], 
-		$config_global_engine['config_mongo_port'], 
-		$config_global_engine['config_mongo_db'] 
-	);
-}
-
 sleep(5); // for proper logging of timestamp
-
-$db_prefix = $config_global_engine[ "config_mongo_prefix" ];
 
 $cron_daemon_thread_id = rand(100,999);
 
