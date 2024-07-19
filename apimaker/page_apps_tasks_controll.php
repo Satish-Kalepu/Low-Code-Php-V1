@@ -282,7 +282,15 @@ if( $_POST['action'] == 'task_queue_start' ){
 
 	$sz = 0;
 	if( isset($queue['workers']) ){
-		$sz = sizeof( array_keys($queue['workers']) );
+		foreach( $queue['workers'] as $worker_id=>$wd ){
+			if( (time()-$wd['time']) > 30 ){
+				$mongodb_con->update_one($db_prefix . "_queues", ["_id"=>$_POST['queue_id']], [
+					'$unset'=>["workers." .$worker_id=>true]
+				]);
+			}else{
+				$sz++;
+			}
+		}
 		if( $sz >= $queue['con'] ){
 			json_response("fail", "Max workers are running");
 		}
