@@ -2,18 +2,6 @@
 
 require("cron_daemon_config.php");
 
-if( !isset($argv) ){
-	echo "Need Arguments";exit;
-}else if( !is_array($argv) ){
-	echo "Need Arguments";exit;
-}else if( sizeof($argv) <2 ){
-	echo "Need Arguments: app_id";exit;
-}
-$app_id = $argv[1];
-//echo $app_id;
-if( !$app_id){
-	echo "Need Arguments: app_id";exit;
-}
 
 sleep(5); // for proper logging of timestamp
 
@@ -139,6 +127,37 @@ while( 1 ){
 		$restart_mode = true;
 		exit;
 	}
+
+	if( isset($app_res['data']['settings']['tasks']['workers']) ){
+		if( sizeof($app_res['data']['settings']['tasks']['workers']) > 1 ){
+			logit("Daemon", "Found multiple workers", ['workers'=>$app_res['data']['settings']['tasks']['workers']]);
+			$s = rand(5,30);
+			logit("Daemon", "Sleeping:".$s );
+			sleep($s);
+			$app_res = $mongodb_con->find_one( $db_prefix . "_apps", [
+				"_id"=>$app_id
+			], ['projection'=>['settings'=>1]] );
+			if( sizeof($app_res['data']['settings']['tasks']['workers']) > 1 ){
+				logit("Daemon", "Found multiple workers", ['workers'=>$app_res['data']['settings']['tasks']['workers']]);
+				$mongodb_con->update_one($db_prefix . "_apps", ["_id"=>$app_id],[
+					'$unset'=>['settings.tasks.workers.'.$cron_daemon_thread_id=>true]
+				]);
+				logit("Daemon", "Stopped Unwanted");
+				$restart_mode = true;
+				exit;
+			}
+		}
+	}
+
+	$mongodb_con->update_one( $db_prefix . "_apps", [
+		"_id"=>$app_id
+	], [
+		"settings.tasks.workers.".$cron_daemon_thread_id=>[
+			"id"=>$cron_daemon_thread_id, 
+			"time"=>time(),
+			"sysip"=>$sysip,
+		]
+	]);
 
 	if( isset($app_res['data']['settings']['objects']['enabled']) ){
 		if( $app_res['data']['settings']['objects']['enabled'] ){

@@ -7,6 +7,20 @@ ini_set( "log_errors", "On" );
 ini_set( "short_open_tag", "1" );
 ini_set( "error_reporting", "373" );
 
+
+if( !isset($argv) ){
+	echo "Need Arguments";exit;
+}else if( !is_array($argv) ){
+	echo "Need Arguments";exit;
+}else if( sizeof($argv) <2 ){
+	echo "Need Arguments: app_id";exit;
+}
+$app_id = $argv[1];
+//echo $app_id;
+if( !$app_id){
+	echo "Need Arguments: app_id";exit;
+}
+
 $sysip = gethostbyname( gethostname() );
 
 /*

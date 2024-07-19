@@ -2,17 +2,11 @@
 
 require("cron_daemon_config.php");
 
-if( !isset($argv) ){
-	echo "Need Arguments";exit;
-}else if( !is_array($argv) ){
-	echo "Need Arguments";exit;
-}else if( sizeof($argv) <3 ){
+if( sizeof($argv) <3 ){
 	echo "Need Arguments: app_id and queue_id";exit;
 }
-$app_id = $argv[1];
-//echo $app_id;
 $queue_id = $argv[2];
-if( !$app_id || !$queue_id ){
+if( !$queue_id ){
 	echo "Need Arguments: app_id and queue_id";exit;
 }
 

@@ -2,19 +2,6 @@
 
 require("cron_daemon_config.php");
 
-if( !isset($argv) ){
-	echo "Need Arguments";exit;
-}else if( !is_array($argv) ){
-	echo "Need Arguments";exit;
-}else if( sizeof($argv) <2 ){
-	echo "Need Arguments: app_id";exit;
-}
-$app_id = $argv[1];
-//echo $app_id;
-if( !$app_id){
-	echo "Need Arguments: app_id";exit;
-}
-
 require("task_worker_objects_functions.php");
 $obpr = new objects_processor();
 

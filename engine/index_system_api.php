@@ -80,8 +80,20 @@ function system_api( $method, $content_type, $path_params, $php_input ){
 			if( !$res['data'] ){
 				return [200, "application/json", [], json_encode(["status"=>"fail", "error"=>"App data not found", "action"=>$post['action'] ]) ];
 			}
-			if( isset($res['data']['settings']['tasks']['run']) ){
-				return [200, "application/json", [], json_encode(["status"=>"fail", "error"=>"A job is already running", "action"=>$post['action'] ]) ];
+			if( isset($res['data']['settings']['tasks']['workers']) ){
+				$f = false;
+				foreach( $res['data']['settings']['tasks']['workers'] as $worker_id=>$wd ){
+					if( time()-$wd['time'] < 30 ){
+						$f = true;
+					}else{
+						$mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$post['app_id']], [
+							'$unset'=>['settings.tasks.workers.'.$worker_id=>true]
+						]);
+					}
+				}
+				if( $f ){
+					return [200, "application/json", [], json_encode(["status"=>"fail", "error"=>"A job is already running", "action"=>$post['action'] ]) ];
+				}
 			}
 			if( !file_exists("cron_daemon.php") ){
 				return [200,"application/json", [], json_encode(["status"=>"fail", "error"=>"Worker script not found", "action"=>$post['action'] ]) ];
