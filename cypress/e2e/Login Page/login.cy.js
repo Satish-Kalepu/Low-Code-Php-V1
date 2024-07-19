@@ -270,6 +270,7 @@ describe('Login Tests', () => {
   // })
 
   // Test Case 20: Correct Username, Correct Password, Correct Captcha
+  // console.log('test')
   it('should successfully login with correct username, correct password, and correct captcha', () => {
     cy.visit(baseUrl);
     cy.get('.form-control.form-control-sm[placeholder="UserName"]').type(correctUsername);
