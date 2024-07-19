@@ -58,3 +58,17 @@ Make sure, apimaker service is reachable to engine service. Use https endpoints 
 
 It is recommended not to include apimaker module in your projects. Keep engine in any desired folders in your project. 
 In this way, your app will be light weight. 
+
+
+
+Cypress Autoamtion :- 
+-------
+Cypress can launch using the "open" command with various package managers provided by Node.
+Cypress provides its default folder hierarchy, which makes the test development quick and easy.
+Moreover, Cypress uses Mocha's BDD constructs for the development of test cases.
+We can invoke Cypress methods using the "cy" object.
+Cypress provides a "visit" method to browse any webpage.
+Additionally, Cypress provides a "get" method to find a web element and perform any actions on that.
+describe(): It is is simply a way to group our tests. It takes two arguments, the first is the name of the test group, and the second is a callback function.
+it(): We use it for an individual test case. It takes two arguments, a string explaining what the test should do, and a callback function which contains our actual test.
+
