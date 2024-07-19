@@ -1,0 +1,7 @@
+{
+    "username": "admin",
+    "password": "Admin123!@#",
+    "applicationName": "tatarao",
+    "description": "This app created by cypress automation script",
+    "hosting":"Cloud Hosting"
+}
