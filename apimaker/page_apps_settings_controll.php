@@ -461,14 +461,16 @@ if( $_POST['action'] == 'settings_load_tasks_log' ){
 }
 
 
-
 $background_jobs = [];
-$background_jobs["objects"] = [
-	"name"=> "Objects Database Processor",
-	"table"=> $db_prefix . "_zlog_objects",
-	"run"=>isset($settings['objects']['run'])?true:false,
-	"workers"=>isset($settings['objects']['workers'])?sizeof($settings['objects']['workers']):0,
-];
+$graph_res = $mongodb_con->find( $db_prefix . "_graph_dbs", ["app_id"=>$config_param1], ['sort'=>['name'=>1] ] );
+foreach( $graph_res['data'] as $i=>$j ){
+	$background_jobs["graph.".$j['_id']] = [
+		"name"=> "Objects Database: " . $j['name'],
+		"table"=> $db_prefix . "_zlog_graph_" . $j['_id'],
+		"run"=>isset($j['run'])?true:false,
+		"workers"=>isset($j['workers'])?sizeof($j['workers']):0,
+	];
+}
 $queue_res = $mongodb_con->find( $db_prefix . "_queues", ["app_id"=>$config_param1], ['sort'=>['topic'=>1] ] );
 foreach( $queue_res['data'] as $i=>$j ){
 	$background_jobs["queue".$j['_id']] = [

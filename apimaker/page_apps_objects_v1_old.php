@@ -354,9 +354,8 @@ var app = Vue.createApp({
 		return {
 			"enabled": <?=$objects_enabled?"true":"false" ?>,
 			"path": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
-			"objectpath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>",
+			"objectpath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/",
 			"app_id" : "<?=$app['_id'] ?>",
-			"db_id": "<?=$config_param3 ?>",
 			"context_api_url__": "?",
 			"smsg": "", "serr":"","msg": "", "err":"","cmsg": "", "cerr":"","kmsg": "", "kerr":"", "bmsg": "", "berr":"",
 			"keyword": "",
@@ -500,6 +499,62 @@ var app = Vue.createApp({
 
 	},
 	methods: {
+		enable_objects: function(){
+			this.confmsg = "Enabling...";
+			this.conferr = "";
+			axios.post("?",{
+				"action": "objects_enable"
+			}).then(response=>{
+				this.confmsg = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								document.location.reload();
+							}else{
+								this.conferr = response.data['error'];
+							}
+						}else{
+							this.conferr = "Incorrect response";
+						}
+					}else{
+						this.conferr = "Incorrect response";
+					}
+				}else{
+					this.conferr = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.conferr = this.get_http_error__(error);
+			});
+		},
+		disable_objects: function(){
+			this.confmsg = "Disabling...";
+			this.conferr = "";
+			axios.post("?",{
+				"action": "objects_disable"
+			}).then(response=>{
+				this.confmsg = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								document.location.reload();
+							}else{
+								this.conferr = response.data['error'];
+							}
+						}else{
+							this.conferr = "Incorrect response";
+						}
+					}else{
+						this.conferr = "Incorrect response";
+					}
+				}else{
+					this.conferr = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.conferr = this.get_http_error__(error);
+			});
+		},
 		convert_to_link( el, vdatavar ){
 			var v = this.get_editable_value__({'data_var':vdatavar});
 			if( v === false ){console.log("convert_to_link: datavar value false");return false;}
@@ -743,6 +798,7 @@ var app = Vue.createApp({
 								setTimeout(function(vi,v){
 									v.create_popup.hide();
 									v.create_popup_displayed__ = false;
+									alert("loading: " + vi );
 									v.load_new_thing(vi);
 								},1000,response.data['inserted_id'],this);
 							}else{

@@ -1,3 +1,7 @@
 <?php
-require("page_apps_objects_v1.php");
+if( $config_param3 ){
+	require("page_apps_objects_v1.php");
+}else{
+	require("page_apps_objects_home.php");
+}
 ?>

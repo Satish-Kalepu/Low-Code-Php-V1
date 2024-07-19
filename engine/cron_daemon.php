@@ -25,9 +25,8 @@ function shutdown(){
 			'$inc'=>['settings.tasks.processed'=>$total,'settings.tasks.success'=>$success,'settings.tasks.fail'=>$fail]
 		]);
 	}else{
-		$res = $mongodb_con->update_one( $db_prefix . "_queues", [
-			"app_id"=>$app_id, 
-			"_id"=>$queue_id
+		$res = $mongodb_con->update_one( $db_prefix . "_apps", [
+			"_id"=>$app_id
 		], [
 			'$unset'=>["settings.tasks.workers.".$cron_daemon_thread_id=>true],
 			'$inc'=>['settings.tasks.processed'=>$total,'settings.tasks.success'=>$success,'settings.tasks.fail'=>$fail]
@@ -40,7 +39,7 @@ set_error_handler(function($errno, $errstr, $errfile, $errline){
 	global $db_prefix;
 	global $app_id;
 	global $cron_daemon_thread_id;
-	logit("error", "error", ['error'=>['errno'=>$errno,'err'=>$errstr, 'errfile'=>$errfile, 'line'=> $errline]] );
+	logit("error", "error", [ 'error'=>['errno'=>$errno,'err'=>$errstr, 'errfile'=>$errfile, 'line'=> $errline]] );
     throw new ErrorException($errstr, $errno, 0, $errfile, $errline);
 }, E_ALL & ~E_WARNING & ~E_NOTICE);
 
@@ -130,21 +129,35 @@ while( 1 ){
 
 	if( isset($app_res['data']['settings']['tasks']['workers']) ){
 		if( sizeof($app_res['data']['settings']['tasks']['workers']) > 1 ){
-			logit("Daemon", "Found multiple workers", ['workers'=>$app_res['data']['settings']['tasks']['workers']]);
-			$s = rand(5,30);
-			logit("Daemon", "Sleeping:".$s );
-			sleep($s);
-			$app_res = $mongodb_con->find_one( $db_prefix . "_apps", [
-				"_id"=>$app_id
-			], ['projection'=>['settings'=>1]] );
+			foreach( $app_res['data']['settings']['tasks']['workers'] as $worker_id=>$wd ){
+				if( (time()-$wd['time']) > 30 ){
+					logit("Daemon", "Found Inactive Thread", ["worker"=>$wd]);
+					$mongodb_con->update_one( $db_prefix . "_apps", ['_id'=>$app_id], [
+						'$unset'=>['settings.tasks.workers.'.$worker_id=>true],
+					]);
+					unset($app_res['data']['settings']['tasks']['workers'][ $worker_id ]);
+					$need_start = true;
+				}else{
+					$current_active++;
+				}
+			}
 			if( sizeof($app_res['data']['settings']['tasks']['workers']) > 1 ){
 				logit("Daemon", "Found multiple workers", ['workers'=>$app_res['data']['settings']['tasks']['workers']]);
-				$mongodb_con->update_one($db_prefix . "_apps", ["_id"=>$app_id],[
-					'$unset'=>['settings.tasks.workers.'.$cron_daemon_thread_id=>true]
-				]);
-				logit("Daemon", "Stopped Unwanted");
-				$restart_mode = true;
-				exit;
+				$s = rand(5,30);
+				logit("Daemon", "Sleeping:".$s );
+				sleep($s);
+				$app_res = $mongodb_con->find_one( $db_prefix . "_apps", [
+					"_id"=>$app_id
+				], ['projection'=>['settings'=>1]] );
+				if( sizeof($app_res['data']['settings']['tasks']['workers']) > 1 ){
+					logit("Daemon", "Found multiple workers", ['workers'=>$app_res['data']['settings']['tasks']['workers']]);
+					$mongodb_con->update_one($db_prefix . "_apps", ["_id"=>$app_id],[
+						'$unset'=>['settings.tasks.workers.'.$cron_daemon_thread_id=>true]
+					]);
+					logit("Daemon", "Stopped Unwanted");
+					$restart_mode = true;
+					exit;
+				}
 			}
 		}
 	}
@@ -159,40 +172,37 @@ while( 1 ){
 		]
 	]);
 
-	if( isset($app_res['data']['settings']['objects']['enabled']) ){
-		if( $app_res['data']['settings']['objects']['enabled'] ){
+	$graph_res = $mongodb_con->find( $db_prefix . "_graph_dbs", ['app_id'=>$app_id] );
+	foreach( $graph_res['data'] as $i=>$graph ){
 			$need_objects_start = false;
-			if( !isset($app_res['data']['settings']['objects']['run']) ){
-				logit("Objects", "Not running");
-				$need_objects_start = true;
-			}else if( (time()-(int)$app_res['data']['settings']['objects']['lastrun']) > 60 ){
-				logit("Objects", "last run was " . (time()-(int)$app_res['data']['settings']['objects']['lastrun']) . " seconds ago");
+			if( !isset($graph['run']) ){
+				logit("Graph: " . $graph['name'], "Not running", ['graph'=>$graph['_id']]);
 				$need_objects_start = true;
 			}
-			if( isset($app_res['data']['settings']['objects']['workers']) ){
-				if( sizeof($app_res['data']['settings']['objects']['workers']) > 3 ){
+			if( isset($graph['workers']) ){
+				if( sizeof($graph['workers']) > 2 ){
 					$need_objects_start = false;
-					logit("Objects", "TooMany Threads Found", ["count"=>sizeof($app_res['data']['settings']['objects']['workers']) ] );
-					foreach( $app_res['data']['settings']['objects']['workers'] as $worker_id=>$wd ){
-						logit("Objects", "Thread Delete", ["thread_id"=>$worker_id]);
-						$mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$app_id], [
-							'$unset'=>["settings.objects.workers.".$worker_id=>true]
+					logit("Graph: " . $graph['name'], "TooMany Threads Found", ['graph'=>$graph['_id'], "count"=>sizeof($graph['workers']) ] );
+					foreach( $graph['workers'] as $worker_id=>$wd ){
+						logit("Graph: " . $graph['name'], "Thread Delete", ['graph'=>$graph['_id'], "thread_id"=>$worker_id]);
+						$mongodb_con->update_one( $db_prefix . "_graph_dbs", ["_id"=>$graph['_id']], [
+							'$unset'=>["workers.".$worker_id=>true]
 						]);
 					}
-					$mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$app_id], [
-						'$unset'=>["settings.objects.run"=>true]
+					$mongodb_con->update_one( $db_prefix . "_graph_dbs", ["_id"=>$graph['_id']], [
+						'$unset'=>["run"=>true]
 					]);
-					logit("Objects", "Stop Invoked");
+					logit("Graph: " . $graph['name'], "Stop Invoked", ['graph'=>$graph['_id']]);
 				}
 			}
 			if( $need_objects_start ){
-				logit("Objects", "Start");
-				exec('php task_worker_objects.php '. $app_id . ' > ' . $app_id .'.objects.log &', $eoutput);
+				logit("Graph: " . $graph['name'], "Start", ['graph'=>$graph['_id']]);
+				exec('php task_worker_graph.php '. $app_id . ' ' . $graph['_id'] . ' >> ' . $app_id .'_'.$graph['_id'].'.graph.log &', $eoutput);
 			}
-		}
 	}
 
-	if( (time()-$last_task_check) > 60 ){
+	//if( (time()-$last_task_check) > 60 )
+	{
 		$last_task_check = time();
 
 		/* queue tasks checks */
@@ -205,7 +215,7 @@ while( 1 ){
 				if( isset($queue['workers']) ){
 					foreach( $queue['workers'] as $worker_id=>$wd ){
 						if( (time()-$wd['time']) > 60 ){
-							logit("Internal Queue", "Found Inactive Thread", ["queue_id"=>$queue['_id'], "worker"=>$wd]);
+							logit("Internal Queue: " . $queue['topic'], "Found Inactive Thread", ["queue_id"=>$queue['_id'], "worker"=>$wd]);
 							$mongodb_con->update_one( $db_prefix . "_queues", ['_id'=>$queue['_id']], [
 								'$unset'=>['workers.'.$worker_id=>true],
 							]);
@@ -215,25 +225,25 @@ while( 1 ){
 						}
 					}
 				}
-				logit("Internal Queue", "Status", ["queue_id"=>$queue['_id'], "active_tasks"=>$current_active, "required"=>$queue['con']]);
+				logit("Internal Queue: " . $queue['topic'], "Status", ["queue_id"=>$queue['_id'], "active_tasks"=>$current_active, "required"=>$queue['con']]);
 				if( $need_start || ($queue['con']-$current_active) > 0 ){
-					logit("Internal Queue", "Insufficient Threads", ["queue_id"=>$queue['_id'], "active_tasks"=>$current_active, "required"=>$queue['con']]);
+					logit("Internal Queue: " . $queue['topic'], "Insufficient Threads", ["queue_id"=>$queue['_id'], "active_tasks"=>$current_active, "required"=>$queue['con']]);
 					$mongodb_con->update_one( $db_prefix . "_queues", ['_id'=>$queue['_id']], [
 						'run'=>true,
 					]);
 					for($i=$current_active+1;$i<=$queue['con'];$i++){
 						exec('php task_worker.php '. $app_id . ' '. $queue['_id'] . ' >> ' . $app_id . '_'. $queue['_id'] . '.task.log &', $eoutput);
-						logit("Internal Queue", "Start Job");
+						logit("Internal Queue: " . $queue['topic'], "Start Job");
 					}
 				}else if( ($current_active>$queue['con']) ){
-					logit("Internal Queue", "Too many jobs Restarting", ["queue_id"=>$queue['_id'], "active_tasks"=>$current_active, "required"=>$queue['con']]);
+					logit("Internal Queue: " . $queue['topic'], "Too many jobs Restarting", ["queue_id"=>$queue['_id'], "active_tasks"=>$current_active, "required"=>$queue['con']]);
 					$mongodb_con->update_one( $db_prefix . "_queues", ['_id'=>$queue['_id']], [
 						'$unset'=>['run'=>true],
 					]);
 				}
 			}else{
 				if( isset($queue['workers']) && isset($queue['run']) ){
-					logit("Internal Queue", "Stopping");
+					logit("Internal Queue: " . $queue['topic'], "Stopping", ['graph'=>$graph['_id']]);
 					foreach( $queue['workers'] as $worker_id=>$wd ){
 						if( (time()-$wd['time']) > 60 ){
 							$mongodb_con->update_one( $db_prefix . "_queues", ['_id'=>$queue['_id']], [
