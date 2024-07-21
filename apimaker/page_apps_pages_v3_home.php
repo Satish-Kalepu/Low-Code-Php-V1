@@ -12,7 +12,7 @@
 			<div style="float:right;" >
 				<button class="btn btn-outline-dark btn-sm" v-on:click="page_show_create_form()" >Create PAGE</button>
 			</div>
-			<div class="h3 mb-3">Pages V3</div>
+			<div class="h3 mb-3">Pages V2</div>
 			<div style="clear: both;"></div>
 			<div style="height: calc( 100% - 100px ); overflow: auto;" >
 

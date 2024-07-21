@@ -844,7 +844,7 @@ Vvveb.Builder = {
 		
 		self.highlightEnabled = true;
 		
-		self.leftPanelWidth = document.getElementById("left-panel").width;
+		self.leftPanelWidth = document.getElementById("left-panel").clientWidth;
 		
 		self.adjustListsHeight();
 		
@@ -1446,7 +1446,7 @@ Vvveb.Builder = {
 					try {
 							if ((pos.top  < (y - halfHeight)) || (pos.left  < (x - halfWidth))) {
 								if (noChildren[parentTagName]) { 
-									self.dragElement.after(parent);
+									parent.after(self.dragElement);
 								} else {
 									if (parent == self.dragElement.parenNode) {
 										parent.appendChild(self.dragElement);
@@ -2595,6 +2595,17 @@ Vvveb.Gui = {
 		localStorage.setItem('theme', theme);
 		//document.cookie = 'theme=' + theme;
 	},
+	zoomChange: function () {
+		let wrapper = document.getElementById("iframe-wrapper");
+		let scale = "";
+		let height = "";
+		if (this.value != "100") {
+			scale = "scale(" + this.value + "%)";
+			height = ((100 / this.value) * 100) + "%";
+		}
+		wrapper.style.transform = scale;
+		wrapper.style.height = height;
+	}
 }
 
 Vvveb.StyleManager = {
