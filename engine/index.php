@@ -40,6 +40,7 @@
 			exit;
 		}
 	}
+	require("index_system_api.php");
 	require("index_engine_api.php");
 	require("index_engine_api_auth_api.php");
 	require("index_engine_api_captcha.php");
@@ -258,7 +259,10 @@ function index_normal(){
 		if( $cres['data'] ){
 			$app_id = $cres['data']['app_id'];
 		}else{
-			respond(404,"application/json",[], json_encode(["status"=>"fail", "error"=>$config_cloud_domain .": settings not found"]));
+			respond(404,"application/json",[], json_encode([
+				"status"=>"fail", 
+				"error"=>$config_cloud_domain .": settings not found"
+			]));
 		}
 	}else if( $deployment_mode == "apache" && $execution_mode == "local_folder" ){
 		$app_id = $config_global_apimaker_engine[ 'config_engine_app_id' ];
@@ -379,13 +383,17 @@ function index_normal(){
 			list($statusCode,$contenttype,$headers,$body,$log) = engine_api( $_SERVER['REQUEST_METHOD'], $_SERVER['CONTENT_TYPE'], $path_params, $php_input );
 			respond($statusCode,$contenttype,$headers,$body,$log);
 			exit;
+		}else if( isset($path_params[0]) && $path_params[0] == "_api_system" ){
+			list($statusCode,$contenttype,$headers,$body,$log) = system_api( $_SERVER['REQUEST_METHOD'], $_SERVER['CONTENT_TYPE'], $path_params, $php_input );
+			respond($statusCode,$contenttype,$headers,$body,$log);
+			exit;
 		}
 
 		if( $path != "home" && !isset($config_app['pages'][ $path ]) ){
 			respond(404,"text/plain",[], "Path not found");
 		}else if( isset($config_app['pages'][ $path ]) ){
 			//echo "path found";exit;
-		}else if( $path == "home" ){
+		}else if( $path == "home" ){	
 			if( $config_app['settings']['homepage']['t'] == "page" ){
 				$version_id = explode(":",$config_app['settings']['homepage']['v'])[0];
 				$config_app['pages'][ "home" ] = [

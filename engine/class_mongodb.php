@@ -74,6 +74,28 @@ class mongodb_connection{
 		}
 	}
 
+	function create_collection( $collection ){
+		try{
+			$res = $this->database->createCollection( $collection, [
+				"collation"=> [ "locale"=>"en_US", "strength"=> 2]
+			]);
+			return ['status'=>"success"];
+		}catch(Exception $ex){
+			return [ 'status'=>"fail", "error"=>$ex->getMessage() ];
+		}
+	}
+
+	function drop_collection( $collection ){
+		$col = $this->database->{$collection};
+		try{
+			$col->drop();
+			return ["status"=>"success"];
+		}catch(Exception $ex){
+			return ["status"=>"fail", "error"=>$ex->getMessage() ];
+		}
+		return false;
+	}
+
 		function insert( $collection, $insert_data, $options = [] ){
 			$col = $this->database->{$collection};
 			try{
@@ -278,7 +300,7 @@ class mongodb_connection{
 			return true;
 		}
 
-		function update_one($collection,$condition,$data){
+		function update_one($collection,$condition,$data, $op = []){
 			if( !is_string($collection) ){
 				return ["status"=>"fail","error"=>"collection name required"];
 			}
@@ -297,7 +319,7 @@ class mongodb_connection{
 				}else{
 					$data = ['$set'=>$data];
 				}
-				$res=$col->updateOne($condition, $data);
+				$res=$col->updateOne($condition, $data, $op);
 				return [
 					"status"=>"success", 
 					"data"=>[
@@ -430,6 +452,31 @@ class mongodb_connection{
 			return true;
 		}
 
+		function find_one_and_delete( $collection, $condition, $ops = [] ){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required"];
+			}
+			if( !is_array($condition) ){
+				return ["status"=>"fail","error"=>"condition is not array"];
+			}
+			$col = $this->database->{$collection};
+			try{
+				if( $condition["_id"] && is_string( $condition["_id"] ) ){
+					$condition["_id"] = $this->get_id( $condition["_id"] );
+				}
+				$res = $col->findOneAndDelete( $condition, $ops );
+				if( $res ){
+					$res['_id']=(string)$res['_id'];
+					return [ "status"=>"success", "data"=>$res ];
+				}else{
+					return [ "status"=>"fail", "error"=>"not found" ];
+				}
+			}catch(Exception $ex){
+				return ["status"=>"fail","error"=>$ex->getMessage()];
+			}
+			return true;
+		}
+
 		function delete_many( $collection, $condition, $ops = [] ){
 			$col = $this->database->{$collection};
 			try{
@@ -456,17 +503,6 @@ class mongodb_connection{
 				return ["status"=>"fail","error"=>$ex->getMessage()];
 			}
 			return true;
-		}
-
-		function drop_collection( $collection ){
-			$col = $this->database->{$collection};
-			try{
-				$col->drop();
-				return true;
-			}catch(Exception $ex){
-				return ["status"=>"fail","error"=>$ex->getMessage()];
-			}
-			return false;
 		}
 
 		function list_collections(){

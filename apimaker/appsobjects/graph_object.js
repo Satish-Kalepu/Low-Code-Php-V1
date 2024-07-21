@@ -144,7 +144,7 @@ const graph_object =  {
 			}else{
 				var v = {'t':"T", "v":""};
 			}
-			this.v[vv][ vk ].splice( vi, 0, v );
+			this.v[vv][ vk ].push( v );
 		},
 		del_sub: function(vv,vk,vi){
 			if( confirm("Are you sure?") ){

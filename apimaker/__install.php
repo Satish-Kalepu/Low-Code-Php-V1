@@ -70,7 +70,7 @@ $variables = [
 
 	"config_enable_apps"			=> ["t"=>"boolean", "v"=>"true", "label"=>"Enable Multiple Apps"],
 
-	"config_apimaker_domain" 			=> ["t"=>"text", "v"=>$_SERVER['HTTP_HOST'], "label"=>"Engine Maker Domain", "preg"=>"/^[a-z][a-z0-9\ \.\:]{3,100}$/i"],
+	"config_apimaker_domain" 		=> ["t"=>"text", "v"=>$_SERVER['HTTP_HOST'], "label"=>"Engine Maker Domain", "preg"=>"/^[a-z][a-z0-9\ \.\:]{3,100}$/i"],
 	"config_apimaker_path" 			=> ["t"=>"text", "v"=>$config_apimaker_path, "label"=>"Engine Maker Path", "preg"=>"/^\/[a-z][a-z0-9\/\.\-\_]{2,25}$/i", "help"=> "https://www.example.com/(engine_maker_path). How do you want to access this application.<BR>Do not change the current folder."],
 
 	// default database settings:
@@ -364,8 +364,8 @@ if( $_POST['action'] == "saveconf" ){
 	}
 
 	$defult_engine_url = "http://".$_SERVER['HTTP_HOST'].'/engine/';
-	$default_engine_key = "65b3e2eb822fa7476b0576c2";
-	$default_app_id = "64f237a775a7be05200cedd0";
+	$default_engine_key = $mongodb_con->generate_id();
+	$default_app_id = $mongodb_con->generate_id();
 
 	$required_default_settings = [
 		"login_session_id" => "",
@@ -412,7 +412,8 @@ if( $_POST['action'] == "saveconf" ){
 			]
 		],
 		"apis_versions"=>[
-			"indexes"=>[["keys"=>["app_id"=>1,"api_id"=>1]]
+			"indexes"=>[
+				["keys"=>["app_id"=>1,"api_id"=>1]]
 			],
 			"records"=>[
 				json_decode('{"_id": "6537f1334042e656940dfa0d","app_id": "'.$default_app_id.'","api_id": "6537f1334042e656940dfa0e","name": "api-test-2","des": "api test 2","type": "api","created": "2023-10-24 22:00:43","updated": "2024-01-17 16:37:37","active": true,"version": 1,"output-type": "application/json","input-method": "GET","input-type": "query_string","m_i": "2023-10-24 22:00:43","engine": {"input_factors": [],"stages": [{"k": {"v": "HTTPRequest","t": "c","vs": false},"pk": "HTTPRequest","t": "c","d": {"data": {"method": {"t": "T","v": "GET"},"url": {"t": "T","v": "http://ifconfig.ca/"},"content-type": {"t": "T","v": "application/x-www-form-urlencoded"},"auth": {"type": {"t": "T","v": "none"},"user": {"t": "T","v": ""},"pass": {"t": "T","v": ""}},"headers": {"t": "L","v": []},"payload": {"t": "O","v": []},"redirect": {"t": "N","v": "No"},"ctime": {"t": "N","v": 1},"rtime": {"t": "N","v": 5},"sslverify": {"t": "B","v": "false"},"twoway": {"t": "B","v": "false"},"sslcert": {"t": "TT","v": ""},"sslkey": {"t": "TT","v": ""},"useproxy": {"t": "T","v": "No"},"proxy": {"t": "O","v": {"host": {"t": "T","v": "192.168.1.1"},"port": {"t": "N","v": 8080},"user": {"t": "T","v": ""},"pass": {"t": "T","v": ""}}},"parse": {"t": "B","v": "false"},"output": {"t": "T","v": "httpResponse"},"struct": {"status": {"t": "N"},"body": {"t": "T"},"headers": {"t": "O","_": []},"content_type": {"t": "T"},"time_taken": {"t": "N"},"size": {"t": "N"},"error": {"t": "T"},"cookies": {"t": "O","_": []}}}},"l": 1,"e": false,"ee": true,"er": "","wr": ""},{"k": {"v": "RespondJSON","t": "c","vs": false},"pk": "RespondJSON","t": "c","d": {"output": {"t": "O","v": {"status": {"t": "T","v": "success","k": "status"},"data": {"t": "V","v": {"v": "httpResponse","t": "O","vs": {"v": "","t": "","d": []}},"k": "data"}}},"pretty": {"t": "B","v": "true"}},"l": 1,"e": false,"ee": true,"er": "","wr": ""}]},"test": {"domain": "v2.backendmaker.com","path": "/engine/","factors": {"t": "O","v": []}}}',true),
@@ -570,16 +571,13 @@ if( $_POST['action'] == "saveconf" ){
 				}
 			}
 		}
-		if( $j == $data['config_mongo_prefix'] . "_settings" ){
-			$issettting = true;
-		}
 	}
 	if( $other_prefix_cnt > (sizeof($required_default_tables)*.75) ){
 		$other_prefix_found = true;
 	}
 
 	// already initialized
-	if( $issettting && $collections_cnt ){
+	if( $collections_cnt ){
 		if( $_POST['force_update'] === "true" ){}else{
 			echo json_encode([
 				"status"=>"dbinitialized", "error"=>"Database is already initialized"
@@ -717,10 +715,11 @@ if( $_POST['action'] == "saveconf" ){
 			</div>
 			<div v-else >
 				<p>Config file location: <select v-model="config_path" >
-				<option value="./config_global_apimaker.php" >./config_global_apimaker.php </option>
-				<option value="../config_global_apimaker.php" >../config_global_apimaker.php </option>
-				<option value="../../config_global_apimaker.php" >../../config_global_apimaker.php</option>
-				<option value="/var/tmp/config_global_apimaker.php" >/var/tmp/config_global_apimaker.php</option>
+					<option value="./config_global_apimaker.php" >./config_global_apimaker.php </option>
+					<option value="../config_global_apimaker.php" >../config_global_apimaker.php </option>
+					<option value="../../config_global_apimaker.php" >../../config_global_apimaker.php</option>
+					<option value="/var/tmp/config_global_apimaker.php" >/var/tmp/config_global_apimaker.php</option>
+					<option value="/tmp/config_global_apimaker.php" >/tmp/config_global_apimaker.php</option>
 				</select>
 				</p>
 			</div>

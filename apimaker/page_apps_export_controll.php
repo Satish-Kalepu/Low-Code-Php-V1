@@ -1,5 +1,42 @@
 <?php
 
+/*
+	need to add objects
+
+tables:
+apps
+settings
+cloud_domains
+users
+user_keys
+	app_id, t
+	expiret
+	expire
+user_pool
+user_roles
+apis
+apis_version
+captcha    need ttl 
+databases
+tables
+tables_dynamic
+files
+storage_vaults
+functions
+functions_versions
+pages
+pages_versions
+queues
+graph_things
+graph_keywords
+
+
+zlog_actions  = apimaker action log
+zlog_requests = engine request log
+
+
+*/
+
 if( $_POST['action'] == "exports_get_snapshots" ){
 	$f = [];
 	if( is_dir("/tmp/phpengine_backups/") ){
@@ -114,11 +151,20 @@ if( $_POST['action'] == "app_backup" ){
 			fwrite($fp,"dt_" . $j['_id'] . ":" . json_encode($dj) . "\n--\n");
 		}
 	}
+
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_files", [
 		'app_id'=>$config_param1
 	]);
 	foreach( $res['data'] as $i=>$j ){
 		$j['__t'] = "files";
+		fwrite($fp, json_encode($j) . "\n--\n");
+	}
+
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
+		'app_id'=>$config_param1
+	]);
+	foreach( $res['data'] as $i=>$j ){
+		$j['__t'] = "storage_vaults";
 		fwrite($fp, json_encode($j) . "\n--\n");
 	}
 	fclose($fp);
@@ -361,7 +407,7 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 	if( $mode == "create" ){
 
 		$ids = [
-			'app'=>[],'apis'=>[],'pages'=>[],'functions'=>[],'apis'=>[],'files'=>[],'tables_dynamic'=>[],'databases'=>[],
+			'app'=>[],'apis'=>[],'pages'=>[],'functions'=>[],'apis'=>[],'files'=>[],'tables_dynamic'=>[],'databases'=>[], 'storage_vaults'=>[],
 		];
 		$all_ids = [];
 
@@ -421,6 +467,13 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 			$datasets['tables'][ $i ]['app_id'] = $new_app_id;
 			$datasets['tables'][ $i ]['db_id'] = $ids['databases'][ $datasets['tables'][ $i ]['db_id'] ];
 		}
+		foreach( $datasets['storage_vaults'] as $i=>$j ){
+			$new_id = $mongodb_con->generate_id();
+			$ids['storage_vaults'][ $j['_id'] ] = $new_id;
+			$all_ids[ $j['_id'] ] = $new_id;
+			$datasets['storage_vaults'][ $i ]['_id'] = $new_id;
+			$datasets['storage_vaults'][ $i ]['app_id'] = $new_app_id;
+		}
 	}else{
 
 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_apps", ['_id'=>$app['_id']] );
@@ -431,6 +484,7 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_functions", ['app_id'=>$app['_id']] );
 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", ['app_id'=>$app['_id']] );		
 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_files", ['app_id'=>$app['_id']] );
+		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", ['app_id'=>$app['_id']] );
 		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", ['app_id'=>$app['_id']] );
 		foreach( $res['data'] as $i=>$j ){
 			$mongodb_con->drop_collection( $config_global_apimaker['config_mongo_prefix'] . "_dt_" . $j['_id'] );
@@ -470,6 +524,9 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 	}
 	foreach( $datasets['files'] as $i=>$j ){
 		$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", $j );
+	}
+	foreach( $datasets['storage_vaults'] as $i=>$j ){
+		$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", $j );
 	}
 	foreach( $datasets['tables_dynamic'] as $i=>$j ){
 		$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", $j );

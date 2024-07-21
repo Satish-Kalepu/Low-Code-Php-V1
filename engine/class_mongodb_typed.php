@@ -276,7 +276,7 @@ class mongodb_connection{
 			return true;
 		}
 
-		function update_one($collection,$condition,$data){
+		function update_one($collection,$condition,$data, $op = []){
 			if( !is_string($collection) ){
 				return ['t'=>"O", 'v'=>[
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"collection name required"];
@@ -298,7 +298,7 @@ class mongodb_connection{
 				}else{
 					$data = ['$set'=>$data];
 				}
-				$res=$col->updateOne($condition, $data);
+				$res=$col->updateOne($condition, $data, $op);
 				return ['t'=>"O", 'v'=>[
 					"status"=>['t'=>"T", 'v'=>"success"], 
 					"data"=>[

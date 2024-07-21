@@ -1,5 +1,11 @@
 <?php
 
+$akey = pass_encrypt_static(json_encode([
+	"action"=>"start_taskscheduler", 
+	"app_id"=>$config_param1,
+]), "abcdefgh");
+
+
 if( $_POST['action'] == "get_new_key" ){
 	json_response([
 		"status"=>"success",
@@ -305,34 +311,6 @@ if( $_POST['action'] == "app_save_other_settings" ){
 	exit;
 }
 
-
-
-function update_global_settings(){
-		$global_settings = [];
-	foreach( $settings['keys'] as $ki=>$kd ){
-		$global_settings[ $kd['key'] ] = [
-			'ips'=>[],
-			'domains'=>[]
-		];
-		foreach( $kd['ips_allowed'] as $iv=>$ip ){
-			$global_settings[ $kd['key'] ][ 'ips' ][ $ip['ip'] ] = $ip['action'];
-		}
-		foreach( $settings['domains'] as $i=>$dv ){
-			$global_settings[ $kd['key'] ][ 'domains' ][ $dv['domain'] ][ $dv['path'] ] = ["ok"=>1];
-		}
-	}
-	//print_pre( $global_settings );exit;
-
-	foreach( $global_settings as $key=>$st ){
-		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_settings", [
-			'_id'=>"app_key_".$key
-		], $st, ['upsert'=>true]);
-		if( $res['status'] == "fail" ){
-			json_response( $res );
-		}
-	}
-}
-
 //print_r( $res );
 if( !$app['settings'] ){
 	$settings = [
@@ -387,4 +365,137 @@ foreach( $loc as $i=>$j ){
 		}
 		break;
 	}
+}
+
+if( $_POST['action'] == "app_settings_stop_job" ){
+	$res = $mongodb_con->update_one( $db_prefix . "_apps", [
+		"_id"=>$config_param1
+	], [
+		'$unset'=>['settings.tasks.run'=>true]
+	]);
+	json_response($res);
+	exit;
+}
+
+if( $_POST['action'] == "app_settings_start_job" ){
+
+	if( !isset($_POST['env']) ){
+		json_response("fail", "Need Environment");
+	}else if( !is_array($_POST['env']) ){
+		json_response("fail", "Need Environment");
+	}else if( !isset($_POST['env']['d']) && !isset($_POST['env']['u']) && !isset($_POST['env']['t']) ){
+		json_response("fail", "Incorrect Environment Details");
+	}
+	$success = false;
+	$apiress = [];
+	//print_r( $test_environments );
+	$env = $_POST['env'];
+
+	if( $env['t'] == "custom" ){
+		$url = "http://" . $env['d'] . $env['e'] . "_api_system/tasks/";
+	}else if( $env['t'] == "cloud" ){
+		$url = $env['u'] . "_api_system/tasks/";
+	}else if( $env['t'] == "cloud-alias" ){
+		json_response("fail", "Environment incorrect");
+	}
+	//echo $url . "\n";
+	if( !$akey ){
+		json_response("fail", "AccessKey not initialized");
+	}
+
+	$apires = curl_post($url, [
+		 "action"=>"start_taskscheduler",
+		 "app_id"=>$config_param1
+	], [
+		'Content-type: application/json', 
+		"Access-Key: ". $akey 
+	]);
+	if( $apires['status'] == 200 ){
+		$data = json_decode($apires['body'],true);
+		if( !$data ){
+			json_response(['status'=>"fail", "error"=>$apires['body']]);exit;
+		}
+		if( !isset($data['status']) ){
+			json_response(['status'=>"fail", "error"=>"incorrect response from api"]);exit;
+		}
+		if( $data['status'] == "success" ){
+			$success = true;
+			$res = $mongodb_con->update_one( $db_prefix . "_apps", [
+				"_id"=>$config_param1
+			],[
+				'settings.tasks'=>[
+					'run'=>true,
+					'env'=>$env
+				],
+			]);
+			$res['apires'] = $apires;
+			json_response($res);
+		}else{
+			json_response($data);exit;
+		}
+	}else{
+		json_response(['status'=>"fail", "error"=>"Error from system api", "apires"=>$apires]);
+	}
+
+	exit;
+}
+
+if( $_POST['action'] == 'settings_load_tasks_log' ){
+	$cond = [];
+	if( $_POST['last'] ){
+		if( preg_match("/^[a-f0-9]{24}$/i", $_POST['last']) ){
+			$cond['_id'] = ['$lt'=>$_POST['last']];
+		}else{
+			json_response("fail", "Incorrect _id");
+		}
+	}
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_zlog_tasks", $cond, [
+		'sort'=>['_id'=>-1], 
+		'limit'=>100,
+		'projection'=>['ip'=>false],
+		'maxTimeMS'=>10000,
+	]);
+	//print_r( $res );
+	json_response($res);
+	exit;
+}
+
+
+$background_jobs = [];
+$graph_res = $mongodb_con->find( $db_prefix . "_graph_dbs", ["app_id"=>$config_param1], ['sort'=>['name'=>1] ] );
+foreach( $graph_res['data'] as $i=>$j ){
+	$background_jobs["graph.".$j['_id']] = [
+		"name"=> "Objects Database: " . $j['name'],
+		"table"=> $db_prefix . "_zlog_graph_" . $j['_id'],
+		"run"=>isset($j['run'])?true:false,
+		"workers"=>isset($j['workers'])?sizeof($j['workers']):0,
+	];
+}
+$queue_res = $mongodb_con->find( $db_prefix . "_queues", ["app_id"=>$config_param1], ['sort'=>['topic'=>1] ] );
+foreach( $queue_res['data'] as $i=>$j ){
+	$background_jobs["queue".$j['_id']] = [
+		"name"=>"Task Queue: " . $j['topic'],
+		"run"=>$j['run']?true:false,
+		"table"=> $db_prefix . "_zlog_queue_" . $j['_id'],
+		"workers"=>isset($j['workers'])?sizeof($j['workers']):0,
+	];
+}
+
+if( $_POST['action'] == 'settings_load_background_job_log' ){
+	$cond = [];
+	if( $_POST['last'] ){
+		if( preg_match("/^[a-f0-9]{24}$/i", $_POST['last']) ){
+			$cond['_id'] = ['$lt'=>$_POST['last']];
+		}else{
+			json_response("fail", "Incorrect _id");
+		}
+	}
+	$res = $mongodb_con->find( $background_jobs[ $_POST['logtype'] ]['table'], $cond, [
+		'sort'=>['_id'=>-1], 
+		'limit'=>100,
+		'maxTimeMS'=>10000,
+	]);
+	//print_r( $res );
+	json_response($res);
+	exit;
 }
