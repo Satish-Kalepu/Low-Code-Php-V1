@@ -1,22 +1,10 @@
 <link href="/apimaker/pages_builder/css/editor.css" rel="stylesheet">
 <body>
-	<div id="vvveb-builder">
-				<div id="top-panel">
+	<div id="vvveb-builder" >
+				<div id="top-panel" style="top:-6px;width:88%">
 					<!-- <img src="/apimaker/pages_builder/img/logo.png" alt="Vvveb" class="float-start" id="logo"> -->
 					
-					<div class="btn-group float-start" role="group">
-					  <button class="btn btn-light" title="Toggle file manager" id="toggle-file-manager-btn" data-vvveb-action="toggleFileManager" data-bs-toggle="button" aria-pressed="false">
-						  <img src="/apimaker/pages_builder/libs/builder/icons/file-manager-layout.svg" width="20" height="20" alt="" role="presentation">
-					  </button>
-
-					  <button class="btn btn-light" title="Toggle left column" id="toggle-left-column-btn" data-vvveb-action="toggleLeftColumn" data-bs-toggle="button" aria-pressed="false">
-						  <img src="/apimaker/pages_builder/libs/builder/icons/left-column-layout.svg" width="20" height="20" alt="" role="presentation">
-					  </button>
-					  
-					  <button class="btn btn-light" title="Toggle right column" id="toggle-right-column-btn" data-vvveb-action="toggleRightColumn" data-bs-toggle="button" aria-pressed="false">
-						  <img src="/apimaker/pages_builder/libs/builder/icons/right-column-layout.svg" width="20" height="20" alt="" role="presentation">
-					  </button>
-					</div>
+					
 					
 					<div class="btn-group me-3" role="group">
 					  <button class="btn btn-light" title="Undo (Ctrl/Cmd + Z)" id="undo-btn" data-vvveb-action="undo" data-vvveb-shortcut="ctrl+z">
@@ -30,9 +18,9 @@
 										
 					
 					<div class="btn-group me-3" role="group">
-					  <button class="btn btn-light" title="Designer Mode (Free dragging)" id="designer-mode-btn" data-bs-toggle="button" aria-pressed="false" data-vvveb-action="setDesignerMode">
+					  <!-- <button class="btn btn-light" title="Designer Mode (Free dragging)" id="designer-mode-btn" data-bs-toggle="button" aria-pressed="false" data-vvveb-action="setDesignerMode">
 						  <i class="la la-hand-rock"></i>
-					  </button>
+					  </button> -->
 
 					  <button class="btn btn-light" title="Preview" id="preview-btn" type="button" data-bs-toggle="button" aria-pressed="false" data-vvveb-action="preview">
                 <i class="icon-eye-outline"></i>
@@ -46,15 +34,15 @@
 						  <i class="icon-layers-outline"></i>
 					  </button>
 
-					  <button class="btn btn-light" title="Download" id="download-btn" data-vvveb-action="download" data-v-download="index.html">
+					  <!-- <button class="btn btn-light" title="Download" id="download-btn" data-vvveb-action="download" data-v-download="index.html">
 						  <i class="la la-download"></i>
-					  </button>
+					  </button> -->
 
 					</div>
 					
 								
 					<div class="btn-group me-3 float-end" role="group">
-					  <button class="btn btn-primary btn-icon" title="Export (Ctrl + E)" id="save-btn" data-vvveb-action="saveAjax" data-vvveb-url="" data-v-vvveb-shortcut="ctrl+e">
+					  <button class="btn btn-primary btn-icon btn-sm" title="Export (Ctrl + E)" id="save-btn" data-vvveb-action="saveAjax" data-vvveb-url="" data-v-vvveb-shortcut="ctrl+e" >
 
 						<span class="loading d-none">
 						<i class="la la-save"></i>
@@ -72,14 +60,14 @@
 
 					  <div class="float-end me-3">
 
-					    <button class="btn btn-light border-0 btn-sm btn-dark-mode" data-vvveb-action="darkMode">
-							<!-- i class="la la-adjust la-lg"></i -->
-							<i class="la la-sun la-lg"></i>
-						</button>
+					    <!-- <button class="btn btn-light border-0 btn-sm btn-dark-mode" data-vvveb-action="darkMode">
 						
-					    <a href="#" class="btn btn-outline-primary border-0 btn-sm btn-preview-url" target="blank">
+							<i class="la la-sun la-lg"></i>
+						</button> -->
+						
+					    <!-- <a href="#" class="btn btn-outline-primary border-0 btn-sm btn-preview-url" target="blank">
 							View page <i class="la la-external-link-alt la-lg"></i>
-						</a>
+						</a> -->
 
 					    <div class="btn-group responsive-btns" role="group">
 
@@ -105,26 +93,21 @@
      				   </div>
 
 
-				<div id="left-panel">
+				<div id="left-panel" style="margin-top:-3%">
 
 					  <div id="filemanager"> 
 							<div class="header">
 								<span class="text-secondary"><i class="la la-file la-lg"></i> Pages</span>
 
-									<div class="btn-group responsive-btns me-1 float-end" role="group">
-									  <button class="btn btn-outline-secondary btn-sm  btn-add" title="New file" id="new-file-btn" data-vvveb-action="newPage" data-vvveb-shortcut="">
-										   <span>Back to Pages</span> <i class="icon-duplicate-outline"></i>
-									  </button>
-									  
-									  <!--  &ensp;
-									  <button class="btn btn-link text-dark p-0"  title="Delete file" id="delete-file-btn" data-vvveb-action="deletePage" data-vvveb-shortcut="">
-										  <i class="la la-trash"></i> <small>Delete</small>
-									  </button> -->
-									</div>
+								<div class="btn-group responsive-btns me-1 float-end" role="group">
+									<button class="btn btn-outline-secondary btn-sm btn-add" title="New file" id="new-file-btn" data-vvveb-action="newPage">
+										<span>Back to Pages</span> <i class="icon-duplicate-outline"></i>
+									</button>
+								</div>
 
 								</div>
 
-								<div class="tree">
+								<div class="tree" style="height:0px !important;resize:none;display:none">
 									<ol>
 									</ol>
 								</div>
@@ -2117,5 +2100,14 @@ Vvveb.Breadcrumb.init();
 /*Vvveb.FileManager.loadPage(window.location.href);*/
 Vvveb.Gui.toggleRightColumn(false);
 Vvveb.Breadcrumb.init();
+
+document.getElementById('new-file-btn').addEventListener('click', function() {
+	var configGlobalApimakerPath = "<?php echo $config_global_apimaker_path; ?>";
+	var configPage = "<?php echo $config_page; ?>";
+	var configParam1 = "<?php echo $config_param1; ?>";
+	var configParam2 = "<?php echo $config_param2; ?>";
+	var newPath = configGlobalApimakerPath + '/' + configPage + '/' + configParam1 + '/' + configParam2;
+	window.location.href = newPath;
+});
 </script>
 </body>

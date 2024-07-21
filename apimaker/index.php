@@ -188,7 +188,7 @@ if( $config_page != "" ){
 
 if( $config_page == "codeeditor" ){
 	require("layout_simple.php");
-}else if( $config_page == "apps" && $config_param2 == "pages_v2" ){
+}else if( $config_page == "apps" && $config_param2 == "pages_v3" ){
 	require("layout_page_builder.php");
 }else if( $config_layout ){
 	require("layout_".$config_layout.".php");
