@@ -8,10 +8,12 @@ $mongodb_con->debug = $config_mongo_debug;
 $mongodb_con->connect( $config_mongo_db );
 */
 
-if( !$config_global_apimaker['config_mongo_host'] || !$config_global_apimaker['config_mongo_port'] || !$config_global_apimaker['config_mongo_db'] || !$config_global_apimaker['config_mongo_username'] || !$config_global_apimaker['config_mongo_password'] ){
-	header('HTTP/1.1 500 server error');
-	echo "<html><head></head><body>Configuration incorrect: default database settings incorrect/missing</body></html>";
-	exit;
+if( !preg_match("/(localhost|[0-9\.]+)/", $_SERVER['HTTP_HOST']) ){
+	if( !$config_global_apimaker['config_mongo_host'] || !$config_global_apimaker['config_mongo_port'] || !$config_global_apimaker['config_mongo_db'] || !$config_global_apimaker['config_mongo_username'] || !$config_global_apimaker['config_mongo_password'] ){
+		header('HTTP/1.1 500 server error');
+		echo "<html><head></head><body>Configuration incorrect: default database settings incorrect/missing</body></html>";
+		exit;
+	}
 }
 
 //print_pre($config_global_apimaker);

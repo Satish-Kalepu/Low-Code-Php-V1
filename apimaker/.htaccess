@@ -2,6 +2,7 @@
 ##22519 = E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT
 ##4181 = E_PARSE|E_COMPILE_ERROR|E_RECOVERABLE_ERROR|E_ERROR|E_CORE_ERROR
 
+<IfModule prefork.c>
 php_value date.timezone 'Asia/Kolkata'
 php_value short_open_tag 1
 php_value post_max_size 20M
@@ -14,6 +15,7 @@ php_value display_startup_errors On
 php_value display_errors On
 php_value html_errors Off
 php_value log_errors On
+</IfModule>
 
 RewriteEngine On
 
@@ -30,5 +32,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php?request_url=$1 [QSA,L]
 
+<IfModule mod_filter.c>
 AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/x-javascript
+</IfModule>
 

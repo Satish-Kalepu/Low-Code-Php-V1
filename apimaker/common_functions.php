@@ -6,6 +6,25 @@
 		exit;
 	}
 
+	function event_log( $system, $event, $data =[] ){
+		global $mongodb_con;
+		global $db_prefix;
+		$data['m_i'] = date("Y-m-d H:i:s");
+		$data['user_id'] = $_SESSION['apimaker_login_id'];
+		$data['ip'] = $_SERVER['REMOTE_ADDR'];
+		$data['event'] = $event;
+		$data['system'] = $system;
+		$sid = session_id();
+		if( $sid ){
+			$data['sid'] = $session_id;
+		}
+		try{
+			$mongodb_con->insert( $db_prefix . "_zd_events", $data);
+		}catch(Exception $ex){
+			echo "Error event log" . $ex->getMessage();exit;
+		}
+	}
+
 	if( file_exists("common_functions_new.php") ){
 		require("common_functions_new.php");
 	}

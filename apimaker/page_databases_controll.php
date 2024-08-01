@@ -150,6 +150,10 @@ if( $_POST['action'] == "update_database" ){
 					if( !$insert_res['status'] == "fail" ){
 						json_response($insert_res);
 					}
+					event_log( "system", "database_create", [
+						"app_id"=>$config_param1,
+						"db_id"=>$insert_res['inserted_id'],
+					]);
 					json_response("success","ok");
 				}
 			}else{
@@ -172,6 +176,12 @@ if( $_POST['action'] == "update_database" ){
 						if( !$res ){
 							json_response("fail","Server Error");
 						}else{
+
+							event_log( "system", "database_edit", [
+								"app_id"=>$config_param1,
+								"db_id"=>$_POST['db_id'],
+							]);
+
 							json_response("success","ok");
 						}
 					}
@@ -209,6 +219,12 @@ if( $_POST['action'] == 'delete_table' ){
 		json_response("fail", "Database not found!");
 	}else{
 		$status = $mongodb_con->delete_one( $config_api_tables, ["_id"=>$_POST["table_id"]] );
+
+		event_log( "system", "database_table_delete", [
+			"app_id"=>$config_param1,
+			'db_id'=>$_POST["db_id"], 'table_id'=>$_POST["table_id"]
+		]);
+
 		json_response("success","Deleted Successfully");
 	}
 }
@@ -225,6 +241,12 @@ if( $_POST['action'] == "delete_database" ){
 			json_response("fail","Delete respective tables before deleting the database!");
 		}else{
 			$del_rec = $mongodb_con->delete_one($config_api_databases, ["app_id"=>$app['_id'], "_id"=>$_POST["db_id"]] );
+		
+			event_log( "system", "database_delete", [
+				"app_id"=>$config_param1,
+				'db_id'=>$_POST["db_id"]
+			]);
+
 			json_response($del_rec);exit;
 		}
 	}
@@ -247,7 +269,6 @@ if( $config_param3 ){
 	}else{
 		echo "DB Engine " . $db['engine'] . " module is under development!";exit;
 	}
-
 
 
 }else{

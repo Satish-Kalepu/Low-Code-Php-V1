@@ -61,7 +61,8 @@
 				"./config_global_engine.php",
 				"../config_global_engine.php",
 				"../../config_global_engine.php",
-				"/var/tmp/config_global_engine.php"
+				"/var/tmp/config_global_engine.php",
+				sys_get_temp_dir() . "/config_global_engine.php"
 			];
 			foreach( $config_paths as $j ){
 				if( file_exists($j) ){
@@ -328,10 +329,10 @@ function index_normal(){
 		$url_page_id = "";
 		$cache_refresh = false;
 		if( $execution_mode == "local_folder" ){
-			$app_cache_path = "/tmp/apimaker/app_" . $app_id . ".php";
+			$app_cache_path = sys_get_temp_dir()  . "/apimaker/app_" . $app_id . ".php";
 			$app_var = "config_app_" . $app_id;
 		}else{
-			$app_cache_path = "/tmp/engine/app_" . $app_id . ".php";
+			$app_cache_path = sys_get_temp_dir()  . "/engine/app_" . $app_id . ".php";
 			$app_var = "config_app_" . $app_id;
 		}
 		if( file_exists($app_cache_path) ){

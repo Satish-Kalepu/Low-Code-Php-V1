@@ -2,7 +2,6 @@
 
 require("cron_daemon_config.php");
 
-
 sleep(5); // for proper logging of timestamp
 
 $cron_daemon_thread_id = rand(100,999);
@@ -64,7 +63,7 @@ function logit($event, $message="", $e=[]){
 	}elseif( is_string($e) && $e != "" ){
 		$d[ 'data' ] = $e;
 	}
-	$res = $mongodb_con->insert( $db_prefix . "_zlog_tasks", $d);
+	$res = $mongodb_con->insert( $db_prefix . "_zlog_tasks_" . $app_id, $d);
 	if( $res['inserted_id'] ){
 		return true;
 	}else{

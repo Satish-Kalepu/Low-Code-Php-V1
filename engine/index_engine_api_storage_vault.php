@@ -4,6 +4,7 @@ function engine_api_storage_vault( $storage_vault, $action, $post ){
 
 	global $mongodb_con; 
 	global $db_prefix;
+	global $app_id;
 
 	if( $storage_vault['vault_type'] == "AWS-S3" ){
 
@@ -255,8 +256,18 @@ function engine_api_storage_vault( $storage_vault, $action, $post ){
 			}
 			try{
 				$res= $s3con->deleteObject([
-					"Bucket"=>$s3_bucket,"Key"=>ltrim($post['filename'],"/")
+					"Bucket"=>$s3_bucket, "Key"=>ltrim($post['filename'],"/")
 				])->toArray();
+
+				event_log("storage_vault", "file_delete", [
+					"app_id"=>$app_id,
+					"vault_id"=>$storage_vault['_id'],
+					"Bucket"=>$s3_bucket,
+					"type"=>"aws-s3",
+					"file_id"=>$post['file_id'],
+					"name"=>$post['filename']
+				]);
+
 			}catch( Aws\S3\Exception\S3Exception $ex ){
 				return json_response(200,[
 					"status"=>"fail", 
@@ -279,6 +290,13 @@ function engine_api_storage_vault( $storage_vault, $action, $post ){
 					"Bucket"=>$s3_bucket,
 					"Key"=>$fn,
 					"Body"=>"",
+				]);
+				event_log("storage_vault", "create_folder", [
+					"app_id"=>$app_id,
+					"vault_id"=>$storage_vault['_id'],
+					"Bucket"=>$s3_bucket,
+					"type"=>"aws-s3",
+					"name"=>$fn
 				]);
 			}catch( Aws\S3\Exception\S3Exception $ex ){
 				return json_response(200,[
@@ -340,6 +358,15 @@ function engine_api_storage_vault( $storage_vault, $action, $post ){
 						"error"=>$ex->getAwsErrorType() . ": " . $ex->getAwsErrorCode()
 					]);
 				}
+
+				event_log("storage_vault", "file_create", [
+					"app_id"=>$app_id,
+					"vault_id"=>$storage_vault['_id'],
+					"Bucket"=>$s3_bucket,
+					"type"=>"aws-s3",
+					"name"=>$fn
+				]);
+
 				return json_response(200,['status'=>"success", "data"=>[
 					"Key"=>"/".$fn, 
 					"Date"=>date("Y-m-d H:i:s"), 

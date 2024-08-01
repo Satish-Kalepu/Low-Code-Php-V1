@@ -8,6 +8,7 @@ class graph_processor{
 		$x = preg_split("/[\W]+/", $label);
 		if( sizeof($x) > 1 ){
 			for($i=0;$i<sizeof($x);$i++){
+				if( sizeof($perms) > 10 ){break;}
 				$v = array_pop($x);
 				//echo "last word: " . $v . "-<BR>";
 				if( sizeof($x) > 1 ){
@@ -16,6 +17,7 @@ class graph_processor{
 					//print_r( $subperms );
 					foreach( $subperms as $si=>$sv ){
 						//echo "perm: " . $v . " " . $si . "<BR>";
+						if( sizeof($perms) > 10 ){break;}
 						$perms[ $v . " " . $si ] = 1;
 					}
 					array_splice($x,0,0,$v);
@@ -46,7 +48,9 @@ class graph_processor{
 			$permutations = $this->find_permutations($thing['l']['v']);
 			$res2 = $mongodb_con->find( $graph_keywords );
 			$ress = [];
+			$pcnt = 0;
 			foreach( $permutations as $perm=>$j ){
+				//if( $pcnt > 5 ){ break; }; $pcnt++;
 				$d = [
 					"p"=> $perm,
 					"l"=> $thing['l']['v'],
@@ -70,20 +74,25 @@ class graph_processor{
 			}
 			if( isset($thing['al']) ){
 				foreach( $thing['al'] as $i=>$j ){
-					$r = $mongodb_con->update_one( $graph_keywords, [
-						"_id"=> $thing['i_of']['i'] . ":" . strtolower($j['v'])
-					],[
-						"p"=> $j['v'],
-						"l"=> $thing['l']['v'],
-						"tid"=>$thing['_id'],
-						"pid"=> $thing['i_of']['i'],
-						"pl"=> $thing['i_of']['v'],
-						"t"=>"a"
-					], [
-						'upsert'=>true,
-					]);
-					if( $r['status'] != "success" ){
+					if( isset($j['v']) ){
+						$r = $mongodb_con->update_one( $graph_keywords, [
+							"_id"=> $thing['i_of']['i'] . ":" . strtolower($j['v'])
+						],[
+							"p"=> $j['v'],
+							"l"=> $thing['l']['v'],
+							"tid"=>$thing['_id'],
+							"pid"=> $thing['i_of']['i'],
+							"pl"=> $thing['i_of']['v'],
+							"t"=>"a"
+						], [
+							'upsert'=>true,
+						]);
+						if( $r['status'] != "success" ){
+							
+						}
 						$ress[] = $r;
+					}else{
+						return ['statusCode'=>500, 'body'=>['status'=>"fail", "data"=>"Alias not found" ] ];
 					}
 				}
 			}

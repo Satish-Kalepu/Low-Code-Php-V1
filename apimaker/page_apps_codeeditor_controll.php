@@ -56,6 +56,11 @@ if( $property_type == "pagecontrol" && $config_param4 ){
 		if( $res["status"] == "fail" ){
 			json_response("fail","API update failed: ".$res["error"]);
 		}
+		event_log( "system", "app_codeeditor_save_engine", [
+			"app_id"=>$config_param1, 
+			"page_id"=>$config_param3,
+			"page_version_id"=>$config_param4,
+		]);
 		json_response($res);
 	}
 }else{

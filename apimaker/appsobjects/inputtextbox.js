@@ -145,7 +145,7 @@ const inputtextbox = {
 			return false;
 		},
 		getlink: function(vi){
-			this.$root.getlink(vi);
+			this.$root.show_thing(vi);
 		},
 		createlink: function(e){
 			this.$root.convert_to_link(e.target, this.datavar );

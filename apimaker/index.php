@@ -119,6 +119,7 @@ if( isset($_GET['check']) && $_GET['check'] == 'session' ){
 require( "common_dos_blocker.php" );
 
 if( $_GET['action'] == "logout" ){
+	event_log( "system", "logout" );
 	session_destroy();
 	session_regenerate_id();
 	header("Location: " . $config_global_apimaker_path . "login?event=Logout");
@@ -135,6 +136,7 @@ if( $config_global_apimaker['config_allow_concurrent_login'] === false ){
 				echo500("Concurrent session check: DB Error: " . $res['error']);
 			}
 			if( $res['data']['value'] != session_id() ){
+				event_log( "system", "forcelogout", ["reason"=>"incorrect session"] );
 				session_destroy();session_regenerate_id();
 				header("Location: " . $config_global_apimaker_path . "login?event=SessionTakeOver");exit;
 			}
@@ -170,6 +172,7 @@ if( $_SESSION['apimaker_login_ok'] ){
 		// check if user active;
 		$login_user = $res['data'];
 	}else{
+		event_log( "system", "forcelogout", ["reason"=>"incorrect session user_id"] );
 		session_destroy();
 		session_regenerate_id();
 		header("Location: " . $config_global_apimaker_path . "login?event=UserNotFound");

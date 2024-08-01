@@ -70,6 +70,9 @@ if( $_POST['action'] == 'redis_save_settings' ){
 	],[
 		"internal_redis"=>$settings
 	]);
+	event_log( "system", "redis_settings_ave", [
+		"app_id"=>$config_param1,
+	]);
 	json_response($res);
 
 	exit;

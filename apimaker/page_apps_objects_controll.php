@@ -25,32 +25,14 @@ $graph_dbs 			= $db_prefix . "_graph_dbs";
 
 //echo $graph_things;exit;
 
-$objects_enabled = false;
-if( isset($app['settings']['objects']['enabled']) ){
-	if( $app['settings']['objects']['enabled'] ){
-		$objects_enabled = true;
-	}
-}
-
 if( $_GET['action'] == "uninstall" ){
 	$mongodb_con->drop_collection($graph_things);
 	$mongodb_con->drop_collection($graph_things2);
 	$mongodb_con->drop_collection($graph_queue);
 	$mongodb_con->drop_collection($graph_keywords);
-}
-
-if( $_POST['action'] == "objects_disable" ){
-
-	$mongodb_con->drop_collection($graph_things);
-	$mongodb_con->drop_collection($graph_things2);
-	$mongodb_con->drop_collection($graph_queue);
-	$mongodb_con->drop_collection($graph_keywords);
-	$res = $mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$config_param1],[
-		'$set'=>["settings.objects.enabled" => false ],
-		'$unset'=>["settings.objects.run" => true ] 
+	event_log( "system", "objects_uninstall", [
+		"app_id"=>$config_param1,
 	]);
-
-	json_response($res);
 }
 
 if( $_POST['action'] == "objects_create_database" ){
@@ -91,16 +73,25 @@ if( $_POST['action'] == "objects_create_database" ){
 	}
 
 	$things = [
-		["_id"=>"T1",  "l"=>["t"=>"T", "v"=>"Root"              ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
-		["_id"=>"T2",  "l"=>["t"=>"T", "v"=>"Person"            ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
-		["_id"=>"T3",  "l"=>["t"=>"T", "v"=>"City"              ],	 		"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
-		["_id"=>"T4",  "l"=>["t"=>"T", "v"=>"Country"           ],			"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"] 	],
+		["_id"=>"T1",  "l"=>["t"=>"T", "v"=>"Root"			],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T2",  "l"=>["t"=>"T", "v"=>"Person"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T3",  "l"=>["t"=>"T", "v"=>"Country"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T4",  "l"=>["t"=>"T", "v"=>"State"			],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T5",  "l"=>["t"=>"T", "v"=>"City"			],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T7",  "l"=>["t"=>"T", "v"=>"Pincode"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T8",  "l"=>["t"=>"T", "v"=>"Company"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T9",  "l"=>["t"=>"T", "v"=>"Brand"			],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T10",  "l"=>["t"=>"T", "v"=>"Website"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T11",  "l"=>["t"=>"T", "v"=>"DataSet"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T11",  "l"=>["t"=>"T", "v"=>"Product"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
+		["_id"=>"T12",  "l"=>["t"=>"T", "v"=>"Place"		],	"i_of"=> ["t"=>"GT", "i"=> "T1", "v"=>"Root"]	],
 	];
 
 	//  label can be a link as well. 
 	//  i_of is single per object
 
 	foreach( $things as $i=>$j ){
+		$j['i_t'] = ["t"=>"T", "v"=>"N"];
 		$j["props"]=[
 			"p1"=>[["t"=>"T", "v"=>$j['l']['v'] ]],
 		];
@@ -121,11 +112,40 @@ if( $_POST['action'] == "objects_create_database" ){
 		// echo $d['_id'] . "<BR>";
 		// $mongodb_con->insert($graph_things2, $d);
 	}
-
+	event_log("system", "objects_create_database", ["app_id"=>$config_param1, "graph_id"=>$graph_id, "type"=>"internal", "name"=>$dbname]);
 	json_response("success");
 	exit;
 }
+if( $_POST['action'] == "objects_delete_database" ){
+	
+	$res = $mongodb_con->find_one( $db_prefix . "_graph_dbs", [
+		"app_id"=>$config_param1,
+		"_id"=>$_POST['graph_id']
+	]);
+	if( !$res['data'] ){
+		json_response("fail", "Database not found");
+	}
+
+	$res = $mongodb_con->delete_one($db_prefix . "_graph_dbs", ["app_id"=>$config_param1, "_id"=>$_POST['graph_id']] );
+	$graph_things = $db_prefix . "_graph_" . $_POST['graph_id'] . "_things";
+	$graph_keywords = $db_prefix . "_graph_" . $_POST['graph_id'] . "_keywords";
+	$graph_queue = $db_prefix . "_zd_queue_graph_" . $_POST['graph_id'];
+	$graph_log = $db_prefix . "_zlog_graph_" . $_POST['graph_id'];
+	$mongodb_con->drop_collection( $graph_things );
+	$mongodb_con->drop_collection( $graph_keywords );
+	$mongodb_con->drop_collection( $graph_queue );
+	$mongodb_con->drop_collection( $graph_log );
+
+	event_log( "system", "objects_delete_database", [
+		"app_id"=>$config_param1,
+		"graph_id"=>$_POST['graph_id'],
+	]);
+
+	json_response("success");
+}
 if( $_GET['action'] == "initialize" ){
+
+	exit;
 
 	$mongodb_con->drop_collection($graph_things);
 	$mongodb_con->drop_collection($graph_things2);
@@ -213,16 +233,13 @@ if( $_GET['action'] == "initialize" ){
 	foreach( $res['data'] as $i=>$j ){
 		send_to_keywords_queue($j['_id']);
 	}
-	echo "Initialized Database";
-	exit;
-}
 
-if( $_GET['action'] == "initialize2" ){
-	require("page_apps_objects_controll2.php");
-	exit;
-}
-if( $_GET['action'] == "initialize3" ){
-	require("page_apps_objects_controll3.php");
+	event_log( "system", "objects_initialize1", [
+		"app_id"=>$config_param1,
+		"graph_id"=>$graph_id,
+	]);
+
+	echo "Initialized Database";
 	exit;
 }
 
@@ -289,14 +306,26 @@ if( $config_param3 ){
 		json_response("fail", "Database not found");
 	}
 	$graph_id = $config_param3;
+	$graph = $res['data'];
 
 	$apps_folder = "appsobjects";
 
 	$graph_things = 	$db_prefix . "_graph_" . $graph_id . "_things";
 	$graph_keywords = 	$db_prefix . "_graph_" . $graph_id . "_keywords";
+	$graph_links = 		$db_prefix . "_graph_" . $graph_id . "_links";
 	$graph_queue	= $db_prefix . "_zd_queue_graph_". $graph_id;
 
 	require("page_apps_objects_v1_controll.php");
+
+	if( $_GET['action'] == "initialize2" ){
+		require("page_apps_objects_controll2.php");
+		exit;
+	}
+	if( $_GET['action'] == "initialize3" ){
+		require("page_apps_objects_controll3.php");
+		exit;
+	}
+
 
 }
 

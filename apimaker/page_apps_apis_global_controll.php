@@ -775,6 +775,12 @@ if( $_POST['action'] == "generate_access_token" ){
 
 	$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", $data );
 	$key_id = $res['inserted_id'];
+
+		event_log( "system", "app_generate_token", [
+			"app_id"=>$config_param1, 
+			"key_id"=>$key_id,
+		]);
+
 	json_response([
 		"status"=>"success",
 		"key"=>$key_id

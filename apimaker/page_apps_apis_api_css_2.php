@@ -212,7 +212,7 @@
 	.codeline_thing_pop2:hover{color:black; background-color: #f0deff;}
 
 	.codeline_thing{
-		background-color: white; color:black; display: flex; align-items: center;
+		background-color: white; color:black; display: flex; align-items: start;
 	}
 	.codeline_thing_sub{
 		background-color: #f8f8f0; color:#666; border:1px solid #f0f0e8; padding:0px 5px;

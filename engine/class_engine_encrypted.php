@@ -804,6 +804,12 @@ class api_engine{
 						}
 					}
 				}
+				if( $s2_ddddegatsf['k']['v'] == "Sleep" ){
+					sleep((int)$s2_ddddegatsf['d']['v']);
+				}
+				if( $s2_ddddegatsf['k']['v'] == "SleepMs" ){
+					sleep( ((int)$s2_ddddegatsf['d']['v']*1000) );
+				}
 				if( $s2_ddddegatsf['k']['v'] == "Log" ){
 					if( $s2_ddddegatsf['d']['t'] == "O" ){
 						$this->s2_ggggggggol[] = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['v'] );

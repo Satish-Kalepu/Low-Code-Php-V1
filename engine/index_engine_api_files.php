@@ -249,6 +249,10 @@ function engine_api_files( $post ){
 		$res = $mongodb_con->delete_one( $db_prefix . "_files", [
 			'_id'=>$post['file_id']
 		]);
+		event_log("files", "delete", [
+			"app_id"=>$app_id,
+			"file_id"=>$post['file_id']
+		]);
 		update_app_pages( $app_id );
 		return json_response($res);
 	}
@@ -324,6 +328,12 @@ function engine_api_files( $post ){
 				"updated"=>date("Y-m-d H:i:s"),
 			]);
 			if( $res['status'] == "success" ){
+				event_log("files", "create", [
+					"app_id"=>$app_id,
+					"file_id"=>$res['inserted_id'],
+					"path"=>$path,
+					"name"=>$fn
+				]);
 				$res['data'] = [
 					"_id"=>$res['inserted_id'],
 					"app_id"=>$app_id,
@@ -369,6 +379,12 @@ function engine_api_files( $post ){
 			't'=>'inline', //inline/s3/disc/base64
 			"created"=>date("Y-m-d H:i:s"),
 			"updated"=>date("Y-m-d H:i:s"),
+		]);
+		event_log("files", "create_folder", [
+			"app_id"=>$app_id,
+			"file_id"=>$res['inserted_id'],
+			"path"=>$path,
+			"name"=>$post['new_folder'],
 		]);
 		update_app_pages( $app_id );
 		return json_response(200, $res );

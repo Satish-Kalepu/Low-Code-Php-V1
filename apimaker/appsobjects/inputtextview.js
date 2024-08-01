@@ -118,7 +118,7 @@ const inputtextview = {
 			}
 		},
 		getlink: function(vi){
-			this.$root.load_new_thing(vi);
+			this.$root.show_thing(vi);
 		},
 	},
 	template2:`<div style="display:flex;">
@@ -147,7 +147,7 @@ const inputtextview = {
 	template:`<div>
 		<div v-if="v['t']=='GT'" >
 			<template v-if="'v' in v&&'i' in v" >
-				<a href="#" v-on:click="getlink(v['i'])" >{{ v['v'] }}</a>
+				<a href="#" v-on:click.prevent.stop="getlink(v['i'])" >{{ v['v'] }}</a>
 			</template>
 			<div v-else>error object</div>
 		</div>

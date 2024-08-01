@@ -10,9 +10,9 @@
 	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
 		<div style="padding: 10px;" >
 			<div style="float:right;" >
-				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="api_show_import_form()" >Import</button>
-				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="api_show_folder_form()" >Create Folder</button>
-				<button class="btn btn-outline-dark btn-sm ms-1" v-on:click="api_show_create_form()" >Create API</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" id="import_btn" v-on:click="api_show_import_form()" >Import</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" id="create_folder_btn" v-on:click="api_show_folder_form()" >Create Folder</button>
+				<button class="btn btn-outline-dark btn-sm ms-1" id="create_api_btn" v-on:click="api_show_create_form()" >Create API</button>
 			</div>
 			<div class="h3 mb-3">APIs</div>
 			<div style="clear:both;"></div>
@@ -35,19 +35,19 @@
 					<td></td>
 				</tr>
 				<template v-for="v,i in apis">
-				<tr v-if="v['vt']=='folder'">
+				<tr  class="api_tr" v-if="v['vt']=='folder'">
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
 						<div style="display: inline-block; padding: 0px 5px; border: 1px solid #ccc; width:55px; margin-right:0px;">Folder</div>&nbsp;
 						<a v-bind:href="path+'apis/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a>
 						<div style="float:right;" ><span  class="badge bg-secondary" >{{ v['count'] }}</span></div>
 					</td>
-					<td><div class="btn btn-outline-dark btn-sm" v-on:click="folder_settings(i)" ><i class="fa-regular fa-pen-to-square"></i></div></td>
-					<td><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
+					<td><div  v-bind:id="'folder_edit_btn_'" class="btn btn-outline-dark btn-sm" v-on:click="folder_settings(i)" ><i class="fa-regular fa-pen-to-square"></i></div></td>
+					<td><input type="button"  v-bind:id="'folder_delete_btn_'" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
 				</tr>
 				</template>
 				<template v-for="v,i in apis">
-				<tr v-if="v['vt']!='folder'">
+				<tr class="api_tr" v-if="v['vt']!='folder'">
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
 						<div style="display: inline-block; padding: 0px 5px; border: 1px solid #ccc; width:55px; margin-right:0px;">{{ v['input-method'] }}</div>&nbsp;
@@ -55,8 +55,8 @@
 						<div style="float:right;" >{{ getc(v) }}</div>
 						<div class="text-secondary">{{ v['des'] }}</div>
 					</td>
-					<td><div class="btn btn-outline-dark btn-sm" v-on:click="api_settings(i)" ><i class="fa-regular fa-pen-to-square"></i></div></td>
-					<td><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
+					<td><div class="btn btn-outline-dark btn-sm" v-bind:id="'api_edit_btn_'" v-on:click="api_settings(i)" ><i class="fa-regular fa-pen-to-square"></i></div></td>
+					<td><input type="button" v-bind:id="'api_delete_btn_'" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_api(i)" ></td>
 				</tr>
 				</template>
 			</table>
@@ -68,7 +68,7 @@
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title">Create API</h5>
-		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		        <button type="button"  id="create_app_modal_close_btn" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body">
 		        	<div>Name/URL Slug</div>
@@ -94,8 +94,8 @@
 		        	<div v-if="cerr" class="alert alert-success" >{{ cerr }}</div>
 		      </div>
 		      <div class="modal-footer">
-		        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-		        <button type="button" class="btn btn-primary btn-sm"  v-on:click="createnow">Create</button>
+		        <button type="button"  id="create_app_cancel_btn" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+		        <button type="button"  id="create_app_save_btn" class="btn btn-primary btn-sm"  v-on:click="createnow">Create</button>
 		      </div>
 		    </div>
 		  </div>
@@ -106,7 +106,7 @@
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title">Import API</h5>
-		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		        <button type="button" id="import_modal_btn_close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body">
 		        	<div>Password</div>
@@ -122,7 +122,7 @@
 			        	<div>&nbsp;</div>
 			        </template>
 
-		        	<input type="button" spellcheck="false" class="btn btn-outline-dark btn-sm" v-on:click="import_api__" value="Import" >
+		        	<input type="button" id="import_modal_btn_import" spellcheck="false" class="btn btn-outline-dark btn-sm" v-on:click="import_api__" value="Import" >
 		        	<div v-if="imsg" class="alert alert-success" >{{ imsg }}</div>
 		        	<div v-if="ierr" class="alert alert-danger"  >{{ ierr }}</div>
 		      </div>
@@ -136,13 +136,13 @@
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title">Create Folder</h5>
-		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		        <button type="button"  id="create_folder_modal_btn_close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body" >
 
 		      	<div>New folder name</div>
 		      	<div><span>{{ current_path }}</span><input type="text" class="form-control form-control-sm w-auto d-inline" v-model="new_folder_name" ></div>
-		      	<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create" v-on:click="do_create_folder" ></div>
+		      	<div><input type="button"  id="create_folder_modal_btn" class="btn btn-outline-dark btn-sm" value="Create" v-on:click="do_create_folder" ></div>
 
 				<div v-if="cfmsg" class="alert alert-primary" >{{ cfmsg }}</div>
 				<div v-if="cferr" class="alert alert-danger" >{{ cferr }}</div>
@@ -158,7 +158,7 @@
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title">API Settings</h5>
-		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		        <button type="button"  id="api_settings_modal_btn_close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body" >
 
@@ -168,7 +168,7 @@
 					<div style="padding:10px; background-color: #f8f8f8;">Rename</div>
 					<div style="padding:10px;">
 						<div><input type="text" class="form-control form-control-sm" v-model="new_api_name" >
-						<input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="change_api_name" ></div>
+						<input type="button"  id="api_settings_btn" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="change_api_name" ></div>
 					</div>
 				</div>
 
@@ -183,7 +183,7 @@
 								<option v-for="v in get_available_paths()" v-bind:value="v" >{{v}}</option>
 							</select>
 						</p>
-						<p><input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="move_api" ></p>
+						<p><input type="button" id="move_api_btn" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="move_api" ></p>
 						<!-- <div><label style="cursor: pointer;"><input type="checkbox" v-model="move_to_new_folder" > Create new folder</label></div> -->
 						<p>&nbsp;</p>
 					</div>
@@ -201,7 +201,7 @@
 		    <div class="modal-content">
 		      <div class="modal-header">
 		        <h5 class="modal-title">Folder Settings</h5>
-		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		        <button type="button"  id="folder_settings_btn_close" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body" >
 
@@ -211,7 +211,7 @@
 					<div style="padding:10px; background-color: #f8f8f8;">Rename Folder</div>
 					<div style="padding:10px;">
 						<div><input type="text" class="form-control form-control-sm w-auto d-inline" v-model="rename_to_folder_name" >
-						<input type="button" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="change_folder_name" ></div>
+						<input type="button"  id="folder_settings_btn" class="btn btn-outline-dark btn-sm" value="Update" v-on:click="change_folder_name" ></div>
 					</div>
 				</div>
 

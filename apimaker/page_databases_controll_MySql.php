@@ -240,6 +240,12 @@ if( $_POST['action'] == "database_mysql_load_tables" ){
 				//print_r( $res_insert
 				json_response($res_insert);
 			}
+			event_log( "system", "database_table_create", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$res_insert['inserted_id'],
+			]);
 			$tables[ $ci ]['_id']= $res_insert['inserted_id'];
 		}
 	}
@@ -368,6 +374,12 @@ if( $config_param4 == "table" && $config_param5 ){
 			],[
 				"schema"=>$_POST['schema']
 			] );
+			event_log( "system", "database_table_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+			]);
 			json_response($res);
 		}
 
@@ -443,6 +455,13 @@ if( $config_param4 == "table" && $config_param5 ){
 					json_response("fail", mysqli_error($con) );
 				}
 				$record_id = mysqli_insert_id($con);
+				event_log( "database_table", "record_create", [
+					"app_id"=>$config_param1,
+					'db_id'=>$config_param3, 
+					"engine"=>"MySql",
+					'table_id'=>$config_param5,
+					"record_id"=>$record_id
+				]);
 			}else{
 				$record_id = $_POST['record_id'];
 				$res = mysqli_query($con, "select * from `". $table['table'] . "` where `".$_POST['primary_field']."` = '" . mysqli_escape_string($con,$record_id) . "' " );
@@ -462,6 +481,13 @@ if( $config_param4 == "table" && $config_param5 ){
 				if( mysqli_error($con) ){
 					json_response("fail", mysqli_error($con) );
 				}
+				event_log( "database_table", "record_edit", [
+					"app_id"=>$config_param1,
+					'db_id'=>$config_param3, 
+					"engine"=>"MySql",
+					'table_id'=>$config_param5,
+					"record_id"=>$record_id
+				]);
 			}
 			$q = "select * from `". $table['table'] . "` 
 			where `".$_POST['primary_field']."` = '" . mysqli_escape_string($con, $record_id) . "' ";
@@ -477,7 +503,7 @@ if( $config_param4 == "table" && $config_param5 ){
 			}
 		}
 
-		if($_POST['action'] == "database_mysql_delete_record_multiple"){
+		if( $_POST['action'] == "database_mysql_delete_record_multiple" ){
 			if( !isset($_POST['delete_ids']) ){
 				json_response("fail", "Incorrect paylaod");
 			}
@@ -493,6 +519,15 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( mysqli_error($con) ){
 				json_response(['status'=>"fail", "error"=>mysqli_error($con), "q"=>$q]);
 			}
+			foreach( $_POST["delete_ids"] as $i=>$j ){
+				event_log( "database_table", "record_delete", [
+					"app_id"=>$config_param1,
+					'db_id'=>$config_param3, 
+					"engine"=>"MySql",
+					'table_id'=>$config_param5,
+					"record_id"=>$j
+				]);
+			}
 			json_response("success","ok");
 			exit;
 		}
@@ -504,6 +539,13 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( mysqli_error($con) ){
 				json_response(['status'=>"fail", "error"=>mysqli_error($con), "q"=>$q]);
 			}
+			event_log( "database_table", "record_delete", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"record_id"=>$_POST['record_id']
+			]);
 			json_response("success","ok");
 		}
 
@@ -567,10 +609,28 @@ if( $config_param4 == "table" && $config_param5 ){
 							$error = mysqli_error($con);
 							break;
 						}
+					}else{
+						event_log( "database_table", "record_insert", [
+							"app_id"=>$config_param1,
+							'db_id'=>$config_param3, 
+							"engine"=>"MySql",
+							'table_id'=>$config_param5,
+							"record_id"=>mysqli_insert_id($con)
+						]);
 					}
 					$success++;
 				}
 			}
+
+			event_log( "system", "database_table_import_data", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"success"=>$success,
+				"skipped"=>$skipped,
+				"skipped_items"=>$skipped_items,
+			]);
 
 			if( $error ){
 				json_response([
@@ -683,6 +743,12 @@ if( $config_param4 == "table" && $config_param5 ){
 					}
 				}
 			}
+			event_log( "system", "database_table_export", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+			]);
 			json_response(['status'=>"success", "temp_fn"=>str_replace("/tmp/phpengine_backups/", "", $tmfn), "sz"=>$sz]);
 			exit;
 		
@@ -745,6 +811,18 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( $res['status'] == "fail" ){
 				json_response($res);
 			}
+			event_log( "database_table", "alter_table", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+			]);
+			event_log( "system", "database_table_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+			]);
 			json_response([
 				"status"=>"success",
 				"fields"=>$fields,
@@ -799,6 +877,18 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( $res['status'] == "fail" ){
 				json_response($res);
 			}
+			event_log( "database_table", "alter_table", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+			]);
+			event_log( "system", "database_table_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+			]);
 			json_response([
 				"status"=>"success",
 				"fields"=>$fields,
@@ -833,6 +923,20 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( $res['status'] == "fail" ){
 				json_response($res);
 			}
+			event_log( "database_table", "alter_table", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"event"=>"drop field"
+			]);
+			event_log( "system", "database_table_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"event"=>"drop field"
+			]);
 			json_response([
 				"status"=>"success",
 				"fields"=>$fields,
@@ -868,6 +972,20 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( $res['status'] == "fail" ){
 				json_response($res);
 			}
+			event_log( "database_table", "alter_table", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"event"=>"drop index"
+			]);
+			event_log( "system", "database_table_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"event"=>"drop index"
+			]);
 			json_response([
 				"status"=>"success",
 				"fields"=>$fields,
@@ -909,6 +1027,20 @@ if( $config_param4 == "table" && $config_param5 ){
 			if( $res['status'] == "fail" ){
 				json_response($res);
 			}
+			event_log( "database_table", "alter_table", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"event"=>"add index"
+			]);
+			event_log( "system", "database_table_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MySql",
+				'table_id'=>$config_param5,
+				"event"=>"add index"
+			]);
 			json_response([
 				"status"=>"success",
 				"fields"=>$fields,

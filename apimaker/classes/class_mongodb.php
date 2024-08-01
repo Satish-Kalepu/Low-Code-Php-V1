@@ -72,15 +72,31 @@ class mongodb_connection{
 	function get_max_id( $collection ){
 		$col = $this->database->{$collection};
 		try{
-			$cur = $col->find([],['projection'=>['_id'=>1],'sort'=>['_id'=>-1], 'limit'=>1])->toArray();;
+			$cur = $col->find([],['projection'=>['_id'=>1],'sort'=>['_id'=>-1], 'limit'=>1])->toArray();
 			if( $cur ){
 				$c = $cur[0]['_id'];
 				if( is_array($c) ){
-					$c= (array)$c;
+					$c = (string)$c;
 				}
 				return [ 'status'=>"success", "data"=>$c ];
 			}else{
 				return [ 'status'=>"fail", "error"=>"NotFound" ];
+			}
+		}catch(Exception $ex){
+			return [ 'status'=>"fail", "error"=>$ex->getMessage() ];
+		}
+	}
+
+	function get_max_numeric_id( $collection ){
+		$col = $this->database->{$collection};
+		try{
+			$cur = $col->find([],['projection'=>['_id'=>1],'sort'=>['_id'=>-1], 'limit'=>1])->toArray();
+			if( $cur ){
+				$c = $cur[0]['_id'];
+				$c = (int)$c;
+				return [ 'status'=>"success", "data"=>$c ];
+			}else{
+				return [ 'status'=>"success", "data"=>1 ];
 			}
 		}catch(Exception $ex){
 			return [ 'status'=>"fail", "error"=>$ex->getMessage() ];
@@ -533,7 +549,7 @@ class mongodb_connection{
 		$col = $this->database->{$collection};
 		try{
 			$res=$col->aggregate($pipeline, $options)->toArray();
-			return $res;
+			return ["status"=>"success","data"=>$res];;
 		}catch(Exception $ex){
 			return ["status"=>"fail","error"=>$ex->getMessage()];
 		}

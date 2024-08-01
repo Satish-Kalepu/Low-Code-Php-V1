@@ -48,6 +48,7 @@ if( $execution_mode == "local_folder" ){
 		"../config_global_engine.php",
 		"../../config_global_engine.php",
 		"/var/tmp/config_global_engine.php",
+		sys_get_temp_dir()  . "/config_global_engine.php"
 	];
 	foreach( $config_paths as $j ){
 		if( file_exists($j) ){
@@ -56,7 +57,7 @@ if( $execution_mode == "local_folder" ){
 		}
 	}
 
-	$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
+	$engine_cache_path = sys_get_temp_dir()  . "/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
 	if( !file_exists($engine_cache_path) ){
 		echo "engine is not initialized..x " . $engine_cache_path;exit;
 	}
@@ -68,7 +69,7 @@ if( $execution_mode == "local_folder" ){
 		exit;
 	}
 
-	$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
+	$engine_cache_path = sys_get_temp_dir()  . "/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
 	if( file_exists($engine_cache_path) ){
 		$cache_refresh = false;
 		require_once($engine_cache_path);
@@ -90,7 +91,15 @@ if( $execution_mode == "local_folder" ){
 		echo "Error: Engine is not initialized";exit;
 	}
 }else{
-	echo "Scenario Pending";exit;
+	if( file_exists("../config_global_engine.php") ){
+		require( "../config_global_engine.php" );
+		if( !isset($config_global_engine) ){
+			http_response_code(500); echo "config file config_global_engine loaded but config missing";exit;
+		}
+	}else{
+		http_response_code(500); echo "config file config_global_engine missing";exit;
+	}
+	//echo "Scenario Pending";exit;
 }
 
 if( $config_global_engine['timezone'] ){

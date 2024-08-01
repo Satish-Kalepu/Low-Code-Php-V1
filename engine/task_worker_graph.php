@@ -172,6 +172,7 @@ while( 1 ){
 		$res = $mongodb_con->insert( $graph_queue, $task );
 
 		$task_res = $obpr->process_task( $task );
+		$task_res['task_id'] = $task['id'];
 		logit( "result", $task_res );
 
 		$res = $mongodb_con->delete_one( $graph_queue, ['_id'=>$new_task_id] );

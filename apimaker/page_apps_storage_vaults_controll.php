@@ -146,6 +146,12 @@ if( $_POST['action'] == "storage_vault_update" ){
 					if( !$insert_res['status'] == "fail" ){
 						json_response($insert_res);
 					}
+
+					event_log( "system", "storage_vault_create", [
+						"app_id"=>$config_param1,
+						"vault_id"=>$insert_res['inserted_id']
+					]);
+
 					json_response("success","ok");
 				}
 			}else{
@@ -164,6 +170,10 @@ if( $_POST['action'] == "storage_vault_update" ){
 						if( !$res ){
 							json_response("fail","Server Error");
 						}else{
+							event_log( "system", "storage_vault_edit", [
+								"app_id"=>$config_param1,
+								"vault_id"=>$_POST['vault_id']
+							]);
 							json_response("success","ok");
 						}
 					}
@@ -200,7 +210,11 @@ if( $_POST['action'] == "delete_vault" ){
 	if( !$vault_res['data'] ){
 		json_response("fail","Vault not found!");
 	}else{
-		$vault = $vault_res;
+		$mongodb_con->delete_one( $config_api_vaults, ["app_id"=>$config_param1, '_id'=>$_POST["vault_id"] ] );
+		event_log( "system", "storage_vault_delete", [
+			"app_id"=>$config_param1,
+			"vault_id"=>$_POST['vault_id']
+		]);
 	}
 	exit;
 }

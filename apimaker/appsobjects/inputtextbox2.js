@@ -117,34 +117,6 @@ const inputtextbox2 = {
 			}else{ console.error("get_list_notation: incorrect type: "+ typeof(v) ); }
 			return vv;
 		},
-		// get_object_notation__(v){
-		// 	var vv = {};
-		// 	for(var k in v ){
-		// 		if( v[k]['t'] == "V" ){
-		// 			vv[ k ] = this.data_types__[ v[k]['t'] ] + "["+v[k]['v']['v']+"]";
-		// 			if( 'vs' in v[k]['v'] ){
-		// 				if( v[k]['v']['vs'] ){
-		// 					if( v[k]['v']['vs']['v'] ){
-		// 						vv[ k ] = vv[ k ] + '->' + v[k]['v']['vs']['v'];
-		// 					}
-		// 				}
-		// 			}
-		// 		}else if( v[k]['t'] == "PLG" ){
-		// 			vv[ k ] = this.data_types__[ v[k]['t'] ] + "["+v[k]['v']['v']+"]";
-		// 			if( 'vs' in v[k]['v'] ){
-		// 				if( v[k]['v']['vs'] ){
-		// 					if( v[k]['v']['vs']['v'] ){
-		// 						vv[ k ] = vv[ k ] + '->' + v[k]['v']['vs']['v'];
-		// 					}
-		// 				}
-		// 			}
-		// 		}else{
-		// 			vv[ k ] = this.derive_value__(v[k]);
-		// 		}
-		// 	}
-		// 	return Object.fromEntries(Object.entries(vv).sort());
-		// 	return vv;
-		// },
 		derive_value__: function(v ){
 			if( v['t'] == "T" || v['t'] == "TT" ||  v['t'] == "HT" || v['t']== "D" ){
 				return v['v'].toString();

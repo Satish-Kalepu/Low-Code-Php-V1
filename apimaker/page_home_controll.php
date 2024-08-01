@@ -82,6 +82,10 @@ if( $_POST['action'] == "delete_app" ){
 	}
 	$res = $mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", ['app_id'=>$_POST['app_id'] ] );
 
+	event_log( "system", "app_delete", [
+		'app_id'=>$_POST['app_id']
+	]);
+
 	json_response([
 		"status"=>"success",
 	]);
@@ -153,6 +157,10 @@ if( $_POST['action'] == "create_app" ){
 	$config_page_version_record['updated'] = date("Y-m-d H:i:s");
 
 	$res2 = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", $config_page_version_record );
+
+	event_log( "system", "app_create", [
+		'app_id'=>$app_id
+	]);
 
 	//http_response(500, "something wrong");
 	json_response([
@@ -399,6 +407,11 @@ if( $_POST['action'] == "apps_clone_app" ){
 	}
 
 	$_SESSION['table_queue'] = $table_queue;
+
+	event_log( "system", "app_create", [
+		'app_id'=>$new_app_id
+	]);
+
 	json_response([
 		"status"=>"success",
 		"records"=>$records,

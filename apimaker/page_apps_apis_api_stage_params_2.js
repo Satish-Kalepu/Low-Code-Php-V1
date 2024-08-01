@@ -1,5 +1,13 @@
 const config_things1 = ["text", "number", "boolean", "list", "object"];
 const config_things2 = ["static", "variable"];
+
+/*
+"h":  for help document
+"ht": for tooltip title 
+"hcr": for comment rightside
+"hcb": for comment bottom
+*/
+
 const s2_smarap_egats_gifnoc = {
 	"None": {
 		"p": false,
@@ -197,6 +205,11 @@ const s2_smarap_egats_gifnoc = {
 	},
 	"Sleep": {
 		"p": {"t":"N", "v":"1"},
+	},
+	"SleepMs": {
+		"p": {"t":"N", "v":"100"},
+		"ht": "Sleep in milliseconds. One second = 1000ms",
+		"hcr": "Sleep in milliseconds. One second = 1000ms"
 	},
 	"Log": {
 		"p": {"t":"O", "v":{

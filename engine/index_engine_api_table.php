@@ -10,6 +10,8 @@ function engine_api_table( $action, $table_res, $options, $post ){
 	if( !$db_res['data'] ){
 		return json_response(500,["status"=>"fail", "error"=>"Database not found" ]);exit;
 	}
+	$db_id = $table_res['data']['db_id'];
+	$table_id = $table_res['data']['_id'];
 
 	//print_r( $db_res['data'] );exit;
 	$engine = $db_res['data']['engine'];
@@ -100,6 +102,12 @@ function engine_api_table( $action, $table_res, $options, $post ){
 			if( $res['status'] != "success" ){
 				return json_response(500,$res);exit;
 			}
+			event_log("database_table", "record_create", [
+				"app_id"=>$app_id,
+				"db_id"=>$db_id,
+				"table_id"=>$table_id,
+				"record_id"=>$res['inserted_id']
+			]);
 			return json_response(200,$res);exit;
 		}else if( $action == "updateMany" ){
 			$cond = [];
@@ -143,6 +151,14 @@ function engine_api_table( $action, $table_res, $options, $post ){
 			if( isset( $post['query'] ) && is_array($post['query']) ){
 				$cond = mongo_query( $post['query'] );
 			}
+			$record_id = "";
+			if( $post['query']['_id'] ){
+				if( is_array($post['query']['_id']) ){
+					$record_id = $post['query']['_id'][ array_keys($post['query']['_id'])[0] ];
+				}else{
+					$record_id = $post['query']['_id'];
+				}
+			}
 			$ops = [];
 			if( !isset($post['update']) || !is_array($post['update']) ){
 				return json_response(400,["status"=>"fail", "error"=>"Data invalid" ]);exit;
@@ -169,6 +185,12 @@ function engine_api_table( $action, $table_res, $options, $post ){
 			if( $res['status'] != "success" ){
 				return json_response(500,$res);exit;
 			}
+			event_log("database_table", "record_edit", [
+				"app_id"=>$app_id,
+				"db_id"=>$db_id,
+				"table_id"=>$table_id,
+				"record_id"=>$record_id
+			]);
 			return json_response(200,$res);exit;
 		}else if( $action == "deleteMany" ){
 			$cond = [];
@@ -191,11 +213,25 @@ function engine_api_table( $action, $table_res, $options, $post ){
 			if( isset( $post['query'] ) && is_array($post['query']) ){
 				$cond = mongo_query( $post['query'] );
 			}
+			$record_id = "";
+			if( $post['query']['_id'] ){
+				if( is_array($post['query']['_id']) ){
+					$record_id = $post['query']['_id'][ array_keys($post['query']['_id'])[0] ];
+				}else{
+					$record_id = $post['query']['_id'];
+				}
+			}
 			$ops = [];
 			$res = $clientdb_con->delete_one( $col, $cond, $ops );
 			if( $res['status'] != "success" ){
 				return json_response(500,$res);exit;
 			}
+			event_log("database_table", "record_delete", [
+				"app_id"=>$app_id,
+				"db_id"=>$db_id,
+				"table_id"=>$table_id,
+				"record_id"=>$record_id
+			]);
 			return json_response(200,$res);exit;
 		}else{
 			return json_response(403,["status"=>"fail", "error"=>"Unknown action" ]);exit;
@@ -341,6 +377,12 @@ function engine_api_table( $action, $table_res, $options, $post ){
 					"query"=>$query
 				]);exit;
 			}
+			event_log("database_table", "record_edit", [
+				"app_id"=>$app_id,
+				"db_id"=>$db_id,
+				"table_id"=>$table_id,
+				"record_id"=>mysqli_insert_id($clientdb_con)
+			]);
 			return json_response(200,[
 				"status"=>"success", "inserted_id"=>mysqli_insert_id($clientdb_con), "query"=>$query
 			]);exit;
@@ -501,6 +543,5 @@ function engine_api_table( $action, $table_res, $options, $post ){
 	}else{
 		return json_response(500,["status"=>"fail", "error"=>"Unknown DB Engine" ]);exit;
 	}
-
 
 }

@@ -35,6 +35,10 @@ if( $_POST['action'] == "delete_function" ){
 	$res = $mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
 		'function_id'=>$_POST['function_id']
 	]);
+	event_log( "system", "app_function_delete", [
+		"app_id"=>$config_param1, 
+		"function_id"=>$_POST['function_id'],
+	]);
 	update_app_pages( $config_param1 );
 	json_response($res);
 }
@@ -86,6 +90,13 @@ if( $_POST['action'] == "create_function" ){
 			"input-type"	=> "application/json",	
 			"auth-type"	=> "None",		
 		]);
+
+		event_log( "system", "app_function_create", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$res['inserted_id'],
+			"function_version_id"=>$version_id
+		]);
+
 		update_app_pages( $config_param1 );
 		json_response($res);
 	}else{
@@ -212,6 +223,12 @@ if( $_POST['action'] == "app_function_import_create" ){
 		"auth-type"	=> isset($import_api_data['auth-type'])?$import_api_data['auth-type']:"None",
 	]);
 	$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", $import_function_data );
+
+	event_log( "system", "app_function_import_create", [
+		"app_id"=>$config_param1, 
+		"function_id"=>$function_id,
+		"function_version_id"=>$version_id
+	]);
 	json_response([
 		"status"=>"success",
 		"function_id"=>$function_id,
@@ -296,6 +313,10 @@ if( $config_param4 && $main_function ){
 		unset($function['created']);unset($function['updated']);unset($function['version']);
 		$d = json_encode($function);
 		$d = "type:api_export\nexport_version:1\n".@openssl_encrypt($d, "aes256", $_POST['password']."123456");
+		event_log( "system", "app_function_export", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$function['_id'],
+		]);
 		json_response([
 			"status"=>"success",
 			"content"=>$d,
@@ -379,6 +400,13 @@ if( $config_param4 && $main_function ){
 				"function_id"=>$main_function['_id'],
 				"_id"=>$new_version_id
 			], $import_function_data);
+
+			event_log( "system", "app_function_import", [
+				"app_id"=>$config_param1, 
+				"function_id"=>$function['_id'],
+				"function_version_id"=>$new_version_id
+			]);
+
 		}else{
 			$new_version_id = $config_param4;
 			$mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
@@ -386,7 +414,14 @@ if( $config_param4 && $main_function ){
 				"function_id"=>$main_function['_id'],
 				"_id"=>$config_param4
 			], $import_function_data);
+
+			event_log( "system", "app_function_import", [
+				"app_id"=>$config_param1, 
+				"function_id"=>$main_function['_id'],
+				"function_version_id"=>$config_param4
+			]);			
 		}
+
 		json_response([
 			"status"=>"success",
 			"new_version_id"=>$new_version_id,
@@ -424,6 +459,13 @@ if( $config_param4 && $main_function ){
 			"function_id"=>$main_function['_id'],
 			"_id"=>$_POST['version_id']
 		]);
+
+		event_log( "system", "app_function_delete_version", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$main_function['_id'],
+			"function_version_id"=>$_POST['version_id']
+		]);	
+
 		json_response($res);exit;
 	}
 
@@ -442,13 +484,24 @@ if( $config_param4 && $main_function ){
 			]);
 		}
 
+		$new_version_id = $mongodb_con->generate_id();
 		$from_function['vn'] = "Clone of version:" . $from_function['version'];
 		$from_function['version'] = $new_version_series;
-		$from_function['_id'] = $mongodb_con->generate_id();
+		$from_function['_id'] = $new_version_id;
 		$from_function['created'] = date("Y-m-d H:i:s");
 		$from_function['updated'] = date("Y-m-d H:i:s");
 
 		$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", $from_function);
+
+		event_log( "system", "app_function_clone", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$main_function['_id'],
+			"from_version_id"=>$_POST['from_version_id'],
+			"from_version_series"=>$from_function['version'],
+			"to_version_id"=>$new_version_id,
+			"to_version_series"=>$new_version_series,
+		]);
+
 		json_response([
 			"status"=>"success",
 			"error"=>"",
@@ -475,6 +528,14 @@ if( $config_param4 && $main_function ){
 			"version_id"=>$from_function['_id'],
 			"version"=>$from_function['version'],
 		]);
+
+		event_log( "system", "app_function_version_switch", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$main_function['_id'],
+			"version_id"=>$from_function['_id'],
+			"version"=>$from_function['version'],
+		]);
+
 		json_response([
 			"status"=>"success",
 			"error"=>"",
@@ -519,6 +580,12 @@ if( $config_param4 && $main_function ){
 			"updated"=>date("Y-m-d H:i:s"),
 			"active"=>true,
 		]);
+
+		event_log( "system", "app_function_edit", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$_POST['edit_api']['function_id'],
+		]);
+
 		update_app_last_change_date( $config_param1 );
 		json_response($res);
 		exit;
@@ -534,6 +601,13 @@ if( $config_param4 && $main_function ){
 		if($res["status"] == "fail" ){
 			json_response("fail",$res["error"]);
 		}
+
+		event_log( "system", "app_function_save_test", [
+			"app_id"=>$config_param1, 
+			"function_id"=>$config_param3,
+			"function_version_id"=>$config_param4
+		]);
+
 		update_app_last_change_date( $config_param1 );
 		json_response("success","ok");
 	}
@@ -599,6 +673,13 @@ if( $config_param4 && $main_function ){
 				json_response("fail","API update failed: ".$res["error"]);
 			}
 		}
+
+		event_log( "system", "app_function_save_engine", [
+			"app_id"=>$config_param1,
+			"function_id"=>$_POST['function_id'],
+			"function_version_id"=>$_POST['version_id']
+		]);
+
 		update_app_last_change_date( $config_param1 );
 		json_response("success", "OK");
 	}

@@ -151,6 +151,12 @@ if( $_POST['action'] == "delete_file" ){
 		]);
 	}
 
+	event_log( "storage_vault", "aws_s3_delete_file", [
+		"app_id"=>$config_param1,
+		"vault_id"=>$config_param3,
+		"Bucket"=>$s3_bucket,"Key"=>$key
+	]);
+
 	json_response(["status"=>"success"]);
 }
 
@@ -204,6 +210,12 @@ if( $_POST['action'] == "create_file" ){
 		"updated"=>date("Y-m-d H:i:s"),
 		"sz"=>100
 	]);
+	event_log( "storage_vault", "aws_s3_create_file", [
+		"app_id"=>$config_param1,
+		"vault_id"=>$config_param3,
+		"Bucket"=>$s3_bucket,"Key"=>$_POST['new_file']['name'],
+		"file_id"=>$res['inserted_id']
+	]);
 	json_response($res);
 	exit;
 }
@@ -228,6 +240,13 @@ if( $_POST['action'] == "files_create_folder" ){
 			"error"=>$ex->getAwsErrorType() . ": " . $ex->getAwsErrorCode()
 		]);
 	}
+
+	event_log( "storage_vault", "aws_s3_create_folder", [
+		"app_id"=>$config_param1,
+		"vault_id"=>$config_param3,
+		"Bucket"=>$s3_bucket,"Key"=>$fn,
+	]);
+
 	json_response(['status'=>"success", "data"=>["Key"=>$fn, "Date"=>date("Y-m-d H:i:s"), "Size"=>0 ]] );
 	exit;
 }
@@ -254,6 +273,11 @@ if( $_POST['action'] == "apps_file_upload" ){
 				"error"=>$ex->getAwsErrorType() . ": " . $ex->getAwsErrorCode()
 			]);
 		}
+		event_log( "storage_vault", "aws_s3_file_upload", [
+			"app_id"=>$config_param1,
+			"vault_id"=>$config_param3,
+			"Bucket"=>$s3_bucket,"Key"=>$fn,
+		]);
 		json_response(['status'=>"success", "data"=>["Key"=>$fn, "Date"=>date("Y-m-d H:i:s"), "Size"=>$sz ]] );
 	}else{
 		json_response(['status'=>"fail", "error"=>"server error"]);

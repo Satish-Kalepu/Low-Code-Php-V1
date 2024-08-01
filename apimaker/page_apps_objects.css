@@ -406,7 +406,7 @@
 		min-height:50px; min-width:50px;
 	}
 	.context_menu_list__{
-		overflow: auto; max-height: 200px; min-height: 100px; min-width: 100px; max-width: 450px;
+		overflow: auto; max-height: 300px; min-height: 100px; min-width: 100px; max-width: 550px; 
 	}
 	.context_item{
 		padding-left:2px;

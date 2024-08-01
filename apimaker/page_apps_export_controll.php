@@ -174,12 +174,23 @@ if( $_POST['action'] == "app_backup" ){
 	$tmfn .= ".gz";
 	chmod($tmfn, 0777);
 
+	event_log( "system", "app_export", [
+		"app_id"=>$config_param1, 
+		"temp_fn"=>str_replace("/tmp/phpengine_backups/", "", $tmfn), 
+		"sz"=>filesize($tmfn)
+	]);
+
 	json_response(['status'=>"success", "temp_fn"=>str_replace("/tmp/phpengine_backups/", "", $tmfn), "sz"=>filesize($tmfn)]);
 	exit;
 }
 
 if( $_GET['action'] == "download_snapshot" ){
 	$fn = $_GET['snapshot_file'];
+
+	event_log( "system", "app_download_snapshot", [
+		"app_id"=>$config_param1, 
+	]);
+
 	$tmfn = "/tmp/phpengine_backups/". $fn;
 	ini_set('zlib.output_compression','Off');
 	header('Content-Type: application/x-download');
@@ -298,6 +309,11 @@ if( $_POST['action'] == "exports_restore_upload" ){
 				$datasets2[ $i ] = sizeof($j);
 			}
 		}
+
+		event_log( "system", "app_restore_upload", [
+			"app_id"=>$config_param1, 
+		]);
+
 		if( $app['_id'] == $datasets['app']['_id'] ){
 			$vt = time();
 			$_SESSION['restore_rand'] = $vt;
@@ -548,8 +564,14 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 	}
 
 	if( $mode == "create" ){
+		event_log( "system", "app_restore_upload_confirm", [
+			"app_id"=>$new_app_id, 
+		]);
 		json_response(['status'=>"success","new_app_id"=>$new_app_id ]);
 	}else{
+		event_log( "system", "app_restore_upload_confirm", [
+			"app_id"=>$config_param1, 
+		]);
 		json_response(['status'=>"success"]);
 	}
 

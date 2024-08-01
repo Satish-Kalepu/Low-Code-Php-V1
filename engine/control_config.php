@@ -1,12 +1,12 @@
 <?php
 
-if( !is_dir( "/tmp/apimaker" ) ){
-	mkdir( "/tmp/apimaker", 0755 );
+if( !is_dir( sys_get_temp_dir() . "/apimaker" ) ){
+	mkdir( sys_get_temp_dir() . "/apimaker", 0755 );
 }
 
 if( $execution_mode == "local_folder" ){
 
-	$engine_cache_path = "/tmp/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
+	$engine_cache_path = sys_get_temp_dir() . "/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
 //	echo $engine_cache_path;exit;
 	if( file_exists($engine_cache_path) ){
 		$cache_refresh = false;
@@ -94,7 +94,7 @@ if( $execution_mode == "local_folder" ){
 
 }else{
 
-	$engine_cache_path = "/tmp/apimaker/cloud_" . $config_cloud_domain . ".php";
+	$engine_cache_path = sys_get_temp_dir()."/apimaker/cloud_" . $config_cloud_domain . ".php";
 
 	/* Mongo DB connection */
 	require("class_mongodb.php");

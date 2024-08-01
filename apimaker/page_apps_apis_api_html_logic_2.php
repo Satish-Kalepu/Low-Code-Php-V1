@@ -76,19 +76,18 @@
 			</div>
 		</div>
 
-		<div v-for="s2_dddddegats,s2_iiiiiegats in s2_eeeeenigne['stages']" class="myrow1 stageroot" >
+		<div v-for="s2_dddddegats,s2_iiiiiegats in s2_eeeeenigne['stages']" class="myrow1 stageroot" v-bind:id="'stage:'+s2_iiiiiegats+':root'" >
 			<div class="mycol1" >
-				<input type="checkbox" v-bind:disabled="s2_ddekcol_si||s2_dddddegats['t']=='HTMLElementEnd'||s2_dddddegats['t']=='EndIf'||s2_dddddegats['t']=='EndWhile'||s2_dddddegats['t']=='EndForEach'||s2_ssssskcehc[s2_iiiiiegats]['if']" v-model="s2_ssssskcehc[s2_iiiiiegats]['checked']"  v-on:click="s2_dekcilc_meti(s2_iiiiiegats)"  style="width:20px;height:20px;" >
+				<input type="checkbox"  v-bind:id="'stage:'+s2_iiiiiegats+':check_select'" v-bind:disabled="s2_ddekcol_si||s2_dddddegats['t']=='HTMLElementEnd'||s2_dddddegats['t']=='EndIf'||s2_dddddegats['t']=='EndWhile'||s2_dddddegats['t']=='EndForEach'||s2_ssssskcehc[s2_iiiiiegats]['if']" v-model="s2_ssssskcehc[s2_iiiiiegats]['checked']"  v-on:click="s2_dekcilc_meti(s2_iiiiiegats)"  style="width:20px;height:20px;" >
 			</div>
 			<div class="mycol1" >
-				<input type="button" class="btn btn-outline-secondary btn-sm py-0" v-if="s2_smeti_dekcehc==0" value="+" v-on:click="s2_eegats_dda(s2_iiiiiegats)" style="padding:0px 3px;" v-bind:disabled="s2_ddekcol_si" >
+				<input type="button"  v-bind:id="'stage:'+s2_iiiiiegats+':btn_add'" class="btn btn-outline-secondary btn-sm py-0" v-if="s2_smeti_dekcehc==0" value="+" v-on:click="s2_eegats_dda(s2_iiiiiegats)" style="padding:0px 3px;" v-bind:disabled="s2_ddekcol_si" >
 			</div>
-
-				<template v-if="'a' in s2_dddddegats" >
-					<div v-if="s2_dddddegats['a']===false&&s2_ddekcol_si==false" title="Disable/Comment/Skip" class="disable_btn" v-on:click="s2_elbasid_egats(s2_iiiiiegats)" ></div>
-					<div v-if="s2_dddddegats['a']===true&&s2_ddekcol_si==false" title="Enable/UnComment" class="enable_btn" v-on:click="s2_elbane_egats(s2_iiiiiegats)" ></div>
-				</template>
-				<div v-else class="mycol1d" >.</div>
+			<template v-if="'a' in s2_dddddegats" >
+				<div v-if="s2_dddddegats['a']===false&&s2_ddekcol_si==false"  v-bind:id="'stage:'+s2_iiiiiegats+':btn_disable'" title="Disable/Comment/Skip" class="disable_btn" v-on:click="s2_elbasid_egats(s2_iiiiiegats)" ></div>
+				<div v-if="s2_dddddegats['a']===true&&s2_ddekcol_si==false" v-bind:id="'stage:'+s2_iiiiiegats+':btn_enable'" title="Enable/UnComment" class="enable_btn" v-on:click="s2_elbane_egats(s2_iiiiiegats)" ></div>
+			</template>
+			<div v-else class="mycol1d" >.</div>
 			<div v-bind:class="{'mycol2':true,'mycol3disabled':s2_dddddegats['a']}" style="align-self: stretch;" >
 				<div style="width:40px; padding:0px 5px;" align='right'>{{ (s2_iiiiiegats+1) }}</div>
 			</div>
@@ -97,7 +96,7 @@
 					<div v-if="s2_dddddegats['er']" style=" padding:0px 5px; background-color:#feb9b9;cursor:pointer;color:black;" v-bind:title="s2_dddddegats['er']" v-on:click="s2_trela_egats_wohs(s2_iiiiiegats)">{{ s2_dddddegats['er'] }} </div>
 					<div v-if="s2_dddddegats['wr']" style=" padding:0px 5px; background-color:#f4ddb4;cursor:pointer;color:black;" v-bind:title="s2_dddddegats['er']" v-on:click="s2_trela_egats_wohs(s2_iiiiiegats)">{{ s2_dddddegats['wr'] }} </div>
 				</template>
-				<div class="code_row code_line" v-bind:style="s2_lllevelteg(s2_iiiiiegats)" v-bind:data-stagei="s2_iiiiiegats" >
+				<div class="code_row code_line"  v-bind:id="'stage:'+s2_iiiiiegats+':code'" v-bind:style="s2_lllevelteg(s2_iiiiiegats)" v-bind:data-stagei="s2_iiiiiegats" >
 					<template v-if="s2_dddddegats['e']==false" >
 						<div v-if="'vend' in s2_dddddegats" data-list="all" style="padding:0px 10px;" >{{ s2_dddddegats['k']['v'] }}</div>
 						<varselect v-else datatype="dropdown" datalist="all" datavar="k" datafor="stages" v-bind:v="s2_dddddegats['k']" v-bind:dataktype="s2_dddddegats['k']['t']"  v-bind:dataplg="s2_dddddegats['k']['plg']" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" ></varselect>
@@ -150,13 +149,13 @@
 								<div>
 									<div v-for="s2_vvvvvvvvfi,s2_iiiiiiiifi in s2_dddddegats['d']['cond']" v-bind:class="{'pt-1':(s2_iiiiiiiifi>0)}" style="display:flex; align-items: flex-start; padding-bottom: 2px;" >
 										<div v-if="s2_dddddegats['d']['cond'].length>1" class="px-2">
-										<input class="btn btn-secondary btn-sm py-0 px-1" type="button" v-on:click="s2_noitidnoc_fi_eteled(s2_iiiiiegats, s2_iiiiiiiifi)" title="Add Condition" value="X">
+										<input class="btn btn-secondary btn-sm py-0 px-1" v-bind:id="'stage:'+s2_iiiiiegats+':if1'" type="button" v-on:click="s2_noitidnoc_fi_eteled(s2_iiiiiegats, s2_iiiiiiiifi)" title="Add Condition" value="X">
 										</div>
 										<inputtextbox datafor="stages" v-bind:v="s2_vvvvvvvvfi['lhs']" v-bind:datavar="'d:cond:'+s2_iiiiiiiifi+':lhs'" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]"></inputtextbox>
 										<div data-type="dropdown" data-for="stages" data-list="roperator" v-bind:data-var="'d:cond:'+s2_iiiiiiiifi+':op'" style="margin:0px 10px; font-weight: bold; text-align: center;">{{ s2_vvvvvvvvfi['op'] }}</div>
 										<inputtextbox datafor="stages" v-bind:v="s2_vvvvvvvvfi['rhs']" v-bind:datavar="'d:cond:'+s2_iiiiiiiifi+':rhs'" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]"></inputtextbox>
 										<div class="px-2">
-											<input v-if="s2_iiiiiiiifi==s2_dddddegats['d']['cond'].length-1" class="btn btn-secondary btn-sm py-0 px-1" type="button" v-on:click="s2_noitidnoc_fi_dda(s2_iiiiiegats)" title="Add Condition" value="+" >
+											<input v-if="s2_iiiiiiiifi==s2_dddddegats['d']['cond'].length-1" class="btn btn-secondary btn-sm py-0 px-1" v-bind:id="'stage:'+s2_iiiiiegats+':if2'" type="button" v-on:click="s2_noitidnoc_fi_dda(s2_iiiiiegats)" title="Add Condition" value="+" >
 										</div>
 									</div>
 								</div>
@@ -170,7 +169,7 @@
 								<div style="padding-right:5px;">
 									<div v-for="s2_vvvvvvvvfi,s2_iiiiiiiifi in s2_dddddegats['d']['cond']" v-bind:class="{'pt-1':(s2_iiiiiiiifi>0)}"  style="display:flex; align-items: flex-start;" >
 										<div v-if="s2_dddddegats['d']['cond'].length>1"  class="px-2">
-											<input class="btn btn-secondary btn-sm py-0 px-1" type="button" v-on:click="s2_noitidnoc_fi_eteled(s2_iiiiiegats, s2_iiiiiiiifi)" title="Delete Condition" value="X">
+											<input class="btn btn-secondary btn-sm py-0 px-1" type="button" v-bind:id="'stage:'+s2_iiiiiegats+':while1'" v-on:click="s2_noitidnoc_fi_eteled(s2_iiiiiegats, s2_iiiiiiiifi)" title="Delete Condition" value="X">
 										</div>
 										<inputtextbox datafor="stages" v-bind:v="s2_vvvvvvvvfi['lhs']" v-bind:datavar="'d:cond:'+s2_iiiiiiiifi+':lhs'" v-bind:vars="s2_esiw_egats_srotcaf_lla[s2_iiiiiegats]"></inputtextbox>
 										<div data-type="dropdown" data-for="stages" data-list="roperator" v-bind:data-var="'d:cond:'+s2_iiiiiiiifi+':op'" style="margin:0px 10px; font-weight: bold; text-align: center;">{{ s2_vvvvvvvvfi['op'] }}</div>
@@ -446,6 +445,10 @@
 						<template v-if="s2_dddddegats['k']['v']=='Sleep'" >
 							<div class="editable" data-var="d:v" data-for="stages"><div contenteditable  spellcheck="false" data-for="stages" data-type="editable" data-var="d:v" data-allow="number" >{{ s2_dddddegats['d']['v'] }}</div></div>
 						</template>
+						<template v-if="s2_dddddegats['k']['v']=='SleepMs'" >
+							<div class="editable" data-var="d:v" data-for="stages"><div contenteditable  spellcheck="false" data-for="stages" data-type="editable" data-var="d:v" data-allow="number" >{{ s2_dddddegats['d']['v'] }}</div></div>
+							<div>Sleep in MilliSeconds. 1 Second = 1000 ms</div>
+						</template>
 						<template v-if="s2_dddddegats['k']['v']=='MongoDb'" >
 							<mongodbv1 v-bind:ref="'stage_'+s2_iiiiiegats+'_comp'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_comp'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d"  v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></mongodbv1>
 						</template>
@@ -507,7 +510,7 @@
 		<div class="myrow1" >
 			<div class="mycol1" >&nbsp;</div>
 			<div class="mycol1" >
-				<input type="button" class="btn btn-outline-dark btn-sm py-0"   v-if="s2_smeti_dekcehc==0" value="+" v-on:click="s2_eegats_dda('last')" style="padding:0px 3px;" v-bind:disabled="s2_ddekcol_si" >
+				<input type="button" class="btn btn-outline-dark btn-sm py-0" v-bind:id="'stage:addbtn'"   v-if="s2_smeti_dekcehc==0" value="+" v-on:click="s2_eegats_dda('last')" style="padding:0px 3px;" v-bind:disabled="s2_ddekcol_si" >
 			</div>
 			<div class="mycol23" >&nbsp;</div>
 		</div>

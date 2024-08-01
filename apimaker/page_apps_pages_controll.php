@@ -33,6 +33,12 @@ if( $_POST['action'] == "delete_page" ){
 	$res = $mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", [
 		'page_id'=>$_POST['page_id']
 	]);
+
+	event_log( "system", "page_delete", [
+		"app_id"=>$config_param1,
+		"page_id"=>$_POST['page_id'],
+	]);
+
 	update_app_pages( $config_param1 );
 	json_response($res);
 }
@@ -82,6 +88,12 @@ if( $_POST['action'] == "create_page" ){
 			"version"=>1,
 			"html"=>$html
 		]);
+
+		event_log( "system", "page_create", [
+			"app_id"=>$config_param1,
+			"page_id"=>$res['inserted_id'],
+		]);
+
 		update_app_pages( $config_param1 );
 		json_response($res);
 	}else{
@@ -135,6 +147,11 @@ if( $config_param4 && $main_page ){
 		if( $res["status"] == "fail" ){
 			json_response("fail",$res["error"]);
 		}
+		event_log( "system", "page_save", [
+			"app_id"=>$config_param1,
+			"page_id"=>$config_param3,
+			"page_version_id"=>$config_param4,
+		]);
 		json_response("success","ok");
 	}
 
