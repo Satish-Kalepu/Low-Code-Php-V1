@@ -300,57 +300,10 @@ var app = s__({
 		};
 	},
 	mounted(){
-		//setTimeout(this.init_ace,100);
-		document.addEventListener("mousedown", this.event_mousedown__);
-		document.addEventListener("mouseup", this.event_mouseup__);
-		document.addEventListener("mousemove", this.event_mousemove__);
-		this.frame = this.$refs.editor_iframe__.contentWindow;
-		this.control_frame = this.$refs.control_iframe__;
-		
-		const new_style_element = document.createElement("style");
-		new_style_element.id = "editor_top_css__";
-    	new_style_element.textContent = css_data;
-    	this.frame.document.head.appendChild(new_style_element);
-    	
-    	var css_link = document.createElement("link");
-    	css_link.href=this.rootpath+'bootstrap/bootstrap.min.css';
-    	css_link.setAttribute("rel", "stylesheet");
-    	this.frame.document.head.appendChild(css_link);
-    	
-    	var css_link = document.createElement("link");
-    	css_link.href=this.rootpath+'page_apps_pages_page_editor_body_css.css';
-    	css_link.setAttribute("rel", "stylesheet");
-    	this.frame.document.head.appendChild(css_link);
-    	
-    	var s1 = document.createElement("script");
-    	s1.src=this.rootpath+'bootstrap/bootstrap.bundle.min.js';
-    	this.frame.document.head.appendChild(s1);
-
-		// this.frame.document.body.setAttribute("spellcheck","false");
-		// this.frame.document.body.setAttribute("data-id", "root");
-		// this.frame.document.body.setAttribute("draggable", "false");
-		// this.frame.document.body.setAttribute("contenteditable", "true");
-
-    	this.frame.document.body.id = "app1";
-		this.frame.document.body.innerHTML = ``;
-
-		global_frame = this.frame;
-		<?php 
-		//require("page_apps_pages_page_script2.js");
-		?>
-		console.log("OKK");
-		setTimeout(this.init,500);
-		setTimeout(this.initialize_events,1000);
-		setTimeout(this.initialize_tables,2000);
-		setInterval(this.vmtt_set,300);
-		console.log("OKK");
 		this.set_preview_urls();
-		console.log("OKKz");
 	},
 	methods: {
-
 		set_preview_urls: function(){
-			console.log("OKK1");
 			var urls = {};
 			var ulist = [];
 			if( 'cloud' in this.app__['settings'] ){if( this.app__['settings']['cloud'] ){

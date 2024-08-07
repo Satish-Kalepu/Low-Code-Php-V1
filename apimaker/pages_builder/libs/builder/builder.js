@@ -1057,7 +1057,6 @@ Vvveb.Builder = {
 		}
 		axios.post(url,post).then(response => {
 			html_data += response.data.html;
-			console.log(html_data)
 			self.iframe.contentDocument.open();
 			self.iframe.contentDocument.write(html_data);
 			self.iframe.contentDocument.close();

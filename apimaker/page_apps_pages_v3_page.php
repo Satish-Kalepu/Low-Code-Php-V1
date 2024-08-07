@@ -17,8 +17,8 @@ if( $_convert ){
 
 // require("page_apps_pages_page_css.php"); 
 // require("page_apps_pages_page_html.php"); 
-// require("page_apps_pages_page_script.php");
 require("pages_builder/editor.php");
+require("page_apps_pages_page_script.php");
 
 
 if( $_convert ){
