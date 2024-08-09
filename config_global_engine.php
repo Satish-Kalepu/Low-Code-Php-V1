@@ -1,10 +1,10 @@
 <?php
 
-/* Last updated on 2024-07-09 16:23:10*/
+/* Last updated on 2024-08-09 15:46:12*/
 
 $config_global_apimaker_engine = array (
-  'config_engine_key' => '65b3e2eb822fa7476b0576c2',
-  'config_engine_app_id' => '64f237a775a7be05200cedd0',
+  'config_engine_key' => '66b5ec6b50b94155c4076004',
+  'config_engine_app_id' => '66b5ec6b50b94155c4076005',
   'config_apimaker_endpoint_url' => 'http://localhost:8888/apimaker/',
   'config_engine_path' => '/engine/',
   'config_engine_cache_interval' => 60,
