@@ -159,14 +159,14 @@ const inputtextbox2 = {
 		<div v-if="types_.length!=1" class="codeline_thing_pop" data-type="dropdown2" data-list="datatype" v-bind:data-list-filter="types"  v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]" >{{ v['t'] }}</div>
 		<div v-if="v['t']=='GT'" style="display:flex;align-items:center;" >
 			<template v-if="'v' in v&&'i' in v" >
-				<div title="Thing" data-type="dropdown" v-bind:data-var="datavar+':v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" v-bind:data-thing-initial-keyword="ik" >{{ v['v'] }}</div>
-				<a class="btn btn-link btn-sm"  v-if="v['i']" href="#" v-on:click.prevent.stop="getlink(v['i'])" v-bind:title="'Goto Thing: '+v['i']" >#</a>
+				<div title="Thing" data-type="dropdown" v-bind:data-var="datavar+':v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" v-bind:data-thing-initial-keyword="ik" allow-create="true" >{{ v['v'] }}</div>
+				<a class="btn btn-link btn-sm"  v-if="v['i']&&l" href="#" v-on:click.prevent.stop="getlink(v['i'])" v-bind:title="'Goto Thing: '+v['i']" >#</a>
 				<div class="btn btn-link btn-sm" v-if="'i' in v&&l" v-on:click.prevent.stop="removelink()" title="Remove Link" ><i class="fa-solid fa-unlink"></i></div>
 			</template>
 			<div v-else>GT v,i need object</div>
 		</div>
 		<div v-else-if="v['t']=='T'" style="display:flex;align-items:center;" >
-			<div title="Text" class="editable" v-bind:data-var="datavar+':v'"  ><div style="white-space:nowrap;" contenteditable spellcheck="false" data-type="editable"  v-bind:data-var="datavar+':v'" v-bind:id="datavar+':v'" v-bind:data-allow="v['t']" >{{ v['v'] }}</div></div>
+			<div title="Text" class="editable" v-bind:data-var="datavar+':v'"  ><div style="white-space:nowrap;" contenteditable spellcheck="false" data-type="editable" v-bind:data-var="datavar+':v'" v-bind:id="datavar+':v'" v-bind:data-allow="v['t']" >{{ v['v'] }}</div></div>
 			<div class="btn btn-link btn-sm" v-if="'i' in v==false&&l" v-on:click.prevent.stop="createlink" title="Create Link" ><i class="fa-solid fa-link"></i></div>
 		</div>
 		<pre v-else-if="v['t']=='TT'" title="Multiline Text" data-type="objecteditable"  editable-type="TT"  v-bind:data-var="datavar+':v'" style="margin-bottom:5px;" >{{ v['v'] }}</pre>

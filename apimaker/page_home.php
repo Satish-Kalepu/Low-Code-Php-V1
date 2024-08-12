@@ -9,7 +9,7 @@
 			<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
 			<div v-if="err" class="alert alert-danger" >{{ err }}</div>
 			<div style="float:right;" ><div class="btn btn-outline-dark btn-sm" v-on:click="show_create_app()" >Create App</div></div>
-			<div style="float:right;" ><div class="btn btn-outline-dark btn-sm me-2" v-on:click="importnow()" >Import</div></div>
+			<div style="float:right;" ><div class="btn btn-outline-dark btn-sm me-2" v-on:click="show_import_app()" >Import</div></div>
 			<div class="h3 mb-3">APPs</div>
 			<div style="height: calc( 100% - 100px ); padding-right:20px; overflow: auto;">
 				<div v-for="v,vi in apps" style="padding:5px; border-radius:5px; margin-bottom: 10px; border:1px solid #999;" >
@@ -75,11 +75,63 @@
 	  </div>
 	</div>
 
+	<div class="modal fade" id="import_modal__" tabindex="-1" >
+	  <div class="modal-dialog modal-lg">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <div class="modal-title" ><h5 class="d-inline">Import App</h5></div>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	      </div>
+	      <div class="modal-body"  style="position: relative;">
+	      	<div style="margin-bottom:10px;">
+
+	      		<p>Import App</p>
+
+	      		<div v-if="restore_status==5" >
+					<p>Imported</p>
+					<p><span v-html="restore_msg" ></span></p>
+				</div>
+				<template v-else >
+					<p>You can restore any app which will delete all the settings of the current app. Or you can create a new app.</p>
+					<p><input type="file" class="form-control form-control-sm" id="restore_file" style="display:;" v-on:change="restore_fileselect"></p>
+					<template v-if="restore_file" >
+						<p><label><input type="checkbox" v-model="restore_pwd" > Archive is password protected?</label></p>
+						<p v-if="restore_pwd">Archive Password: <input type="text" v-model="restore_pass" class="form-control form-control-sm w-auto" placeholder="Password" ></p>
+						<div style="display:flex; gap:20px;" >
+							<div v-if="restore_status!=5">
+								<p><input type="button" class="btn btn-outline-dark btn-sm" v-on:click="restore_uploadnow" value="Upload" ></p>
+							</div>
+							<div>
+								<p v-if="restore_status==1" >Uploading {{ restore_pg }}%</p>
+								<div v-if="restore_status==2" >
+									<p>Uploaded</p>
+									<p>App Name: {{ this.restore_app_name }}</p>
+									<ul>
+										<li v-for="v,i in this.restore_summary" >{{ i }}: {{ v }}</li>
+									</ul>
+									<p><span v-html="restore_msg" ></span></p>
+									<p><input type="button" class="btn btn-outline-dark btn-sm" value="Proceed" v-on:click="restore_step2now" ></p>
+								</div>
+								<p v-if="restore_status==9" style="color:red;" >Error: {{ restore_error }}</p>
+							</div>
+						</div>
+					</template>
+				</template>
+
+		      	<div v-if="imsg" class="alert alert-primary" >{{ imsg }}</div>
+				<div v-if="ierr" class="alert alert-danger" >{{ ierr }}</div>
+			</div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
 </div>
 <script>
 var app = Vue.createApp({
 	data(){
 		return {
+			path: "<?=$config_global_apimaker_path ?>",
 			msg: "", err: "",
 			cmsg: "", cerr: "",
 			clmsg: "", clerr: "",
@@ -87,6 +139,7 @@ var app = Vue.createApp({
 			apps: [],
 			create_modal__: false,
 			clone_modal__: false,
+			import_modal__: false,
 			delete_app_id: "",
 			new_app: {
 				'app': '',
@@ -100,6 +153,17 @@ var app = Vue.createApp({
 			clone_pr: 0,
 			table_queue: {},
 			table_queue_l: 0,
+			restore_f: false,
+			restore_file: false,
+			restore_pwd: false,
+			restore_pass: "",
+			restore_pg: 0,
+			restore_status: 0,
+			restore_error: "",
+			restore_msg: "",
+			restore_rand: "",
+			restore_app_name: "",
+			restore_summary: {},
 		};
 	},
 	mounted(){
@@ -141,6 +205,12 @@ var app = Vue.createApp({
 				this.create_modal__ = new bootstrap.Modal( document.getElementById('create_modal__') );
 			}
 			this.create_modal__.show();
+		},
+		show_import_app: function(){
+			if( this.import_modal__ == false ){
+				this.import_modal__ = new bootstrap.Modal( document.getElementById('import_modal__') );
+			}
+			this.import_modal__.show();
 		},
 		show_clone_app: function(){
 			if( this.clone_modal__ == false ){
@@ -315,7 +385,93 @@ var app = Vue.createApp({
 			}).catch(error=>{
 				this.clerr = error.response.status + ": " + error.response.data;
 			});
-		}
-	}
+		},
+		restore_step2now: function(){
+			axios.post("?", {
+				"action": "home_restore_upload_confirm",
+				"rand":    this.restore_rand,
+			}).then(response=>{
+				if( response.status == 200 ){
+					if( typeof( response.data ) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.restore_status = 5;
+								this.restore_msg = "Restoration Successfull<BR>New App Name: <a class='btn btn-outline-dark btn-sm' href='"+this.path+'apps/'+response.data['app_id']+'/'+"' >" + response.data['app'] + "</a>";
+								this.load_apps();
+							}else{
+								this.restore_status = 9;
+								this.restore_error = "Restore Failed: " + response.data['error'];
+							}
+						}else{
+							this.restore_status = 9;
+							this.restore_error = "Something wrong";
+						}
+					}
+				}
+			}).catch(error=>{
+				this.restore_status = 9;
+				this.restore_error = error.message;
+				cosole.log( error );
+			});
+		},
+		restore_uploadnow: function(){
+			var vs = new FormData();
+			vs.append("action", "home_restore_upload");
+			vs.append("file", this.restore_f );
+			vs.append("pwd", this.restore_pwd );
+			vs.append("pass", this.restore_pass );
+			this.restore_status = 1;
+			this.restore_error = "";
+			this.restore_msg = "";
+			axios.post("?", vs, {
+				onUploadProgress: function (e){
+					var l = (e.loaded/e.total*100).toFixed(0);
+					console.log( (e.loaded/e.total*100).toFixed(0) );
+					app.restore_pg = l;
+				}
+			}).then(response=>{
+				console.log( response );
+				if( response.status == 200 ){
+					if( typeof( response.data ) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.restore_status = 2;
+								this.restore_msg = "You are going to restore an app snapshot which was taken on <BR>" + response.data['date'] + "<BR><BR>Please confirm to proceed";
+								this.restore_summary = response.data['summary'];
+								this.restore_app_name = response.data['app'];
+								this.restore_rand = response.data['rand'];
+							}else{
+								alert("Incorrect response");
+							}
+						}else{
+							this.restore_status = 9;
+							this.restore_error = "Something wrong";
+						}
+					}
+				}
+			}).catch(error=>{
+				this.restore_status = 9;
+				this.restore_error = error.msg;
+				cosole.log( error );
+			});
+		},
+		restorenow: function(){
+			document.getElementById("restore_file").click();
+		},
+		restore_fileselect: function(){
+			var vf = document.getElementById("restore_file").files[0];
+			this.restore_f = vf;
+			//document.getElementById("restore_file").value = "";
+		//	console.log( vf );
+			console.log( vf.name );
+			if( vf.name.match(/^[A-Za-z0-9]+\_[a-f0-9]{24}\_[0-9]{8}\_[0-9]{6}\.gz$/) == null ){
+				alert("Selected filename format incorrect.\n\nExpected:\napp_id yymmdd hhiiss");
+				return false;
+			}
+			this.restore_file = vf.name+'';
+			// var objectURL = window.URL.createObjectURL(vf); // console.log( objectURL );
+		},
+	},
+
 }).mount("#app");
 </script>

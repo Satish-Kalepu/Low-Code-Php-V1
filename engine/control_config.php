@@ -1,10 +1,10 @@
 <?php
 
-if( !is_dir( sys_get_temp_dir() . "/apimaker" ) ){
-	mkdir( sys_get_temp_dir() . "/apimaker", 0755 );
-}
-
 if( $execution_mode == "local_folder" ){
+
+	if( !is_dir( sys_get_temp_dir() . "/apimaker" ) ){
+		mkdir( sys_get_temp_dir() . "/apimaker", 0755 );
+	}
 
 	$engine_cache_path = sys_get_temp_dir() . "/apimaker/engine_" . $config_global_apimaker_engine["config_engine_app_id"] . ".php";
 //	echo $engine_cache_path;exit;
@@ -93,6 +93,10 @@ if( $execution_mode == "local_folder" ){
 	}
 
 }else{
+
+	if( !is_dir( sys_get_temp_dir() . "/apimaker" ) ){
+		mkdir( sys_get_temp_dir() . "/apimaker", 0755 );
+	}
 
 	$engine_cache_path = sys_get_temp_dir()."/apimaker/cloud_" . $config_cloud_domain . ".php";
 

@@ -58,8 +58,8 @@
 						<template v-if="restore_file" >
 							<p><label><input type="checkbox" v-model="restore_pwd" > Archive is password protected?</label></p>
 							<p v-if="restore_pwd">Archive Password: <input type="text" v-model="restore_pass" class="form-control form-control-sm w-auto" placeholder="Password" ></p>
-							<div style="display:flex; gap:20px;">
-								<div>
+							<div style="display:flex; gap:20px;" >
+								<div v-if="restore_status!=5">
 									<p><input type="button" class="btn btn-outline-dark btn-sm" v-on:click="restore_uploadnow" value="Upload" ></p>
 								</div>
 								<div>
@@ -67,14 +67,26 @@
 									<div v-if="restore_status==2" >
 										<p>Uploaded</p>
 										<p><span v-html="restore_msg" ></span></p>
-										<p><select class="form-select form-select-sm w-auto" v-model="restore_step2_option" >
-											<option value="replace" >Replace Current APP</option>
-											<option value="create" >Create as New APP</option>
-										</select></p>
+										<p>
+											<select class="form-select form-select-sm w-auto" v-model="restore_step2_option" >
+												<option value="replace" >Replace Current APP</option>
+												<option value="create" >Create as New APP</option>
+											</select>
+										</p>
 										<p><input type="button" class="btn btn-outline-dark btn-sm" value="Proceed" v-on:click="restore_step2now" ></p>
 									</div>
-									<p v-if="restore_status==3" style="color:red;" >Error: {{ restore_error }}</p>
+									<div v-if="restore_status==3" >
+										<p>Uploaded</p>
+										<p><span v-html="restore_msg" ></span></p>
+										<p><input type="button" class="btn btn-outline-dark btn-sm" value="Proceed" v-on:click="restore_step2now" ></p>
+									</div>
+									<div v-if="restore_status==5" >
+										<p>Imported</p>
+										<p><span v-html="restore_msg" ></span></p>
+									</div>
+									<p v-if="restore_status==9" style="color:red;" >Error: {{ restore_error }}</p>
 								</div>
+							</div>
 						</template>
 					</div>
 				</div>
@@ -136,19 +148,20 @@ var app = Vue.createApp({
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success" ){
 								this.restore_status = 5;
-								this.response_msg = "Restoration Successfull";
+								this.restore_msg = "Restoration Successfull";
 							}else{
-								this.restore_error2 = "Restore Failed: " + response.data['error'];
+								this.restore_status = 9;
+								this.restore_error = "Restore Failed: " + response.data['error'];
 							}
 						}else{
-							this.restore_status = 3;
-							this.restore_error2 = "Something wrong";
+							this.restore_status = 9;
+							this.restore_error = "Something wrong";
 						}
 					}
 				}
 			}).catch(error=>{
-				this.restore_status = 3;
-				this.restore_error = error.msg;
+				this.restore_status = 9;
+				this.restore_error = error.message;
 				cosole.log( error );
 			});
 		},
@@ -174,20 +187,23 @@ var app = Vue.createApp({
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success2" ){
 								this.restore_status = 2;
+								this.restore_step2_option = "create";
 								this.restore_msg = "You are going to restore this app to a older snapshot which was taken on <BR>" + response.data['date'] + "<BR><BR>You may lose latest changes<BR>Please confirm to proceed";
 								this.restore_rand = response.data['rand'];
 							}else if( response.data['status'] == "success3" ){
 								this.restore_status = 3;
-								this.restore_msg = "";
+								this.restore_msg = "You are going to restore this app with a snapshot of a different app which was taken on <BR>" + response.data['date'] + "<BR><BR>You will lose all the updates and settings on current app<BR>Please confirm to proceed";
+								this.restore_step2_option = "replace_with_other";
+								this.restore_rand = response.data['rand'];
 							}
 						}else{
-							this.restore_status = 3;
+							this.restore_status = 9;
 							this.restore_error = "Something wrong";
 						}
 					}
 				}
 			}).catch(error=>{
-				this.restore_status = 3;
+				this.restore_status = 9;
 				this.restore_error = error.msg;
 				cosole.log( error );
 			});

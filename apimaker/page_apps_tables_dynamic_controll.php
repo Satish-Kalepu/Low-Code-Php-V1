@@ -1,5 +1,7 @@
 <?php
 
+$max_records_limit = 200000;
+
 function enc_data( $data ){
 	global $pass;
 	if( $pass ){
@@ -452,7 +454,7 @@ if( $config_param3 == "importdump" ){
 		if( $res['status'] != "success" ){
 			json_response(['status'=>"fail", "error"=>"Count check failed: " . $res['error']]);
 		}
-		if( $res['data'] > 20000 ){
+		if( $res['data'] > $max_records_limit ){
 			json_response(['status'=>"fail", "error"=>"Table already has more than 20k records"]);
 		}
 
@@ -1057,7 +1059,7 @@ if( $config_param3 == "importdump" ){
 			if( $res['status'] != "success" ){
 				json_response(['status'=>"fail", "error"=>"Count check failed: " . $res['error']]);
 			}
-			if( $res['data'] > 20000 ){
+			if( $res['data'] > $max_records_limit ){
 				json_response(['status'=>"fail", "error"=>"Table already has more than 20k records"]);
 			}
 

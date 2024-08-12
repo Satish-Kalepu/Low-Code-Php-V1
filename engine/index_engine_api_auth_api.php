@@ -8,12 +8,12 @@ function engine_auth_api( $api_slug, $post ){
 	global $app_id;
 	global $db_prefix;
 	if( $api_slug == "verify_session_key" ){
-		if( !isset($post['session-key']) ){
+		if( !isset($post['session_key']) ){
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key required"]) );
-		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['session-key'] ) ){
+		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['session_key'] ) ){
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key Incorrect"]) );
 		}
-		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", ["app_id"=>$app_id, '_id'=>$post['session-key']] );
+		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", ["app_id"=>$app_id, '_id'=>$post['session_key']] );
 		if( !$res['data'] ){
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key Expired"]) );
 		}
@@ -21,7 +21,7 @@ function engine_auth_api( $api_slug, $post ){
 		$e = $res['data']['expire'];
 		//echo ($e - time());
 		if( $e > time() && $res['data']['ips'][0] == $_SERVER['REMOTE_ADDR'] . "/32" ){
-			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"SessionOK"]) );
+			respond(200, "application/json", [], json_encode(["status"=>"success", "error"=>"SessionOK"]) );
 		}else{
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Expired", "e"=>($e - time())]) );
 		}

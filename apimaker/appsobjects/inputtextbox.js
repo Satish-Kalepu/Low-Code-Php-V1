@@ -161,7 +161,7 @@ const inputtextbox = {
 		<div class="codeline_thing_pop" data-type="dropdown2" data-list="datatype"  v-bind:data-var="datavar+':t'" v-bind:title="data_types__[v['t']]"  >{{ v['t'] }}</div>
 		<div v-if="v['t']=='GT'" style="display:flex;align-items:center;" >
 			<template v-if="'v' in v&&'i' in v" >
-				<div title="Thing" data-type="dropdown" v-bind:data-var="datavar+':v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" v-bind:data-thing-initial-keyword="ik" >{{ v['v'] }}</div>
+				<div title="Thing" data-type="dropdown" v-bind:data-var="datavar+':v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" v-bind:data-thing-initial-keyword="ik" allow-create="true" >{{ v['v'] }}</div>
 				<a class="btn btn-link btn-sm" v-if="v['i']" href="#" v-on:click.prevent.stop="getlink(v['i'])" v-bind:title="'Goto Thing: '+v['i']" >#</a>
 				<div class="btn btn-link btn-sm text-danger" v-if="'i' in v&&l" v-on:click.prevent.stop="removelink()" title="Remove Link" ><i class="fas fa-unlink"></i></div>
 			</template>

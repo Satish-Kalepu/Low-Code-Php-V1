@@ -1,4 +1,7 @@
 <?php
+
+exit;
+
 require("vendor/autoload.php");
 
 /* Mongo DB connection */

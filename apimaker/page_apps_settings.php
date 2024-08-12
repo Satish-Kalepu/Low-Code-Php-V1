@@ -39,7 +39,7 @@
 			</div>
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 10px;">Application</div>
+				<div style="background-color:#e8e8e8; padding: 10px; font-size:1.2rem;">Application</div>
 				<div style="padding:10px;">
 					<!-- <pre>{{ settings }}</pre> -->
 
@@ -62,7 +62,7 @@
 			</div>
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 5px 10px;">Cloud Hosting</div>
+				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Cloud Hosting</div>
 				<div style="padding:10px;">
 
 					<div><label style="cursor: pointer;">Enable cloud hosting  <input type="checkbox" v-model="settings['cloud']" ></label></div>
@@ -123,7 +123,7 @@
 			</div>
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 5px 10px;">Custom Hosting</div>
+				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Custom Hosting</div>
 				<div style="padding:10px;">
 					<p><label style="cursor: pointer;">Enable custom hosting <input type="checkbox" v-model="settings['host']" ></label></p>
 
@@ -178,7 +178,7 @@
 			</div>
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 5px 10px;">Other Settings</div>
+				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Other Settings</div>
 				<div style="padding:10px;">
 					<p>Home page </p>
 					<template v-if="'homepage' in settings" >
@@ -213,7 +213,7 @@
 
 			<template v-if="host_saved&&'host' in settings" >
 			<div v-if="settings['host']===true" style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 5px 10px;">Engine</div>
+				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Engine</div>
 				<div style="padding:10px;">
 
 					<template v-if="enginep" >
@@ -234,7 +234,7 @@
 			</template>
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 5px 10px;">TaskScheduler Engine</div>
+				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">TaskScheduler Engine</div>
 				<div style="padding:10px;">
 
 
@@ -246,27 +246,34 @@
 							<!-- <pre style="background-color:#333; color:white; padding:10px;overflow:auto;">{{ settings['tasks'] }}</pre> -->
 							<div><input type="button" class="btn btn-outline-danger btn-sm" value="Stop Daemon" v-on:click="stop_background_job()" ></div>
 						</template>
-						<div v-else>
+						<div v-else >
 							<p style="color:red;">Daemon is not running</p>
 							<p>Click here to auto start the daemon</p>
 							<div><input type="button" class="btn btn-outline-dark btn-sm" value="START" v-on:click="start_background_job()" ></div>
 							<div>This is a AdHoc script which can be stopped by any system event. This will not auto start when the system is rebooted or application configuration is updated.</div>
-							<p>AutoStart</p>
-							<div>Create a cronjob in the system where you have installed your engine. </div>
-							<pre style="background-color:#333; color:white; padding:10px;overflow:auto;">@reboot curl --location http://domain/enginepath/_api_service \
+						</div>
+
+						<p>Last updated at: {{ settings['daemon_run_last'] }}</p>
+
+						<div style="margin:10px; border:1px solid #aaa;">
+							<div style="background-color: #f8f8f8;padding:5px;">AutoStart</div>
+							<div style="padding:5px;">
+								<div>Create a cronjob in the system where you have installed your engine. </div>
+								<pre style="background-color:#333; color:white; padding:10px;overflow:auto;">@reboot curl --location http://domain/enginepath/_api_service \
 --header 'Access-Key: <?=$akey ?>' \
 --header 'Content-type: application/json' \
 --data '{
 	"action": "start_taskscheduler",
 	"app_id": "<?=$config_param1 ?>"
 }'</pre>
+							</div>
 						</div>
 
 				</div>
 			</div>
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
-				<div style="background-color:#e8e8e8; padding: 5px 10px;">Other background jobs</div>
+				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Other background jobs</div>
 				<div style="padding:10px;">
 
 					<table class="table table-bordered table-striped table-sm w-auto">
@@ -290,8 +297,6 @@
 
 				</div>
 			</div>
-
-
 
 			<p>&nbsp;</p>-<p>&nbsp;</p>
 
@@ -638,7 +643,7 @@ var app = Vue.createApp({
 			}else if( this.settings['tasks']['run'] == false ){
 				return false;
 			}
-			return true;
+			return this.settings['daemon_run_status'];
 		},
 		stop_background_job: function(){
 			axios.post("?", {

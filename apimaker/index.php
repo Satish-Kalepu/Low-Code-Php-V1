@@ -1,5 +1,8 @@
 <?php
 
+// $fn = "/text/filename.txt";
+// print_r( explode("/", $fn) );exit;
+
 /* backend maker */
 //echo "<pre>";print_r( $_SERVER );exit;
 

@@ -95,6 +95,9 @@ if( $_POST['action'] == "app_backup" ){
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
 		'app_id'=>$config_param1
 	]);
+	if( preg_match("/imported/i", $res['data']['app']) ){
+		json_response("fail", "Pleae make sure app name does not contain word imported");
+	}
 	foreach( $res['data'] as $i=>$j ){
 		$j['__t'] = "apis";
 		$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
@@ -201,7 +204,7 @@ if( $_GET['action'] == "download_snapshot" ){
 	exit;
 }
 
-if( $_POST['action'] == "exports_restore_upload" ){
+if( $_POST['action'] == "exports_restore_upload" || $_POST['action2'] == "home_restore_upload" ){
 	if( file_exists( $_FILES['file']['tmp_name'] ) && filesize($_FILES['file']['tmp_name']) > 0  ){
 		if( !preg_match("/^(([A-Za-z0-9]+)\_([a-f0-9]{24})\_([0-9]{8})\_([0-9]{6}))\.gz$/", $_FILES['file']['name'], $file_match) ){
 			json_response(['status'=>"fail","error"=>"Filename format mismatch"]);
@@ -314,7 +317,19 @@ if( $_POST['action'] == "exports_restore_upload" ){
 			"app_id"=>$config_param1, 
 		]);
 
-		if( $app['_id'] == $datasets['app']['_id'] ){
+		if( $_POST['action2'] == "home_restore_upload" ){
+			$vt = time();
+			$_SESSION['restore_rand'] = $vt;
+			$_SESSION['restore_file'] = $fn2;
+			$dt = substr($file_match[4],0,4) . "-" .substr($file_match[4],4,2) . "-" .substr($file_match[4],6,2) . " " . substr($file_match[5],0,2) . ":" .substr($file_match[5],2,2);
+			json_response([
+				'status'=>"success3", 
+				"tot"=>$tot, 
+				"date"=>$dt, 
+				"summary"=>$datasets2, 
+				"rand"=>$vt
+			]);
+		}else if( $app['_id'] == $datasets['app']['_id'] ){
 			$vt = time();
 			$_SESSION['restore_rand'] = $vt;
 			$_SESSION['restore_file'] = $fn2;
@@ -322,21 +337,27 @@ if( $_POST['action'] == "exports_restore_upload" ){
 			json_response(['status'=>"success2", "tot"=>$tot, "date"=>$dt, "summary"=>$datasets2, "rand"=>$vt]);
 
 		}else if( $app['_id'] != $datasets['app']['_id'] ){
-			$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
-				'_id'=>$datasets['app']['_id']
-			]);
-			if( $res2['data'] ){
-				json_response(['status'=>"success3", "app"=>$res2['data']]);
-			}
+			// $res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
+			// 	'_id'=>$datasets['app']['_id']
+			// ]);
+			// if( $res2['data'] ){
+			// 	json_response(['status'=>"success3", "app"=>$res2['data']]);
+			// }
+			$vt = time();
+			$_SESSION['restore_rand'] = $vt;
+			$_SESSION['restore_file'] = $fn2;
+			$dt = substr($file_match[4],0,4) . "-" .substr($file_match[4],4,2) . "-" .substr($file_match[4],6,2) . " " . substr($file_match[5],0,2) . ":" .substr($file_match[5],2,2);
+			json_response(['status'=>"success3", "tot"=>$tot, "date"=>$dt, "summary"=>$datasets2, "rand"=>$vt]);
 		}
 
 	}else{
 		json_response(['status'=>"fail","error"=>"File upload failed"]);
+		exit;
 	}
 	exit;
 }
 
-if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
+if(  $_POST['action'] == "exports_restore_upload_confirm" ){
 	if( !file_exists($_SESSION['restore_file']) || $_SESSION['restore_rand'] != $_POST['rand'] ){
 		json_response(['status'=>"fail","error"=>"Incorrect confirm parameters"]);
 	}
@@ -420,38 +441,63 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 		}
 	}
 
-	if( $mode == "create" ){
+	if( $mode == "create" || $mode == "replace_with_other" ){
 
 		$ids = [
 			'app'=>[],'apis'=>[],'pages'=>[],'functions'=>[],'apis'=>[],'files'=>[],'tables_dynamic'=>[],'databases'=>[], 'storage_vaults'=>[],
 		];
 		$all_ids = [];
 
-		$new_app_id = $mongodb_con->generate_id();
+		if( $mode == "create" ){
+			$new_app_id = $mongodb_con->generate_id();
+		}else{
+			$new_app_id = $app['_id'];
+		}
 		$ids['app'][ $datasets['app']['_id'] ] = $new_app_id;
 		$all_ids[ $datasets['app']['_id'] ] = $new_app_id;
 		$table_ids = [];
 		$datasets['app']['_id'] = $new_app_id;
+		if( $mode != "create" ){
+			$datasets['app']['app'] = $app['app'];
+			$datasets['app']['des'] = $app['des'];
+			$datasets['app']['updated'] = date("Y-m-d H:i:s");
+			$datasets['app']['last_updated'] = date("Y-m-d H:i:s");
+			$datasets['app']['settings'] = $app['settings'];
+		}else{
+			unset($datasets['app']['settings']);
+		}
 		foreach( $datasets['apis'] as $i=>$j ){
 			$new_id = $mongodb_con->generate_id();
 			$ids['apis'][ $j['_id'] ] = $new_id;
 			$all_ids[ $j['_id'] ] = $new_id;
+			$new_version_id = $mongodb_con->generate_id();
+			$all_ids[ $j['version_part']['_id'] ] = $new_version_id;
 			$datasets['apis'][ $i ]['_id'] = $new_id;
 			$datasets['apis'][ $i ]['app_id'] = $new_app_id;
+			$datasets['apis'][ $i ]['version_id'] = $new_version_id;
+			$datasets['apis'][ $i ]['version_part']['_id'] = $new_version_id;
 		}
 		foreach( $datasets['pages'] as $i=>$j ){
 			$new_id = $mongodb_con->generate_id();
 			$ids['pages'][ $j['_id'] ] = $new_id;
 			$all_ids[ $j['_id'] ] = $new_id;
+			$new_version_id = $mongodb_con->generate_id();
+			$all_ids[ $j['version_part']['_id'] ] = $new_version_id;
 			$datasets['pages'][ $i ]['_id'] = $new_id;
 			$datasets['pages'][ $i ]['app_id'] = $new_app_id;
+			$datasets['pages'][ $i ]['version_id'] = $new_version_id;
+			$datasets['pages'][ $i ]['version_part']['_id'] = $new_version_id;
 		}
 		foreach( $datasets['functions'] as $i=>$j ){
 			$new_id = $mongodb_con->generate_id();
 			$ids['functions'][ $j['_id'] ] = $new_id;
 			$all_ids[ $j['_id'] ] = $new_id;
+			$new_version_id = $mongodb_con->generate_id();
+			$all_ids[ $j['version_part']['_id'] ] = $new_version_id;
 			$datasets['functions'][ $i ]['_id'] = $new_id;
 			$datasets['functions'][ $i ]['app_id'] = $new_app_id;
+			$datasets['functions'][ $i ]['version_id'] = $new_version_id;
+			$datasets['functions'][ $i ]['version_part']['_id'] = $new_version_id;
 		}
 		foreach( $datasets['files'] as $i=>$j ){
 			$new_id = $mongodb_con->generate_id();
@@ -490,7 +536,9 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 			$datasets['storage_vaults'][ $i ]['_id'] = $new_id;
 			$datasets['storage_vaults'][ $i ]['app_id'] = $new_app_id;
 		}
-	}else{
+	}
+
+	if( $mode == "replace" || $mode == "replace_with_other" ){
 
 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_apps", ['_id'=>$app['_id']] );
 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_apis", ['app_id'=>$app['_id']] );
@@ -579,35 +627,3 @@ if(  $_POST['action'] == "exports_restore_upload_confirm"   ){
 }
 
 
-if( 1==2 ){
-				if( $d['__t'] == "app" ){
-					unset($d['__t']);
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apps", $d );
-				}else if( $d['__t'] == "apis" ){
-					unset($d['__t']);
-					$v = $d['version_part'];
-					unset($d['version_part']);
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis", $d );
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", $v );
-				}else if( $d['__t'] == "pages" ){
-					unset($d['__t']);
-					$v = $d['version_part'];
-					unset($d['version_part']);
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_pages", $d );
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", $v );
-				}else if( $d['__t'] == "functions" ){
-					unset($d['__t']);
-					$v = $d['version_part'];
-					unset($d['version_part']);
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_functions", $d );
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", $v );
-				}else if( $d['__t'] == "tables_dynamic" ){
-					unset($d['__t']);
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", $d );
-				}else if( $d['__t'] == "files" ){
-					unset($d['__t']);
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_files", $d );
-				}else if( $t == "table" ){
-					$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_dt_" . $table, $d );
-				}
-}

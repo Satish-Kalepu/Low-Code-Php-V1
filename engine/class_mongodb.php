@@ -371,7 +371,7 @@ class mongodb_connection{
 					'upsert'=> true,
 					'new' => true,
 					'returnNewDocument' => true,
-					//'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
 					'projection'=>[$val=>true],
 				];
 				$cur =$col->findOneAndUpdate([
@@ -427,7 +427,7 @@ class mongodb_connection{
 			$col = $this->database->{$collection};
 			try{
 				$option = [
-					'returnNewDocument' => true,
+					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
 					'projection'=>[$val=>true],
 				];
 				$cur =$col->findOneAndUpdate([

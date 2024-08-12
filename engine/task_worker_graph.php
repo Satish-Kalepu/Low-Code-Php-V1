@@ -13,6 +13,8 @@ if( !$graph_id ){
 	echo "Need Arguments: app_id and graph_id";exit;
 }
 $graph_things 	= 	$db_prefix . "_graph_" . $graph_id . "_things";
+$graph_links 	= 	$db_prefix . "_graph_" . $graph_id . "_links";
+$graph_mentions 	= 	$db_prefix . "_graph_" . $graph_id . "_mentions";
 $graph_keywords = 	$db_prefix . "_graph_" . $graph_id . "_keywords";
 $graph_queue	= $db_prefix . "_zd_queue_graph_". $graph_id;
 

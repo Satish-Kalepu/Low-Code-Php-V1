@@ -497,6 +497,33 @@ foreach( $queue_res['data'] as $i=>$j ){
 	];
 }
 
+$daemon_run_status = false;
+$daemon_run_last = 0;
+if( isset($settings['tasks']['workers']) ){
+	foreach( $settings['tasks']['workers'] as $i=>$j ){
+		if( $daemon_run_last < $j['time'] ){
+			$daemon_run_last = $j['time'];
+		}
+		if( time()- $j['time'] < 30 ){
+			$daemon_run_status = true;
+		}
+	}
+}
+if( $daemon_run_last == 0 ){
+	$daemon_run_last = "Never";
+}else{
+	$d = (time()-$daemon_run_last);
+	if( $d < 60 ){
+		$daemon_run_last = $d . " seconds ago ";
+	}else if( $d < 3600 ){
+		$daemon_run_last = round($d/60) . " minutes ago ";
+	}else{
+		$daemon_run_last = round($d/3600) . " hours ago ";
+	}
+}
+$settings['daemon_run_last'] = $daemon_run_last;
+$settings['daemon_run_status'] = $daemon_run_status;
+
 if( $_POST['action'] == 'settings_load_background_job_log' ){
 	$cond = [];
 	if( $_POST['last'] ){

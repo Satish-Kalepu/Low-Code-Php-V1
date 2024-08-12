@@ -9,7 +9,7 @@ const object_template_create_v2 = {
 	watch: {
 	},
 	mounted: function(){
-		//console.log("Mounted1")
+		console.log("object_template_create_v2")
 		//this.load_template();
 		var d = {
 			"thing": {
@@ -24,7 +24,7 @@ const object_template_create_v2 = {
 			},
 			"thing_i_of": {},
 			"template_edit": -1,
-			"new_field": {"key": "p1", "name": {"t":"T", "v": ""}, "type": {"t":"KV", "k":"T", "v":"text"} },
+			"new_field": {"key": "p1", "name": {"t":"T", "v": ""}, "type": {"t":"KV", "k":"T", "v":"text"}, "m": {"t":"B", "v": "false"} },
 			"new_field_id": -1, 
 			"msg": "", "err": "",
 			"msg": "", "err": "",
@@ -51,9 +51,8 @@ const object_template_create_v2 = {
 		}else{
 			this.$root.window_tabs[ this.refname ]['data'] = d;
 		}
-		
 		setTimeout(this.mounted2,500);
-		//console.log("Mounted2")
+		console.log("Mounted2")
 	},
 	methods: {
 		mounted2: function(){
@@ -62,13 +61,19 @@ const object_template_create_v2 = {
 				if( 'default_template' in this.$root.popup_data__ ){
 					console.log("yes");
 					this.data['thing']['i_of'] = {"t":"GT", "i":"T1", "v": "Root"};
-					this.load_template();
+					setTimeout(this.load_template,100);
 					this.data['thing']["z_t"] = this.$root.popup_data__['default_template']['z_t'];
 					this.data['thing']["z_o"] = this.$root.popup_data__['default_template']['z_o'];
 					this.data['thing']["z_n"] = this.$root.popup_data__['default_template']['z_n'];
 				}
 				if( 'is_dataset' in this.$root.popup_data__ ){
-					this.data['thing']['i_t']['v'] = "L";
+					if( this.$root.popup_data__['is_dataset'] ){
+						this.data['thing']['i_t']['v'] = "L";
+					}else{
+						this.data['thing']['i_t']['v'] = "N";
+					}
+				}else{
+					this.data['thing']['i_t']['v'] = "N";
 				}
 			}else if( this.refname in this.$root.window_tabs ){
 				if( 'i_of' in this.$root.window_tabs[ this.refname ] ){
@@ -81,6 +86,23 @@ const object_template_create_v2 = {
 				}
 			}
 		},
+		make_props: function(){
+			var p = {};
+			var zt = this.data[ 'thing_i_of' ]['z'][ 'z_t' ];
+			for( var fd in zt ){
+				if( zt[ fd ]['t']['k'] == "O" ){
+					var zt2 = zt[ fd ]['z']['z_t'];
+					var v = {};
+					for( fdd in zt2 ){
+						v[ fdd+'' ] = {"t":"T", "v":""};
+					}
+					p[ fd+'' ] = [{"t":"O", "v":v}];
+				}else{
+					p[ fd+'' ] = [{ "t":"T", "v":"" }];
+				}
+			}
+			this.data['thing']['props'] = p;
+		},
 		load_template: function(){
 			//this.data['thing_i_of']['z'] = {};
 			axios.post("?", {
@@ -90,12 +112,8 @@ const object_template_create_v2 = {
 				this.data['import_msg'] = "";
 				if( typeof( response.data['data'] )=="object" ){
 					var z = response.data['data'];
-					var p = {};
-					for( var fd in z['z_t'] ){
-						p[ fd+'' ] = [{"t":"T", "v":""}];
-					}
 					this.data['thing_i_of']['z'] = z;
-					this.data['thing']['props'] = p;
+					this.make_props();
 				}else{
 					this.data['import_err'] = "Template not found";
 				}
@@ -130,7 +148,7 @@ const object_template_create_v2 = {
 				"key": np,
 				"name": {"t":"T", "v":""}, 
 				"type": {"t":"KV", "v":"Text", "k":"T"}, 
-				"i_of": {"t":"GT", "i": "", "v": ""}
+				"m": {"t":"B", "v":"false"}, 
 			};
 		},
 		reset_form: function(){
@@ -145,7 +163,7 @@ const object_template_create_v2 = {
 		},
 		enable_template: function(){
 			this.data['thing']["z_t"] = {
-				"p1": {"key": "p1", "name": {"t":"T", "v": "Description"}, "type": {"t":"KV", "k":"T", "v":"text"} }
+				"p1": {"key": "p1", "name": {"t":"T", "v": "Description"}, "type": {"t":"KV", "k":"T", "v":"text"}, "m": {"t":"B", "v":"true"} }
 			};
 			this.data['thing']["z_o"] = ["p1"];
 			this.data['thing']["z_n"] = 2;
@@ -293,10 +311,13 @@ const object_template_create_v2 = {
 		add_sub_object: function( propf ){
 			var o = {};
 			var propd = this.data['thing_i_of']['z']['z_t'][ propf ];
-			for(var tdi in propd['z']['z_t']){
+			for( var tdi in propd['z']['z_t'] ){
 				o[ tdi ] = {"t":"T", "v":""};
 			}
-			this.data['thing']['props'][ propf ].push( o );
+			if( propf in this.data['thing']['props'] == false ){
+				this.data['thing']['props'][ propf ] = [];
+			}
+			this.data['thing']['props'][ propf ].push( {"t":"O", "v":o} );
 		},
 		del_sub_object: function( propf, vi ){
 			this.data['thing']['props'][ propf ].splice( vi,1 );
@@ -314,7 +335,7 @@ const object_template_create_v2 = {
 				</div>
 				<div class="code_line">
 					<div>Node Name</div>
-					<div><inputtextbox2 types="T" v-bind:v="data['thing']['l']" v-bind:datavar="'ref:'+refname+':data:thing:l'" ></inputtextbox2></div>
+					<div><inputtextbox2 types="T,GT" v-bind:v="data['thing']['l']" v-bind:datavar="'ref:'+refname+':data:thing:l'" ></inputtextbox2></div>
 				</div>
 			</div>
 			<div v-if="'z' in data['thing_i_of']==false" style="border:1px solid #ccc; margin-bottom:10px;" >No properties template defined for {{ data['thing']['i_of']['v'] }} nodes</div>
@@ -335,13 +356,13 @@ const object_template_create_v2 = {
 									<tbody>
 										<tr>
 											<td>-</td>
-											<td v-for="tdv in data['thing_i_of']['z']['z_t'][ propf ]['z']['z_o']" >{{ data['thing_i_of']['z']['z_t'][ propf ]['z']['z_t'][ tdv ]['l'] }}</td>
+											<td v-for="tdv in  data['thing_i_of']['z']['z_t'][ propf ]['z']['z_o']" >{{ data['thing_i_of']['z']['z_t'][ propf ]['z']['z_t'][ tdv ]['l'] }}</td>
 										</tr>
 										<tr v-for="pvv,pii in data['thing']['props'][ propf ]" >
-											<td><input type="button" class="btn btn-outline-danger btn-sm py-0" style="padding:0px;width:20px;" value="X" v-on:click="del_sub_object(propf,pii)" ></td>
+											<td><div class="btn btn-light btn-sm  text-danger py-1"  v-on:click="del_sub_object(propf,pii)" ><i class="fa-regular fa-trash-can"></i></td>
 											<td v-for="tdv in data['thing_i_of']['z']['z_t'][ propf ]['z']['z_o']" >
-												<template v-if="tdv in pvv" >
-													<inputtextbox2 types="T,GT" linkable="true" v-bind:v="pvv[ tdv ]" v-bind:datavar="'ref:'+refname+':data:thing:props:'+propf+':'+pii+':'+tdv" ></inputtextbox2>
+												<template v-if="tdv in pvv['v']" >
+													<inputtextbox2 types="T,GT" linkable="true" v-bind:v="pvv['v'][ tdv ]" v-bind:datavar="'ref:'+refname+':data:thing:props:'+propf+':'+pii+':v:'+tdv" ></inputtextbox2>
 												</template>
 											</td>
 										</tr>
@@ -355,7 +376,7 @@ const object_template_create_v2 = {
 								</div>
 								<div v-else >
 									<div v-for="pvv,pii in data['thing']['props'][ propf ]" style="display:flex; column-gap:5px; border-bottom:1px dashed #ccc; align-items:center;" >
-										<div><input type="button" class="btn btn-outline-danger btn-sm py-0"  style="padding:0px;width:20px;" value="x" v-on:click="del_sub(propf,pii)" ></div>
+										<div class="btn btn-light btn-sm py-0 text-danger"  style="padding:0px;width:20px;" v-on:click="del_sub(propf,pii)" ><i class="fa-regular fa-trash-can"></i></div>
 										<inputtextbox linkable="true" v-bind:v="pvv" v-bind:datavar="'ref:'+refname+':data:thing:props:'+propf+':'+pii" ></inputtextbox>
 									</div>
 									<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+"  style="padding:0px;width:20px;" v-on:click="add_sub(propf,pii)" ></div>
@@ -390,13 +411,16 @@ const object_template_create_v2 = {
 								</div>
 							</td>
 							<td>
-								<div><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="delete_field(propf)" ></div>
+								<div title="Mandatory" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:thing:z_t:'+propf+':m:v'" data-list="boolean" >{{ data['thing']['z_t'][ propf ]['m']['v'] }}</div>
 							</td>
 							<td>
-								<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="&uarr;" v-on:click="moveup(propf)" ></div>
+								<div class="btn btn-light btn-sm py-1 text-danger" v-on:click="delete_field(propf)" ><i class="fa-regular fa-trash-can"></i></div>
 							</td>
 							<td>
-								<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="&darr;" v-on:click="movedown(propf)" ></div>
+								<div><input type="button" class="btn btn-light btn-sm py-0" value="&uarr;" v-on:click="moveup(propf)" ></div>
+							</td>
+							<td>
+								<div><input type="button" class="btn btn-light btn-sm py-0" value="&darr;" v-on:click="movedown(propf)" ></div>
 							</td>
 						</tr>
 						<tr v-if="data['thing']['z_t'][ propf ]['type']['k']=='O'&&'z' in data['thing']['z_t'][ propf ]" >
@@ -426,13 +450,13 @@ const object_template_create_v2 = {
 														</div>
 													</td>
 													<td>
-														<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="&uarr;" v-on:click="object_field_moveup(propf,tvp)" ></div>
+														<div><input type="button" class="btn btn-light btn-sm py-0" value="&uarr;" v-on:click="object_field_moveup(propf,tvp)" ></div>
 													</td>
 													<td>
-														<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="&darr;" v-on:click="object_field_movedown(propf,tvp)" ></div>
+														<div><input type="button" class="btn btn-light btn-sm py-0" value="&darr;" v-on:click="object_field_movedown(propf,tvp)" ></div>
 													</td>
 													<td>
-														<div><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="object_field_delete(propf,tvp)" ></div>
+														<div class="btn btn-light btn-sm py-0 text-danger" v-on:click="object_field_delete(propf,tvp)" ><i class="fa-regular fa-trash-can"></i></div>
 													</td>
 												</tr>
 											</tbody>
@@ -471,7 +495,6 @@ const object_template_create_v2 = {
 			<div v-if="new_object_id" style="color:blue;" >Success. New Object Id: <a href="#" class="btn btn-outline-dark btn-sm py-0" v-on:click.prevent.stop="getlink2()" >{{ new_object_id }}</a></div>
 
 			<p>&nbsp;-</p><p>&nbsp;-</p>
-			<pre>{{ data['thing'] }}</pre>
 
 	</div>`
 };

@@ -173,31 +173,42 @@ while( 1 ){
 
 	$graph_res = $mongodb_con->find( $db_prefix . "_graph_dbs", ['app_id'=>$app_id] );
 	foreach( $graph_res['data'] as $i=>$graph ){
-			$need_objects_start = false;
-			if( !isset($graph['run']) ){
-				logit("Graph: " . $graph['name'], "Not running", ['graph'=>$graph['_id']]);
-				$need_objects_start = true;
-			}
-			if( isset($graph['workers']) ){
-				if( sizeof($graph['workers']) > 2 ){
-					$need_objects_start = false;
-					logit("Graph: " . $graph['name'], "TooMany Threads Found", ['graph'=>$graph['_id'], "count"=>sizeof($graph['workers']) ] );
-					foreach( $graph['workers'] as $worker_id=>$wd ){
-						logit("Graph: " . $graph['name'], "Thread Delete", ['graph'=>$graph['_id'], "thread_id"=>$worker_id]);
+		$need_objects_start = false;
+		if( !isset($graph['run']) ){
+			logit("Graph: " . $graph['name'], "Not running", ['graph'=>$graph['_id']]);
+			$need_objects_start = true;
+		}else if( isset($graph['workers']) ){
+			if( sizeof($graph['workers']) > 2 ){
+				$need_objects_start = false;
+				logit("Graph: " . $graph['name'], "TooMany Threads Found", ['graph'=>$graph['_id'], "count"=>sizeof($graph['workers']) ] );
+				foreach( $graph['workers'] as $worker_id=>$wd ){
+					logit("Graph: " . $graph['name'], "Thread Delete", ['graph'=>$graph['_id'], "thread_id"=>$worker_id]);
+					$mongodb_con->update_one( $db_prefix . "_graph_dbs", ["_id"=>$graph['_id']], [
+						'$unset'=>["workers.".$worker_id=>true]
+					]);
+				}
+				$mongodb_con->update_one( $db_prefix . "_graph_dbs", ["_id"=>$graph['_id']], [
+					'$unset'=>["run"=>true]
+				]);
+				logit("Graph: " . $graph['name'], "Stop Invoked", ['graph'=>$graph['_id']]);
+			}else if( sizeof($graph['workers']) ){
+				foreach( $graph['workers'] as $worker_id=>$wd ){
+					if( (time()-$wd['time']) > 30 ){
+						logit("Graph: " . $graph['name'], "Thread Inactive");
 						$mongodb_con->update_one( $db_prefix . "_graph_dbs", ["_id"=>$graph['_id']], [
 							'$unset'=>["workers.".$worker_id=>true]
 						]);
 					}
-					$mongodb_con->update_one( $db_prefix . "_graph_dbs", ["_id"=>$graph['_id']], [
-						'$unset'=>["run"=>true]
-					]);
-					logit("Graph: " . $graph['name'], "Stop Invoked", ['graph'=>$graph['_id']]);
 				}
+			}else{
+				logit("Graph: " . $graph['name'], "Zero Threads Found");
+				$need_objects_start = true;
 			}
-			if( $need_objects_start ){
-				logit("Graph: " . $graph['name'], "Start", ['graph'=>$graph['_id']]);
-				exec('php task_worker_graph.php '. $app_id . ' ' . $graph['_id'] . ' >> ' . $app_id .'_'.$graph['_id'].'.graph.log &', $eoutput);
-			}
+		}
+		if( $need_objects_start ){
+			logit("Graph: " . $graph['name'], "Start", ['graph'=>$graph['_id']]);
+			exec('php task_worker_graph.php '. $app_id . ' ' . $graph['_id'] . ' >> ' . $app_id .'_'.$graph['_id'].'.graph.log &', $eoutput);
+		}
 	}
 
 	//if( (time()-$last_task_check) > 60 )

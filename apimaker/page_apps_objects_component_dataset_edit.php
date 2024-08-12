@@ -86,9 +86,9 @@ const object_dataset_edit_record =  {
 		</div>
 		<template v-else >
 
+		<div style="padding:10px;float:right;" ><div class="btn btn-outline-dark btn-sm me-2" v-on:click="save_props()" >Save</div></div>
 		<div>DataSet: {{ data['thing']['l']['v'] }}. Record ID: {{ data['record']['_id'] }}</div>
 
-		<div style="padding:10px;" ><div class="btn btn-outline-dark btn-sm me-2" v-on:click="save_props()" >Save</div></div>
 		<div v-if="msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="msg" ></div>
 		<div v-if="err" style="color:red;  padding:5px; border:1px solid red;"  v-html="err" ></div>
 
@@ -151,7 +151,6 @@ const object_dataset_edit_record =  {
 			<div v-if="msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="msg" ></div>
 			<div v-if="err" style="color:red;  padding:5px; border:1px solid red;"  v-html="err" ></div>
 		</div>
-
 	</div>`
 };
 </script>

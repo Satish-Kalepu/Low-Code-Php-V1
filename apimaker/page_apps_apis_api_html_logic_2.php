@@ -297,6 +297,22 @@
 								</template>
 							</div>
 						</template>
+						<template v-if="s2_dddddegats['k']['v']=='VerifyCaptcha'" >
+							<div  style="border-left:1px solid orange; padding-left:10px;" >
+								<div style="display: flex; align-items:flex-start; column-gap:10px;">
+									<div style="width:80px;text-align: right;">Captcha: </div>
+									<inputtextbox2 types="T,V" datafor="stages" v-bind:v="s2_dddddegats['d']['captcha']" v-bind:datavar="'d:captcha'" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]"></inputtextbox2>
+								</div>
+								<div style="display: flex; align-items:flex-start; column-gap:10px;">
+									<div style="width:80px;text-align: right;">Code: </div>
+									<inputtextbox2 types="T,V" datafor="stages" v-bind:v="s2_dddddegats['d']['code']" v-bind:datavar="'d:code'" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]"></inputtextbox2>
+								</div>
+								<div style="display: flex; align-items:flex-start; column-gap:10px;">
+									<div style="width:80px;text-align: right;">Output: </div>
+									<inputtextbox2 types="T" datafor="stages" v-bind:v="s2_dddddegats['d']['output']" v-bind:datavar="'d:output'" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]"></inputtextbox2>
+								</div>
+							</div>
+						</template>
 						<template v-if="s2_dddddegats['k']['v']=='PushToQueue'" >
 							<pushtoqueue v-bind:ref="'stage_'+s2_iiiiiegats+'_ptq'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_ptq'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d" v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></pushtoqueue>
 						</template>

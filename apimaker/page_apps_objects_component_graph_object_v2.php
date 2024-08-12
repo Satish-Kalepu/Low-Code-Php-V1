@@ -9,6 +9,7 @@ const graph_object_v2 =  {
 		this.$root.window_tabs[ this.refname+'' ]['data'] = {
 			"editing_dataset_record_index": -1,
 			"thing": {},
+			"is_deleted": false,
 			"new_field": "",
 			"new_field_id": -1, 
 			"tab": "home",
@@ -17,17 +18,18 @@ const graph_object_v2 =  {
 			"edit_field": "", "new_field": "",
 			"new_field_d": {
 				"field": {"t":"T", "v":""}, 
-				"type":  {"t":"KV", "v":"Text", "k":"T"}
+				"type":  {"t":"KV", "v":"Text", "k":"T"},
+				"m":  {"t":"B", "v":"false"}
 			},
 			"z_t_msg": "", "z_t_err": "",
 			"thing_z_t_edit": {}, "thing_z_o_edit": [], "thing_z_n_edit": -1,
 			"thing_z_t_edit_field": "", "thing_new_field": "",
 			"thing_z_t_new_field_d": {
 				"field": {"t":"T", "v":""},
-				"type":  {"t":"KV", "v":"Text", "k":"T"}
+				"type":  {"t":"KV", "v":"Text", "k":"T"},
+				"m":  {"t":"B", "v":"false"}
 			},
 			"thing_z_t_msg": "", "thing_z_t_err": "",
-
 			"edit_label": false, "edit_label_v": {},
 			"edit_al": false, "edit_al_v": [],
 			"edit_type": false, "edit_type_v": {},
@@ -38,9 +40,9 @@ const graph_object_v2 =  {
 			"records_current_page": 1,
 			"records_pages": [],
 			"records_search":{
-				"sort": "_id", 
+				"sort": {"t":"KV", "k":"_id","v":"ID"}, 
 				"order": "Asc", 
-				"cond":[{"field":"", "ops": "=", "value":""}]
+				"cond":[{"field":{"t":"KV", "k":"_id","v":"ID"}, "ops": {"t":"KV", "k":"=", "v":"="}, "value":{"t":"T", "v":""} }]
 			},
 			"i_of_msg": "", "i_of_err": "",
 			"label_msg": "", "label_err": "","al_msg": "", "al_err": "","type_msg": "", "type_err": "",
@@ -69,12 +71,10 @@ const graph_object_v2 =  {
 					"i":{"t":"T","v":""}
 				};
 			}
-			if( "p_of" in this.data['thing'] == false || typeof(this.data['thing']['p_of']) != "object" || "length" in this.data['thing']['p_of'] == false ){
-				this.data['thing']['p_of'] = [{
-					"t":"GT", 
-					"v":{"t":"T","v":""},
-					"i":{"t":"T","v":""}
-				}];
+			if( "p_of" in this.data['thing'] ){
+				if( typeof(this.data['thing']['p_of']) != "object" || "length" in this.data['thing']['p_of'] ){
+					unset(this.data['thing']['p_of']);
+				}
 			}
 			if( "al" in this.data['thing'] == false || typeof(this.data['thing']['al']) != "object" || "length" in this.data['thing']['al'] == false ){
 				this.data['thing']['al'] = [];
@@ -96,16 +96,32 @@ const graph_object_v2 =  {
 			}
 			this.open_records();
 			if( 'z_t'  in this.data['thing'] ){
-				var pd = [];
+				var pd = [
+					{"t":"KV", "k":'_id', "v":'ID'}
+				];
+				if( this.data['thing']['i_t']['v']=="N" ){
+					pd.push( {"t":"KV", "k":'l', "v":"Label"} );
+				}
+				if( this.data['thing']['i_t']['v']=="N" ){
+					pd.push( {"t":"KV", "k":'al', "v":"Alias"} );
+				}
 				for(var rd in this.data['thing']['z_t'] ){
 					pd.push( {"t":"KV", "k":rd+'', "v":this.data['thing']['z_t'][rd]['l']['v']+''} );
 				}
 				this.$root.context_data__[ "props_fields" ] = pd;
 			}
+			this.$root.context_data__[ "search_ops" ] = [
+				{"t":"KV", "k":"=", "v":"="},
+				{"t":"KV", "k":"!=", "v":"!="},
+				{"t":"KV", "k":">", "v":">"},
+				{"t":"KV", "k":">=", "v":">="},
+				{"t":"KV", "k":"<", "v":"<"},
+				{"t":"KV", "k":"<=", "v":"<="},
+			];
 		},
 		enable_template: function(){
 			this.data['thing_z_t_edit'] = {
-				"p1":{"l":{"t":"T","v":"Description"}, "t":{"t":"KV", "v":"Text", "k":"T"}, "e":false, "m":false},
+				"p1":{ "l":{"t":"T","v":"Description"}, "t":{"t":"KV", "v":"Text", "k":"T"}, "e":false, "m":{'t':"B", 'v':false} },
 			};
 			this.data['thing_z_o_edit'] = ["p1"];
 			this.data['thing_z_n_edit'] = 2;
@@ -114,7 +130,7 @@ const graph_object_v2 =  {
 			// this.data['thing_z_o_edit'] = JSON.parse(JSON.stringify(this.data['thing']['z_o']));
 			// this.data['thing_z_n_edit'] = this.data['thing']['z_n']+0;
 		},
-		load_thing: function( ){
+		load_thing: function(){
 			this.data['msg'] = "Loading...";
 			this.data['thing'] = {};
 			this.data['records'] = [];
@@ -192,7 +208,7 @@ const graph_object_v2 =  {
 					"l": JSON.parse(JSON.stringify(this.data['new_field_d']['field'])),
 					"t": JSON.parse(JSON.stringify(this.data['new_field_d']['type'])),
 					"e": false,
-					"m": false
+					"m": JSON.parse(JSON.stringify(this.data['new_field_d']['m'])),
 				},
 				"z_n": this.data['edit_z_n']
 			}).then(response=>{
@@ -207,7 +223,7 @@ const graph_object_v2 =  {
 									"l": JSON.parse(JSON.stringify(this.data['new_field_d']['field'])),
 									"t": JSON.parse(JSON.stringify(this.data['new_field_d']['type'])),
 									"e": false,
-									"m": false
+									"m": JSON.parse(JSON.stringify(this.data['new_field_d']['m'])),
 								};
 								this.data['edit_z_o'].push( this.data['new_field']+'' );
 								this.data['thing']['i_of']['z_t'] = JSON.parse(JSON.stringify(this.data['edit_z_t']));
@@ -262,6 +278,9 @@ const graph_object_v2 =  {
 			var cond = {
 				"action": "objects_load_records",
 				"object_id": this.data['thing']['_id'],
+				"sort": this.data['records_search']['sort']['k'],
+				"order": this.data['records_search']['order'],
+				"cond": this.data['records_search']['cond'],
 			};
 			if( this.data['records_from'].trim() != "" ){
 				cond['from'] = this.data['records_from'].trim();
@@ -278,7 +297,14 @@ const graph_object_v2 =  {
 								this.data['records_cnt'] = response.data['cnt'];
 								this.data['records'] = response.data['data'];
 								if( response.data['data'].length >= 100 ){
-									this.data['records_last'] = this.data['records'][ this.records.length-1 ]['l']['v']+'';
+									if( this.data['records_search']['sort']['k'] =="_id" ){
+										this.data['records_last'] = this.data['records'][ this.data['records'].length-1 ]['_id']+'';
+									}else if( this.data['records_search']['sort']['k'] =="label" ){
+										this.data['records_last'] = this.data['records'][ this.data['records'].length-1 ]['l']['v']+'';
+									}else{
+										this.data['records_last'] = this.data['records'][ this.data['records'].length-1 ]['props'][ this.data['records_search']['sort']['k'] ][0]['v']+'';
+										this.echo__( this.data['records'][ this.data['records'].length-1 ]['props'][ this.data['records_search']['sort']['k'] ] );
+									}
 								}else{
 									this.data['records_last'] = "";
 								}
@@ -644,7 +670,7 @@ const graph_object_v2 =  {
 					"l": JSON.parse(JSON.stringify(this.data['thing_z_t_new_field_d']['field'])),
 					"t": JSON.parse(JSON.stringify(this.data['thing_z_t_new_field_d']['type'])),
 					"e": false,
-					"m": false
+					"m": JSON.parse(JSON.stringify(this.data['thing_z_t_new_field_d']['m'])),
 				},
 				"z_n": this.data['thing_z_n_edit']
 			}).then(response=>{
@@ -659,7 +685,7 @@ const graph_object_v2 =  {
 									"l": JSON.parse(JSON.stringify(this.data['thing_z_t_new_field_d']['field'])),
 									"t": JSON.parse(JSON.stringify(this.data['thing_z_t_new_field_d']['type'])),
 									"e": false,
-									"m": false
+									"m": JSON.parse(JSON.stringify(this.data['thing_z_t_new_field_d']['m'])),
 								};
 								this.data['thing_z_o_edit'].push( this.data['thing_z_t_new_field']+'' );
 								this.data['thing']['z_t'] = JSON.parse(JSON.stringify(this.data['thing_z_t_edit']));
@@ -1061,27 +1087,18 @@ const graph_object_v2 =  {
 				"record":this.data['records'][ vid ]
 			});
 		},
-		dataset_record_updated: function(vd){
-			if( this.data['records'][ this.data['editing_dataset_record_index'] ]['_id'] == vd['record_id'] ){
-				this.data['records'][ this.data['editing_dataset_record_index'] ]['props'] = JSON.parse(JSON.stringify(vd['record_props']));
-			}else{
-				this.echo__( "dataset_record_updated: mismatched event" );
-			}
-		},
-		record_delete: function(vid){
-			if( confirm("Are you sure?" ) ){
-				this.deleting_record_index = vid;
-				axios.post("?", {
-					"action": "objects_dataset_record_delete", 
-					"object_id": this.data['thing']['_id'], 
-					"record_id": this.records[ vid ]['_id']
+		records_empty: function(){
+			if( confirm("Are you sure to delete all nodes under `" + this.data['thing']['l']['v'] + "`") ){
+				axios.post("?",{
+					"action": "objects_records_empty",
+					"instance_id": this.data['thing']['_id']
 				}).then( response=>{
 					if( response.status == 200 ){
 						if( typeof( response.data) == "object" ){
 							if( 'status' in response.data ){
 								if( response.data['status'] == "success" ){
-									alert("record deleted");
-									this.records.splice(this.deleting_record_index, 1);
+									this.data['records'] = [];
+									this.open_records();
 								}else{
 									alert( response.data['error'] );
 								}
@@ -1099,11 +1116,155 @@ const graph_object_v2 =  {
 				});
 			}
 		},
+		nodes_empty: function(){
+			if( confirm("Are you sure to delete all nodes under `" + this.data['thing']['l']['v'] + "`") ){
+				axios.post("?",{
+					"action": "objects_nodes_empty",
+					"instance_id": this.data['thing']['_id']
+				}).then( response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.data['records'] = [];
+									this.open_records();
+								}else{
+									alert( response.data['error'] );
+								}
+							}else{
+								alert( "Incorrect response");
+							}
+						}else{
+							alert(  "Incorrect response" );
+						}
+					}else{
+						alert( "http error: " . response.status );
+					}
+				}).catch(error=>{
+					alert(  this.get_http_error__(error) );
+				});
+			}
+		},
+		dataset_record_updated: function(vd){
+			if( this.data['records'][ this.data['editing_dataset_record_index'] ]['_id'] == vd['record_id'] ){
+				this.data['records'][ this.data['editing_dataset_record_index'] ]['props'] = JSON.parse(JSON.stringify(vd['record_props']));
+			}else{
+				this.echo__( "dataset_record_updated: mismatched event" );
+			}
+		},
+		record_delete: function(vid){
+			if( confirm("Are you sure?" ) ){
+				this.deleting_record_index = vid;
+				axios.post("?", {
+					"action": "objects_dataset_record_delete", 
+					"object_id": this.data['thing']['_id'], 
+					"record_id": this.data['records'][ vid ]['_id']
+				}).then( response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									alert("record deleted");
+									this.data['records'].splice(this.deleting_record_index, 1);
+								}else{
+									alert( response.data['error'] );
+								}
+							}else{
+								alert( "Incorrect response");
+							}
+						}else{
+							alert(  "Incorrect response" );
+						}
+					}else{
+						alert( "http error: " . response.status );
+					}
+				}).catch(error=>{
+					alert(  this.get_http_error__(error) );
+				});
+			}
+		},
+		node_delete: function(vid){
+			if( confirm("Are you sure?" ) ){
+				this.deleting_record_index = vid;
+				axios.post("?", {
+					"action": "objects_delete_node", 
+					"object_id": this.data['records'][ vid ]['_id'], 
+				}).then( response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									alert("Node deleted");
+									this.data['records'].splice(this.deleting_record_index, 1);
+								}else{
+									alert( response.data['error'] );
+								}
+							}else{
+								alert( "Incorrect response");
+							}
+						}else{
+							alert(  "Incorrect response" );
+						}
+					}else{
+						alert( "http error: " . response.status );
+					}
+				}).catch(error=>{
+					alert(  this.get_http_error__(error) );
+				});
+			}
+		},
+		node_delete_main: function(vid){
+			if( confirm("Are you sure?" ) ){
+				axios.post("?", {
+					"action": "objects_delete_node", 
+					"object_id": this.data['thing']['_id'], 
+				}).then( response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									alert("Node deleted");
+									this.data['is_deleted'] = true;
+									this.data['thing'] = {};
+								}else{
+									alert( response.data['error'] );
+								}
+							}else{
+								alert( "Incorrect response");
+							}
+						}else{
+							alert(  "Incorrect response" );
+						}
+					}else{
+						alert( "http error: " . response.status );
+					}
+				}).catch(error=>{
+					alert(  this.get_http_error__(error) );
+				});
+			}
+		},
+		data_search_add_cond: function(){
+			if( this.data['records_search']['cond'].length < 3 ){
+				this.data['records_search']['cond'].push( {"field":{"t":"KV", "k":"_id","v":"ID"}, "ops": {"t":"KV", "k":"=", "v":"="}, "value":{"t":"T", "v":"="} } );
+			}
+		},
+		data_search_del_cond: function(vi){
+			if( this.data['records_search']['cond'].length > 1 ){
+				this.data['records_search']['cond'].splice(vi,1);
+			}
+		},
 	},
 	template: `<div class="code_line">
 	<div v-if="typeof(data)=='undefined'" >Loading</div>
+	<div v-else-if="data['is_deleted']" >
+		<p style="color:red;" >This node was deleted!</p>
+	</div>
 	<div v-else-if="'thing' in data==false" >Loading...</div>
-	<div v-else-if="'l' in data['thing']==false||'i_of' in data['thing']==false" >Loading... ...</div>
+	<div v-else-if="'l' in data['thing']==false||'i_of' in data['thing']==false" >
+		<p>Loading... ...</p>
+		<div v-if="data['msg']" style="color:blue;" >{{ data['msg'] }}</div>
+		<div v-if="data['err']" style="color:red;" >{{ data['err'] }}</div>
+	</div>
 	<template v-else>
 		<table class="table table-bordered table-sm w-auto" >
 			<tbody>
@@ -1112,6 +1273,8 @@ const graph_object_v2 =  {
 				<td>Type</td>
 				<td>Alias</td>
 				<td>Instance Of</td>
+				<td>Part Of</td>
+				<td>-</td>
 			</tr>
 			<tr>
 				<td>
@@ -1171,20 +1334,20 @@ const graph_object_v2 =  {
 						<div><div class="btn btn-outline-link btn-sm  py-0" v-on:click="open_edit_al()" >&#9998;</div></div>
 					</div>
 					<div v-if="data['edit_al']==true" >
-							<div style="margin-bottom:10px;">
-								<div v-for="alv,ali in data['edit_al_v']" style="display:flex; column-gap:5px; border-bottom:1px dashed #ccc; align-items:center;" >
-									<div><input type="button" class="btn btn-outline-danger btn-sm py-0"  style="padding:0px;width:20px;" value="x" v-on:click="del_al(ali)" ></div>
-									<inputtextbox2 types="T,GT" v-bind:v="alv" v-bind:datavar="'ref:'+refname+':data:edit_al_v:'+ali" ></inputtextbox2>
-								</div>
-								<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" style="padding:0px;width:20px;" v-on:click="add_al(0)" ></div>
+						<div style="margin-bottom:10px;">
+							<div v-for="alv,ali in data['edit_al_v']" style="display:flex; column-gap:5px; border-bottom:1px dashed #ccc; align-items:center;" >
+								<div><input type="button" class="btn btn-outline-danger btn-sm py-0"  style="padding:0px;width:20px;" value="x" v-on:click="del_al(ali)" ></div>
+								<inputtextbox2 types="T,GT" v-bind:v="alv" v-bind:datavar="'ref:'+refname+':data:edit_al_v:'+ali" ></inputtextbox2>
 							</div>
-							<div>
-								<div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_al()" >Save</div>
-								<div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="data['edit_al']=false" >Cancel</div>
-							</div>
+							<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+" style="padding:0px;width:20px;" v-on:click="add_al(0)" ></div>
+						</div>
+						<div>
+							<div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_al()" >Save</div>
+							<div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="data['edit_al']=false" >Cancel</div>
+						</div>
 
-							<div v-if="data['al_msg']" style="color:blue; padding:5px; border:1px solid blue;" v-html="data['al_msg']" ></div>
-							<div v-if="data['al_err']" style="color:red; padding:5px; border:1px solid red;"   v-html="data['al_err']" ></div>
+						<div v-if="data['al_msg']" style="color:blue; padding:5px; border:1px solid blue;" v-html="data['al_msg']" ></div>
+						<div v-if="data['al_err']" style="color:red; padding:5px; border:1px solid red;"   v-html="data['al_err']" ></div>
 					</div>
 			</td>
 			<td>
@@ -1206,23 +1369,22 @@ const graph_object_v2 =  {
 						<div v-if="data['i_of_err']" style="color:red;  padding:5px; border:1px solid red;" v-html="data['i_of_err']" ></div>
 					</div>
 			</td>
+			<td>
+				<div v-if="'p_of' in data['thing']" >
+					<template v-for="pd,pi in data['thing']['p_of']" >
+						<template v-if="'v' in pd&&'i' in pd" >
+							<a href="#" v-on:click.prevent.stop="getlink(pd['i'])" >{{ pd['v'] }}</a>
+						</template>
+					</template>
+				</div>
+			</td>
+			<td>
+				<div class="btn btn-light btn-sm text-danger py-1" v-on:click="node_delete_main" ><i class="fa-regular fa-trash-can"></i></div>
+			</td>
 			</tr>
 		</tbody>
 		</table>
-			<!--<tr>
-				<td>Part Of</td>
-				<td>
-					<template v-if="'p_of' in data['thing']" >
-						<div v-if="'p_of' in data['thing']" class="codeline_thing" style="display:flex;column-gap:10px;" >
-							<div>
-								<div v-if="typeof(data['thing']['p_of']['v'])!=undefined" title="Thing" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:thing:p_of:v'"  data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" >{{ data['thing']['p_of']['v']['l']['v'] }}</div>
-								<div v-else>data['thing']['p_of']['v'] Undefined</div>
-							</div>
-						</div>
-					</template>
-					<div>Undefined</div>
-				</td>
-			</tr>-->
+
 
 		<div class="graph_object_tabs_nav_bar">
 			<div class="graph_object_tabs_nav_container" id="tabs_container">
@@ -1496,7 +1658,6 @@ const graph_object_v2 =  {
 		</div>
 		<div v-if="data['tab']=='template2'" style="border:1px solid #999;border-top:1px solid white;margin-bottom:20px; background-color:white;padding:10px;"  >
 				<div style="border-bottom:1px solid #ccc; padding:10px; background-color:#f8f8f8;">Properties Template for sub nodes</div>
-
 				<div v-if="data['thing_z_o_edit'].length==0" >
 					<p>Do you want to enable creation fo Sub nodes under {{ data['thing']['l']['v'] }} </p>
 					<div><div class="btn btn-outline-dark btn-sm" v-on:click="enable_template()" >Enable Template for Nodes</div></div>
@@ -1522,8 +1683,14 @@ const graph_object_v2 =  {
 									<div v-else>{{ data['thing_z_t_edit'][ propf ]['t']['v'] }}</div>
 								</div>
 							</td>
+							<td>
+								<div v-if="propf in data['thing_z_t_edit']" >
+									<div v-if="data['thing_z_t_edit_field']==propf" title="Mandatory" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:thing_z_t_edit:'+propf+':m:v'" data-list="boolean" >{{ data['thing_z_t_edit'][propf]['m']['v'] }}</div>
+									<div v-else>{{ data['thing_z_t_edit'][ propf ]['m']['v'] }}</div>
+								</div>
+							</td>
 							<td v-if="data['thing_z_t_edit_field']==''">
-								<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="&#9998;" v-on:click="data['thing_z_t_edit_field']=propf+''" ></div>
+								<div class="btn btn-light btn-sm py-1" v-on:click="data['thing_z_t_edit_field']=propf+''" ><i class="fa-regular fa-pen-to-square"></i></div>
 							</td>
 							<td v-if="data['thing_z_t_edit_field']&&propf==data['thing_z_t_edit_field']">
 								<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="Save" v-on:click="thing_z_t_save_field()" ></div>
@@ -1532,13 +1699,13 @@ const graph_object_v2 =  {
 								<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="Cancel" v-on:click="data['thing_z_t_edit_field']=''" ></div>
 							</td>
 							<td v-if="data['thing_z_t_edit_field']==''">
-								<div><input type="button" class="btn btn-outline-danger btn-sm py-0" value="X" v-on:click="thing_z_t_delete_field(propf)" ></div>
+								<div class="btn btn-light btn-sm text-danger py-1" v-on:click="thing_z_t_delete_field(propf)" ><i class="fa-regular fa-trash-can"></i></div>
 							</td>
 							<td v-if="data['thing_z_t_edit_field']==''">
-								<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="&uarr;" v-on:click="thing_z_t_moveup(propf)" ></div>
+								<div><input type="button" class="btn btn-light btn-sm py-0" value="&uarr;" v-on:click="thing_z_t_moveup(propf)" ></div>
 							</td>
 							<td v-if="data['thing_z_t_edit_field']==''">
-								<div><input type="button" class="btn btn-outline-secondary btn-sm py-0" value="&darr;" v-on:click="thing_z_t_movedown(propf)" ></div>
+								<div><input type="button" class="btn btn-light btn-sm py-0" value="&darr;" v-on:click="thing_z_t_movedown(propf)" ></div>
 							</td>
 						</tr>
 						<tr v-if="data['thing_z_t_edit'][ propf ]['t']['k']=='O'" >
@@ -1619,10 +1786,12 @@ const graph_object_v2 =  {
 
 		<template v-if="data['thing']['i_t']['v']=='N'" >
 
-			<div style="line-height:30px; border-bottom:1px solid #ccc; padding:10px; background-color:#f8f8f8;">Nodes under "{{ data['thing']['l']['v'] }}"</div>
+			<div style="line-height:30px; border-bottom:1px solid #ccc; padding:10px; background-color:#f8f8f8;">
+				<span>Nodes in "{{ data['thing']['l']['v'] }}"</span>
+				<div class="btn btn-sm btn-outline-dark float-end ms-2" style="float:right;" v-on:click="show_create2()" >Create Node</div>
+				<div class="btn btn-sm btn-outline-dark float-end ms-2" style="float:right;" v-on:click="nodes_empty()" >Empty Nodes</div>
+			</div>
 			<div style="padding:10px; " >
-
-				<div class="btn btn-sm btn-outline-dark float-end me-2" style="float:right;" v-on:click="show_create2()" >Create Node</div>
 				
 				<div style="display:flex; column-gap:20px;" >
 					<div>Records:  {{ data['records_cnt'] }}</div>
@@ -1640,11 +1809,46 @@ const graph_object_v2 =  {
 					</div>
 				</div>
 
+				<div style="display:flex; column-gap:10px;" >
+					<div>Sort:</div>
+					<div>
+						<div title="Sort Field" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:sort'" data-list="list-kv" data-list-values="props_fields" >{{ data['records_search']['sort']['v'] }}</div>
+					</div>
+					<div>
+						<div title="Order" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:order'" data-list="list" data-list-values="Asc,Dsc" >{{ data['records_search']['order'] }}</div>
+					</div>
+					<div>Search: </div>
+					<div>
+							<div v-for="rd,ri in data['records_search']['cond']"  style="display:flex;" >
+								<div>
+									<div title="Sort Field" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':field'" data-list="list-kv" data-list-values="props_fields" >{{ data['records_search']['cond'][ri]['field']['v'] }}</div>
+								</div>
+								<div>
+									<div title="Operator" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':ops'" data-list="list-kv" data-list-values="search_ops" >{{ data['records_search']['cond'][ri]['ops']['v'] }}</div>
+								</div>
+								<div>
+									<div title="Text" class="editable" v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':value:v'"  ><div contenteditable style="white-space:nowrap;" spellcheck="false" data-type="editable"  v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':value:v'" data-allow="T" >{{ rd['v'] }}</div></div>
+								</div>
+								<div>
+									<input v-if="ri==0&&data['records_search']['cond'].length<3" type="button" class="btn btn-outline-secondary btn-sm py-0" value="+" v-on:click="data_search_add_cond()" >
+									<input v-if="ri>0" type="button" class="btn btn-outline-secondary btn-sm py-0" value="x" v-on:click="data_search_del_cond(ri)" >
+								</div>
+							</div>
+					</div>
+					<div>
+						<input type="button" class="btn btn-outline-dark btn-sm py-0" value="Search" v-on:click="open_records()" >
+					</div>
+					<div>
+						<input v-if="data['records'].length>0&&data['records_last']!=''" type="button" class="btn btn-outline-dark btn-sm py-0" value="Next" v-on:click="records_goto_next()" >
+					</div>
+				</div>
+
 				<div style="margin-top:10px;overflow:auto; width:calc(100%); border:1px solid #ccc; height:250px;resize:both;" >
 
 					<table class="table table-bordered table-sm w-auto" >
 						<thead class="bg-light" style="position:sticky; top:0px;">
 						<tr>
+							<th>-</th>
 							<th>_id</th>
 							<th>Label</th>
 							<template v-if="'z_o' in data['thing']" >
@@ -1655,6 +1859,7 @@ const graph_object_v2 =  {
 						</thead>
 						<tbody>
 						<tr v-for="rec,reci in data['records']">
+							<td v-on:click="node_delete(reci)"><i class="fa-regular fa-trash-can"></i></td>
 							<td><div class="zz" ><a href="#" v-on:click.prevent.stop="getlink(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
 							<td><div class="zz" v-if="'l' in rec" ><inputtextview v-bind:v="rec['l']" ></inputtextview></div></td>
 							<template v-if="'z_o' in data['thing']" >
@@ -1684,56 +1889,42 @@ const graph_object_v2 =  {
 			<div style="line-height:30px; border-bottom:1px solid #ccc; padding:10px; background-color:#f8f8f8;">
 				<span>Records in "{{ data['thing']['l']['v'] }}"</span>
 				<div class="btn btn-sm btn-outline-dark float-end ms-2" style="float:right;" v-on:click="record_create()" >Create Record</div>
+				<div class="btn btn-sm btn-outline-dark float-end ms-2" style="float:right;" v-on:click="records_empty()" >Empty List</div>
 				<div style="float:right;">Records:  {{ data['records_cnt'] }}</div>
 			</div>
 			<div style="padding:10px; " >
 
 				<div style="display:flex; column-gap:10px;" >
+					<div>Sort:</div>
 					<div>
-						<div>Sort: </div>
-						<div>
-							<div title="Sort Field" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:sort'" data-list="list-kv" data-list-values="props_fields" >{{ data['records_search']['sort']['v'] }}</div>
-						</div>
+						<div title="Sort Field" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:sort'" data-list="list-kv" data-list-values="props_fields" >{{ data['records_search']['sort']['v'] }}</div>
 					</div>
 					<div>
-						<div>Order: </div>
-						<div><select v-model="data['records_search']['order']" class="form-select form-select-sm w-auto py-0" >
-								<option value="Asc" >Asc</option>
-								<option value="Dsc" >Dsc</option>
-							</select>
-						</div>
+						<div title="Order" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:order'" data-list="list" data-list-values="Asc,Dsc" >{{ data['records_search']['order'] }}</div>
 					</div>
+					<div>Search: </div>
 					<div>
 							<div v-for="rd,ri in data['records_search']['cond']"  style="display:flex;" >
 								<div>
-									<select v-model="data['records_search']['cond'][ri]['field']" class="form-select form-select-sm w-auto py-0" >
-										<option value="_id" >Id</option>
-										<option v-for="d,i in data['thing']['z_o']" v-bind:value="d" >{{ data['thing']['z_t'][d]['l']['v'] }}</option>
-									</select>
+									<div title="Sort Field" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':field'" data-list="list-kv" data-list-values="props_fields" >{{ data['records_search']['cond'][ri]['field']['v'] }}</div>
 								</div>
 								<div>
-									<select v-model="data['records_search']['cond'][ri]['ops']" class="form-select form-select-sm w-auto py-0" >
-										<option value="=" >=</option>
-										<option value="!=" >!=</option>
-										<option value=">" >&gt;</option>
-										<option value=">=" >&gt;=</option>
-										<option value="<=" >&lt;</option>
-										<option value="<=" >&lt;=</option>
-									</select>
+									<div title="Operator" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':ops'" data-list="list-kv" data-list-values="search_ops" >{{ data['records_search']['cond'][ri]['ops']['v'] }}</div>
 								</div>
 								<div>
-									<input type="text" v-model="data['records_search']['cond'][ri]['value']" class="form-control form-control-sm w-auto py-0" >
+									<div title="Text" class="editable" v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':value:v'"  ><div contenteditable style="white-space:nowrap;" spellcheck="false" data-type="editable"  v-bind:data-var="'ref:'+refname+':data:records_search:cond:'+ri+':value:v'" data-allow="T" >{{ rd['v'] }}</div></div>
 								</div>
 								<div>
-									<input type="button" class="btn btn-outline-secondary btn-sm py-0" value="+" >
+									<input v-if="ri==0&&data['records_search']['cond'].length<3" type="button" class="btn btn-outline-secondary btn-sm py-0" value="+" v-on:click="data_search_add_cond()" >
+									<input v-if="ri>0" type="button" class="btn btn-outline-secondary btn-sm py-0" value="x" v-on:click="data_search_del_cond(ri)" >
 								</div>
 							</div>
 					</div>
 					<div>
-						<input type="button" class="btn btn-outline-dark btn-sm" value="Search" v-on:click="open_records()" >
+						<input type="button" class="btn btn-outline-dark btn-sm py-0" value="Search" v-on:click="open_records()" >
 					</div>
 					<div>
-						<input v-if="data['records'].length>0&&data['records_last']!=''" type="button" class="btn btn-outline-dark btn-sm py-0 px-0" value="Next" v-on:click="records_goto_next()" >
+						<input v-if="data['records'].length>0&&data['records_last']!=''" type="button" class="btn btn-outline-dark btn-sm py-0" value="Next" v-on:click="records_goto_next()" >
 					</div>
 				</div>
 
@@ -1788,4 +1979,5 @@ const graph_object_v2 =  {
 	</template>
 </div>`
 };
+
 </script>

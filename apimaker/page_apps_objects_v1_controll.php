@@ -15,6 +15,37 @@ function send_to_keywords_queue($object_id){
 		'm_i'=>date("Y-m-d H:i:s")
 	]);
 }
+function send_to_keywords_delete_queue($object_id){
+	global $mongodb_con;global $db_prefix;global $graph_queue;global $graph_id;
+	//error_log("queue: " . $object_id );
+	$task_id = generate_task_queue_id();
+	$mongodb_con->insert( $graph_queue, [
+		'_id'=>$task_id,
+		'id'=>$task_id,
+		'data'=>[
+			"action"=> "thing_delete",
+			'graph_id'=>$graph_id,
+			"thing_id"=>$object_id
+		],
+		'm_i'=>date("Y-m-d H:i:s")
+	]);
+}
+function send_to_records_queue( $object_id, $record_id, $action ){
+	global $mongodb_con;global $db_prefix;global $graph_queue;global $graph_id;
+	//error_log("queue: " . $object_id );
+	$task_id = generate_task_queue_id();
+	$mongodb_con->insert( $graph_queue, [
+		'_id'=>$task_id,
+		'id'=>$task_id,
+		'data'=>[
+			"action"=> $action,
+			'graph_id'=>$graph_id,
+			"object_id"=>$object_id,
+			"record_id"=>$record_id
+		],
+		'm_i'=>date("Y-m-d H:i:s")
+	]);
+}
 
 
 if( $_GET['action'] == "buildkeywords" ){
@@ -117,8 +148,10 @@ if( $_POST['action'] == "objects_load_object" ){
 			$res['data']['i_of']['z_o'] = [];
 			$res['data']['i_of']['z_n'] = 1;
 		}
+		json_response($res);
+	}else{
+		json_response(["status"=>"fail", "error"=>"Node not found"]);
 	}
-	json_response($res);
 	exit;
 }
 
@@ -157,17 +190,49 @@ if( $_POST['action'] == "objects_load_records" ){
 		$cond = [];
 		$res = $mongodb_con->count( $graph_things_dataset, $cond );
 		$cnt = (int)$res['data'];
-		if( $_POST['from'] ){
-			$cond['l.v'] = ['$gt'=> $_POST['from']];
+		$sort = [];
+		if( $_POST['sort'] == "_id" ){
+			if( $_POST['order'] == "Asc" ){
+				$sort['_id'] = 1;
+				if( $_POST['from'] ){$cond['_id'] = ['$gte'=> $_POST['from']];}
+				if( $_POST['last'] ){$cond['_id'] = ['$gt'=> $_POST['last']];}
+			}else{
+				$sort['_id'] = -1;
+				if( $_POST['from'] ){$cond['_id'] = ['$lte'=> $_POST['from']];}
+				if( $_POST['last'] ){$cond['_id'] = ['$lt'=> $_POST['last']];}
+			}
+		}else{
+			if( $_POST['order'] == "Asc" ){
+				$sort = [ "props.".$_POST['sort'].".v" => 1, "_id"=>1 ];
+				if( $_POST['from'] ){$cond["props.".$_POST['sort'].".v"] = ['$gte'=> $_POST['from']];}
+				if( $_POST['last'] ){$cond["props.".$_POST['sort'].".v"] = ['$gt'=> $_POST['last']];}
+			}else{
+				$sort = [ "props.".$_POST['sort'].".v" => -1, "_id"=>1 ];
+				if( $_POST['from'] ){$cond["props.".$_POST['sort'].".v"] = ['$lte'=> $_POST['from']];}
+				if( $_POST['last'] ){$cond["props.".$_POST['sort'].".v"] = ['$lt'=> $_POST['last']];}
+			}
 		}
-		if( $_POST['last'] ){
-			$cond['l.v'] = ['$gt'=> $_POST['last']];
+		$ops = ['='=>'$eq','!='=>'$ne', '>'=>'$le', '>='=>'$leq', '<'=>'$ge', '<='=>'$geq'];
+		if( isset($_POST['cond']) ){
+			foreach( $_POST['cond'] as $i=>$j ){
+				if( isset($j['field']['k']) && isset($j['ops']['k']) && isset($j['value']['v']) ){
+					if( $j['field']['k'] && $j['ops']['k'] && trim($j['value']['v']) ){
+						if( $j['field']['k'] == "_id" ){
+							$cond[ $j['field']['k'] ] = [ $ops[ $j['ops']['k'] ] => $j['value']['v'] ];
+						}else{
+							$cond[ 'props.'. $j['field']['k'].".v" ] = [ $ops[ $j['ops']['k'] ] => $j['value']['v'] ];
+						}
+					}
+				}
+			}
 		}
 		$res = $mongodb_con->find( $graph_things_dataset, $cond, [
-			'sort'=>['_id'=>1],
+			'sort'=>$sort,
 			'limit'=>100,
 		]);
 		$res['cnt'] = $cnt;
+		$res['cond'] = $cond;
+		$res['sort'] = $sort;
 		json_response($res);
 	}else{
 		$cond = ['i_of.i'=>$_POST['object_id']];
@@ -249,62 +314,6 @@ if( $_POST['action'] == "objects_load_browse_list" ){
 	exit;
 }
 
-
-if( $_POST['action'] == "object_create_object" ){
-
-	if( !isset($_POST['data']['l']['v']) ){
-		json_response("fail", "Need Label");
-	}else if( !preg_match("/^[a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}$/i", $_POST['data']['l']['v']) ){
-		json_response("fail", "Need Label in simple format");
-	}
-
-	if( !isset($_POST['data']['i_of']['i']) ){
-		json_response("fail", "Need Instance");
-	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['data']['i_of']['i']) ){
-		json_response("fail", "Instance ID Incorrect format");
-	}
-
-	if( !isset($_POST['data']['i_of']['v']) ){
-		json_response("fail", "Need Instance Label");
-	}else if( !preg_match("/^[a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}$/i", $_POST['data']['i_of']['v']) ){
-		json_response("fail", "Need Instance Label in simple format");
-	}
-
-	$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$_POST['data']['i_of']['i'], 'l'=>$_POST['data']['l']] );
-	if( $res['data'] ){
-		json_response("fail", "Duplicate Node");
-	}
-
-	$id = uniqid();
-	$v = [
-		"_id"=>$id,
-		"l"=>$_POST['data']['l'],
-		"i_of"=>$_POST['data']['i_of'],
-		'i_t'=>$_POST['data']['i_t'],
-		'm_i'=>date("Y-m-d H:i:s"), 'm_u'=>date("Y-m-d H:i:s")
-	];
-	$res = $mongodb_con->insert( $graph_things, $v );
-	$resinc = $mongodb_con->increment( $graph_things, $_POST['data']['i_of']['i'], "cnt", 1 );
-	if( $res['status'] == "fail" ){
-		if( preg_match("/duplicate/i", $res['error']) && preg_match("/_id/", $res['error']) ){
-			json_response(["status"=>"fail","error"=>"Duplicate primary key"]);
-		}else{
-			json_response($res);
-		}
-	}
-	send_to_keywords_queue($id);
-	$res2 = $mongodb_con->increment( $graph_things, $_POST['data']['i_of']['i'], "cnt", 1 );
-
-	event_log( "objects", "create", [
-		"app_id"=>$config_param1,
-		"graph_id"=>$graph_id,
-		"object_id"=>$id,
-	]);
-
-	json_response($res);
-	exit;
-}
-
 if( $_POST['action'] == "objects_edit_label" ){
 
 	if( !isset($_POST['object_id']) ){
@@ -361,6 +370,7 @@ if( $_POST['action'] == "objects_edit_type" ){
 		json_response("fail", "Thing not found");
 	}
 	$object = $res['data'];
+	$current_type = $object['i_t']['v'];
 	if( !isset($_POST['type']) ){
 		json_response("fail", "Need type");
 	}else if( !is_array($_POST['type']) ){
@@ -369,6 +379,12 @@ if( $_POST['action'] == "objects_edit_type" ){
 		json_response("fail", "Need Type");
 	}
 	$type = $_POST['type'];
+
+	if( $current_type == "N" && $type['v'] != "N" ){
+		if( isset($object['cnt']) && $object['cnt'] > 0 ){
+			json_response("fail", "There are nodes " . $object['cnt'] . " under this object");
+		}
+	}
 
 	$res = $mongodb_con->update_one( $graph_things, ['_id'=>$object_id ], [
 		'i_t'=>$type,
@@ -933,10 +949,12 @@ if( $_POST['action'] == "objects_dataset_record_create" ){
 		"object_id"=>$_POST['object_id'],
 		"record_id"=>$res['inserted_id'],
 	]);
+	send_to_records_queue( $_POST['object_id'], $res['inserted_id'], "record_create" );
 
 	json_response($res);
 	exit;
 }
+
 
 if( $_POST['action'] == "objects_create_with_template" ){
 
@@ -975,6 +993,11 @@ if( $_POST['action'] == "objects_create_with_template" ){
 		json_response("fail", "Instance node not found");
 	}
 	$instance = $res['data'];
+
+	if( $instance['l']['v'] == "Root" && $thing['l']['t'] == "GT" ){
+		json_response("fail", "Nodes under Root instance should not refer other nodes");
+	}
+
 	if( isset($instance['z_t']) ){
 		if( !isset( $thing['props'] ) ){
 			json_response("fail", "Properties Data missing");
@@ -983,11 +1006,32 @@ if( $_POST['action'] == "objects_create_with_template" ){
 			json_response("fail", "Properties Data missing");
 		}
 	}
-
 	$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$instance_id, 'l.v'=>$thing['l']['v']] );
 	if( $res['data'] ){
 		json_response("fail", "A node with same name already exists");
+	}	
+
+	if( $instance['l']['v'] == "Root" || $instance['_id'] == "T1" ){
+		if( !isset($instance['series']) ){
+			$new_id = "T2";
+			$res5 = $mongodb_con->update_one( $graph_things, ["_id"=>$instance_id ], ["series"=>2] );
+		}else{
+			$res5 = $mongodb_con->increment( $graph_things, $instance_id, "series", 1 );
+			$new_id = "T" . $res5['data']['series'];
+		}
+		$thing['_id'] = $new_id;
+	}else{
+		if( !isset($instance['series']) ){
+			$new_id = $instance_id."T1";
+			$res5 = $mongodb_con->update_one( $graph_things, ["_id"=>$instance_id ], ["series"=>1] );
+		}else{
+			$res5 = $mongodb_con->increment( $graph_things, $instance_id, "series", 1 );
+			$new_id = $instance_id."T" . $res5['data']['series'];
+		}
+		$thing['_id'] = $new_id;
 	}
+
+
 	$props =[];
 	if( isset( $thing['props'] ) ){
 		foreach( $thing['props'] as $i=>$j ){
@@ -1044,6 +1088,80 @@ if( $_POST['action'] == "objects_create_with_template" ){
 
 	exit;
 }
+if( $_POST['action'] == "objects_create_node_on_fly" ){
+
+	if( !isset($_POST['node']) ){
+		json_response("fail", "Data missing");
+	}
+	$thing = $_POST['node'];
+	if( !is_array( $thing ) ){
+		json_response("fail", "Data missing");
+	}
+	if( !isset( $thing['l'] ) || !isset( $thing['i_of'] ) ){
+		json_response("fail", "Data missing");
+	}
+	if( !is_array( $thing['l'] ) || !is_array( $thing['i_of'] ) ){
+		json_response("fail", "Data missing");
+	}
+	if( !isset( $thing['l']['v'] ) || !$thing['l']['v'] ){
+		json_response("fail", "Node name missing");
+	}
+
+	$instance_id = $thing['i_of']['i'];
+	if( !preg_match("/^[a-z0-9]{2,24}$/i", $instance_id) ){
+		json_response("fail", "Instance id incorrect");
+	}
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$instance_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Instance node not found");
+	}
+	$instance = $res['data'];
+
+	$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$instance_id, 'l.v'=>$thing['l']['v']] );
+	if( $res['data'] ){
+		json_response("fail", "A node with same name already exists");
+	}
+
+	if( $instance['l']['v'] == "Root" || $instance['_id'] == "T1" ){
+		if( !isset($instance['series']) ){
+			$new_id = "T2";
+			$res5 = $mongodb_con->update_one( $graph_things, ["_id"=>$instance_id ], ["series"=>2] );
+		}else{
+			$res5 = $mongodb_con->increment( $graph_things, $instance_id, "series", 1 );
+			$new_id = "T" . $res5['data']['series'];
+		}
+		$thing['_id'] = $new_id;
+	}else{
+		if( !isset($instance['series']) ){
+			$new_id = $instance_id."T1";
+			$res5 = $mongodb_con->update_one( $graph_things, ["_id"=>$instance_id ], ["series"=>1] );
+		}else{
+			$res5 = $mongodb_con->increment( $graph_things, $instance_id, "series", 1 );
+			$new_id = $instance_id."T" . $res5['data']['series'];
+		}
+		$thing['_id'] = $new_id;
+	}
+
+	$thing['i_t']=["t"=>"T", "v"=>"N"];
+	$thing['m_i']=date("Y-m-d H:i:s");
+	$thing['m_u']=date("Y-m-d H:i:s");
+	$res = $mongodb_con->insert( $graph_things, $thing );
+	$res2 = $mongodb_con->increment( $graph_things, $instance_id, "cnt", 1 );
+
+	send_to_keywords_queue( $res['inserted_id'] );
+
+	event_log( "objects", "create_on_fly", [
+		"app_id"=>$config_param1,
+		"graph_id"=>$graph_id,
+		"object_id"=>$res['inserted_id'],
+	]);
+
+	$res['label'] = $thing['l']['v'];
+
+	json_response($res);
+
+	exit;
+}
 
 function find_or_insert( $instance, $thing_name ){
 	global $mongodb_con; global $db_prefix; global $graph_things; global $graph_queue; global $graph_keywords;
@@ -1056,8 +1174,18 @@ function find_or_insert( $instance, $thing_name ){
 		$data_cache[ $instance['i'] . "." . $thing_name ] = $res['data']['_id'];
 		return $res['data']['_id'];
 	}else{
+
+		if( $instance['v'] == "Root" || $instance['i'] == "T1" ){
+			$res5 = $mongodb_con->increment( $graph_things, $instance['i'], "series", 1 );
+			$new_id = "T" . $res5['data']['series'];
+		}else{
+			$res5 = $mongodb_con->increment( $graph_things, $instance['i'], "series", 1 );
+			$new_id = $instance['i']."T" . $res5['data']['series'];
+		}
+
 		$instance['t'] = "GT";
 		$res = $mongodb_con->insert( $graph_things, [
+			"_id"=>$new_id,
 			'i_of'=>$instance, 
 			'l'=>['t'=>"T", "v"=>$thing_name],
 			'i_t'=>['t'=>"T", "v"=>"N"],
@@ -1132,6 +1260,7 @@ if( $_POST['action'] == "objects_import_data_check" ){
 
 	exit;
 }
+
 
 if( $_POST['action'] == "object_import_batch" ){
 
@@ -1272,7 +1401,8 @@ if( $_POST['action'] == "object_import_batch" ){
 				]);
 				send_to_keywords_queue( $id );
 			}else{
-				$id = uniqid();
+				$res5 = $mongodb_con->increment( $graph_things, $instance['_id'], "series", 1 );
+				$new_id = $instance['_id']."T" . $res5['data']['series'];
 				$l = [
 					"t"=>"T",
 					"v"=>$j['l']['v'],
@@ -1284,7 +1414,7 @@ if( $_POST['action'] == "object_import_batch" ){
 					unset($l['i_of']);
 				}
 				$insert = [
-					"_id"=>$id,
+					"_id"=>$new_id,
 					"l"=>$l,
 					"i_of"=>["t"=>"GT", "i"=>$instance['_id'], "v"=>$instance['l']['v']],
 					'i_t'=>['t'=>'T','v'=>"N"],
@@ -1310,20 +1440,19 @@ if( $_POST['action'] == "object_import_batch" ){
 				event_log( "objects", "create", [
 					"app_id"=>$config_param1,
 					"graph_id"=>$graph_id,
-					"object_id"=>$id,
+					"object_id"=>$new_id,
 				]);
-				send_to_keywords_queue( $id );
+				send_to_keywords_queue( $new_id );
 			}
 		}
 	}else{
 
 		$graph_things_dataset = $graph_things . "_" . $thing_id;
 
-		$res5 = $mongodb_con->get_max_numeric_id( $graph_things_dataset );
-		$max_id = $res5['data'];
+		// $res5 = $mongodb_con->get_max_numeric_id( $graph_things_dataset );
+		// $max_id = $res5['data'];
 		foreach( $_POST['data'] as $i=>$j ){
-			$max_id++;
-			$id = $max_id;
+			$id = uniqid();
 			$res2 = $mongodb_con->find_one( $graph_things_dataset, ["_id"=>$id] );
 			if( $res2['data'] ){
 				$update = [];
@@ -1335,6 +1464,7 @@ if( $_POST['action'] == "object_import_batch" ){
 					$update[ "props." . $prop ] = [ $propd ];
 				}
 				$mongodb_con->update_one( $graph_things_dataset, ["_id"=>$id], $update);
+				send_to_records_queue( $thing_id, $id, "record_update" );
 				$updates++;
 				$success++;
 			}else{
@@ -1353,6 +1483,7 @@ if( $_POST['action'] == "object_import_batch" ){
 				}
 				$res5 = $mongodb_con->insert( $graph_things_dataset, $insert );
 				$res2 = $mongodb_con->increment( $graph_things, $instance["_id"], "cnt", 1 );
+				send_to_records_queue( $thing_id, $id, "record_update" );
 				$inserts++;
 				$success++;
 			}
@@ -1368,3 +1499,414 @@ if( $_POST['action'] == "object_import_batch" ){
 	exit;
 }
 
+if( $_POST['action'] == "objects_dataset_record_delete" ){
+	if( !isset($_POST['object_id']) ){
+		json_response("fail", "Need Thing id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['object_id']) && !preg_match("/^[0-9]+$/i", $_POST['object_id']) ){
+		json_response("fail", "Thing id incorrect");
+	}
+	$thing_id = $_POST['object_id'];
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$thing_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Thing not found");
+	}
+
+	if( !isset($_POST['record_id']) ){
+		json_response("fail", "Need Record id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['record_id']) && !preg_match("/^[0-9]+$/i", $_POST['record_id']) ){
+		json_response("fail", "Record id incorrect");
+	}
+	$record_id = $_POST['record_id'];
+
+	$res = $mongodb_con->find_one( $graph_things . "_" . $thing_id, ['_id'=>$record_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Record not found");
+	}
+
+	$res = $mongodb_con->delete_one( $graph_things . "_" . $thing_id, ['_id'=>$record_id] );
+
+	send_to_records_queue( $thing_id, $record_id, "record_delete" );
+
+	json_response($res);
+
+	exit;
+}
+
+if( $_POST['action'] == "objects_records_empty" ){
+	if( !isset($_POST['instance_id']) ){
+		json_response("fail", "Need Instance id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['instance_id']) && !preg_match("/^[0-9]+$/i", $_POST['instance_id']) ){
+		json_response("fail", "Instance id incorrect");
+	}
+	$instance_id = $_POST['instance_id'];
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$instance_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Instance not found");
+	}
+
+	while( 1 ){
+		$res = $mongodb_con->find( $graph_things . "_". $instance_id, [], ['limit'=>500, 'sort'=>['_id'=>1]] );
+		if( sizeof($res['data']) == 0 ){
+			break;
+		}
+		foreach( $res['data'] as $i=>$j ){
+			$mongodb_con->delete_one( $graph_things . "_". $instance_id, ["_id"=>$j['_id']] );
+			send_to_records_queue( $instance_id, $j['_id'], "record_delete" );
+		}
+	}
+
+	$mongodb_con->update_one( $graph_things, ["_id"=> $instance_id], ["cnt"=>0] );
+
+	json_response("success");
+
+	exit;
+}
+
+if( $_POST['action'] == "objects_nodes_empty" ){
+	if( !isset($_POST['instance_id']) ){
+		json_response("fail", "Need Instance id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['instance_id']) && !preg_match("/^[0-9]+$/i", $_POST['instance_id']) ){
+		json_response("fail", "Instance id incorrect");
+	}
+	$instance_id = $_POST['instance_id'];
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$instance_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Instance not found");
+	}
+
+	while( 1 ){
+		$res = $mongodb_con->find( $graph_things, ['i_of.i'=>$instance_id], ['limit'=>500] );
+		if( sizeof($res['data']) == 0 ){
+			break;
+		}
+		foreach( $res['data'] as $i=>$j ){
+			$mongodb_con->delete_one( $graph_things,["i_of.i"=>$instance_id, "_id"=>$j['_id']] );
+			send_to_keywords_delete_queue($j['_id']);
+			event_log( "objects", "delete", [
+				"app_id"=>$config_param1,
+				"graph_id"=>$graph_id,
+				"object_id"=>$j['_id'],
+			]);
+		}
+	}
+	$mongodb_con->update_one( $graph_things, ["_id"=> $instance_id], ["cnt"=>0] );
+
+	json_response("success");
+
+	exit;
+}
+
+if( $_POST['action'] == "objects_delete_node" ){
+	if( !isset($_POST['object_id']) ){
+		json_response("fail", "Need Object id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['object_id']) && !preg_match("/^[0-9]+$/i", $_POST['object_id']) ){
+		json_response("fail", "Object id incorrect");
+	}
+	$object_id = $_POST['object_id'];
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$object_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Object not found");
+	}
+	$thing = $res['data'];
+	$instance_id = $thing['i_of']['i'];
+
+	// if( $thing['i_t'] != "N" ){
+	// 	json_response("fail", "Incorrect node type");
+	// }
+	if( $thing['cnt'] > 0 ){
+		json_response("fail", "There are nested ".$thing['cnt']." nodes under ". $thing['l']['v']);
+	}
+
+	$mongodb_con->delete_one( $graph_things,[
+		"_id"=>$object_id
+	]);
+	send_to_keywords_delete_queue($object_id);
+	event_log( "objects", "delete", [
+		"app_id"=>$config_param1,
+		"graph_id"=>$graph_id,
+		"object_id"=>$object_id,
+	]);
+	$mongodb_con->increment( $graph_things, $instance_id, "cnt", -1 );
+	json_response("success");
+
+	exit;
+}
+
+if( $_POST['action'] == "objects_ops_convert_to_dataset" ){
+	if( !isset($_POST['source_object_id']) ){
+		json_response("fail", "Need Object id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['source_object_id']) && !preg_match("/^[0-9]+$/i", $_POST['source_object_id']) ){
+		json_response("fail", "Object id incorrect");
+	}
+	$object_id = $_POST['source_object_id'];
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$object_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Object not found");
+	}
+	$thing = $res['data'];
+	$instance_id = $thing['i_of']['i'];
+
+	if( $thing['i_t']['v'] == "L" ){
+		json_response("fail", "Object is already a dataset" );
+	}else if( $thing['i_t']['v'] != "N" ){
+		json_response("fail", "Source Object must be type of Node" );
+	}
+
+	if( !isset($_POST['label_to']) ){
+		json_response("fail", "Need new Label Property id");
+	}else if( !preg_match("/^[a-z0-9\.\,\-\_\ ]{2,100}$/i", $_POST['label_to']) ){
+		json_response("fail", "Property name should be plain text");
+	}
+
+	$new_prop = trim($_POST['label_to']);
+	foreach( $thing['z_t'] as $propf=>$p ){
+		if( strtolower($new_prop) == strtolower($p['l']['v']) ){
+			json_response("fail", "Property name `".$new_prop."` already exists!" );
+		}
+	}
+
+	$z_n = ($thing['z_n']??1);
+	$z_n++;
+	$np = "p" . $z_n;
+	while( 1 ){
+		if( isset($thing['z_t'][ $np ]) ){
+			$z_n++;
+			$np = "p" . $z_n;
+		}else{
+			break;
+		}
+	}
+
+	$z_o = $thing['z_o'];
+	array_splice($z_o, 0, 0, $np);
+	$z_n = $z_n+1;
+
+	$ures = $mongodb_con->update_one( $graph_things, ["_id"=>$object_id], [
+		'i_t.v'=>"L",
+		"z_t.". $np=> ["key"=> $np, "l"=> ["t"=>"T", "v"=> $new_prop], "t"=> ["t"=>"KV", "k"=>"T", "v"=>"text"], "m"=> ["t"=>"B", "v"=> "true"] ],
+		"z_o"=> $z_o,
+		"z_n"=> $z_n
+	]);
+
+	$graph_things_dataset = $graph_things . "_" . $object_id;
+
+	$rec_cnt = 0;
+	while( 1 ){
+		$res = $mongodb_con->find( $graph_things, ['i_of.i'=>$object_id], ['limit'=>100] );
+		if( !$res['data'] || sizeof($res['data']) == 0 ){
+			break;
+		}
+		foreach( $res['data'] as $i=>$j ){
+			$rec_cnt++;
+			$id = $j['_id'];
+			$j[ "props" ][ $np ] = [$j['l']];
+			$rec_id = uniqid();
+			$ires = $mongodb_con->insert( $graph_things_dataset, [
+				"_id"=>$rec_id,
+				"props"=>$j['props'],
+				"m_i"=>$j['m_i'],
+				"m_u"=>$j['m_u'],
+			]);
+			if( $ires['inserted_id'] ){
+				send_to_records_queue( $object_id, $rec_id, "record_create" );
+				$mongodb_con->delete_one( $graph_things, ['_id'=>$id]);
+				send_to_keywords_delete_queue($id);
+				event_log( "objects", "delete", [
+					"app_id" => $config_param1,
+					"graph_id" => $graph_id,
+					"object_id" => $id,
+				]);
+			}
+		}
+	}
+
+	if( $thing['cnt'] != $rec_cnt ){
+		$mongodb_con->update_one( $graph_things, ['_id'=>$object_id], ['cnt'=>$rec_cnt] );
+	}
+
+	event_log( "objects", "convert", [
+		"app_id"=>$config_param1,
+		"graph_id"=>$graph_id,
+		"object_id"=>$object_id,
+		"from"=>"N",
+		"to"=>"L",
+	]);
+	json_response("success");
+
+	exit;
+}
+
+if( $_POST['action'] == "objects_ops_convert_to_nodelist" ){
+
+	if( !isset($_POST['source_object_id']) ){
+		json_response("fail", "Need Object id");
+	}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $_POST['source_object_id']) && !preg_match("/^[0-9]+$/i", $_POST['source_object_id']) ){
+		json_response("fail", "Object id incorrect");
+	}
+	$object_id = $_POST['source_object_id'];
+	$res = $mongodb_con->find_one( $graph_things, ['_id'=>$object_id] );
+	if( !$res['data'] ){
+		json_response("fail", "Object not found");
+	}
+	$thing = $res['data'];
+	$instance_id = $thing['i_of']['i'];
+
+	if( $thing['i_t']['v'] == "N" ){
+		json_response("fail", "Object is already a node list" );
+	}else if( $thing['i_t']['v'] != "L" ){
+		json_response("fail", "Source Object must be type of Dataset" );
+	}
+
+	if( !isset($_POST['primary_field']) ){
+		json_response("fail", "Need NodeID field");
+	}
+	if( !isset( $thing['z_t'][ $_POST['primary_field'] ] ) && $_POST['primary_field'] != "default-id" ){
+		json_response("fail", "Primary field not found");
+	}
+	if( !isset($_POST['label_field']) ){
+		json_response("fail", "Need Label field");
+	}
+	if( !isset( $thing['z_t'][ $_POST['label_field'] ] ) ){
+		json_response("fail", "Label field not found");
+	}
+	if( isset($_POST['alias_field']) && sizeof($_POST['alias_field']) > 1 ){
+		json_response("fail", "One alias field is expected");
+	}
+	if( isset($_POST['alias_field']) && sizeof($_POST['alias_field']) > 0 ){
+		if( !isset( $thing['z_t'][ $_POST['alias_field'][0] ] ) ){
+			json_response("fail", "Alias field not found");
+		}
+	}
+
+	$graph_things_dataset = $graph_things . "_" . $object_id;
+
+	if( $_POST['primary_field'] != "default-id" ){
+		$res = $mongodb_con->aggregate( $graph_things_dataset, [
+			['$group'=>['_id'=>'$props.'.$_POST['primary_field'].".v", 'cnt'=>['$sum'=>1]] ],
+			['$sort'=>["cnt"=>-1]]
+		]);
+		print_r( $res );exit;
+		if( $res['status'] != "success" ){
+			json_response($res);
+		}
+		if( isset($res['data']) && sizeof($res['data']) > 0 ){
+			if( $res['data'][0]['cnt'] > 1 ){
+				json_response("fail", "Primary field value `" . $res['data'][0]['_id'][0] . "` repeated. " );
+			}
+		}else{
+			json_response("fail", "Primary values not found");
+		}
+		foreach( $res['data'] as $i=>$j ){
+			if( !preg_match( "/^[a-z0-9]{2,24}$/i", $j['_id'][0] ) ){
+				json_response("fail", "Primary field value " . $j['_id'][0] . " is not acceptable");
+			}
+		}
+	}
+
+	//echo "xxxx";exit;
+
+	$res = $mongodb_con->aggregate( $graph_things_dataset, [
+		['$group'=>['_id'=>'$props.'.$_POST['label_field'].".v", 'cnt'=>['$sum'=>1]] ],
+		['$sort'=>["cnt"=>-1]]
+	]);
+	//json_response($res);
+	if( $res['status'] != "success" ){
+		json_response($res);
+	}
+	if( isset($res['data']) && sizeof($res['data']) > 0 ){
+		if( $res['data'][0]['cnt'] > 1 ){
+			json_response("fail", "Label field `" . $res['data'][0]['_id'][0] . "` repeated. " );
+		}
+	}else{
+		json_response("fail", "Label values not found");
+	}
+	foreach( $res['data'] as $i=>$j ){
+		if( !preg_match( "/^[a-z][a-z0-9\-\.\_\,\ \(\)\@\!\&\:]{1,200}$/i", $j['_id'][0] ) ){
+			json_response("fail", "Label field value " . $j['_id'][0] . " is not acceptable");
+		}
+	}
+
+	$rec_cnt = 0;$success = 0;$failed = 0; $failed_reasons = [];
+	while( 1 ){
+		$res = $mongodb_con->find( $graph_things_dataset, [], ['limit'=>100] );
+		if( !$res['data'] || sizeof($res['data']) == 0 ){
+			break;
+		}
+		//print_r( $res );
+		foreach( $res['data'] as $i=>$j ){
+			$rec_cnt++;
+			if( $_POST['primary_field'] =="default-id" ){
+				$res5 = $mongodb_con->increment( $graph_things, $object_id, "series", 1 );
+				$new_id = $object_id."T" . $res5['data']['series'];
+				$rec_id = $new_id;
+			}else{
+				$rec_id = $j[ "props" ][ $_POST['primary_field'] ][0]['v'];
+			}
+			$al = [];
+			if( sizeof($_POST['alias_field']) ){
+				if( isset($j[ "props" ][ $_POST['alias_field'][0] ]) ){
+					$al[] = $j[ "props" ][ $_POST['alias_field'][0] ][0];
+				}
+			}
+			$d = [
+				"_id"=>$rec_id,
+				"i_t"=>["t"=>"T", "v"=>"N"],
+				"l"=>$j[ "props" ][ $_POST['label_field'] ][0],
+				"i_of"=>["t"=>"GT", "i"=>$object_id, "v"=>$thing['l']['v']],
+				"props"=>$j['props'],
+				"m_i"=>$j['m_i'],
+				"m_u"=>$j['m_u'],
+			];
+			if( sizeof($al) ){
+				$d['al'] = $al;
+			}
+			//print_r( $d );exit;
+			$ires = $mongodb_con->insert( $graph_things, $d);
+			if( $ires['status'] == "success" ){
+				if( $ires['inserted_id'] ){
+					$mongodb_con->delete_one( $graph_things_dataset, ['_id'=>$j['_id']] );
+					send_to_records_queue( $object_id, $j['_id'], "record_delete" );
+					send_to_keywords_queue( $rec_id );
+					event_log( "objects", "create", [
+						"app_id" => $config_param1,
+						"graph_id" => $graph_id,
+						"object_id" => $rec_id,
+					]);
+					$success++;
+				}else{
+					json_response( $ires );
+				}
+			}else{
+				$failed++;
+				$failed_reasons[ $j['_id'] ] = $ires['error'];
+				$mongodb_con->delete_one( $graph_things_dataset, ['_id'=>$j['_id']] );
+				send_to_records_queue( $object_id, $j['_id'], "record_delete" );
+			}
+		}
+	}
+
+	//exit;
+	$ures = $mongodb_con->update_one( $graph_things, ["_id"=>$object_id], [
+		'i_t.v'=>"N",
+	]);
+
+	if( $thing['cnt'] != $rec_cnt ){
+		$mongodb_con->update_one( $graph_things, ['_id'=>$object_id], ['cnt'=>$rec_cnt] );
+	}
+
+	event_log( "objects", "convert", [
+		"app_id"=>$config_param1,
+		"graph_id"=>$graph_id,
+		"object_id"=>$object_id,
+		"from"=>"L",
+		"to"=>"N",
+	]);
+	json_response([
+		"status"=>"success",
+		"success"=>$success,
+		"failed"=>$failed,
+		"failed_reasons"=>$failed_reasons
+	]);
+
+	exit;
+}

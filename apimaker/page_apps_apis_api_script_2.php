@@ -215,7 +215,8 @@ var app = s2_ssssssssss({
 						"SetLabel",
 						"JumpToLabel",
 						"Sleep","SleepMs",
-						"PushToQueue"
+						"PushToQueue",
+						"VerifyCaptcha",
 					]
 				},
 				{

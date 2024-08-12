@@ -57,7 +57,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				<div v-if="step==2" >
 					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;">
 					<div v-if="analyzing" style="color:blue; float:right; margin-right: 20px;" >Analyzing file</div>
-					<input v-else-if="tot_cnt<=20000" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport" value="Import" style="float:right; margin-right: 10px;">
+					<input v-else-if="tot_cnt<=max_records_limit" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport" value="Import" style="float:right; margin-right: 10px;">
 
 					<div style="display: flex; gap:20px;">
 						<div>
@@ -67,12 +67,12 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 						<div>
 							<div>Preview: <span class="badge text-bg-light">{{ sample_records.length }}</span> of <span class="badge text-bg-light">{{ tot_cnt }}</span> records </div>
 						</div>
-						<div v-if="tot_cnt>20000" style="color:red;">File has more than 20,000 records. Not allowed.</div>
+						<div v-if="tot_cnt>max_records_limit" style="color:red;">File has more than 20,000 records. Not allowed.</div>
 					</div>
 				</div>
-				<div v-if="step==3||step==4" >
+				<div v-if="step==3" >
 					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;">
-					<input v-if="tot_cnt<=20000" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport2" value="Proceed" style="float:right; margin-right: 10px;">
+					<input v-if="tot_cnt<=max_records_limit" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport2" value="Proceed" style="float:right; margin-right: 10px;">
 
 					<div style="display: flex; gap:20px;">
 						<div>
@@ -83,6 +83,9 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 							<div>Preview: <span class="badge text-bg-light">{{ sample_records.length }}</span> of <span class="badge text-bg-light">{{ tot_cnt }}</span> records </div>
 						</div>
 					</div>
+				</div>
+				<div v-if="step==4" >
+					<p>Upload Status</p>
 				</div>
 			</div>
 
@@ -172,10 +175,13 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
 				</div>
 				<div v-if="step==4" >
-					<div class="row mb-2">
-						<div class="col-6">Progress <span style="font-size:1.5rem;">{{ upload_progress }} %</span> </div>
-						<div class="col-6">Uploaded <span style="font-size:1.5rem;">{{ upload_cnt }}/{{ tot_cnt }}</span> </div>
+					<div class="mb-2">
+						<div style="height:30px; border:1px solid #ccc;">
+							<div style="position:absolute;" > Progress <span style="font-size:1.2rem;">{{ upload_progress }} %</span> </div>
+							<div v-bind:style="'height:30px; background-color:#ababd1; width:'+upload_progress+'%'" >&nbsp;</div>
+						</div>
 					</div>
+					<div class="mb-2">Uploaded <span style="font-size:1.5rem;">{{ upload_cnt }}/{{ tot_cnt }}</span> </div>
 					<div class="row mb-2">
 						<div class="col-6">Success <span class="b-400" >{{ upload_success_cnt }}</span></div>
 						<div class="col-6">Skipped <span class="bold" >{{ upload_skipped_cnt }}</span></div>
@@ -226,6 +232,8 @@ var app = Vue.createApp({
 			"head_record": [],
 			"step": 1,
 			"tot_cnt": 0,
+			"max_records_limit": 200000,
+			"max_file_size_limit": 1024*1024*50,			
 			"sch_keys": {}, "sch_ikeys": {},
 			"add_table": {"table": "", "des": ""},
 			"fields_match": {}, "keys_match": {},
@@ -551,7 +559,7 @@ var app = Vue.createApp({
 
 			this.fpos =0;
 			this.tot_cnt = 0;
-			if( this.vf.size > 1024*1024*5 ){
+			if( this.vf.size > this.max_file_size_limit ){
 				this.msg = "File size is more than 5 MB";
 			}
 			var d = this.readcsvline();

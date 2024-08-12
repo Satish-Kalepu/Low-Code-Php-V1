@@ -254,7 +254,7 @@ function engine_api_files( $post ){
 			"file_id"=>$post['file_id']
 		]);
 		update_app_pages( $app_id );
-		return json_response($res);
+		return json_response(200, $res);
 	}
 
 	if( $post['action'] == "put_file" ){
@@ -288,14 +288,28 @@ function engine_api_files( $post ){
 		$x = explode("/", $post['filename']);
 		$fn = array_pop($x);
 		$path = implode("/", $x) . "/";
+		if( sizeof($x) == 1 ){
+			$path_last = "/";
+			$path_first = "/";
+		}else{
+			$path_last = array_pop($x);
+			if( sizeof($x) ){
+				$path_first = implode("/", $x). "/";
+			}else{
+				$path_first = "/";
+			}
+		}
 
-		$res = $mongodb_con->find_one( $db_prefix . "_files", [
-			'app_id'=>$app_id,
-			"path"=>$path,
-			"vt"=>"folder"
-		]);
-		if( !$res['data'] ){
-			return json_response(200,"fail", "path `" .$path . "` not found");
+		if( $path_first != "/" ){
+			$res = $mongodb_con->find_one( $db_prefix . "_files", [
+				'app_id'=>$app_id,
+				"path"=>$path_first,
+				"name"=>$path_last,
+				"vt"=>"folder"
+			]);
+			if( !$res['data'] ){
+				return json_response(200,"fail", "path `" .$path . "` not found");
+			}
 		}
 
 		$res = $mongodb_con->find_one( $db_prefix . "_files", [
@@ -349,7 +363,7 @@ function engine_api_files( $post ){
 				];
 				update_app_pages( $app_id );
 			}
-			return json_response($res);
+			return json_response(200, $res);
 		}else{
 			return json_response(200,['status'=>"fail", "error"=>"server error"]);
 		}

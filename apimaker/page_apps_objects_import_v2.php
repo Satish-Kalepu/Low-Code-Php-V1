@@ -857,12 +857,12 @@ var objects_import_v2 = {
 			var z_t = {"z_t": {}, "z_o":[], "z_n":1};
 			for( var k in this.sch_keys ){if( k!='_default_id' ){
 				var np = "p" + z_t['z_n'];
-				z_t['z_t'][ np ] = {"key": np, "name": {"t":"T", "v": k}, "type": {"t":"KV", "k":"T", "v":"text"} };
+				z_t['z_t'][ np ] = {"key": np, "name": {"t":"T", "v": k}, "type": {"t":"KV", "k":"T", "v":"text"}, "m":{"t":"B", "v": "true"} };
 				z_t['z_n']++;
 				z_t['z_o'].push(np);
 			}}
-			this.$root.import_template_create_popup_open({"default_template": z_t, "is_dataset": true});
-		},
+			this.$root.import_template_create_popup_open({"default_template": z_t, "is_dataset": this.dataset});
+		},	
 		callback__: function( c ){
 			var x = c.split(/\:/g);
 			if( x[0] == "import_select_iof" ){
@@ -1062,7 +1062,7 @@ var objects_import_v2 = {
 										</td>
 										<td>
 											<div v-if="fd['type']=='graph-thing'" class="code_line codeline_thing" >
-												<div title="Thing" data-type="dropdown" v-bind:data-var="'ref:'+refname+':sch_keys:'+f+':i_of:v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" >{{ fd['i_of']['v'] }}</div>
+												<div title="Thing" data-type="dropdown" v-bind:data-var="'ref:'+refname+':sch_keys:'+f+':i_of:v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" allow-create="true" >{{ fd['i_of']['v'] }}</div>
 											</div>
 										</td>
 									</tr>

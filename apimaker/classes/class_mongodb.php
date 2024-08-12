@@ -493,8 +493,9 @@ class mongodb_connection{
 		try{
 			$option = [
 				'upsert'=> true,
-				'new' => true,
+				'returnNewDocument' => true,
 				'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+				'projection'=>[$val=>true],
 			];
 			$cur =$col->findOneAndUpdate([
 				'_id'=>$this->get_id($key)
@@ -524,7 +525,8 @@ class mongodb_connection{
 			$option =[
 				'upsert'=> true,
 				'new' => true,
-				'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+				'returnNewDocument' => true,
+				'projection'=>[$val=>true],
 			];
 			$cur =$col->findOneAndUpdate([
 				'_id'=>$this->get_id($key)

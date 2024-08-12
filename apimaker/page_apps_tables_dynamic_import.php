@@ -72,7 +72,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				<div v-if="step==2" >
 					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;">
 					<div v-if="analyzing" style="color:blue; float:right; margin-right: 20px;" >Analyzing file</div>
-					<input v-else-if="tot_cnt<=20000" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport" value="Import" style="float:right; margin-right: 10px;">
+					<input v-else-if="tot_cnt<=max_records_limit" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport" value="Import" style="float:right; margin-right: 10px;">
 
 					<div style="display: flex; gap:20px;">
 						<div>
@@ -82,12 +82,12 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 						<div>
 							<div>Preview: <span class="badge text-bg-light">{{ sample_records.length }}</span> of <span class="badge text-bg-light">{{ tot_cnt }}</span> records </div>
 						</div>
-						<div v-if="tot_cnt>20000" style="color:red;">File has more than 20,000 records. Not allowed.</div>
+						<div v-if="tot_cnt>max_records_limit" style="color:red;">File has more than 20,000 records. Not allowed.</div>
 					</div>
 				</div>
 				<div v-if="step==3||step==4" >
 					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;">
-					<input v-if="tot_cnt<=20000" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport2" value="Proceed" style="float:right; margin-right: 10px;">
+					<input v-if="tot_cnt<=max_records_limit" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport2" value="Proceed" style="float:right; margin-right: 10px;">
 
 					<div style="display: flex; gap:20px;">
 						<div>
@@ -244,6 +244,8 @@ var app = Vue.createApp({
 			"head_record": [],
 			"step": 1,
 			"tot_cnt": 0,
+			"max_records_limit": 200000,
+			"max_file_size_limit": 1024*1024*50,
 			"sch_keys": {}, "sch_ikeys": {},
 			"fields_match": {}, "keys_match": {},
 			"sample_data": "",
@@ -488,7 +490,7 @@ var app = Vue.createApp({
 
 			this.fpos =0;
 			this.tot_cnt = 0;
-			if( this.vf.size > 1024*1024*5 ){
+			if( this.vf.size > this.max_file_size_limit ){
 				this.msg = "File size is more than 5 MB";
 			}
 			var d = this.readcsvline();

@@ -9,8 +9,7 @@ div.zz::-webkit-scrollbar-thumb:hover { background: #555;}
 a.zz::-webkit-scrollbar {width: 6px;height: 6px;}
 a.zz::-webkit-scrollbar-track { background: #f1f1f1;}
 a.zz::-webkit-scrollbar-thumb { background: #888;}
-a.zz::-webkit-scrollbar-thumb:hover { background: #555;}	
-
+a.zz::-webkit-scrollbar-thumb:hover { background: #555;}
 
 table.zz td div{ max-width:250px; max-height:75px;overflow:auto; white-space:nowrap; }
 table.zz thead td { background-color:#666; color:white; }
@@ -71,13 +70,20 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 		<div style="padding: 10px;" >
 
 			<a class="btn btn-sm btn-outline-dark float-end" v-bind:href="path+'objects'" >Back</a>
-			<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="show_create()" >Create Node</div>
+			
 			<div v-if="thing_id!=-1" class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="thing_id=-1" >Home</div>
 
 			<div class="h3 mb-3"><span class="text-secondary" >Object Store</span> <span>{{ db_name }}</span></div>
-			<div style="display:flex; width:300px; column-gap:5px;border:1px solid #ccc;background-color: white; align-items: center; margin-bottom:10px; ">
-				<div class="thing_search_bar" title="Thing" data-type="dropdown" data-var="search_thing:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" data-context-callback-function="goto1" >Search</div>
-				<div><i class="fa fa-search"></i></div>
+
+			<div style="margin-bottom:10px;">
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="show_create()" >Create Node</div>
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="window_open_newtab('import2')" >Import</div>
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="window_open_newtab('ops')" >Ops</div>
+
+				<div style="display:flex; width:300px; column-gap:5px;border:1px solid #ccc;background-color: white; align-items: center; ">
+					<div class="thing_search_bar" title="Thing" data-type="dropdown" data-var="search_thing:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" data-context-callback-function="goto1" >Search</div>
+					<div><i class="fa fa-search"></i></div>
+				</div>
 			</div>
 
 			<div class="graph_tabs_nav_bar">
@@ -147,6 +153,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 										<th>Instance Of</th>
 										<th>Nodes</th>
 										<th>UpdatedOn</th>
+										<th>-</th>
 									</tr>
 									</thead>
 									<tbody>
@@ -156,6 +163,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['i_of']['i'])" >{{ rec['i_of']['v'] }}</a></div></td>
 											<td><a v-if="'cnt' in rec" href="#" v-on:click.prevent.stop="show_thing2(rec['_id'])" >{{ rec['cnt'] }}</a></td>
 											<td><span v-if="'m_u' in rec" >{{ rec['m_u'].substr(0,10) }}</span></td>
+											<td><div class="btn btn-light btn-sm py-1 text-danger"  v-on:click="browse_list_delete(reci)" ><i class="fa-regular fa-trash-can"></i></div></td>
 										</tr>
 									</tbody>
 								</table>
@@ -163,11 +171,14 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
 					</template>
 					<object_template_create_v2 v-else-if="vtabi=='thingnew'" v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:data="vtab['data']" ></object_template_create_v2>
+					<template v-else-if="vtabi=='ops'" >
+						<object_ops v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:data="vtab['data']" ></object_ops>
+					</template>
 					<template v-else-if="vtab['type']=='thing'" >
 						<graph_object_v2 v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:object_id="vtab['thing_id']" v-bind:data="vtab['data']" ></graph_object_v2>
 					</template>
 					<template v-else >
-					<pre>{{ vtab }}</pre>
+						<pre>{{ vtab }}</pre>
 					</template>
 				</div>
 
@@ -175,52 +186,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
 		</div>
 	</div>
-	<div class="modal fade" id="create_popup" tabindex="-1" >
-		<div class="modal-dialog modal-lg ">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Create Object</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body" id="create_popup_body">
-					<p>Create a new Node / DataSet / Document / Media</p>
-					<div class="code_row code_line">
-						<table class="table table-bordered table-sm w-auto" >
-							<tr>
-								<td>Instance Of</td>
-								<td>
-									<div class="codeline_thing codeline_thing_T" >
-										<div title="Thing" data-type="dropdown" v-bind:data-var="'new_thing:i_of:v'"  data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" >{{ new_thing['i_of']['v'] }}</div>
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>Label</td>
-								<td><inputtextbox2 types="T,GT" v-bind:v="new_thing['l']" v-bind:datavar="'new_thing:l'" ></inputtextbox2></td>
-							</tr>
-							<tr>
-								<td>Type</td>
-								<td>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="N" > Node (A thing/Person/Place etc)</label></div>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="L" > DataSet (Tabular Data)</label> </div>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="D" > Document (Article/Blog)</label> </div>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="M" > Media (Image/Video)</label></div>
-								</td>
-							</tr>
-						</table>
-					</div>
-
-					<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create Object" v-on:click="create_new_thing()"></div>
-					<div v-if="cmsg" class="alert alert-primary" >{{ cmsg }}</div>
-					<div v-if="cerr" class="alert alert-danger" >{{ cerr }}</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
 
 
 
@@ -274,7 +239,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				</template>
 			</template>
 			<div class="context_menu_list__" data-context="contextmenu" >
-				<!--<pre>{{ context_thing_list__ }}</pre>-->
 				<div v-if="context_thing_msg__" class="text-success" >{{ context_thing_msg__ }}</div>
 				<div v-if="context_thing_err__" class="text-danger" >{{ context_thing_err__ }}</div>
 				<template v-if="context_thing__ in context_thing_list__" >
@@ -286,20 +250,13 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 			</div>
 		</template>
 		<template v-else-if="context_type__=='graph-thing'" >
+			<div v-if="context_thing_allow_create__" style="float:right;" class="btn btn-outline-dark btn-sm py-0" v-on:click.prevent.stop="context_change_to_graph_create__()" >Create Node</div>
 			<div>{{ context_thing_label__ }}</div>
 			<div><input spellcheck="false" type="text" id="contextmenu_key1" data-context="contextmenu" data-context-key="contextmenu"  class="form-control form-control-sm" v-model="context_menu_key__" v-on:keyup="context_menu_key_edit__" ></div>
 			<div class="context_menu_list__" data-context="contextmenu" >
-				<!--<pre>{{ context_thing_list__ }}</pre>-->
 				<div v-if="context_thing_msg__" class="text-success" >{{ context_thing_msg__ }}</div>
 				<div v-if="context_thing_err__" class="text-danger" >{{ context_thing_err__ }}</div>
 				<div v-for="fv,fi in context_thing_graph_list__" class="context_item" v-on:click.stop="context_select__(fv,context_type__)" v-html="fv['r']" ></div>
-				<!-- <template v-if="context_thing__ in context_thing_list__" >
-					<template v-for="fv,fi in context_thing_list__[ context_thing__ ]" >
-						<div v-if="context_menu_key_match__(fv['l']['v'])" class="context_item" v-on:click.stop="context_select__(fv,context_type__)" v-html="context_menu_thing_highlight_graph_thing__(fv)" ></div>
-					</template>
-				</template> 
-				<div v-else>List undefined</div>
-				-->
 			</div>
 		</template>
 		<div v-else>No list configured {{ context_type__ }}</div>
@@ -317,7 +274,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 	      			<template v-if="popup_import__==false" >
 			      		<div align="right"><div class="btn btn-link btn-sm" style="position:absolute; margin-top:-60px; margin-left:-100px;" v-on:click="popup_import__=true" >Import</div></div>
 						<div class="code_line" style="overflow: auto; max-width:calc( 100% - 20px );max-height: 400px;" >
-			      		<!-- <pre>{{ popup_data__}}</pre> -->
 			        	<vobject v-if="popup_type__=='O'" v-bind:v="popup_data__" v-bind:datafor="popup_for__" v-bind:datavar="popup_datavar__"  ></vobject>
 			        	<vlist v-else-if="popup_type__=='L'" v-bind:v="popup_data__" v-bind:datafor="popup_for__" v-bind:datavar="popup_datavar__"  ></vlist>
 			        	</div>
@@ -384,6 +340,25 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 			<template v-else-if="simple_popup_type__=='ts'" >
 				<vts v-bind:v="simple_popup_data__" v-bind:datafor="simple_popup_for__" v-bind:datavar="simple_popup_datavar__" v-on:close="simple_popup_modal__=false"  v-on:update="simple_popup_set_value__($event)"></vts>
 			</template>
+			<template v-else-if="simple_popup_type__=='graph-create'" >
+				<div style="display:flex; column-gap: 20px; margin-bottom:10px;" class="code_line">
+					<div>
+						<div>Instance</div>
+						<div title="Thing" data-type="dropdown" data-var="create_node__:i_of:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" >{{ create_node__['i_of']['v'] }}</div>
+					</div>
+					<div>
+						<div>Node</div>
+						<div title="Text" class="editable" data-var="create_node__:l:v" ><div style="white-space:nowrap;" contenteditable spellcheck="false" data-type="editable" data-var="create_node__:l:v" id="create_node__:l:v" data-allow="T" >{{ create_node__['l']['v'] }}</div></div>
+					</div>
+				</div>
+				<div style="margin-bottom: 10px;">
+					<input type="button" class="btn btn-outline-secondary btn-sm me-2" v-on:click.prevent.stop="hide_simple_popup__()" value="Cancel" >
+					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click.prevent.stop="create_node_on_fly__" value="Create" >
+				</div>
+				<div v-if="create_node_msg__" style="color:blue;" >{{ create_node_msg__}}</div>
+				<div v-if="create_node_err__" style="color:red;" >{{ create_node_err__}}</div>
+				<p>&nbsp;-</p>
+			</template>
 			<div v-else>
 				<div>context editor</div>
 				<div>{{ simple_popup_type__ }}</div>
@@ -401,7 +376,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 		  </div>
 			<div class="modal-body" >
 				<p>Objects database is enabled</p>
-
 		  	</div>
 		</div>
 	</div>
@@ -415,6 +389,7 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 <?php require("page_apps_objects_component_graph_object_v2.php"); ?>
 <?php require("page_apps_objects_component_dataset_create.php"); ?>
 <?php require("page_apps_objects_component_dataset_edit.php"); ?>
+<?php require("page_apps_objects_component_ops.php"); ?>
 <script>
 <?php
 $components = [
@@ -447,7 +422,7 @@ var app = Vue.createApp({
 			"things": [],
 			"thing": {}, "thing_save_need": false, "thing_loading": false, "thing_save_msg": "", "thing_save_err": "",
 			"browse_list": [],
-			"browse_from": "", "browse_last": "", "browse_sort": "label", "browse_order": "asc",
+			"browse_from": "", "browse_last": "", "browse_sort": "label", "browse_order": "asc", "browse_list_index":-1,
 			"search_thing": {'t':'GT','v':"Search Thing",'i':""},
 			"records": [],
 			"tab": "home",
@@ -463,6 +438,11 @@ var app = Vue.createApp({
 				"i_of": {"t":"GT", "i":"", "v":""},
 				"i_t": {"t":"T", "v":"N"}
 			},
+			"create_node__": {
+				"l": {"t":"T", "v":""},
+				"i_of": {"t":"GT", "i":"", "v":""},
+			},
+			"create_node_msg__": "","create_node_err__": "",
 			"vtemplate": {
 				"template": {},
 				"edit_field": "",
@@ -531,7 +511,9 @@ var app = Vue.createApp({
 			context_expand_key__: "",
 			context_thing__: "",
 			context_thing_label__: "",
+			context_thing_allow_create__: false,
 			context_thing_list__: {},
+			context_thing_list_basic__: [],
 			context_thing_graph_list__: [],
 			context_thing_list_keys__: {},
 			context_thing_loaded__: false,
@@ -582,18 +564,8 @@ var app = Vue.createApp({
 					"title": "Browse",
 					"type": "browse",
 				},
-				"import2": {
-					"title": "Import",
-					"type": "import2",
-					"vimport": {
-						"i_of": {"t": "GT", "i": "", "v": ""},
-						"data": [],
-						"template":{},
-						"edit_field":"",
-					},
-				},
 			},
-			window_tabs_order: ["summary", "browse", "import2"],
+			window_tabs_order: ["summary", "browse"],
 		};
 	},
 	mounted:function(){
@@ -635,7 +607,7 @@ var app = Vue.createApp({
 			this.set_simple_popup_style__();
 		},
 		convert_to_link_do: function(){
-			this.simple_popup_modal__ = false;
+			this.hide_simple_popup__();
 			var v = this.convert_to_link_temp['label']['v']+'';
 			if( v=="" ){
 				v = this.convert_to_link_temp['link']['v']+'';
@@ -652,6 +624,7 @@ var app = Vue.createApp({
 			}
 		},
 		show_thing: function(vi){
+			console.log( "show_thing:" + vi );
 			this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false} );
 		},
 		show_thing2: function(vi){
@@ -721,6 +694,36 @@ var app = Vue.createApp({
 				this.berr = this.get_http_error__(error);
 			});
 		},
+		browse_list_delete: function(vi){
+			this.browse_list_index = vi;
+			if( confirm("Are you sure to delete the node?" ) ){
+				axios.post("?",{
+					"action": "objects_delete_node",
+					"object_id": this.browse_list[ vi ]['_id'],
+				}).then(response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.browse_list.splice( this.browse_list_index, 1 );
+									alert("Node is deleted successfully");
+								}else{
+									alert(response.data['error']);
+								}
+							}else{
+								alert( "Incorrect response");
+							}
+						}else{
+							alert("Incorrect response");
+						}
+					}else{
+						alert("http error: " . response.status );
+					}
+				}).catch(error=>{
+					alert(this.get_http_error__(error) );
+				});
+			}
+		},
 		load_nodes: function(){
 			this.err = "";this.msg = "";
 			axios.post("?",{
@@ -745,49 +748,6 @@ var app = Vue.createApp({
 				}
 			}).catch(error=>{
 				this.err = this.get_http_error__(error);
-			});
-		},
-		create_new_thing: function(){
-			this.cerr = "";this.cmsg = "";
-			if( this.new_thing['l']['v'] == "" ){
-				this.cerr = "Need label";return false;
-			}else if( this.new_thing['l']['v'].match(/^[a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}$/i) == null ){
-				this.cerr = "Label should follow format [a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}";return false;
-			}
-			if( this.new_thing['i_of']['v'] == "" || this.new_thing['i_of']['i'] == "" ){
-				this.cerr = "Need instance/tag";return false;
-			}
-			if( this.new_thing['i_t']['v'] == "" ){
-				this.cerr = "Need Node Type";return false;
-			}
-			axios.post("?",{
-				"action": "object_create_object",
-				"data": this.new_thing
-			}).then(response=>{
-				if( response.status == 200 ){
-					if( typeof( response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								this.cmsg = "Successfully created: " + response.data['inserted_id'];
-								setTimeout(function(vi,v){
-									v.create_popup.hide();
-									v.create_popup_displayed__ = false;
-									v.load_new_thing(vi);
-								},1000,response.data['inserted_id'],this);
-							}else{
-								this.cerr = response.data['error'];
-							}
-						}else{
-							this.cerr = "Incorrect response";
-						}
-					}else{
-						this.cerr = "Incorrect response";
-					}
-				}else{
-					this.cerr = "http error: " . response.status ;
-				}
-			}).catch(error=>{
-				this.cerr = this.get_http_error__(error);
 			});
 		},
 		get_http_error__: function(e){
@@ -850,7 +810,7 @@ var app = Vue.createApp({
 				if( this.context_menu__ ){
 					this.hide_context_menu__();
 				}else if( this.simple_popup_modal__ ){
-					this.simple_popup_modal__ = false;
+					this.hide_simple_popup__();
 				}
 			}
 			if( e.target.hasAttribute("data-type") ){
@@ -1003,7 +963,6 @@ var app = Vue.createApp({
 					this.context_menu_key__ = "";
 					this.context_datavar__ = data_var;
 					var v = this.get_editable_value__({'data_var':data_var});
-					console.log( v );
 					if( v === false ){console.log("event_click: value false 4");return false;}
 					this.context_type__ = el_data_type.getAttribute("data-list");
 					if( el_data_type.hasAttribute("data-context-dependency") ){
@@ -1046,7 +1005,13 @@ var app = Vue.createApp({
 						if( el_data_type.hasAttribute("data-thing") ){
 							this.context_thing__ = el_data_type.getAttribute("data-thing");
 							this.context_thing_label__ = el_data_type.getAttribute("data-thing-label");
-							console.log( this.context_thing__ );
+							//console.log("xxx: " + el_data_type.hasAttribute("allow-create") );
+							if( el_data_type.hasAttribute("allow-create") ){
+								this.context_thing_allow_create__ = true;
+							}else{
+								this.context_thing_allow_create__ = false;
+							}
+							//console.log( this.context_thing__ );
 							setTimeout(this.context_thing_list_load_check__,300);
 						}else{
 							this.context_thing__ = "UnKnown";
@@ -1112,6 +1077,8 @@ var app = Vue.createApp({
 							];
 						}else if( ld in this.context_data__ ){
 							this.context_list__ = this.context_data__[ ld ];
+						}else{
+							this.context_list__ = [];
 						}
 					}
 					this.show_and_focus_context_menu__();
@@ -1128,9 +1095,74 @@ var app = Vue.createApp({
 				if( this.context_menu__ ){
 					this.hide_context_menu__();
 				}else if( this.simple_popup_modal__ ){
-					this.simple_popup_modal__ = false;
+					this.hide_simple_popup__();
 				}
 			}
+		},
+		context_change_to_graph_create__: function(){
+			this.hide_context_menu__();
+			this.simple_popup_el__ = this.context_el__;
+			this.simple_popup_datavar__ = this.context_datavar__;
+			this.simple_popup_data__ = {};
+			this.simple_popup_type__ = "graph-create";
+			this.simple_popup_modal__ = true;
+			this.simple_popup_title__ = "Create Node";
+			//this.show_and_focus_context_menu__();
+			this.set_simple_popup_style__();
+		},
+		create_node_select__: function(vd){
+			console.log( this.simple_popup_datavar__ );
+			var x = this.simple_popup_datavar__.split(/\:/g);
+			x.pop();
+			var parent = x.join(":");
+			this.set_sub_var__(this, parent, {
+				"t": "GT", 
+				"i": vd['i']+'',
+				"v": vd['v']+''
+			});
+			this.hide_simple_popup__();
+			if( this.simple_popup_datavar__ == "search_thing:v" ){
+				this.show_thing( vd['i'] );
+			}else{
+
+			}
+		},
+		create_node_on_fly__: function(){
+			this.create_node_msg__ = "";
+			this.create_node_err__ = "";
+			if( this.create_node__['i_of']['i']=="" ){
+				this.create_node_err__ = "Need instance";return;
+			}
+			if( this.create_node__['l']['v'].match(/^[a-z0-9\.\-\_\@\&\(\)\[\]\{\}\,\?\ ]{2,200}$/i) == null ){
+				this.create_node_err__ = "Label required and plain";return;
+			}
+
+			this.create_node_msg__ = "Creating node...";
+			axios.post("?",{
+				"action": "objects_create_node_on_fly",
+				"node": this.create_node__
+			}).then(response=>{
+				this.create_node_msg__ = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.create_node_select__({"i": response.data['inserted_id'], "v": response.data['label']});
+							}else{
+								this.create_node_err__ = response.data['error'];
+							}
+						}else{
+							this.create_node_err__ = "Incorrect response";
+						}
+					}else{
+						this.create_node_err__ = "Incorrect response";
+					}
+				}else{
+					this.create_node_err__ = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.create_node_err__ = this.get_http_error__(error);
+			});
 		},
 		event_blur__: function( e ){
 			if( e.target.hasAttribute("data-type") ){
@@ -1190,31 +1222,6 @@ var app = Vue.createApp({
 		show_configure: function(){
 			this.settings_popup = new bootstrap.Modal(document.getElementById('settings_modal'));
 			this.settings_popup.show();
-		},
-		show_create2: function( vi_of ){
-			if( typeof(vi_of) == "undefined" ){
-				if( this.thing_id != -1 ){
-					vi_of = {'t':"GT", "i": this.thing['i_of']['i']+'', "v": this.thing['i_of']['v']+''};
-				}else{
-					vi_of = {'t':"GT", "i": "T1", "v": "Root"};
-				}
-			}else if( 'i' in vi_of == false || 'v' in vi_of == false ){
-				vi_of = {'t':"GT", "i": "T1", "v": "Root"};
-			}
-			this.cmsg = ""; this.cerr= "";
-			this.new_thing = {
-				"l": {"t":"T", "v":"testing"},
-				"i_of": JSON.parse(JSON.stringify(vi_of)),
-				"i_t": {"t":"T", "v":"N"}
-			};
-			if( this.create_popup == false ){
-				this.create_popup = new bootstrap.Modal(document.getElementById('create_popup'));
-				document.getElementById('create_popup').addEventListener('hide.bs.modal', event => {
-					this.create_popup_displayed__ = false;
-				});
-			}
-			this.create_popup.show();
-			this.create_popup_displayed__ = true;
 		},
 		show_create: function( vi_of ){
 			if( typeof(vi_of) == "undefined" ){
@@ -1554,35 +1561,55 @@ var app = Vue.createApp({
 		show_and_focus_context_menu__: function(){
 			setTimeout(function(){try{document.getElementById("contextmenu_key1").focus();}catch(e){}},500);
 			this.context_menu__ = true;
-			if( this.popup_modal_displayed__ ){
+			if( this.simple_popup_modal__ ){
+				document.getElementById("simple_popup_modal__").appendChild( document.getElementById("context_menu__") );
+			}else if( this.popup_modal_displayed__ ){
 				document.getElementById("popup_modal_body__").appendChild( document.getElementById("context_menu__") );
 			}else if( this.create_popup_displayed__ ){
 				document.getElementById("create_popup_body").appendChild( document.getElementById("context_menu__") );
-			}else if( this.simple_popup_modal__ ){
-				document.getElementById("simple_popup_modal__").appendChild( document.getElementById("context_menu__") );
 			}
 			this.context_expand_key__ = '';
 		},
 		set_context_menu_style__: function(){
 			var s = this.context_el__.getBoundingClientRect();
 			//this.finx_zindex(this.context_el__);
-			if( this.popup_modal_displayed__ ){
+			if( this.simple_popup_modal__ ){
+				var s2 = document.getElementById("simple_popup_modal__").getBoundingClientRect();
+				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+				//console.log( this.context_style__ );
+			}else if( this.popup_modal_displayed__ ){
 				var s2 = document.getElementById("popup_modal_body__").getBoundingClientRect();
 				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
 			}else if( this.create_popup_displayed__ ){
 				var s2 = document.getElementById("create_popup_body").getBoundingClientRect();
 				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
-			}else if( this.simple_popup_modal__ ){
-				var s2 = document.getElementById("simple_popup_modal__").getBoundingClientRect();
-				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
-				console.log( this.context_style__ );
 			}else{
 				this.context_style__ = "display:block;top: "+s.top+"px;left: "+s.left+"px;";
 			}
 		},
 		set_simple_popup_style__: function(){
 			var s = this.simple_popup_el__.getBoundingClientRect();
-			this.simple_popup_style__ = "top: "+s.top+"px;left: "+s.left+"px;";
+			if( this.popup_modal_displayed__ ){
+				var s2 = document.getElementById("popup_modal_body__").getBoundingClientRect();
+				document.getElementById("popup_modal_body__").appendChild( document.getElementById("simple_popup_modal__") );
+				this.simple_popup_style__ = "top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+			}else if( this.create_popup_displayed__ ){
+				var s2 = document.getElementById("create_popup_body").getBoundingClientRect();
+				document.getElementById("create_popup_body").appendChild( document.getElementById("simple_popup_modal__") );
+				this.simple_popup_style__ = "top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+			}else{
+				this.simple_popup_style__ = "top: "+(Number(s.top))+"px;left: "+(Number(s.left))+"px;";
+			}
+		},
+		hide_simple_popup__: function(){
+			if( document.getElementById("simple_popup_modal__").parentNode.nodeName != "BODY" ){
+				console.log("moving simple_popup_modal__ back to body ");
+				document.body.appendChild( document.getElementById("simple_popup_modal__") );
+			}
+			setTimeout(this.hide_simple_popup2__,100);
+		},
+		hide_simple_popup2__: function(){
+			this.simple_popup_modal__ = false;
 		},
 		editablebtn_click__: function( el_data_type, data_var,e ){
 			var v = el_data_type.previousSibling.innerText;
@@ -1806,6 +1833,9 @@ var app = Vue.createApp({
 											}
 											//this.echo__( v2 );
 											this.context_thing_list__[ this.context_thing__ ] = v2;
+											if( this.context_menu_key__ == "" && this.context_thing_list_basic__.length == 0 ){
+												this.context_thing_list_basic__ = v2;
+											}
 											this.context_thing_list_keys__[ this.context_thing__ ][ response.data['keyword'] ] = v.length;
 											setTimeout(this.context_thing_filter_final__, 100);
 										}else{
@@ -1832,14 +1862,17 @@ var app = Vue.createApp({
 		},
 		context_thing_filter_final__: function(){
 			if( this.context_thing__ in this.context_thing_list__ ){
-				var v2 = this.context_thing_list__[ this.context_thing__ ];
 				if( this.context_menu_key__ == "" ){
-					var v3 = v2.slice(0,100);
-					for(var i=0;i<v3.length;i++){
-						v3[i]['r'] = "<b>" + v3[i]['l']['v'] + "</b> in <span class='text-secondary'>" + v3[i]['i_of']['v'] + "</span> [" + v3[i]['i'] + "]";
+					var v3 = [];
+					var vbasic = this.context_thing_list_basic__;
+					//this.echo__(vbasic);
+					for(var i=0;i<vbasic.length&&v3.length<50;i++){
+						vbasic[i]['r'] = "<b>" + vbasic[i]['l']['v'] + "</b> in <span class='text-secondary'>" + vbasic[i]['i_of']['v'] + "</span> [" + vbasic[i]['i'] + "]";
+						v3.push(vbasic[i]);
 					}
 					this.context_thing_graph_list__ = v3;
 				}else{
+					var v2 = this.context_thing_list__[ this.context_thing__ ];
 					var vkey = this.context_menu_key__+'';
 					var w = vkey.split(/\W+/g);
 					//this.echo__( w );
@@ -2063,6 +2096,8 @@ var app = Vue.createApp({
 			if( this.popup_modal__ == false ){
 				this.popup_modal__ = new bootstrap.Modal(document.getElementById('popup_modal__'));
 					document.getElementById('popup_modal__').addEventListener('hide.bs.modal', event => {
+						this.echo__(this.popup_type__ );
+						this.popup_type__ = "";
 					console.log("Popup closed");
 					this.popup_modal_displayed__ = false;
 					if( this.popup_type__ == 'import_template_edit' ){
@@ -2176,6 +2211,9 @@ var app = Vue.createApp({
 						this.load_browse_list();
 					}
 				}
+				if( tb == 'summary' ){
+					this.load_nodes();
+				}
 				// var i = this.window_tabs_order.indexOf( tb );
 				// if( i > 2 ){
 				// 	this.window_tabs_order.splice(i,1);
@@ -2206,7 +2244,7 @@ var app = Vue.createApp({
 			//console.log( sw );
 			// sw = sw + ml;
 			var pw = document.getElementById("tabs_container").parentNode.clientWidth;
-			//console.log( "ScrollWidth:"+ sw + " > PageWidth: " + pw );
+			console.log( "ScrollWidth:"+ sw + " > PageWidth: " + pw );
 			if( sw > pw ){
 				document.getElementById("tabs_left_scrollbar").style.display ='block';
 				document.getElementById("tabs_container").style.marginLeft = "30px";
@@ -2214,21 +2252,24 @@ var app = Vue.createApp({
 			}else{
 				document.getElementById("tabs_left_scrollbar").style.display ='none';
 				document.getElementById("tabs_container").style.marginLeft = "initial";
+				document.getElementById("tabs_container").children[0].style.marginLeft = "initial";
 				document.getElementById("tabs_right_scrollbar").style.display ='none';
 			}
 			var id = "tab_"+this.current_tab;
 			//console.log(id);
-			var s = document.getElementById(id).getBoundingClientRect();
-			//this.echo__(s);
-			var s2 = document.getElementById("tabs_container").getBoundingClientRect();
-			//this.echo__(s2);
-			//this.echo__(w);
-			//console.log( document.getElementById("tabs_container").firstElementChild );
-			if( s['right'] > s2['right'] ){
-				var dif = s['right']-s2['right'];
-				ml = ml - dif - 30;
-				//console.log( ml );
-				document.getElementById("tabs_container").firstElementChild.style.marginLeft = ml+"px";
+			if( document.getElementById(id) != null ){
+				var s = document.getElementById(id).getBoundingClientRect();
+				//this.echo__(s);
+				var s2 = document.getElementById("tabs_container").getBoundingClientRect();
+				//this.echo__(s2);
+				//this.echo__(w);
+				//console.log( document.getElementById("tabs_container").firstElementChild );
+				if( s['right'] > s2['right'] ){
+					var dif = s['right']-s2['right'];
+					ml = ml - dif - 30;
+					//console.log( ml );
+					document.getElementById("tabs_container").firstElementChild.style.marginLeft = ml+"px";
+				}
 			}
 		},
 		window_tabs_focus_left: function(){
@@ -2279,20 +2320,42 @@ var app = Vue.createApp({
 			this.current_tab = '';
 			var tb = vtabi+'';
 			if( tb in this.window_tabs ){
-				if( vd['type'] == 'thing' ){
-					vd['msg'] = "Reloading...";
+				if( typeof(vd) == "object" ){
+					if( "type" in vd ){
+						if( vd['type'] == 'thing' ){
+							vd['msg'] = "Reloading...";
+						}
+					}
 				}
-				// var i = this.window_tabs_order.indexOf( tb );
-				// if( i > 2 ){
-				// 	this.window_tabs_order.splice(i,1);
-				// 	this.window_tabs_order.splice(2,0,tb);
-				// }
 			}else{
-				if( vd['type'] == 'thing' ){
-					vd['title'] = "Thing: " + vd['thing_id'] +' Loading';
-					vd['msg'] = "Loading...";
-					vd['err'] = "";
-					vd['thing'] = {};
+				if( typeof(vd) == "object" ){
+					if( "type" in vd ){
+						if( vd['type'] == 'thing' ){
+							vd['title'] = "Thing: " + vd['thing_id'] +' Loading';
+							vd['msg'] = "Loading...";
+							vd['err'] = "";
+							vd['thing'] = {};
+						}
+					}
+				}
+				if( vtabi == "import2" ){
+					var vd = {
+						"title": "Import",
+						"type": "import2",
+						"vimport": {
+							"i_of": {"t": "GT", "i": "", "v": ""},
+							"data": [],
+							"template":{},
+							"edit_field":"",
+						},
+					};
+				}
+				if( vtabi == "ops" ){
+					var vd = {
+						"title": "Operations",
+						"type": "ops",
+						"data": {"op":""}
+					};
 				}
 				this.window_tabs[ vtabi+'' ] = vd;
 				//this.window_tabs_order.splice(3,0,tb);
@@ -2312,6 +2375,36 @@ app.component( "object_template_create_v2", object_template_create_v2 );
 app.component( "graph_object_v2", graph_object_v2 );
 app.component( "object_dataset_create_record", object_dataset_create_record );
 app.component( "object_dataset_edit_record", object_dataset_edit_record );
+app.component( "object_ops", object_ops );
 var app1 = app.mount("#app");
+
+function get_http_error__(e){
+	if( typeof(e) == "object" ){
+		if( 'status' in e ){
+			if( 'error' in e ){
+				return e['error'];
+			}else{
+				return "There was no error";
+			}
+		}else if( 'response' in e ){
+			var s = e.response.status;
+			if( typeof( e['response']['data'] ) == "object" ){
+				if( 'error' in e['response']['data'] ){
+					return s + ": " + e['response']['data']['error'];
+				}else{
+					return s + ": " + JSON.stringify(e['response']['data']).substr(0,100);
+				}
+			}else{
+				return s + ": " + e['response']['data'].substr(0,100);
+			}
+		}else if( 'message' in e ){
+			return e['message'];
+		}else{
+			return "Incorrect response";
+		}
+	}else{
+		return "Invalid response"
+	}
+}
 
 </script>

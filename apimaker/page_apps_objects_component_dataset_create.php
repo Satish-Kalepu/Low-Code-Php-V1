@@ -119,7 +119,7 @@ const object_dataset_create_record =  {
 									<td v-for="tdv in data['thing']['z_t'][ propf ]['z']['z_o']" >
 										<template v-if="pvv['t']=='O'" >
 											<template v-if="tdv in pvv['v']" >
-												<inputtextbox2 types="T,GT"  v-bind:v="pvv['v'][ tdv ]" v-bind:datavar="'ref:'+refname+':new_record:props:'+propf+':'+pii+':v:'+tdv" ></inputtextbox2>
+												<inputtextbox2 types="T,GT"  v-bind:v="pvv['v'][ tdv ]" v-bind:datavar="'ref:'+refname+':new_record:'+propf+':'+pii+':v:'+tdv" ></inputtextbox2>
 											</template>
 										</template>
 										<div v-else>Incorrect Data</div>
@@ -136,7 +136,7 @@ const object_dataset_create_record =  {
 						<template v-else>
 							<div v-for="pvv,pii in new_record[ propf ]" style="display:flex; column-gap:5px; border-bottom:1px dashed #ccc; align-items:center;" >
 								<div><input type="button" class="btn btn-outline-danger btn-sm py-0"  style="padding:0px;width:20px;" value="x" v-on:click="del_sub(propf,pii)" ></div>
-								<inputtextbox  v-bind:v="pvv" v-bind:datavar="'ref:'+refname+':new_record:props:'+propf+':'+pii" ></inputtextbox>
+								<inputtextbox  v-bind:v="pvv" v-bind:datavar="'ref:'+refname+':new_record:'+propf+':'+pii" ></inputtextbox>
 							</div>
 							<div><input type="button" class="btn btn-outline-dark btn-sm py-0" value="+"  style="padding:0px;width:20px;" v-on:click="add_sub(propf,pii)" ></div>
 						</template>

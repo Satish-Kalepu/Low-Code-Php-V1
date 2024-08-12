@@ -133,11 +133,27 @@
 
 		if( $deployment_mode == "apache" ){
 
-			if( $statusCode != 200 ){http_response_code($statusCode);}
+			if( $statusCode != 200 ){
+				if( !is_numeric($statusCode) ){
+					http_response_code(500);
+					header( "Access-Control-Allow-Origin: *" );
+					header( "Access-Control-Allow-Methods: *" );
+					header( "Access-Control-Allow-Headers: *" );
+					header( "Access-Control-Expose-Headers: *");
+					header( "Content-Type: text/plain");
+					header( "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" );
+					header( "Cache-Control: post-check=0, pre-check=0", false );
+					header( "Pragma: no-cache" );
+					echo "Incorrect statuscode: \n" . print_r( $statusCode,true);
+					exit;
+				}
+				http_response_code($statusCode);
+			}
 
 			header( "Access-Control-Allow-Origin: *" );
 			header( "Access-Control-Allow-Methods: *" );
 			header( "Access-Control-Allow-Headers: *" );
+			header( "Access-Control-Expose-Headers: *");
 			header( "Content-Type: " . $ct);
 			header( "Cache-Control: no-store, no-cache, must-revalidate, max-age=0" );
 			header( "Cache-Control: post-check=0, pre-check=0", false );
@@ -155,6 +171,7 @@
 			$headers[ "Access-Control-Allow-Origin"] = "*";
 			$headers[ "Access-Control-Allow-Methods"] = "*";
 			$headers[ "Access-Control-Allow-Headers"] = "*";
+			$headers[ "Access-Control-Expose-Headers"] ="*";
 			$headers[ "Content-Type"] = $ct;
 			$headers[ "Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
 			$headers[ "Pragma"] = "no-cache";
@@ -184,6 +201,16 @@
 			return [$statusCode,"text/plain",[], "Error output json encode: " . json_last_error_msg() ];
 		}else{
 			return [$statusCode,"application/json",[], $st ];
+		}
+	}
+	function json_response2($statusCode, $content_type ="application/json", $headers = [], $body = ""){
+		if( is_array($body) ){
+			$rbody = json_encode( $body, JSON_PRETTY_PRINT );
+		}
+		if( !$st || json_last_error() ){
+			return [500,"text/plain",[], "Error output json encode: " . json_last_error_msg() . "\n" . print_r($body,n) ];
+		}else{
+			return [$statusCode,$content_type,$headers, $rbody ];
 		}
 	}
 
@@ -329,9 +356,11 @@ function index_normal(){
 		$url_page_id = "";
 		$cache_refresh = false;
 		if( $execution_mode == "local_folder" ){
+			@mkdir(sys_get_temp_dir()  . "/apimaker",0777);
 			$app_cache_path = sys_get_temp_dir()  . "/apimaker/app_" . $app_id . ".php";
 			$app_var = "config_app_" . $app_id;
 		}else{
+			@mkdir(sys_get_temp_dir()  . "/engine",0777);
 			$app_cache_path = sys_get_temp_dir()  . "/engine/app_" . $app_id . ".php";
 			$app_var = "config_app_" . $app_id;
 		}
@@ -378,6 +407,11 @@ function index_normal(){
 			}
 			$config_app = $res['data'];
 			file_put_contents($app_cache_path, "<"."?php\n\$".$app_var." = " . var_export($res['data'],true) . "; ?".">" );
+			if( file_exists($app_cache_path) ){
+				//respond(200,"text/plain",[], $app_cache_path . " Found");
+			}else{
+				respond(500,"text/plain",[], "/var/lib".$app_cache_path . " Not found after create");
+			}
 		}
 
 		if( isset($path_params[0]) && $path_params[0] == "_api" ){
