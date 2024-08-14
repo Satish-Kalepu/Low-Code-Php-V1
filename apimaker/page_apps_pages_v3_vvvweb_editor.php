@@ -39,7 +39,7 @@
       </button>
     </div>
     <div class="float-end me-3">
-      <a href="#" class="btn btn-outline-primary border-0 btn-sm btn-preview-url" onClick="previewit()"> View page <i class="la la-external-link-alt la-sm"></i>
+      <a href="#" class="btn btn-outline-primary border-0 btn-sm btn-preview-url" onClick="previewit()"> View page <i class="la la-external-link-alt"></i>
       </a>
     </div>
     <div class="float-end me-3">
@@ -60,6 +60,7 @@
     </div>
   </div>
   <div id="left-panel" style="margin-top:-3%">
+  <div>
     <div id="filemanager">
       <div class="tree" style="height:0px !important;resize:none;display:none">
         <ol></ol>
@@ -276,7 +277,18 @@
                         <br> Click on an element to edit.
                       </div>
                     </div>
-                    <div class="tab-pane show" id="style-left-panel-tab" data-section="style" role="tabpanel" aria-labelledby="style-tab"></div>
+                    <div class="tab-pane show" id="style-left-panel-tab" data-section="style" role="tabpanel" aria-labelledby="style-tab">
+                    <div class="border-bottom pb-2 px-2">
+																<div class="justify-content-end d-flex">
+																  <select class="form-select w-50" data-vvveb-action="setState" data-vvveb-on="change">
+																	<option value=""> - State - </option>
+																	<option value="hover">hover</option>
+																	<option value="active">active</option>
+																	<option value="nth-of-type(2n)">nth-of-type(2n)</option>
+																  </select>
+																</div>
+															  </div>
+                    </div>
                     <div class="tab-pane show" id="advanced-left-panel-tab" data-section="advanced" role="tabpanel" aria-labelledby="advanced-tab"></div>
                   </div>
                 </div>
@@ -314,6 +326,7 @@
       </div>
     </div>
   </div>
+</div>
   <div id="canvas">
     <div id="iframe-wrapper">
       <div id="iframe-layer">
@@ -598,7 +611,18 @@
             <br> Click on an element to edit.
           </div>
         </div>
-        <div class="tab-pane show" id="style-tab" data-section="style" role="tabpanel" aria-labelledby="style-tab"></div>
+        <div class="tab-pane show" id="style-tab" data-section="style" role="tabpanel" aria-labelledby="style-tab">
+        <div class="border-bottom pb-2 px-2">
+            <div class="justify-content-end d-flex">
+            <select class="form-select w-50" data-vvveb-action="setState" data-vvveb-on="change">
+              <option value=""> - State - </option>
+              <option value="hover">hover</option>
+              <option value="active">active</option>
+              <option value="nth-of-type(2n)">nth-of-type(2n)</option>
+            </select>
+            </div>
+          </div>
+        </div>
         <div class="tab-pane show" id="advanced-tab" data-section="advanced" role="tabpanel" aria-labelledby="advanced-tab"></div>
       </div>
     </div>
