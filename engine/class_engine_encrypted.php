@@ -39,6 +39,7 @@ class api_engine{
 		"body"=>["status"=>"success"],
 		"pretty"=>false,
 	];
+	public $db_prefix = "apimaker";
 
 	function __construct(){
 		global $mongodb_con;
@@ -64,6 +65,7 @@ class api_engine{
 	}
 	function execute( $s2_eeeeenigne, $s2_stupni_tset, $s2_ssssnoitpo=[] ){
 		global $config_global_engine;
+		$this->db_prefix = $config_global_engine['config_mongo_prefix'];
 		$this->s2_ggggggggol = [];
 		$this->s2_tttttluser = [];
 		$this->s2_ssssstupni = [];
@@ -577,6 +579,31 @@ class api_engine{
 				if( $s2_ddddegatsf['k']['v'] == "PushToQueue" ){
 					$val = $this->s2_eueuq_ot_hsup( $s2_ddddegatsf );
 				}
+				if( $s2_ddddegatsf['k']['v'] == "VerifyCaptcha" ){
+					//$this->s2_eueuq_ot_hsup( $s2_ddddegatsf );
+					$code = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['code'] );
+					$captcha = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['captcha'] );
+					$output = $s2_ddddegatsf['d']['output']['v'];
+					$res = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_captcha", ["_id"=>$code]);
+					$verror = "";
+					$vstatus = "success";
+					if( $res['data'] ){
+						if( $res['data']['c'] == $captcha ){
+							$this->s2_nnnnnnnnoc->delete_one( $this->db_prefix . "_captcha", ["_id"=>$code]);
+							$vstatus = "success";
+						}else{
+							$vstatus = "fail";
+							$verror = "Captcha does't match";
+						}
+					}else{
+						$vstatus = "fail";
+						$verror = "Captcha not found";
+					}
+					$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+						'status'=>['t'=>"T","v"=>$vstatus],
+						"error"=>['t'=>"T","v"=>$verror]
+					]] );
+				}
 				if( $s2_ddddegatsf['k']['v'] == "Respond" ){
 					//print_pre( $this->s2_tttttluser );
 					$this->s2_ggggggggol[] = "Respond";
@@ -704,7 +731,7 @@ class api_engine{
 				if( $s2_ddddegatsf['k']['v'] == "RespondPage" ){
 					if( isset($s2_ddddegatsf['d']['page']['v']['i']['v']) ){
 						if( $s2_ddddegatsf['d']['page']['v']['i']['v'] != "" ){
-							$page_version = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_pages_versions", [
+							$page_version = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_pages_versions", [
 								"_id"=>$s2_ddddegatsf['d']['page']['v']['i']['v']
 							]);
 							if( !$page_version['data'] ){
@@ -737,10 +764,10 @@ class api_engine{
 				if( $s2_ddddegatsf['k']['v'] == "RespondFile" ){
 					if( isset($s2_ddddegatsf['d']['file']['v']['i']['v']) ){
 						if( $s2_ddddegatsf['d']['file']['v']['i']['v'] != "" ){
-							$file_version = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_files", [
+							$file_version = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_files", [
 								"_id"=>$s2_ddddegatsf['d']['file']['v']['i']['v']
 							]);
-							//print_r( $file_version );
+							//print_r( $file_version );exit;
 							if( !$file_version['data'] ){
 								$this->s2_eeesnopser = [
 									'statusCode'=>500, 
@@ -750,7 +777,12 @@ class api_engine{
 							}
 							$file_version = $file_version['data'];
 							$file_id = $file_version['_id'];
-							require_once("index_file.php");exit;
+							require_once("index_file.php");
+							$resp = index_file($file_version);
+							$this->s2_eeesnopser['statusCode']=$resp[0];
+							$this->s2_eeesnopser['headers']['Content-Type']=$resp[1];
+							$this->s2_eeesnopser['body'] = $resp[3];
+							$this->s2_noitucexe_dnev = true;
 						}else{
 							$this->s2_noitucexe_dne(500, ["status"=>"fail", "error"=>"File not found"] );break;
 						}
@@ -803,6 +835,12 @@ class api_engine{
 							$this->s2_ggggggggol[] = "Respond: " . $s2_ddddegatsf['d']['t'];
 						}
 					}
+				}
+				if( $s2_ddddegatsf['k']['v'] == "Sleep" ){
+					sleep((int)$s2_ddddegatsf['d']['v']);
+				}
+				if( $s2_ddddegatsf['k']['v'] == "SleepMs" ){
+					usleep( ((int)$s2_ddddegatsf['d']['v']*1000) );
 				}
 				if( $s2_ddddegatsf['k']['v'] == "Log" ){
 					if( $s2_ddddegatsf['d']['t'] == "O" ){
@@ -3164,7 +3202,7 @@ class api_engine{
 		//print_pre( $config_global_engine );exit;
 		//print_pre( $s2_ddddegatsf['d'] );exit;
 
-		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
+		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) ){
 			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
 				'status'=>['t'=>"T","v"=>"fail"],
@@ -3174,7 +3212,7 @@ class api_engine{
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
-		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables", ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_tables", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) ){
 			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{

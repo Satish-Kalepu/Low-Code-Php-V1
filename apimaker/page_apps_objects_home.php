@@ -36,7 +36,7 @@
 						<tr v-for="d,i in dbs['internal']">
 							<td><div class="mongoid"><div>{{ d['_id'] }}</div><span>#</span></div></td>
 							<td><div style="min-width:300px;"><a v-bind:href="objectpath+d['_id']" >{{ d['name'] }}</a></div></td>
-							<td><input type="button" value="X" class="btn btn-outline-danger btn-sm" ></td>
+							<td><input type="button" value="X" class="btn btn-outline-danger btn-sm" v-on:click="delete_database_internal(i)" ></td>
 						</tr>
 					</tbody>
 				</table>
@@ -108,6 +108,34 @@ var app = Vue.createApp({
 
 	},
 	methods: {
+		delete_database_internal: function( vi ){
+			if( confirm("Are you sure?") ){
+				axios.post("?", {
+					"action": "objects_delete_database",
+					"graph_id": this.dbs['internal'][ vi ]['_id']
+				}).then(response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.load_dbs();
+								}else{
+									alert(response.data['error'] );
+								}
+							}else{
+								alert("Incorrect response" );
+							}
+						}else{
+							alert("Incorrect response" );
+						}
+					}else{
+						alert("http error: " . response.status );
+					}
+				}).catch(error=>{
+					alert( this.get_http_error__(error) );
+				});
+			}
+		},
 		enable_objects: function(){
 			this.confmsg = "Enabling...";
 			this.conferr = "";
@@ -210,7 +238,35 @@ var app = Vue.createApp({
 			}).catch(error=>{
 				this.cerr = error.message
 			});
-		}
+		},
+		get_http_error__: function(e){
+			if( typeof(e) == "object" ){
+				if( 'status' in e ){
+					if( 'error' in e ){
+						return e['error'];
+					}else{
+						return "There was no error";
+					}
+				}else if( 'response' in e ){
+					var s = e.response.status;
+					if( typeof( e['response']['data'] ) == "object" ){
+						if( 'error' in e['response']['data'] ){
+							return s + ": " + e['response']['data']['error'];
+						}else{
+							return s + ": " + JSON.stringify(e['response']['data']).substr(0,100);
+						}
+					}else{
+						return s + ": " + e['response']['data'].substr(0,100);
+					}
+				}else if( 'message' in e ){
+					return e['message'];
+				}else{
+					return "Incorrect response";
+				}
+			}else{
+				return "Invalid response"
+			}
+		},
 	}
 });
 

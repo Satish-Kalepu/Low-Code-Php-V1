@@ -8,12 +8,12 @@ function engine_auth_api( $api_slug, $post ){
 	global $app_id;
 	global $db_prefix;
 	if( $api_slug == "verify_session_key" ){
-		if( !isset($post['session-key']) ){
+		if( !isset($post['session_key']) ){
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key required"]) );
-		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['session-key'] ) ){
+		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['session_key'] ) ){
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key Incorrect"]) );
 		}
-		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", ["app_id"=>$app_id, '_id'=>$post['session-key']] );
+		$res = $mongodb_con->find_one( $db_prefix . "_user_keys", ["app_id"=>$app_id, '_id'=>$post['session_key']] );
 		if( !$res['data'] ){
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Key Expired"]) );
 		}
@@ -21,7 +21,7 @@ function engine_auth_api( $api_slug, $post ){
 		$e = $res['data']['expire'];
 		//echo ($e - time());
 		if( $e > time() && $res['data']['ips'][0] == $_SERVER['REMOTE_ADDR'] . "/32" ){
-			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"SessionOK"]) );
+			respond(200, "application/json", [], json_encode(["status"=>"success", "error"=>"SessionOK"]) );
 		}else{
 			respond(200, "application/json", [], json_encode(["status"=>"fail", "error"=>"Session Expired", "e"=>($e - time())]) );
 		}
@@ -71,6 +71,12 @@ function engine_auth_api( $api_slug, $post ){
 		$key['updated']= date("Y-m-d H:i:s");
 		
 		$res = $mongodb_con->insert( $db_prefix . "_user_keys", $key);
+
+		event_log("auth", "generate_access_token", [
+			"app_id"=>$app_id,
+			"key_id"=>$res['inserted_id']
+		]);
+
 		respond(200, "application/json", [], json_encode(["status"=>"success", "access-key"=>$res['inserted_id'] ]) );
 
 	}else if( $api_slug == "assume_session_key" ){
@@ -128,6 +134,12 @@ function engine_auth_api( $api_slug, $post ){
 		$key['updated']= date("Y-m-d H:i:s");
 
 		$res = $mongodb_con->insert( $db_prefix . "_user_keys", $key);
+
+		event_log("auth", "assume_session_key", [
+			"app_id"=>$app_id,
+			"key_id"=>$res['inserted_id']
+		]);
+
 		respond(200, "application/json", [], json_encode(["status"=>"success", "session-key"=>$res['inserted_id'] ]) );
 
 	}else if( $api_slug == "user_auth" ||  $api_slug == "user_auth_captcha"  ){
@@ -194,6 +206,16 @@ function engine_auth_api( $api_slug, $post ){
 		$res = $mongodb_con->insert( $db_prefix . "_user_keys", $key);
 		if( $res['status'] == "success" ){
 			$new_key = $res['inserted_id'];
+
+			event_log("auth", "auth_success", [
+				"app_id"=>$app_id,
+				"user_id"=>$user_res['data']['_id']
+			]);
+			event_log("auth", "generate_access_token", [
+				"app_id"=>$app_id,
+				"user_id"=>$user_res['data']['_id'],
+				"key_id"=>$new_key
+			]);
 
 			$res = $mongodb_con->update_one( $db_prefix . "_user_pool", ["_id"=>$user_res['data']['_id']], ['last_login'=>date("Y-m-d H:i:s")] );
 

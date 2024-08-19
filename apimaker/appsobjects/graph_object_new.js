@@ -47,6 +47,10 @@ const graph_object_new =  {
 				<td>Label</td>
 				<td><inputtextbox2 types="T,GT" v-bind:v="v['l']" v-bind:datavar="datavar+':l'" ></inputtextbox2></td>
 			</tr>
+			<tr>
+				<td>Type</td>
+				<td><label><input type="radio" v-model="v['i_t']" value="N" > Node</label> <label><input type="radio" v-model="v['i_t']" value="L" > DataSet</label></td>
+			</tr>
 		</table>
 	</div>`
 };

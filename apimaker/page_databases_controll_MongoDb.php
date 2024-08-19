@@ -155,6 +155,13 @@ if( $_POST['action'] == "database_mongodb_load_tables" ){
 				json_response($res_insert);
 			}
 			$collections[ $ci ]['_id']= $res_insert['inserted_id'];
+
+			event_log( "system", "database_table_create", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$res_insert['inserted_id']
+			]);
 		}
 	}
 	//print_r( $tables );
@@ -244,6 +251,14 @@ if( $_POST['action'] == "database_mongodb_create_collection" ){
 		]
 	];
 	$res = $mongodb_con->insert( $config_api_tables, $insert_data );
+
+	event_log( "system", "database_table_create", [
+		"app_id"=>$config_param1,
+		'db_id'=>$config_param3, 
+		"engine"=>"MongoDb",
+		'table_id'=>$insert_data['inserted_id']
+	]);
+
 	json_response($res);
 }
 
@@ -285,6 +300,12 @@ if( $_POST['action'] == "check_mongodb_source_table" ){
 				if( $res3['status'] == "fail" ){
 					json_response( "fail", $res3["error"] );
 				}
+				event_log( "system", "database_table_update", [
+					"app_id"=>$config_param1,
+					'db_id'=>$config_param3, 
+					"engine"=>"MongoDb",
+					'table_id'=>$main_table['_id']
+				]);
 			}
 			json_response( "success", [
 				"keys" => $res['data'],
@@ -324,28 +345,28 @@ if( $_POST["action"] == "import_mongodb_data" ){
     				$d_r_1 = [];
     				foreach( $_POST["fields"] as $f => $field ){
     					if( $field["type"] == "number" ){
-						if( preg_match("/\./", $record[ $f ] ) ){
-							$val____ = (float)$record[ $f ];
+							if( preg_match("/\./", $record[ $f ] ) ){
+								$val____ = (float)$record[ $f ];
+							}else{
+								$val____ = (int)$record[ $f ];
+							}
+						}else if( $field["type"] == "text" ){
+							$val____ = trim($record[ $f ]);
 						}else{
-							$val____ = (int)$record[ $f ];
+							$val____ = ($record[ $f ]);
 						}
-					}else if( $field["type"] == "text" ){
-						$val____ = trim($record[ $f ]);
-					}else{
-						$val____ = ($record[ $f ]);
-					}
-					if( $f == "_id" && $record[$f] == "" ){
-						$val____ = new MongoDB\BSON\ObjectID();
-					}
-					$record[ $f ] = $val____;
-					if( $field["m"] == true && $field["insert"] == true){
-	  					$d_r_1[ $f ] = $record[ $f ];
-						if($val____ =='' ){
-							$errors[ $rec ][ $f ] = "required!";
+						if( $f == "_id" && $record[$f] == "" ){
+							$val____ = new MongoDB\BSON\ObjectID();
 						}
-					}
+						$record[ $f ] = $val____;
+						if( $field["m"] == true && $field["insert"] == true){
+		  					$d_r_1[ $f ] = $record[ $f ];
+							if($val____ =='' ){
+								$errors[ $rec ][ $f ] = "required!";
+							}
+						}
     				}
-                            	$record['_status__'] = "done";
+					$record['_status__'] = "done";
 					$du_r = $con->find_one($tablename,$d_r_1);
 					if($du_r["status"] == "success" && sizeof( $du_r["data"] ) != 0 ){
 						$duplicate_records[] = $_POST["data"][$rec];
@@ -353,7 +374,7 @@ if( $_POST["action"] == "import_mongodb_data" ){
 							$record['_status__'] = "skip";
 						}
 					}
-				$records[] = $record;
+					$records[] = $record;
     			}
     		}
 			if( sizeof($errors) ){
@@ -377,6 +398,12 @@ if( $_POST["action"] == "import_mongodb_data" ){
 						unset( $rec["_status__"] );
 						$new_insert_res = $con->insert( $tablename, $rec, "check" );
 						if( $new_insert_res['status'] == "success" ){
+							event_log( "database_table", "record_create", [
+								"app_id"=>$config_param1,
+								'db_id'=>$config_param3, 
+								"engine"=>"MongoDb",
+								'table_id'=>$main_table['_id']
+							]);
 					    	$increment_rec = $mongodb_con->increment($config_api_tables, $main_table['_id'], "count", 1);
 							if( $increment_rec['status'] == "fail" ){
 								$error_log                = [];
@@ -405,7 +432,7 @@ if( $_POST["action"] == "import_mongodb_data" ){
 					}
             	}
             	$update_rec = $mongodb_con->update_one( $config_api_tables,["schema" => $main_fields], ["_id"=>$_POST['table_id'] ] );
-				if($update_rec["status"] == "fail" ||  ($update_rec["status"] == "success" && $update_rec["data"]["matched_count"] != $update_rec["data"]["modified_count"] ) ){
+				if( $update_rec["status"] == "fail" ||  ($update_rec["status"] == "success" && $update_rec["data"]["matched_count"] != $update_rec["data"]["modified_count"] ) ){
 					json_response("fail",$update_rec['error']);
 				}else{
 					json_response("success", "ok");
@@ -748,6 +775,13 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 			], [
 				'schema'=>$_POST['schema']
 			]);
+
+			event_log( "system", "database_table_schema_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5
+			]);
 			json_response($res);
 		}
 
@@ -764,6 +798,12 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 			$res = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5],[
 				'$unset'=>["keys." . $_POST['name']=>true]
 			]);
+			event_log( "system", "database_table_index_drop", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5
+			]);
 			json_response($res);
 			exit;
 		}
@@ -777,6 +817,13 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 			}
 			$res = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5],[
 				"keys." . $_POST['index'] . ".keys"=>$_POST['keys']
+			]);
+			event_log( "system", "database_table_index_update", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5,
+				"index"=>$_POST['keys']
 			]);
 			json_response($res);
 			exit;
@@ -824,6 +871,13 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 			$res = $mongodb_con->update_one( $config_api_tables, ['_id'=>$config_param5], [
 				'keys'=>$keys
 			]);
+			event_log( "system", "database_table_index_create", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5,
+				"index"=>$_POST['new_index']
+			]);
 			json_response($res);
 
 			exit;
@@ -855,8 +909,25 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 					$error = $res['error'];
 					break;
 				}
+				event_log( "database_table", "record_create", [
+					"app_id"=>$config_param1,
+					'db_id'=>$config_param3, 
+					"engine"=>"MongoDb",
+					'table_id'=>$config_param5,
+					"record_id"=>$res['inserted_id']
+				]);
 				$success++;
 			}
+
+			event_log( "system", "database_table_import_data", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5,
+				"success"=>$success,
+				"skipped"=>$skipped,
+				"skipped_items"=>$skipped_items,
+			]);
 
 			if( $error ){
 				json_response([
@@ -960,6 +1031,12 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 					}
 				}
 			}
+			event_log( "system", "database_table_export", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5,
+			]);
 			json_response(['status'=>"success", "temp_fn"=>str_replace("/tmp/phpengine_backups/", "", $tmfn), "sz"=>$sz]);
 			exit;
 		
@@ -991,6 +1068,15 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 				$res = $con->insert( $table["table"], $_POST['record'], "check" );
 				if( $res['status'] == "success" ){
 					$res = $con->find_one( $table["table"], ['_id'=>$res['inserted_id'] ] );
+
+					event_log( "database_table", "record_create", [
+						"app_id"=>$config_param1,
+						'db_id'=>$config_param3, 
+						"engine"=>"MongoDb",
+						'table_id'=>$config_param5,
+						"record_id"=>$res['inserted_id']
+					]);
+
 					json_response($res);
 				}
 				json_response($res);
@@ -1007,6 +1093,13 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 					$res2 = $con->update_one( $table["table"], ["_id"=>$record_id ], $_POST['record'] );
 					if( $res2['status'] == "success" ){
 						$res = $con->find_one( $table["table"], ['_id'=>$record_id ] );
+						event_log( "database_table", "record_edit", [
+							"app_id"=>$config_param1,
+							'db_id'=>$config_param3, 
+							"engine"=>"MongoDb",
+							'table_id'=>$config_param5,
+							"record_id"=>$record_id
+						]);
 						json_response($res);
 					}
 					json_response($res2);
@@ -1025,6 +1118,13 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 				if( $res['status'] == "fail" ){
 					json_response($res);
 				}
+				event_log( "database_table", "record_delete", [
+					"app_id"=>$config_param1,
+					'db_id'=>$config_param3, 
+					"engine"=>"MongoDb",
+					'table_id'=>$config_param5,
+					"record_id"=>$j
+				]);
 			}
 			json_response("success","ok");
 			exit;
@@ -1032,6 +1132,13 @@ if( $config_param4 == "table" && $config_param5 == "new" ){
 
 		if( $_POST['action'] == "database_mongodb_delete_record" ){
 			$res = $con->delete_one( $table['table'], ["_id"=>$_POST['record_id'] ] );
+			event_log( "database_table", "record_delete", [
+				"app_id"=>$config_param1,
+				'db_id'=>$config_param3, 
+				"engine"=>"MongoDb",
+				'table_id'=>$config_param5,
+				"record_id"=>$_POST['record_id']
+			]);
 			json_response($res);
 		}
 

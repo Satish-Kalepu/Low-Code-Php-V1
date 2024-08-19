@@ -635,7 +635,7 @@ var app = Vue.createApp({
 			if( 'response-body' in this.test_thing__ ){
 				if( typeof(this.test_thing__['response-body']) == "string" ){
 					if( this.test_thing__['response-body'].match(/binary/i) ){
-						vh['responseType'] = "arraybuffer";
+						vh['responseType'] = "blob";
 					}
 				}
 			}
@@ -643,7 +643,9 @@ var app = Vue.createApp({
 			this.tmsg = "Testing API ...";
 			this.terr = "";
 			if( this.test_api_method__ == "POST" ){
-				axios.post( this.test_url__ + this.test_path__, vdata, vh ).then(response=>{
+				axios.post( this.test_url__ + this.test_path__, vdata, vh, {
+					//'responseType': "blob"
+				} ).then(response=>{
 					this.tmsg = "";
 					if( response.status == 200 ){
 						this.test_response__ = response;
@@ -704,7 +706,7 @@ var app = Vue.createApp({
 			for( var h in this.test_response__['headers'] ){
 				if( h.match(/content\-type/i) ){
 					if( this.test_response__['headers'][ h ].match(/octet/) == null ){
-						this.test_response__['data'] = _arrayBufferToString( this.test_response__['data'] );
+						//this.test_response__['data'] = _arrayBufferToString( this.test_response__['data'] );
 						console.log("Converted response: " );
 						console.log( this.test_response__['data'] );
 						this.test_thing__['response-body']
@@ -728,6 +730,7 @@ var app = Vue.createApp({
 			var t= "application/unknown";
 			var f= "unknown-file.file";
 			var d = this.test_response__['data'];
+			console.log( this.test_response__ );
 			for( var h in this.test_response__['headers'] ){
 				if( h.match(/content\-type/i) ){
 					t = this.test_response__['headers'][ h ];
@@ -737,6 +740,7 @@ var app = Vue.createApp({
 					if( m!=null ){ f = m[1];}
 				}
 			}
+			console.log( f );
 			var file = new Blob([d], {"type": t});
 			var a = document.createElement("a"), url = URL.createObjectURL(file);
 			a.href = url; a.download = f;

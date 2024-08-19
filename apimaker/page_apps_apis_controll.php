@@ -71,6 +71,7 @@ if( $_POST['action'] == "delete_api" ){
 	$res = $mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
 		'api_id'=>$_POST['api_id']
 	]);
+	event_log( "system", "app_api_delete", ["app_id"=>$config_param1,"api_id"=>$_POST['api_id']] );	
 	update_app_pages( $config_param1 );
 	json_response($res);
 }
@@ -115,12 +116,14 @@ if( $_POST['action'] == "create_api" ){
 		"auth-type"	=> "None",
 	]);
 	if( $res['status'] == 'success' ){
+		$api_id = $res['inserted_id'];
+		event_log( "system", "app_api_create", ["app_id"=>$config_param1, "api_id"=>$api_id, "api_version_id"=>$version_id ] );	
 		$res2 = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
 			"_id"=>$mongodb_con->get_id($version_id),
 			"app_id"=>$config_param1,
 			"path"=>$_POST['current_path'],
 			'vt'=>"api",
-			"api_id"=>$res['inserted_id'],
+			"api_id"=>$api_id,
 			"name"=>$_POST['new_api']['name'],
 			"des"=>$_POST['new_api']['des'],
 			"type"=>"api",
@@ -187,6 +190,7 @@ if( $_POST['action'] == "apis_rename" ){
 	if( $res['status'] == "fail" ){
 		json_response($res);
 	}
+	event_log( "system", "app_api_edit", ["app_id"=>$config_param1, "api_id"=>$_POST['api_id'] ] );
 	$res = $mongodb_con->update_many($config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
 		"app_id"=>$config_param1,
 		"api_id"=>$_POST['api_id']
@@ -243,6 +247,7 @@ if( $_POST['action'] == "apis_folder_rename" ){
 	if( $res['status'] == "fail" ){
 		json_response($res);
 	}
+	event_log( "system", "app_api_folder_rename", ["app_id"=>$config_param1, "folder_id"=>$_POST['folder_id'], "new_name"=>$_POST['new_name'] ] );
 	$res = $mongodb_con->update_many($config_global_apimaker['config_mongo_prefix'] . "_apis", [
 		"app_id"=>$config_param1,
 		"path"=>$old_name
@@ -309,6 +314,7 @@ if( $_POST['action'] == "apis_move" ){
 	if( $res['status'] == "fail" ){
 		json_response($res);
 	}
+	event_log( "system", "app_api_move", ["app_id"=>$config_param1, "api_id"=>$_POST['api_id'], "new_path"=>$_POST['new_path'] ] );
 	$res = $mongodb_con->update_many($config_global_apimaker['config_mongo_prefix'] . "_apis_versions", [
 		"app_id"=>$config_param1,
 		"api_id"=>$_POST['api_id']
@@ -349,6 +355,7 @@ if( $_POST['action'] == "apis_create_folder" ){
 		"created"=>date("Y-m-d H:i:s"),
 		"updated"=>date("Y-m-d H:i:s"),
 	]);
+	event_log( "system", "app_api_create_folder", ["app_id"=>$config_param1, "path"=>$path, "new_folder"=>$_POST['new_folder'] ] );
 	update_app_pages( $config_param1 );
 	json_response($res);
 	exit;
@@ -477,6 +484,13 @@ if( $_POST['action'] == "app_api_import_create" ){
 	]);
 	$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", $import_api_data );
 
+	event_log( "system", "app_api_import_create", [
+		"app_id"=>$config_param1, 
+		"path"=>$_POST['current_path'], 
+		"name"=>$import_api_data['name'],
+		"api_id"=> $api_id
+	]);
+
 	update_app_pages( $config_param1 );
 
 	json_response([
@@ -558,6 +572,12 @@ if( $config_param4 && $main_api ){
 
 	if( $_POST['action'] == "app_api_export" ){
 		//print_r( $api );exit;
+
+		event_log( "system", "app_api_export", [
+			"app_id"=>$config_param1, 
+			"api_id"=> $api['_id']
+		]);
+
 		$fn = preg_replace("/\W/", "", $api['name']).".".$api['_id'].".api";
 		unset($api['_id']);unset($api['app_id']);unset($api['api_id']);
 		//unset($api['name']);unset($api['des']);
@@ -659,6 +679,11 @@ if( $config_param4 && $main_api ){
 			], $import_api_data);
 		}
 
+		event_log( "system", "app_api_import", [
+			"app_id"=>$config_param1, 
+			"api_id"=>$main_api['_id']
+		]);
+
 		update_app_pages( $config_param1 );
 
 		json_response([
@@ -698,6 +723,13 @@ if( $config_param4 && $main_api ){
 			"api_id"=>$main_api['_id'],
 			"_id"=>$_POST['version_id']
 		]);
+
+		event_log( "system", "app_api_delete_version", [
+			"app_id"=>$config_param1, 
+			"api_id"=>$main_api['_id'],
+			"api_id"=>$_POST['version_id'],
+		]);
+
 		json_response($res);
 		exit;
 	}
@@ -717,14 +749,24 @@ if( $config_param4 && $main_api ){
 			]);
 		}
 
+		$new_api_version = $mongodb_con->generate_id();
 		$from_api['vn'] = "Clone of version:" . $from_api['version'];
 		$from_api['version'] = $new_version_series;
-		$from_api['_id'] = $mongodb_con->generate_id();
+		$from_api['_id'] = $new_api_version;
 		$from_api['created'] = date("Y-m-d H:i:s");
 		$from_api['updated'] = date("Y-m-d H:i:s");
 
 		$mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_apis_versions", $from_api);
 		
+		event_log( "system", "app_api_clone", [
+			"app_id"=>$config_param1, 
+			"from_api_id"=>$main_api['_id'],
+			"from_version_id"=>$_POST['from_version_id'],
+			"from_version_id"=>$new_api_version,
+			"from_version_series"=>$res['data']['version'],
+			"to_version_series"=>$new_version_series
+		]);
+
 		update_app_pages( $config_param1 );
 
 		json_response([
@@ -752,6 +794,13 @@ if( $config_param4 && $main_api ){
 		],[
 			"version_id"=>$from_api['_id'],
 			"version"=>$from_api['version'],
+		]);
+
+		event_log( "system", "app_api_switch", [
+			"app_id"=>$config_param1, 
+			"api_id"=>$main_api['_id'],
+			"to_version_id"=>$from_api['_id'],
+			"to_version_series"=>$from_api['version']
 		]);
 
 		update_app_pages( $config_param1 );
@@ -807,6 +856,12 @@ if( $config_param4 && $main_api ){
 			"updated"=>date("Y-m-d H:i:s"),
 			"active"=>true,
 		]);
+
+		event_log( "system", "app_api_edit", [
+			"app_id"=>$config_param1, 
+			"api_id"=>$_POST['edit_api']['api_id'],
+		]);
+
 		update_app_pages( $config_param1 );
 		//update_app_last_change_date( $config_param1 );
 		json_response($res);
@@ -823,6 +878,10 @@ if( $config_param4 && $main_api ){
 		if($res["status"] == "fail" ){
 			json_response("fail",$res["error"]);
 		}
+		event_log( "system", "app_api_save_test", [
+			"app_id"=>$config_param1, 
+			"api_id"=>$config_param3
+		]);
 		json_response("success","ok");
 	}
 
@@ -869,6 +928,12 @@ if( $config_param4 && $main_api ){
 		if( $res["status"] == "fail" ){
 			json_response("fail","Version update failed: ".$res["error"]);
 		}
+
+		event_log( "system", "app_api_save_engine", [
+			"app_id"=>$config_param1, 
+			"api_id"=>$version['api_id'],
+			"version_id"=>$_POST['version_id'],
+		]);
 
 		if( $api['version_id'] == $version['_id'] ){
 			$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apis", [

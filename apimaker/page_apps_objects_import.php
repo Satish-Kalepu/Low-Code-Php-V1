@@ -1,230 +1,11 @@
-<style>
-
-table.zz td div{ max-width:250px; max-height:75px;overflow:auto; white-space:nowrap; }
-table.zz thead td { background-color:#666; color:white; }
-
-div.zz::-webkit-scrollbar {width: 6px;height: 6px;}
-div.zz::-webkit-scrollbar-track { background: #f1f1f1;}
-div.zz::-webkit-scrollbar-thumb { background: #888;}
-div.zz::-webkit-scrollbar-thumb:hover { background: #555;}
-
-pre.zzz{ max-height:150px; width:auto;overflow:auto; margin:20px 10px; padding:10px; border:1px solid #999; }
-pre.zzz::-webkit-scrollbar {width: 12px;height: 12px;}
-pre.zzz::-webkit-scrollbar-track { background: #f1f1f1;}
-pre.zzz::-webkit-scrollbar-thumb { background: #888;}
-pre.zzz::-webkit-scrollbar-thumb:hover { background: #555;}
-
-pre.fff{ max-height:300px; width:auto;overflow:auto; padding:10px; margin-right:20px; border:1px solid #999; }
-pre.fff::-webkit-scrollbar {width: 12px;height: 12px;}
-pre.fff::-webkit-scrollbar-track { background: #f1f1f1;}
-pre.fff::-webkit-scrollbar-thumb { background: #888;}
-pre.fff::-webkit-scrollbar-thumb:hover { background: #555;}
-
-pre.sample_data{ height:300px;overflow:auto; white-space:nowrap; border:1px solid #333; }
-pre.sample_data::-webkit-scrollbar {width: 6px;height: 6px;}
-pre.sample_data::-webkit-scrollbar-track { background: #f1f1f1;}
-pre.sample_data::-webkit-scrollbar-thumb { background: #888;}
-pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
-
-</style>
-<div id="app" >
-	<div class="leftbar" >
-		<?php require( "page_apps_leftbar.php" ); ?>
-	</div>
-	<div style="position: fixed;left:150px; top:40px; height: calc( 100% - 40px ); width:calc( 100% - 150px ); background-color: white; " >
-		<div style="padding: 10px;" >
-
-			<div style="float:right;"><a class="btn btn-outline-secondary btn-sm" v-bind:href="path+'tables_dynamic'">Back</a></div>
-
-			<h4>Table - Create from File</h4>
-
-			<div style="height: 50px; border-bottom: 1px solid #ccc; ">
-				<div v-if="step==1" >
-					<div class="mb-2" style="display:flex; gap:20px;" >
-						<select class="form-select form-select-sm w-auto" v-model="upload_type" v-on:change="upload_type_select" >
-							<option value="CSV" >CSV</option>
-							<option value="JSON" >JSON</option>
-							<option value="XLS" >XLS</option>
-							<option value="XLSX" >XLSX</option>
-						</select>
-						<input type="file" id="upload_file" class="form-control form-control-sm w-auto" style="" v-on:change="fileselect" >
-					</div>
-					<div class="mb-2" v-if="err" >
-						<div>Sample Data:</div>
-						<pre v-if="sample_data" >{{ sample_data }}</pre>
-					</div>
-				</div>
-				<div v-if="step==2" >
-					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;">
-					<div v-if="analyzing" style="color:blue; float:right; margin-right: 20px;" >Analyzing file</div>
-					<input v-else-if="tot_cnt<=max_records_limit" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport" value="Import" style="float:right; margin-right: 10px;">
-
-					<div style="display: flex; gap:20px;">
-						<div>
-							<div>FileSize: {{ get_size() }}</div>
-							<div>FileType: {{ upload_type }}</div>
-						</div>
-						<div>
-							<div>Preview: <span class="badge text-bg-light">{{ sample_records.length }}</span> of <span class="badge text-bg-light">{{ tot_cnt }}</span> records </div>
-						</div>
-						<div v-if="tot_cnt>max_records_limit" style="color:red;">File has more than 20,000 records. Not allowed.</div>
-					</div>
-				</div>
-				<div v-if="step==3" >
-					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;">
-					<input v-if="tot_cnt<=max_records_limit" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport2" value="Proceed" style="float:right; margin-right: 10px;">
-
-					<div style="display: flex; gap:20px;">
-						<div>
-							<div>FileSize: {{ get_size() }}</div>
-							<div>FileType: {{ upload_type }}</div>
-						</div>
-						<div>
-							<div>Preview: <span class="badge text-bg-light">{{ sample_records.length }}</span> of <span class="badge text-bg-light">{{ tot_cnt }}</span> records </div>
-						</div>
-					</div>
-				</div>
-				<div v-if="step==4" >
-					<p>Upload Status</p>
-				</div>
-			</div>
-
-			<div style="overflow: auto;height: calc( 100% - 130px - 20px ); padding-right:10px;">
-				<div v-if="step==2" >
-					<template v-if="upload_type=='CSV'" >
-						<template v-if="sample_records.length>0" >
-							<table class="table table-striped table-bordered table-sm w-auto zz" >
-								<thead v-if="head_record" style="position:sticky; top:0px; ">
-									<tr>
-										<td v-for="f in head_record" ><div class="zz">{{ f }}</div></td>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="d in sample_records" >
-										<td v-for="f in d" ><div class="zz">{{ f }}</div></td>
-									</tr>
-								</tbody>
-							</table>
-						</template>
-					</template>
-					<template v-if="upload_type=='JSON'" >
-						<template v-if="sample_records.length>0" >
-							<pre class="zzz" v-for="v in sample_records">{{ v }}</pre>
-						</template>
-					</template>
-				</div>
-				<div v-if="step==3" >
-
-						<div class="row mb-2">
-							<div  class="col-6" ><div v-if="msg2" v-html="msg2" ></div></div>
-							<div  class="col-6" ><div v-if="err2" style="color:red;" >{{ err2 }}</div></div>
-						</div>
-
-						<div class="mb-2">
-							<div>Table</div>
-							<div><input type="text" class="form-control form-control-sm" v-model="add_table['table']" placeholder="New table name"></div>
-						</div>
-						<div class="mb-2">
-							<div>Description</div>
-							<div><textarea class="form-control form-control-sm" v-model="add_table['des']" placeholder="Description"></textarea></div>
-						</div>
-
-						<template v-if="upload_type=='CSV'" >
-
-							<div class="py-2">Map columns of CSV file to the Database Schema</div>
-							<table class="table table-bordered table-sm w-auto">
-								<thead>
-									<tr class="text-bg-light">
-										<td>Import</td>
-										<td>CSV Column</td>
-										<td>=&gt;</td>
-										<td>Table Field</td>
-										<td>Type</td>
-										<td>Mandatory</td>
-										<td>PrimaryIndex</td>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="fd,f in sch_keys" >
-										<td><input type="checkbox" v-model="fd['use']" v-on:click="use_check(f)" ></td>
-										<td>{{ fd['csvf'] }}</td>
-										<td>=&gt;</td>
-										<td><input v-if="f!='_default_id'" type="text" v-model="fd['targetf']" v-if="fd['use']" >
-											<span v-else>_id</span>
-										</td>
-										<td>
-											<select v-if="fd['use']&&f!='_default_id'" v-model="fd['type']" >
-											<option value="text" >Text</option>
-											<option value="number" >Number</option>
-											</select>
-											<span v-else-if="fd['use']&&f=='_default_id'" >ObjectID</span>
-										</td>
-										<td><input v-if="fd['use']&&f!='_default_id'" type="checkbox" v-model="fd['m']" ></td>
-										<td><input v-if="fd['use']" type="checkbox" v-model="fd['primary']" v-on:click="primary_check(f)" ></td>
-									</tr>
-								</tbody>
-							</table>
-						</template>
-						<template v-else-if="upload_type=='JSON'" >
-
-							<div class="py-2">JSON Schema check</div>
-							<pre class="fff">{{ schema_1 }}</pre>
-
-						</template>
-						<template>Unhandled upload type</template>
-
-				</div>
-				<div v-if="step==4" >
-					<div class="mb-2">
-						<div style="height:30px; border:1px solid #ccc;">
-							<div style="position:absolute;" > Progress <span style="font-size:1.2rem;">{{ upload_progress }} %</span> </div>
-							<div v-bind:style="'height:30px; background-color:#ababd1; width:'+upload_progress+'%'" >&nbsp;</div>
-						</div>
-					</div>
-					<div class="mb-2">Uploaded <span style="font-size:1.5rem;">{{ upload_cnt }}/{{ tot_cnt }}</span> </div>
-					<div class="row mb-2">
-						<div class="col-6">Success <span class="b-400" >{{ upload_success_cnt }}</span></div>
-						<div class="col-6">Skipped <span class="bold" >{{ upload_skipped_cnt }}</span></div>
-					</div>
-
-					<div  class="py-2" v-if="msg3" v-html="msg2" ></div>
-					<div  class="py-2" v-if="err3" style="color:red;" >{{ err3 }}</div>
-
-					<div class="py-2">
-						<a target="_blank" v-bind:href="path+'tables_dynamic/'+new_table_id+'/records'" >New Table: {{ new_table_id }}</a>
-					</div>
-
-					<div v-if="uploaded_skipped_cnt>0" >
-						<div>Skipped Items: </div>
-						<div v-for="v in upload_skipped_items" >{{ v }}</div>
-					</div>
-
-				</div>
-
-
-			</div>
-			<div style="height: 30px; padding-right:10px;" >
-				<div v-if="msg" >{{ msg }}</div>
-				<div v-if="err" style="float:right;color:red;" >{{ err }}</div>
-			</div>
-
-
-		</div>
-	</div>
-</div>
-
 <script>
-<?php
-include( "page_apps_tables_dynamic_object.js" );
-?>
-var app = Vue.createApp({
-	"data"	: function(){
+var objects_import = {
+	"data": function(){
 		return {
-			"path": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
-			"app_id": "<?=$config_param1 ?>",
 			"token": "",
 			"vshow": true,
 			"msg": "", "err": "", "msg2": "", "err2": "", "msg3": "", "err3": "", 
+			"import_msg": "", "import_err": "",
 			"upload_type": "CSV",
 			"filedata": "nothing",
 			"sample_records": [],
@@ -232,28 +13,56 @@ var app = Vue.createApp({
 			"head_record": [],
 			"step": 1,
 			"tot_cnt": 0,
-			"max_records_limit": 200000,
-			"max_file_size_limit": 1024*1024*50,			
 			"sch_keys": {}, "sch_ikeys": {},
+			"template_keys": {},
+			"import_primary_field": "_default_id",
+			"import_label_field": "",
+			"import_alias_field": [],
 			"add_table": {"table": "", "des": ""},
 			"fields_match": {}, "keys_match": {},
 			"sample_data": "",
 			"upload_progress": 0,
-			"upload_cnt": 0,"upload_success_cnt": 0,"upload_skipped_cnt": 0, "upload_batch_cnt": 0,
+			"upload_cnt": 0,"upload_success_cnt": 0,"upload_inserts_cnt": 0,"upload_updates_cnt": 0,"upload_skipped_cnt": 0, "upload_batch_cnt": 0,
 			"upload_skipped_items": [],
 			"csv_batch_limit": 500,
 			"json_batch_limit": 100,
 			"upload_create": false,
-			"new_table_id": "",
 			"schema_1": {},
 			"schema_2": {},
 			"analyzing":false,
+			"vimport": {
+				"i_of": {"t": "GT", "i": "", "v": ""},
+				"data": [
+				],
+				"template":{},
+				"edit_field":"",
+			},
+			"create_instance": false,
+			"new_collection": {
+				"i_of": {"t":"GT", "i": "", "v": ""},
+				"v": {"t":"T", "v":""},
+			}
 		};
 	},
-	mounted : function(){
-		//this.load_source_tables();
+	props:[ "refname", "path", "app_id" ],
+	mounted: function(){
+		
 	},
-	methods: {
+	"methods": {
+		check_template: function(){
+			try{
+				var s = {"props": {} };
+				s[ "_id" ] = {"type": "UniqId", "name": "Unique Key", "map": -1, "csvf": "", "targetf": "UniqId", "use": true, "m": true, "primary": true, "label": false};
+				s[ "label" ] = {"type": "text", "name": "Label", "map": -1, "csvf": "", "targetf": "", "use": true, "m": true, "primary": false, "label": true};
+				for( var fd in this.vimport['template'] ){
+					s[ "props" ][ fd ] = {"type": "text", "name": this.vimport['template'][ fd ]['l']['v']+'', "map": -1, "csvf": "", "targetf": "", "use": true, "m": true, "primary": false, "label": false};
+				}
+				this.template_keys = s;
+			}catch(e){
+				console.error( "check_template" );
+				console.error( e );
+			}
+		},
 		echo__: function(v){
 			if( typeof(v)=="object" ){
 				console.log( JSON.stringify(v,null,4) );
@@ -510,34 +319,42 @@ var app = Vue.createApp({
 		},
 		use_check2: function(vf){
 			if( vf == "_default_id" ){
-				if( this.sch_keys["_default_id"]['use'] ){
-					this.sch_keys["_default_id"]['primary'] = true;
-					this.primary_check2("_default_id");
+				if( this.sch_keys[vf]['use']== false ){
+					if( this.import_label_field == vf ){
+						this.import_label_field = "";
+					}
+					if( this.import_alias_field.indexOf(vf) > -1 ){
+						this.import_alias_field.splice( this.import_alias_field.indexOf(vf), 1 );
+					}
+				}else{
+					this.import_primary_field = "_default_id";
+					this.import_primary_check2( vf );
 				}
 			}
 		},
-		primary_check: function(vf){
-			setTimeout(this.primary_check2,100,vf);
+		import_primary_check: function(vf){
+			setTimeout(this.import_primary_check2,100,vf);
 		},
-		primary_check2: function(vf){
-			if( this.sch_keys[ vf ]['primary'] ){
-				this.sch_keys[ vf ]['targetf'] = "_id";
-				this.sch_keys[ vf ]['m'] = true;
-			}else{
-				this.sch_keys[ vf ]['targetf'] = vf+'';
+		import_primary_check2: function(vf){
+			if( this.import_label_field == vf ){
+				this.import_label_field = "";
 			}
-			for( var i in this.sch_keys ){
-				if( i != vf ){
-					if( this.sch_keys[ i ]['targetf' ] == "_id" ){
-						this.sch_keys[ i ]['primary' ] = false;
-						this.sch_keys[ i ]['targetf' ] = i+'';
-					}
-					this.sch_keys[ i ]['primary'] = false;
-					if( i == "_default_id" ){
-						this.sch_keys[ i ]['use'] = false;
-					}
-				}
+			if( this.import_alias_field.indexOf(vf) > -1 ){
+				this.import_alias_field.splice( this.import_alias_field.indexOf(vf), 1 );
 			}
+			this.sch_keys[ vf ]['targetf'] = "";
+			if( vf != "_default_id" && this.sch_keys['_default_id']['use'] ){
+				this.sch_keys['_default_id']['use'] = false;
+			}
+		},
+		import_label_check: function(vf){
+			setTimeout(this.import_label_check2,100,vf);
+		},
+		import_label_check2: function(vf){
+			//this.sch_keys[ vf ]['targetf'] = "";
+		},
+		import_alias_check: function(vf){
+			
 		},
 		checkfile_json_continue: function(){
 			while(1){
@@ -559,7 +376,7 @@ var app = Vue.createApp({
 
 			this.fpos =0;
 			this.tot_cnt = 0;
-			if( this.vf.size > this.max_file_size_limit ){
+			if( this.vf.size > 1024*1024*5 ){
 				this.msg = "File size is more than 5 MB";
 			}
 			var d = this.readcsvline();
@@ -574,13 +391,13 @@ var app = Vue.createApp({
 				this.fields_match = {};
 				this.sch_keys = {};
 				this.sch_keys[ "_default_id" ] = {
-					"type": "ObjectID", "map": -1, "csvf": "", "targetf": "_id", "use": true, "m": true, "primary": true,
+					"type": "UniqId", "map": -1, "csvf": "", "targetf": "UniqId", "use": true, "m": true, "i_of": {"i": "","v":""},
 				}
-				for(var vf in d ){
+				for( var vf in d ){
 					this.fields_match[ d[vf] ] = vf;
 					var k = d[vf].trim().replace(/\W/g,'');
 					this.sch_keys[ k ] = {
-						"type": "text", "map": vf, "csvf": d[vf], "targetf": d[vf], "use": true, "m": true, "primary": false,
+						"type": "text", "map": vf, "csvf": d[vf], "targetf": "", "use": true, "m": true, "i_of": {"i": "","v":""},
 					}
 				}
 			}else{
@@ -683,53 +500,79 @@ var app = Vue.createApp({
 		},
 		doimport2: function(){
 			this.err2 = "";
-			this.add_table['table' ] = this.add_table['table' ].trim();
-			if( this.add_table['table' ].match(/^[a-z0-9\.\-\_\ ]{3,25}$/i) == null ){
-				//alert("Need table name in [a-z0-9.-_ ]{3,25}"); return false;
-				this.err2 = "Need table name in [a-z0-9.-_ ]{3,25}"; return false;
+			if( this.vimport['i_of']['v'] == "" ){
+				this.err2 = "Need Instance Node"; return false;
 			}
-			if( this.add_table['des'].match(/^[a-z0-9\.\-\_\&\,\!\@\'\"\ \r\n]{5,200}$/i) == null ){
-				this.err2 = "Need description in [a-z0-9.-_&,!@]{5,200}"; return false;
-			}
-
 			if( this.upload_type == "CSV" ){
-				var is_prime = false;
-				var pc = 0;
-				var prime_f = -1;var prime_ff = -1;
-				for( var f in this.sch_keys ){if( this.sch_keys[f]['use'] ){
-					if( this.sch_keys[f]['targetf'] == "_id" ){
-						is_prime = true;
-						prime_f = Number(this.sch_keys[f]['map']);
-						prime_ff = f+'';
-						pc++;
+				if( this.import_primary_field.trim() == "" ){
+					this.err2 = "Need ID (primary key) field"; return false;
+				}else if( this.import_label_field.trim() == "" ){
+					this.err2 = "Need Label Unique field"; return false;
+				}
+				for( var fd in this.sch_keys ){if( this.sch_keys[fd]['use'] ){
+					if( fd != this.import_primary_field && fd != this.import_label_field ){
+						if( this.sch_keys[ fd ]['type'] == "" ){
+							this.err2 = "Field type required for `"+fd+"` "; return false;
+						}
+						if( this.sch_keys[ fd ]['targetf'] == "" ){
+							this.err2 = "Field mapping required for `"+fd+"` "; return false;
+						}
+					}
+					if( fd != this.import_primary_field ){
+						if( this.sch_keys[ fd ]['type'] == "graph-thing" ){
+							if( this.sch_keys[ fd ]['i_of']['v'] == "" ){
+								this.err2 = "Field `"+fd+"` linkable instance name required"; return false;
+							}
+						}
 					}
 				}}
-				if( !is_prime ){
-					this.err2 = "Need at least one primary field mapped to _id"; return false;
-				}else if( pc > 1 ){
-					this.err2 = "Only one field should be mapped to _id"; return false;
-				}else if( prime_f == -1 && prime_ff != "_default_id" ){
-					this.err2 = "Primary field not selected"; return false;
-				}
 
-				this.fpos =0;
-				if( prime_f != -1 ){
-					var keys = {};
-					var rcnt = 0;
-					while( 1 ){
-						var d = this.readcsvline();
-						rcnt++;
-						if( typeof(d) == "object" ){
-							if( d[prime_f] in keys == false ){
-								keys[ d[prime_f] ] = 1;
-							}else{
-								keys[ d[prime_f] ]++;
-								this.err2 = "Primary field value `" + d[prime_f] + "` repeated for record: "+rcnt; return false;
-							}
-						}else if( d == "end" ){ break; }else{ this.err2 = "Failed to read file";return false; break; }
+				var prime_index = -1;
+				for( var fd in this.sch_keys ){
+					if( fd == this.import_primary_field ){
+						prime_index = this.sch_keys[ fd ]['map'];
 					}
 				}
-
+				var label_index = -1;
+				for( var fd in this.sch_keys ){
+					if( fd == this.import_label_field ){
+						label_index = this.sch_keys[ fd ]['map'];
+					}
+				}
+				this.fpos = 0;
+				var d = this.readcsvline();
+				var prime_keys = {};
+				var label_keys = {};
+				var rcnt = 0;
+				while( 1 ){
+					var d = this.readcsvline();
+					rcnt++;
+					if( typeof(d) == "object" ){
+						if( prime_index != -1 ){
+							if( d.length > prime_index ){
+								if( d[prime_index] in prime_keys == false ){
+									prime_keys[ d[prime_index] ] = 1;
+									if( d[prime_index].match(/^[a-z0-9]{5,24}$/) == null ){
+										this.err2 = "Primary field value `" + d[prime_index] + "` format is not allowed for record: "+rcnt; return false;
+									}
+								}else{
+									prime_keys[ d[prime_index] ]++;
+									this.err2 = "Primary field value `" + d[prime_index] + "` repeated for record: "+rcnt; return false;
+								}
+							}
+						}
+						if( label_index != -1 ){
+							if( d.length > label_index ){
+								if( d[label_index] in label_keys == false ){
+									label_keys[ d[label_index] ] = 1;
+								}else{
+									label_keys[ d[label_index] ]++;
+									this.err2 = "Label value `" + d[label_index] + "` repeated for record: "+rcnt; return false;
+								}
+							}
+						}
+					}else if( d == "end" ){ break; }else{ this.err2 = "Failed to read file";return false; break; }
+				}
 			}
 
 			if( this.err2 ){
@@ -747,10 +590,9 @@ var app = Vue.createApp({
 			this.step = 4;
 			this.upload_progress = 0;
 			this.upload_create = false;
-			this.upload_cnt = 0;this.upload_success_cnt = 0;this.upload_skipped_cnt = 0;this.upload_skipped_items = [];
+			this.upload_cnt = 0;this.upload_success_cnt = 0;this.upload_skipped_cnt = 0;this.upload_inserts_cnt = 0;this.upload_updates_cnt = 0;this.upload_skipped_items = [];
 			this.err3 = "";
 			this.msg3 = "Initiating...";
-			this.new_table_id = "";
 			this.fpos =0;
 			axios.post("?", {
 				"action":"get_token",
@@ -788,9 +630,11 @@ var app = Vue.createApp({
 			});
 		},
 		start_importing_csv_table: function(){
+			this.start_importing_csv_batch();
+		},
+		discon: function(){
 			axios.post( "?", {
-				"action": "tables_dynamic_importfile_create",
-				"table": this.add_table,
+				"action": "objects_import_data",
 				"schema": this.sch_keys,
 				"upload_type": this.upload_type,
 				"token": this.token
@@ -800,7 +644,6 @@ var app = Vue.createApp({
 					if( typeof(response.data) == "object" ){
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success" ){
-								this.new_table_id = response.data['inserted_id'];
 								setTimeout(this.start_importing_csv_batch, 50);
 							}else{
 								this.err3 = "Import Error: " + response.data['error'];
@@ -821,26 +664,47 @@ var app = Vue.createApp({
 			for(var i=0;i<this.csv_batch_limit;i++){
 				var d = this.readcsvline();
 				if( typeof(d) == "object" ){
-					var rec = {};
-					for( fi in this.sch_keys ){
+					var rec = {
+						"l": {"t":"T", "v":""}, "props": {}, "al": []
+					};
+					var pfi = this.sch_keys[ this.import_primary_field ]['map'];
+					if( pfi > -1 ){
+						rec["_id"] = d[ Number(pfi) ];
+					}
+					var lfi = this.sch_keys[ this.import_label_field ]['map'];
+					rec["l"] = {"t": "T", "v": d[ Number(lfi) ]};
+					if( this.sch_keys[ this.import_label_field ]['type'] == "graph-thing" ){
+						rec["l"]["t"] = "GT";
+						rec['l']['i_of'] = this.sch_keys[ this.import_label_field ]['i_of'];
+					}
+					for(var ai=0;ai<this.import_alias_field.length;ai++){
+						var afi = this.sch_keys[ this.import_alias_field[ai] ]['map'];
+						if( afi > -1 ){
+							if( typeof(d[ Number(afi) ])!="undefined" ){
+								rec["al"].push({"t":"T","v": d[ Number(afi) ] });
+							}
+						}
+					}
+					for( var fi in this.sch_keys ){
 						var fd = this.sch_keys[fi];
 						var k = fd['targetf'];
 						if( fd['map'] != "-1" && fd['use'] ){
 							if( d[ Number(fd['map']) ] ){
 								var v = d[ Number(fd['map']) ];
 								if( v != undefined ){
-									rec[ k ] = v;
-								}
-								if( fd['type'] == "number" ){
-									if( typeof(v) == "string" ){
-										rec[ k ] = Number(v);
-									}else if( typeof(v) == "number" ){
-										rec[ k ] = v;
+									if( fd['type'] == "number" ){
+										if( typeof(v) == "string" ){
+											rec["props"][ k ] = {"t":"N", "v":Number(v)};
+										}else if( typeof(v) == "number" ){
+											rec["props"][ k ] = {"t":"N", "v":Number(v)};
+										}else{
+											rec["props"][ k ] = {"t":"N", "v":0};
+										}
+									}else if( fd['type'] == "graph-thing" ){
+										rec["props"][ k ] = {"t":"GT", "i_of":fd['i_of'], "v":v};
 									}else{
-										rec[ k ] = 0;
+										rec["props"][ k ] = {"t":"T", "v":v};
 									}
-								}else{
-									rec[ k ] = v;
 								}
 							}
 						}
@@ -851,8 +715,8 @@ var app = Vue.createApp({
 			if( recs.length ){
 				this.upload_batch_cnt = recs.length;
 				axios.post( "?", {
-					"action": "tables_dynamic_importfile_batch",
-					"table_id": this.new_table_id,
+					"action": "object_import_batch",
+					"object_id": this.vimport['i_of']['i'],
 					"data": recs,
 					"token": this.token,
 					"upload_type": this.upload_type,
@@ -866,6 +730,8 @@ var app = Vue.createApp({
 									this.upload_progress = ((this.upload_cnt/this.tot_cnt)*100).toFixed(1);
 									this.upload_success_cnt += response.data['success'];
 									this.upload_skipped_cnt += response.data['skipped'];
+									this.upload_updates_cnt += response.data['updates'];
+									this.upload_inserts_cnt += response.data['inserts'];
 									for( var i in response.data['skipped_items'] ){
 										this.upload_skipped_items.push( response.data['skipped_items'][ i ] );
 									}
@@ -900,7 +766,6 @@ var app = Vue.createApp({
 					if( typeof(response.data) == "object" ){
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success" ){
-								this.new_table_id = response.data['inserted_id'];
 								setTimeout(this.start_importing_json_batch, 50);
 							}else{
 								this.err3 = "Import Error: " + response.data['error'];
@@ -947,7 +812,6 @@ var app = Vue.createApp({
 				this.upload_batch_cnt = recs.length;
 				axios.post( "?", {
 					"action": "tables_dynamic_importfile_batch",
-					"table_id": this.new_table_id,
 					"data": recs,
 					"token": this.token,
 					"upload_type": this.upload_type,
@@ -961,6 +825,8 @@ var app = Vue.createApp({
 									this.upload_progress = ((this.upload_cnt/this.tot_cnt)*100).toFixed(1);
 									this.upload_success_cnt += response.data['success'];
 									this.upload_skipped_cnt += response.data['skipped'];
+									this.upload_updates_cnt += response.data['updates'];
+									this.upload_inserts_cnt += response.data['inserts'];
 									for( var i in response.data['skipped_items'] ){
 										this.upload_skipped_items.push( response.data['skipped_items'][ i ] );
 									}
@@ -979,32 +845,246 @@ var app = Vue.createApp({
 					}
 				});
 			}
+		},
+		template_edit_popup_open: function(){
+			this.$root.import_template_edit_popup_open( this.vimport['i_of']['i'], this.vimport['i_of']['v'] );
+		},
+		template_create_popup_open: function(){
+			this.$root.import_template_create_popup_open();
+		},
+		callback__: function( c ){
+			var x = c.split(/\:/g);
+			if( x[0] == "import_select_iof" ){
+				this.import_select_iof();
+			}else{
+				console.log("Callback: " + c + " not defined!");
+			}
+		},
+		import_select_iof: function(){
+			this.import_err = "";
+			this.import_msg = "Loading template";
+			axios.post("?", {
+				"action": "objects_load_template",
+				"object_id": this.vimport['i_of']['i']
+			}).then( response=>{
+				this.import_msg = "";
+				if( typeof( response.data['data'] )=="object" ){
+					this.vimport['template'] = response.data['data']['z_t'];
+					this.import_msg = "Template loaded..";
+					setTimeout(function(v){v.import_msg = "";},3000,this);
+					this.check_template();
+				}else{
+					this.import_err = "Template not found";
+				}
+			}).catch(error=>{
+				this.import_err = error.message;
+			});
+		},
+		new_thing_created: function(vdata){
+			this.vimport['i_of']['i'] = vdata['object_id'];
+			this.vimport['i_of']['v'] = vdata['label'];
+			this.import_select_iof();
 		}
-	}
-});
-
-app.component( "table_dyanmic_object", table_dyanmic_object );
-
-var obj = {
-	data: function(){
-		return {
-
-		};
 	},
-	props:['items'],
-	methods: {
+	template: `<div>
+			<div v-if="step==1" >
+				<div>
+					<div class="mb-2" style="display:flex; gap:20px;" >
+						<select class="form-select form-select-sm w-auto" v-model="upload_type" v-on:change="upload_type_select" >
+							<option value="CSV" >CSV</option>
+							<option value="JSON" >JSON</option>
+							<option value="XLS" >XLS</option>
+							<option value="XLSX" >XLSX</option>
+						</select>
+						<input type="file" id="upload_file" class="form-control form-control-sm w-auto" style="" v-on:change="fileselect" >
+					</div>
+					<div class="mb-2" v-if="err" >
+						<div>Sample Data:</div>
+						<pre v-if="sample_data" >{{ sample_data }}</pre>
+					</div>
+				</div>
+			</div>
+			<div v-if="step==2" >
+				<div style="height:50px; " >
+					<div v-if="analyzing" style="color:blue; float:right; margin-right: 20px;" >Analyzing file</div>
+					<input v-else-if="tot_cnt<=20000" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport" value="Next" style="float:right; margin-right: 10px;">
+					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="cancel_step2" value="Cancel" style="float:right;margin-right: 10px;">
 
-	},
-	template: `<ul>
-		<li v-for="v,f in items" >
-			<div>{{ f }}: {{ v['type'] }}</div>
-			<obj v-if="v['type']=='dict'||v['type']=='list'" v-bind:items="v['sub']" ></obj>
-		</li>
-	</ul>`
-}
+					<div style="display: flex; gap:20px;">
+						<div>FileSize: {{ get_size() }}</div>
+						<div>FileType: {{ upload_type }}</div>
+						<div>
+							<div>Preview: <span class="badge text-bg-light">{{ sample_records.length }}</span> of <span class="badge text-bg-light">{{ tot_cnt }}</span> records </div>
+						</div>
+						<div v-if="tot_cnt>20000" style="color:red;">File has more than 20,000 records. Not allowed.</div>
+					</div>
+				</div>
+				<div style="overflow: auto;height: calc( 100% - 130px - 20px ); padding-right:10px;">
+					<template v-if="upload_type=='CSV'" >
+						<template v-if="sample_records.length>0" >
+							<table class="table table-striped table-bordered table-sm w-auto zz" >
+								<thead v-if="head_record" style="position:sticky; top:0px; ">
+									<tr>
+										<td v-for="f in head_record" ><div class="zz">{{ f }}</div></td>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="d in sample_records" >
+										<td v-for="f in d" ><div class="zz">{{ f }}</div></td>
+									</tr>
+								</tbody>
+							</table>
+						</template>
+					</template>
+					<template v-if="upload_type=='JSON'" >
+						<template v-if="sample_records.length>0" >
+							<pre class="zzz" v-for="v in sample_records">{{ v }}</pre>
+						</template>
+					</template>
+				</div>
+			</div>
+			<div v-if="step==3" >
+				<div>
+					<input v-if="tot_cnt<=20000" type="button" class="btn btn-outline-dark btn-sm" v-on:click="doimport2" value="Next" style="float:right; margin-right: 10px;">
+					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="step=2" value="Back" style="float:right; margin-right: 10px;">
 
-app.component( "obj", obj );
-app.mount("#app");
+					<div style="display: flex; gap:20px;">
+						<div>FileSize: {{ get_size() }}</div>
+						<div>FileType: {{ upload_type }}</div>
+					</div>
 
+					<div>&nbsp;</div>
+
+					
+
+					<div style="display:flex; column-gap:20px;">
+						<div>
+							<p>Import data into:</p>
+						</div>
+						<div>
+							<div>Select Existing Instance</div>
+							<div>
+								<div class="code_line codeline_thing" >
+									<div title="Thing" data-type="dropdown" v-bind:data-var="'ref:'+refname+':vimport:i_of:v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" v-bind:data-context-callback="refname+':import_select_iof'" >{{ vimport['i_of']['v'] }}</div>
+									<div v-if="vimport['i_of']['v']&&vimport['i_of']['i']" class="btn btn-link btn-sm" v-on:click="template_edit_popup_open()" >Edit Template</div>
+									<div v-if="vimport['i_of']['v']&&vimport['i_of']['i']" class="btn btn-link btn-sm py-0" v-on:click="import_select_iof()" ><i class="fa-solid fa-arrows-rotate"></i></div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<div>New Instance</div>
+							<div>
+								<input type="button" class="btn btn-outline-dark btn-sm py-0" value="Create New Instance" v-on:click="template_create_popup_open()" >
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div style="overflow: auto;height: calc( 100% - 200px ); ">
+
+					<template v-if="upload_type=='CSV'" >
+						<template v-if="vimport['i_of']['v']==''" >
+							<p>Select Instance to proceed</p>
+						</template>
+						<template v-else>
+							<div class="py-2">Map columns of CSV file to the Database Schema. Make sure primary field value should be in the format of UniqueId or Hexadecimal code</div>
+							<table class="table table-bordered table-sm w-auto">
+								<thead>
+									<tr class="text-bg-light">
+										<td>CSV Column</td>
+										<td>=&gt;</td>
+										<td align="center" width="50">ID</td>
+										<td align="center" width="50">Label</td>
+										<td align="center" width="50">Alias</td>
+										<td>Import</td>
+										<td>Object Property</td>
+										<td>Type</td>
+										<td>Link</td>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="fd,f in sch_keys" >
+										<td>{{ fd['csvf'] }}</td>
+										<td>=&gt;</td>
+										<td align="center"><input type="radio" v-model="import_primary_field" v-bind:value="f" v-on:click="import_primary_check(f)" ></td>
+										<td align="center"><input v-if="import_primary_field!=f&&f!='_default_id'" type="radio" v-model="import_label_field" v-bind:value="f" v-on:click="import_label_check(f)" ></td>
+										<td align="center"><input v-if="import_label_field!=f&&f!='_default_id'" type="checkbox" v-model="import_alias_field" v-bind:value="f" v-on:click="import_alias_check(f)" ></td>
+										<td><input v-if="f!='_default_id'" type="checkbox" v-model="fd['use']" v-on:click="use_check(f)" ></td>
+										<td>
+											<span v-if="f=='_default_id'&&import_primary_field==f" >Node Id</span>
+											<template v-else-if="f!='_default_id'" >
+												<select v-model="fd['targetf']" v-if="fd['use']" >
+													<option value="" >-</option>
+													<option v-for="tfd, tfi in template_keys['props']" v-bind:value="tfi" >{{ tfd['name'] }}</option>
+												</select>
+											</template>
+										</td>
+										<td>
+											<select v-if="fd['use']&&f!='_default_id'" v-model="fd['type']" >
+												<option value="text" >Text</option>
+												<option value="number" >Number</option>
+												<option value="graph-thing" >Graph Thing</option>
+											</select>
+											<span v-else-if="f=='_default_id'" >UniqId</span>
+										</td>
+										<td>
+											<div v-if="fd['type']=='graph-thing'" class="code_line codeline_thing" >
+												<div title="Thing" data-type="dropdown" v-bind:data-var="'ref:'+refname+':sch_keys:'+f+':i_of:v'" data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" >{{ fd['i_of']['v'] }}</div>
+											</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</template>
+					</template>
+					<template v-else-if="upload_type=='JSON'" >
+
+						<div class="py-2">JSON Schema check</div>
+						<pre class="fff">{{ schema_1 }}</pre>
+
+					</template>
+					<template>Unhandled upload type</template>
+
+				</div>
+			</div>
+			<div v-if="step==4" >
+				<div>
+					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click="step=3" value="Back" style="float:right;">
+					<div style="display: flex; gap:20px;">
+						<div>
+							<div>FileSize: {{ get_size() }}</div>
+							<div>FileType: {{ upload_type }}</div>
+						</div>
+					</div>
+				</div>
+
+				<div>Progress <span style="font-size:1.2rem;">{{ upload_progress }} %</span> </div>
+				<div>Uploaded <span style="font-size:1.2rem;">{{ upload_cnt }}/{{ tot_cnt }}</span> </div>
+
+				<div style="display:flex; column-gap:20px;">
+					<div class="btn btn-light btn-sm">Success <span class="badge text-bg-primary" >{{ upload_success_cnt }}</span></div>
+					<div class="btn btn-light btn-sm">Skipped <span class="badge text-bg-danger" >{{ upload_skipped_cnt }}</span></div>
+					<div class="btn btn-light btn-sm">Inserts <span class="badge text-bg-info" >{{ upload_inserts_cnt }}</span></div>
+					<div class="btn btn-light btn-sm">Updates <span class="badge text-bg-success" >{{ upload_updates_cnt }}</span></div>
+				</div>
+
+				<div  class="py-2" v-if="msg3" v-html="msg2" ></div>
+				<div  class="py-2" v-if="err3" style="color:red;" >{{ err3 }}</div>
+
+				<div v-if="uploaded_skipped_cnt>0" >
+					<div>Skipped Items: </div>
+					<div v-for="v in upload_skipped_items" >{{ v }}</div>
+				</div>
+
+			</div>
+			<div style="height: 30px; padding-right:10px;" >
+				<div v-if="import_msg" style="color:blue;" >{{ import_msg }}</div>
+				<div v-if="import_err" style="float:right;color:red;" >{{ import_err }}</div>
+
+				<div style="display:inline-block; color:blue;" v-if="msg2" v-html="msg2" ></div>
+				<div style="display:inline-block; color:red;" v-if="err2" style="color:red;" v-html="err2" ></div>
+
+			</div>
+</div>`
+};
 </script>
-

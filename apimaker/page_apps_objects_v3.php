@@ -38,6 +38,16 @@ pre.sample_data::-webkit-scrollbar-track { background: #f1f1f1;}
 pre.sample_data::-webkit-scrollbar-thumb { background: #888;}
 pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
+.graph_tabs_nav_bar{ position:relative; height:40px; border-bottom:2px solid #aaa; margin-bottom:10px; }
+.graph_tabs_nav_container{ position:absolute; display:flex; height:40px; width:calc( 100% - 30px ); overflow:hidden; }
+.graph_tabs_nav_scrollbtn{ position:absolute; right:0px; height:40px; z-index:500; background-color:#f8f0f0; }
+.graph_tab_btn{ display: flex; column-gap:10px; margin-left:5px; padding:0px 10px; border:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px; border-bottom:2px solid #aaa; white-space:nowrap; cursor:pointer; align-items:center; }
+.graph_tab_btn .head{  }
+.graph_tab_btn .cbtn{}
+.graph_tab_btn:hover{ background-color:#f8f8f8;  }
+.graph_btn_active{border:1px solid #999; border-bottom:2px solid white; }
+.graph_tab_btn:hover .graph_btn_active{ border-bottom:2px solid white; }
+.graph_tabs_container{ position:relative; height:calc( 100% - 150px ); padding-right:10px; background-color: white; overflow:auto; }
 
 </style>
 
@@ -58,39 +68,27 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				<div><i class="fa fa-search"></i></div>
 			</div>
 
-			<div style="position:relative;overflow: auto; height: calc( 100% - 100px );">
-				<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
-				<div v-if="err" class="alert alert-danger" >{{ err }}</div>
-
-					<!-- <div class="btn btn-outline-dark btn-sm" v-on:click="import_template_create_popup_open()">Create Open</div> -->
-
-					<div v-if="thing_id!=-1" >
-						<div v-if="'l' in thing==false" >Loading...</div>
-						<div v-else >
-							<graph_object ref="thing_object" refname="thing_object" datavar="thing" v-bind:v="thing"  v-bind:edit_z_t="edit_z_t" v-bind:temp="temp" ></graph_object>
-						</div>
+			<div class="graph_tabs_nav_bar">
+				<div class="graph_tabs_nav_container" id="tabs_container">
+					<div v-bind:class="{'graph_tab_btn':true,'graph_btn_active':(vtabi==current_tab)}" v-for="vtabi,i in window_tabs_order" v-bind:id="'tab_'+vtabi">
+						<div v-on:click.prevent.stop="window_open_tab(vtabi)">{{ window_tabs[ vtabi ]['title'] }}</div>
+						<div v-if="vtabi!='home'&&vtabi!='summary'&&vtabi!='browse'&&vtabi!='import2'"><div class="btn btn-outline-danger btn-sm py-1 px-1" v-on:click.prevent.stop="window_close_tab(vtabi)" ><i class="fa-solid fa-xmark"></i></div></div>
 					</div>
-					<template v-else >
-
-						<ul class="nav nav-tabs">
-							<li class="nav-item">
-								<a v-bind:class="{'nav-link py-0':true, 'active':tab=='home'}" href="#" v-on:click.prevent.stop="open_tab_home()">Summary</a>
-							</li>
-							<li class="nav-item">
-								<a v-bind:class="{'nav-link py-0':true, 'active':tab=='browse'}"  href="#" v-on:click.prevent.stop="open_tab_browse()">Browse</a>
-							</li>
-							<li class="nav-item">
-								<a v-bind:class="{'nav-link py-0':true, 'active':tab=='import'}"  href="#" v-on:click.prevent.stop="open_tab_import()">Import</a>
-							</li>							
-						</ul>
-						<div>&nbsp;</div>
-						<template v-if="tab=='home'" >
-							<div v-for="v in things" >
-								<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i'])" >{{ v['l']['v'] }}</div> <span class="text-secondary">({{ v['i'] }})</span> in 
-								<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i_of']['i'])">{{ v['i_of']['v'] }}</div> [<div type="button" class="btn btn-link btn-sm"  v-on:click.prevent.stop="getlink2(v['i'])">{{ v['cnt'] }}</div>]
-							</div>
-						</template>
-						<template v-else-if="tab=='browse'" >
+				</div>
+				<div class="graph_tabs_nav_scrollbtn"><div class="btn btn-light btn-sm" style="height:40px;" ><i class="fa-solid fa-chevron-right"></i></div></div>
+			</div>
+			<template v-for="vtab,vtabi in window_tabs" >
+			<div class="graph_tabs_container" v-show="vtabi==current_tab" v-if="vtabi in window_tabs" >
+				<template v-if="vtabi=='summary'" >
+					<div v-for="v in things" >
+						<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i'])" >{{ v['l']['v'] }}</div> <span class="text-secondary">({{ v['i'] }})</span> in 
+						<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i_of']['i'])">{{ v['i_of']['v'] }}</div> [<div type="button" class="btn btn-link btn-sm"  v-on:click.prevent.stop="show_thing2(v['i'])">{{ v['cnt'] }}</div>]
+					</div>
+				</template>
+				<template v-else-if="vtabi=='import2'" >
+					<objects_import_v2 ref="import2" refname="import" v-bind:app_id="app_id" v-bind:vtab="window_tabs[vtabi]" ></objects_import_v2>
+				</template>
+				<template v-else-if="vtabi=='browse'" >
 
 							<div style="height:40px; display:flex; column-gap:20px; padding:5px; border:1px solid #ccc;" >
 								<div>
@@ -140,25 +138,27 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 									</thead>
 									<tbody>
 										<tr v-for="rec,reci in browse_list">
-											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="getlink(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
+											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
 											<td><div class="zz" >{{ rec['l']['v'] }}</div></td>
-											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="getlink(rec['i_of']['i'])" >{{ rec['i_of']['v'] }}</a></div></td>
-											<td><a v-if="'cnt' in rec" href="#" v-on:click.prevent.stop="getlink2(rec['_id'])" >{{ rec['cnt'] }}</a></td>
+											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['i_of']['i'])" >{{ rec['i_of']['v'] }}</a></div></td>
+											<td><a v-if="'cnt' in rec" href="#" v-on:click.prevent.stop="show_thing2(rec['_id'])" >{{ rec['cnt'] }}</a></td>
 											<td><span v-if="'m_u' in rec" >{{ rec['m_u'].substr(0,10) }}</span></td>
 										</tr>
 									</tbody>
 								</table>
 							</div>
 
-						</template>
-						<template v-else-if="tab=='import'" >
-							<objects_import ref="objects_import_component__" refname="objects_import_component__" v-bind:app_id="app_id" ></objects_import>
-						</template>
-						<template v-else-if="tab=='browse'" >
-							<p>Unknown tab: {{ tab }}</p>
-						</template>
-					</template>
+				</template>
+				<template v-else-if="vtab['type']=='thing'" >
+					xxxxxxxxxxxxxxxx
+					<graph_object_v2 v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:thing="vtab['thing']" v-bind:vtab="vtab" ></graph_object_v2>
+				</template>
+				<template v-else >
+					<pre>{{ vtab }}</pre>
+				</template>
+
 			</div>
+			</template>
 
 		</div>
 	</div>
@@ -387,10 +387,10 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
 </div>
 
-<?php require("page_apps_objects_import.php"); ?>
+<?php require("page_apps_objects_import_v2.php"); ?>
 <?php require("page_apps_objects_component_template.php"); ?>
 <?php require("page_apps_objects_component_template_create.php"); ?>
-<?php require("page_apps_objects_component_graph_object.php"); ?>
+<?php require("page_apps_objects_component_graph_object_v2.php"); ?>
 <script>
 <?php
 $components = [
@@ -545,28 +545,29 @@ var app = Vue.createApp({
 			thing_options_err__: "",
 			things_used__: {},
 
+			current_tab: "summary",
 			window_tabs: {
-				"home": {
-					"title": "Home",
-					"type": "home",
-				},
 				"summary": {
 					"title": "Summary",
 					"type": "summary",
 				},
-				"t1": {
-					"title": "Person:Satish Kalepu",
-					"type": "node",
+				"browse": {
+					"title": "Browse",
+					"type": "browse",
 				},
-				"t2": {
-					"title": "Root:Person",
-					"type": "node",
+				"import2": {
+					"title": "Import",
+					"type": "import2",
+					"vimport": {
+						"i_of": {"t": "GT", "i": "", "v": ""},
+						"data": [
+						],
+						"template":{},
+						"edit_field":"",
+					},
 				},
-				"t3": {
-					"title": "People in CarTrade",
-					"type": "list"
-				}
-			}
+			},
+			window_tabs_order: ["summary", "browse", "import"],
 		};
 	},
 	mounted:function(){
@@ -608,14 +609,11 @@ var app = Vue.createApp({
 				"v": v
 			});
 		},
-		getlink: function(vi){
-			//return this.$root.objectpath+'?object_id='+vi;
-			this.load_new_thing(vi);
+		show_thing: function(vi){
+			this.window_open_newtab( "thing:"+vi, {"type":"thing", "thing_id": vi, "loaded":false} );
 		},
-		getlink2: function(vi){
-			//return this.$root.objectpath+'?object_id='+vi;
-			this.load_new_thing(vi);
-			setTimeout(this.thing_open_records,1000);
+		show_thing2: function(vi){
+			this.window_open_newtab( "thing:"+vi, {"type":"thing", "thing_id": vi, "loaded":false, "open_records":true} );
 		},
 		thing_open_records: function(){
 			console.log( this.$refs );
@@ -679,72 +677,6 @@ var app = Vue.createApp({
 				}
 			}).catch(error=>{
 				this.berr = this.get_http_error__(error);
-			});
-		},
-		load_new_thing: function(vi){
-			this.thing = {};
-			this.records = {};
-			this.show_thing( vi );
-		},
-		show_thing: function(vi){
-			this.thing_id = vi;
-			this.msg = "loading thing";
-			this.thing_loading = true;
-			this.thing = {};this.records = [];
-			axios.post("?",{
-				"action": "objects_load_object",
-				"object_id": vi
-			}).then(response=>{
-				this.msg = "";
-				if( response.status == 200 ){
-					if( typeof( response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								var v = response.data['data'];
-								this.thing = v;
-								//setTimeout(function(v){v.load_records();},500,this);
-								setTimeout(function(v){v.thing_loading = false;},200,this);
-								this.thing_save_need = false;
-							}else{
-								this.err = response.data['error'];
-							}
-						}else{
-							this.err = "Incorrect response";
-						}
-					}else{
-						this.err = "Incorrect response";
-					}
-				}else{
-					this.err = "http error: " . response.status ;
-				}
-			}).catch(error=>{
-				this.err = this.get_http_error__(error);
-			});
-		},
-		load_records: function(){
-			axios.post("?",{
-				"action": "objects_load_records",
-				"object_id": this.thing['_id'],
-			}).then(response=>{
-				if( response.status == 200 ){
-					if( typeof( response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								this.records = response.data['data'];
-							}else{
-								this.err = response.data['error'];
-							}
-						}else{
-							this.err = "Incorrect response";
-						}
-					}else{
-						this.err = "Incorrect response";
-					}
-				}else{
-					this.err = "http error: " . response.status ;
-				}
-			}).catch(error=>{
-				this.err = this.get_http_error__(error);
 			});
 		},
 		load_nodes: function(){
@@ -1148,7 +1080,6 @@ var app = Vue.createApp({
 					var s = this.find_parents__(e.target);
 					if( !s ){ return false; }
 					var v = e.target.innerText;
-					console.log( " =====  " + v );
 					v = v.replace(/[\u{0080}-\u{FFFF}]/gu, "");
 					// v = v.replace(/\&nbsp\;/g, " ");
 					// v = v.replace(/\&gt\;/g, ">");
@@ -1216,7 +1147,6 @@ var app = Vue.createApp({
 				"i_of": JSON.parse(JSON.stringify(vi_of)),
 				"i_t": {"t":"T", "v":"N"}
 			};
-			this.echo__( this.new_thing );
 			if( this.create_popup == false ){
 				this.create_popup = new bootstrap.Modal(document.getElementById('create_popup'));
 				document.getElementById('create_popup').addEventListener('hide.bs.modal', event => {
@@ -1225,6 +1155,22 @@ var app = Vue.createApp({
 			}
 			this.create_popup.show();
 			this.create_popup_displayed__ = true;
+		},
+		show_create2: function( vi_of ){
+			if( typeof(vi_of) == "undefined" ){
+				if( this.thing_id != -1 ){
+					vi_of = {'t':"GT", "i": this.thing['i_of']['i']+'', "v": this.thing['i_of']['v']+''};
+				}else{
+					vi_of = {'t':"GT", "i": "T1", "v": "Root"};
+				}
+			}else if( 'i' in vi_of == false || 'v' in vi_of == false ){
+				vi_of = {'t':"GT", "i": "T1", "v": "Root"};
+			}
+			this.window_open_newtab("thing:new", {
+				"title": "Create Thing",
+				"type": "thing:new",
+				"i_of": JSON.parse(JSON.stringify(vi_of)),
+			});
 		},
 		load_keys: function(){
 			var k = "";
@@ -1383,7 +1329,7 @@ var app = Vue.createApp({
 		},
 		goto1: function(){
 			this.echo__(this.search_thing);
-			this.load_new_thing( this.search_thing['i'] );
+			this.show_thing( this.search_thing['i'] );
 		},
 		simple_popup_set_value__: function(k){
 			// var x = this.simple_popup_datavar__.split(/\:/g);
@@ -1458,11 +1404,9 @@ var app = Vue.createApp({
 			}catch(e){console.error(e);console.log("set_sub_var__ error: " + vpath );return false;}
 		},
 		get_sub_var__: function(vv, vpath){
-			this.echo__("get_sub_var__: " + vpath);
-			//this.echo__( vv );
 			try{
 				var x = vpath.split(":");
-				//this.echo__( x );
+				this.echo__( x );
 				var k = x[0];
 				if( k == "ref" ){
 					if( x[1] in this.$refs ){
@@ -1473,7 +1417,7 @@ var app = Vue.createApp({
 				if( k.match(/^[0-9]+$/) && "length" in vv ){
 					k = Number(k);
 				}
-				// console.log("Key: " + k );
+				console.log("Key: " + k );
 				if( k in vv ){
 					if( x.length > 1 ){
 						x.splice(0,1);
@@ -1481,15 +1425,15 @@ var app = Vue.createApp({
 							var a_ = this.get_sub_var__( vv[ k ], x.join(":") );
 							return a_;
 						}else{
-							// console.log( "xx" );
+							console.log( "xx" );
 							return false;
 						}
 					}else{
-						// console.log( "yy" );
+						console.log( "yy" );
 						return vv[k];
 					}
 				}else{
-					// console.log( "dd" );
+					console.log( "dd" );
 					return false;
 				}
 			}catch(e){console.log("get_sub_var__ error: " + vpath + ": " + e );return false;}
@@ -2061,7 +2005,7 @@ var app = Vue.createApp({
 		popup_callback__: function( vdata ){
 			if( this.popup_type__ =='import_template_create' ){
 				this.popup_modal_hide__();
-				this.$refs['objects_import_component__'].new_thing_created( vdata );
+				this.$refs['import'].new_thing_created( vdata );
 			}
 		},
 		import_template_edit_popup_open: function( vobject_id, vobject_name ){
@@ -2085,16 +2029,94 @@ var app = Vue.createApp({
 			this.popup_title__ = "Create a Node";
 			this.popup_modal_open__();
 		},
+		window_close_tab: function(vtabi){
+			this.current_tab = '';
+			var vt = vtabi+'';
+			if( vt != 'home' && vt != 'summary' && vt != 'browse' && vt != 'import' ){
+				var i = this.window_tabs_order.indexOf( vt+'' );
+				this.window_tabs_order.splice(i,1);
+				delete(this.window_tabs[ vt ]);
+				setTimeout(function(v){
+					var k = Object.keys( v.window_tabs );
+					v.current_tab = k[ k.length-1 ]+'';
+				}, 500, this);
+			}
+			this.echo__( this.window_tabs );
+			this.echo__( this.window_tabs_order );
+			this.echo__( this.current_tab );
+		},
+		window_open_tab: function(vtabi){
+			this.current_tab = '';
+			setTimeout(this.window_open_tab2,200,vtabi);
+		},
+		window_open_tab2: function(vtabi){
+			var tb = vtabi+'';
+			if( tb in this.window_tabs ){
+				if( tb == 'browse' ){
+					if( this.browse_list.length == 0 ){
+						this.load_browse_list();
+					}
+				}
+				// var i = this.window_tabs_order.indexOf( tb );
+				// if( i > 2 ){
+				// 	this.window_tabs_order.splice(i,1);
+				// 	this.window_tabs_order.splice(3,0,tb+'');
+				// }
+				this.current_tab = tb+'';
+			}else{
+				alert("tabindex not found:  " + tb);
+			}
+			this.echo__( this.window_tabs );
+			this.echo__( this.window_tabs_order );
+			this.echo__( this.current_tab );
+			setTimeout(this.window_tab_focus,200);
+		},
+		window_tab_focus: function(){
+			var id = "tab_"+this.current_tab;
+			console.log(id );
+			var s = document.getElementById(id).getBoundingClientRect();
+			this.echo__(s);
+			var w= window.innerWidth;
+			this.echo__(w);
+			if( s['right'] > w ){
+				document.getElementById("tabs_container").childNodes[0].style.marginLeft = (-1*(Number(s['right'])-Number(w)))+"px";
+			}
+		},
+		window_open_newtab: function(vtabi,vd){
+			this.current_tab = '';
+			var tb = vtabi+'';
+			if( tb in this.window_tabs ){
+				if( vd['type'] == 'thing' ){
+					vd['msg'] = "Reloading...";
+				}
+				// var i = this.window_tabs_order.indexOf( tb );
+				// if( i > 2 ){
+				// 	this.window_tabs_order.splice(i,1);
+				// 	this.window_tabs_order.splice(2,0,tb);
+				// }
+			}else{
+				if( vd['type'] == 'thing' ){
+					vd['title'] = "Thing: " + vd['thing_id'] +' Loading';
+					vd['msg'] = "Loading...";
+					vd['err'] = "";
+					vd['thing'] = {};
+				}
+				this.window_tabs[ vtabi+'' ] = vd;
+				//this.window_tabs_order.splice(3,0,tb);
+				this.window_tabs_order.push(tb);
+			}
+			this.window_open_tab(tb);
+		}
 	}
 });
 
 <?php foreach( $components as $i=>$j ){ ?>
 	app.component( "<?=$j ?>", <?=$j ?> );
 <?php } ?>
-app.component( "objects_import", objects_import );
+app.component( "objects_import_v2", objects_import_v2 );
 app.component( "object_template_edit", object_template_edit );
 app.component( "object_template_create", object_template_create );
-app.component( "graph_object", graph_object );
+app.component( "graph_object_v2", graph_object_v2 );
 var app1 = app.mount("#app");
 
 </script>

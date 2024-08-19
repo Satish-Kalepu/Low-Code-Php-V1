@@ -111,6 +111,12 @@ if( $_POST['action'] == 'task_queue_delete' ){
 	$res['q'] = $res2;
 	$res['ql'] = $res3;
 	$res['q_'] = $q;$res['ql_'] = $ql;
+
+	event_log( "system", "task_queue_delete", [
+		"app_id"=>$config_param1,
+		"queue_id"=>$_POST['queue_id'],
+	]);
+
 	json_response($res);
 	exit;
 }
@@ -134,6 +140,12 @@ if( $_POST['action'] == 'task_queue_flush' ){
 		"event"=>"Flush Queue",
 		"result"=>$res2,
 	]);
+
+	event_log( "system", "task_queue_flush", [
+		"app_id"=>$config_param1,
+		"queue_id"=>$_POST['queue_id'],
+	]);
+
 	json_response($res);
 	exit;
 }
@@ -208,6 +220,10 @@ if( $_POST['action'] == 'save_task_queue' ){
 			"wait"=>(int)$_POST['queue']['wait'],
 			"updated"=>date("Y-m-d H:i:s")
 		]);
+		event_log( "system", "task_queue_edit", [
+			"app_id"=>$config_param1,
+			"queue_id"=>$_POST['queue']['_id'],
+		]);
 	}else{
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_queues", [
 			"app_id"=>$config_param1,
@@ -239,6 +255,10 @@ if( $_POST['action'] == 'save_task_queue' ){
 			"updated"=>date("Y-m-d H:i:s")
 		]);
 		$queue_id = $res['inserted_id'];
+		event_log( "system", "task_queue_create", [
+			"app_id"=>$config_param1,
+			"queue_id"=>$queue_id,
+		]);
 
 		$res5 = $mongodb_con->database->createCollection($db_prefix . "_zd_queue_". $queue_id, [
 			"collation"=>["locale"=>"en_US", "strength"=> 2],
@@ -340,6 +360,10 @@ if( $_POST['action'] == 'task_queue_start' ){
 			}
 			if( $data['status'] == "success" ){
 				$success = true;
+				event_log( "system", "task_queue_start", [
+					"app_id"=>$config_param1,
+					"queue_id"=>$_POST['queue_id'],
+				]);
 			}else{
 				json_response($data);exit;
 			}
@@ -355,6 +379,7 @@ if( $_POST['action'] == 'task_queue_start' ){
 			'started'=>true
 		]);
 		$res['apires'] = $apiress;
+
 		json_response($res);
 	}else if( !$url ){
 		json_response("fail", "no api available");
@@ -373,6 +398,10 @@ if( $_POST['action'] == 'task_queue_stop' ){
 	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_queues", [
 		"app_id"=>$config_param1, "_id"=>$_POST['queue_id']
 	],['$unset'=>['run'=>true,'started'=>true] ]);
+	event_log( "system", "task_queue_stop", [
+		"app_id"=>$config_param1,
+		"queue_id"=>$_POST['queue_id'],
+	]);
 	json_response($res);
 	exit;
 }

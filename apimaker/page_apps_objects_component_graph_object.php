@@ -1,3 +1,4 @@
+<script>
 const graph_object =  {
 	data(){
 		return {
@@ -12,6 +13,8 @@ const graph_object =  {
 			"edit_label_v": {},
 			"edit_al": false,
 			"edit_al_v": [],
+			"edit_type": false,
+			"edit_type_v": {},
 			"edit_i_of_v": {},
 			"edit_i_of": false,
 			"msg": "", "err": "",
@@ -25,7 +28,7 @@ const graph_object =  {
 			"records_pages": [],
 			"z_t_msg": "", "z_t_err": "",
 			"i_of_msg": "", "i_of_err": "",
-			"label_msg": "", "label_err": "","al_msg": "", "al_err": "",
+			"label_msg": "", "label_err": "","al_msg": "", "al_err": "","type_msg": "", "type_err": "",
 			"props_msg": "", "props_err": "",
 			"delete_field_id": "",
 			"data_types": {
@@ -41,6 +44,9 @@ const graph_object =  {
 				"NL": "Null",
 				"TT": "Text Multiline",
 				"HT": "HTML Text",
+			},
+			"instance_type": {
+				"N": "Node", "L": "DataSet", "D": "Document", "M": "Media"
 			},
 			"vedit": false,
 		}
@@ -511,6 +517,10 @@ const graph_object =  {
 			this.v['edit_label_v'] = JSON.parse( JSON.stringify(this.v['l']) );
 			this.edit_label = true;
 		},
+		open_edit_type: function(){
+			this.v['edit_type_v'] = JSON.parse( JSON.stringify(this.v['i_t']) );
+			this.edit_type = true;
+		},
 		open_edit_al: function(){
 			this.v['edit_al_v'] = JSON.parse( JSON.stringify(this.v['al']) );
 			this.edit_al = true;
@@ -590,6 +600,39 @@ const graph_object =  {
 			}).catch(error=>{
 				this.label_msg = "";
 				this.label_err = error.message;
+			});
+		},
+		save_type: function(){
+			this.type_msg = "Saving...";this.type_err = "";
+			axios.post("?", {
+				"action": "objects_edit_type",
+				"object_id": this.v['_id'],
+				"type": this.v['edit_type_v'],
+			}).then(response=>{
+				this.type_msg = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.type_msg = "Updated";
+								this.v['i_t'] = JSON.parse( JSON.stringify(this.v['edit_type_v']));
+								this.edit_type = false;
+								setTimeout(function(v){v.type_msg = "";},3000,this);
+							}else{
+								this.type_err = response.data['error'];
+							}
+						}else{
+							this.type_err = "Incorrect response";
+						}
+					}else{
+						this.type_err = "Incorrect response";
+					}
+				}else{
+					this.type_err = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.type_msg = "";
+				this.type_err = error.message;
 			});
 		},
 		save_i_of: function(){
@@ -693,48 +736,80 @@ const graph_object =  {
 		},
 		del_sub_object: function( propf, vi ){
 			this.v['props'][ propf ].splice( vi,1 );
+		},
+		show_create2: function(){
+			this.$root.show_create({'t':"GT", "i": this.v['i'],"v": this.v['l']['v']});
 		}
 	},
 	template: `<div class="code_line">
+
 		<table class="table table-bordered table-sm w-auto" >
+			<tbody>
 			<tr>
 				<td>Label</td>
-				<td>
-					<div v-if="edit_label==false" style="display:flex; column-gap:20px;" >
-						<div v-if="v['l']['t']=='GT'" >
-							<template v-if="'v' in v['l']&&'i' in v['l']" >
-								<a href="#" v-on:click.prevent.stop="getlink(v['l']['i'])" style="font-size:1.2rem;" >{{ v['l']['v'] }}</a>
-							</template>
-							<div v-else>error object</div>
-						</div>
-						<div v-else style="font-size:1.2rem;" >{{ v['l']['v'] }}</div>
-						<div><div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="open_edit_label()" >&#9998;</div></div>
-					</div>
-					<div v-if="edit_label==true" >
-						<div style="display:flex; column-gap:20px; border:1px solid #ccc; padding:10px;" >
-							<inputtextbox2 types="T,GT" v-bind:v="v['edit_label_v']" v-bind:datavar="datavar+':edit_label_v'" ></inputtextbox2>
-							<div>
-								<div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_label()" >Save</div>
-								<div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="edit_label=false" >Cancel</div>
-							</div>
-						</div>
-						<div v-if="label_msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="label_msg" ></div>
-						<div v-if="label_err" style="color:red; padding:5px; border:1px solid red;" v-html="label_err" ></div>
-					</div>
-				</td>
+				<td>Type</td>
+				<td>Alias</td>
+				<td>Instance Of</td>
 			</tr>
 			<tr>
-				<td>Alias</td>
 				<td>
-					<div v-if="edit_al==false" style="display:flex; column-gap:20px;" >
+					<div v-if="edit_label==false" style="display:flex; column-gap:20px;" >
+						<div style="min-width:250px;" >
+							<div v-if="v['l']['t']=='GT'" >
+								<template v-if="'v' in v['l']&&'i' in v['l']" >
+									<a href="#" v-on:click.prevent.stop="getlink(v['l']['i'])" style="font-size:1.2rem;" >{{ v['l']['v'] }}</a>
+								</template>
+								<div v-else>error object</div>
+							</div>
+							<div v-else style="font-size:1.2rem;" >{{ v['l']['v'] }}</div>
+						</div>
+						<div><div class="btn btn-outline-link btn-sm py-0" v-on:click="open_edit_label()" >&#9998;</div></div>
+					</div>
+					<div v-if="edit_label==true" style="min-width:250px;" >
+							<p>
+								<inputtextbox2 types="T,GT" v-bind:v="v['edit_label_v']" v-bind:datavar="datavar+':edit_label_v'" ></inputtextbox2>
+							</p>
+							<p>
+								<div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_label()" >Save</div>
+								<div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="edit_label=false" >Cancel</div>
+							</p>
+							<div v-if="label_msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="label_msg" ></div>
+							<div v-if="label_err" style="color:red; padding:5px; border:1px solid red;" v-html="label_err" ></div>
+					</div>
+			</td>
+			<td>
+					<div style="display:flex; column-gap:20px;" >
+						<div >
+							<span v-if="v['i_t']['v'] in instance_type" >{{ instance_type[ v['i_t']['v'] ] }}</span>
+							<span v-else>{{ v['i_t']['v'] }}</span>
+						</div>
+						<div><div class="btn btn-outline-link btn-sm  py-0" v-on:click="open_edit_type()" >&#9998;</div></div>
+					</div>
+					<div v-if="edit_type==true" style="position:absolute;background-color:white;border:1px solid #ccc;box-shadow:2px 2px 5px #666; " >
+						<div style="padding:5px; background-color:#f0f0f0;">Instance Type</div>
+						<div style="padding:5px;" >
+							<div><label><input type="radio" v-model="v['edit_type_v']['v']" value="N" > Node (A thing/Person/Place etc)</label></div>
+							<div><label><input type="radio" v-model="v['edit_type_v']['v']" value="L" > DataSet (Tabular Data)</label> </div>
+							<div><label><input type="radio" v-model="v['edit_type_v']['v']" value="D" > Document (Article/Blog)</label> </div>
+							<div class="mb-3"><label><input type="radio" v-model="v['edit_type_v']['v']" value="M" > Media (Image/Video)</label></div>
+							<p>
+								<div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_type()" >Save</div>
+								<div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="edit_type=false" >Cancel</div>
+							</p>
+							<div v-if="type_msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="type_msg" ></div>
+							<div v-if="type_err" style="color:red; padding:5px; border:1px solid red;" v-html="type_err" ></div>
+						</div>
+					</div>
+			</td>
+			<td>
+					<div v-if="edit_al==false"  style="display:flex; column-gap:20px;" >
 						<div>
 							<div v-for="alv in v['al']">{{ alv['v'] }}</div>
 						</div>
-						<div><div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="open_edit_al()" >&#9998;</div></div>
+						<div><div class="btn btn-outline-link btn-sm  py-0" v-on:click="open_edit_al()" >&#9998;</div></div>
 					</div>
 					<div v-if="edit_al==true" >
-						<div style="display:flex; column-gap:20px; border:1px solid #ccc; padding:10px;" >
-							<div>
+							<div style="margin-bottom:10px;">
 								<div v-for="alv,ali in v['edit_al_v']" style="display:flex; column-gap:5px; border-bottom:1px dashed #ccc; align-items:center;" >
 									<div><input type="button" class="btn btn-outline-danger btn-sm py-0"  style="padding:0px;width:20px;" value="x" v-on:click="del_al(ali)" ></div>
 									<inputtextbox2 types="T,GT" v-bind:v="alv" v-bind:datavar="datavar+':edit_al_v:'+ali" ></inputtextbox2>
@@ -745,17 +820,13 @@ const graph_object =  {
 								<div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_al()" >Save</div>
 								<div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="edit_al=false" >Cancel</div>
 							</div>
-						</div>
 
-						<div v-if="al_msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="al_msg" ></div>
-						<div v-if="al_err" style="color:red; padding:5px; border:1px solid red;"   v-html="al_err" ></div>
+							<div v-if="al_msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="al_msg" ></div>
+							<div v-if="al_err" style="color:red; padding:5px; border:1px solid red;"   v-html="al_err" ></div>
 					</div>
-				</td>
-			</tr>
-			<tr>
-				<td>Instance Of</td>
-				<td>
-					<div v-if="edit_i_of==false" style="display:flex; column-gap:20px;" >
+			</td>
+			<td>
+					<div v-if="edit_i_of==false"  style="display:flex; column-gap:20px;" >
 						<div v-if="v['i_of']['t']=='GT'" >
 							<template v-if="'v' in v['i_of']&&'i' in v['i_of']" >
 								<a href="#" v-on:click.prevent.stop="getlink(v['i_of']['i'])" >{{ v['i_of']['v'] }}</a>
@@ -763,18 +834,18 @@ const graph_object =  {
 							<div v-else>error object</div>
 						</div>
 						<div v-else>Error</div>
-						<div><div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="open_edit_i_of()" >&#9998;</div></div>
+						<div><div class="btn btn-outline-link btn-sm  py-0" v-on:click="open_edit_i_of()" >&#9998;</div></div>
 					</div>
-					<div v-if="edit_i_of==true" >
-						<div style="display:flex; column-gap:20px; border:1px solid #ccc; padding:10px;" >
-							<inputtextbox2 types="GT" v-bind:v="v['edit_i_of_v']" v-bind:datavar="datavar+':edit_i_of_v'" ></inputtextbox2>
-							<div><div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_i_of()" >Save</div><div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="edit_i_of=false" >Cancel</div></div>
-						</div>
+					<div v-if="edit_i_of==true">
+						<inputtextbox2 types="GT" v-bind:v="v['edit_i_of_v']" v-bind:datavar="datavar+':edit_i_of_v'" ></inputtextbox2>
+						<div class="mt-2"><div class="btn btn-outline-dark btn-sm  py-0 me-2" v-on:click="save_i_of()" >Save</div><div class="btn btn-outline-secondary btn-sm  py-0" v-on:click="edit_i_of=false" >Cancel</div></div>
 						<div v-if="i_of_msg" style="color:blue; padding:5px; border:1px solid blue;" v-html="i_of_msg" ></div>
 						<div v-if="i_of_err" style="color:red;  padding:5px; border:1px solid red;" v-html="i_of_err" ></div>
 					</div>
-				</td>
+			</td>
 			</tr>
+		</tbody>
+		</table>
 			<!--<tr>
 				<td>Part Of</td>
 				<td>
@@ -789,7 +860,7 @@ const graph_object =  {
 					<div>Undefined</div>
 				</td>
 			</tr>-->
-		</table>
+
 		<template v-if="'props' in v" >
 		<ul class="nav nav-tabs">
 			<li class="nav-item">
@@ -1048,8 +1119,9 @@ const graph_object =  {
 					<input v-if="records.length>0" type="button" class="btn btn-outline-dark btn-sm" value="Next" v-on:click="records_goto_next()" >
 				</div>
 			</div>
+			<div class="btn btn-sm btn-outline-dark float-end me-2" style="float:right;" v-on:click="show_create2()" >Create Node</div>
 
-			<div style="margin-top:10px;overflow:auto; width:calc(100% - 10px ); height:calc( 100% - 165px );" >
+			<div style="margin-top:10px;overflow:auto; width:calc(100% - 10px ); height:calc( 100% - 225px );" >
 
 			<table class="table table-bordered table-sm w-auto" >
 				<thead class="bg-light" style="position:sticky; top:0px;">
@@ -1064,10 +1136,7 @@ const graph_object =  {
 				<tbody>
 				<tr v-for="rec,reci in records">
 					<td><div class="zz" ><a href="#" v-on:click.prevent.stop="getlink(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
-					<td>
-						<a class="zz" v-if="rec['l']['t']=='GT'" href="#" v-on:click.prevent.stop="getlink(v['i'])"  >{{ rec['l']['v'] }}</a>
-						<div class="zz" v-if="rec['l']['t']=='GT'" >{{ rec['l']['v'] }}</div>
-					</td>
+					<td><div class="zz" ><inputtextview v-bind:v="rec['l']" ></inputtextview></div></td>
 					<template v-if="'z_o' in v" >
 					<td v-for="fd in v['z_o']">
 						<div class="zz" v-if="'props' in rec" >
@@ -1090,3 +1159,4 @@ const graph_object =  {
 
 	</div>`
 };
+</script>

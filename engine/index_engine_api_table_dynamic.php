@@ -6,6 +6,8 @@ function engine_api_table_dynamic( $action, $table_res, $options, $post ){
 	global $app_id;
 	global $db_prefix;
 
+	$table_id = $table_res['_id'];
+
 	if( $action == "getSchema" ){
 		unset($table_res['_id']);unset($table_res['app_id']);
 		return json_response(200,$table_res);
@@ -83,6 +85,11 @@ function engine_api_table_dynamic( $action, $table_res, $options, $post ){
 		if( $res['status'] != "success" ){
 			return json_response(500,$res);
 		}
+		event_log("tables_dynamic", "record_create", [
+			"app_id"=>$app_id,
+			"table_id"=>$table_id,
+			"record_id"=>$res['inserted_id']
+		]);
 		return json_response(200,$res);
 	}else if( $action == "updateMany" ){
 		$cond = [];
@@ -126,6 +133,14 @@ function engine_api_table_dynamic( $action, $table_res, $options, $post ){
 		if( isset( $post['query'] ) && is_array($post['query']) ){
 			$cond = mongo_query( $post['query'] );
 		}
+		$record_id = "";
+		if( $post['query']['_id'] ){
+			if( is_array($post['query']['_id']) ){
+				$record_id = $post['query']['_id'][ array_keys($post['query']['_id'])[0] ];
+			}else{
+				$record_id = $post['query']['_id'];
+			}
+		}
 		$ops = [];
 		if( !isset($post['update']) || !is_array($post['update']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Data invalid" ]);
@@ -153,6 +168,11 @@ function engine_api_table_dynamic( $action, $table_res, $options, $post ){
 			return json_response(500,$res);
 		}
 		$res['query']=$cond;
+		event_log("tables_dynamic", "record_edit", [
+			"app_id"=>$app_id,
+			"table_id"=>$table_id,
+			"record_id"=>$record_id
+		]);
 		return json_response(200,$res);
 	}else if( $action == "deleteMany" ){
 		$cond = [];
@@ -176,11 +196,24 @@ function engine_api_table_dynamic( $action, $table_res, $options, $post ){
 		if( isset( $post['query'] ) && is_array($post['query']) ){
 			$cond = mongo_query( $post['query'] );
 		}
+		$record_id = "";
+		if( $post['query']['_id'] ){
+			if( is_array($post['query']['_id']) ){
+				$record_id = $post['query']['_id'][ array_keys($post['query']['_id'])[0] ];
+			}else{
+				$record_id = $post['query']['_id'];
+			}
+		}
 		$ops = [];
 		$res = $mongodb_con->delete_one( $db_prefix . "_dt_" . $table_res['data']['_id'], $cond, $ops );
 		if( $res['status'] != "success" ){
 			return json_response(500,$res);
 		}
+		event_log("tables_dynamic", "record_delete", [
+			"app_id"=>$app_id,
+			"table_id"=>$table_id,
+			"record_id"=>$record_id
+		]);
 		return json_response(200,$res);
 	}else{
 		return json_response(403,["status"=>"fail", "error"=>"Unknown action" ]);

@@ -20,11 +20,15 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 		}
 	}
 	if( preg_match("/multipart/i", $content_type) ){
+		$post = $_POST;
 	}
 
 	if( !isset($path_params[1]) ){
 		return [404,"application/json",[], json_encode(["status"=>"fail", "error"=>"Are you lost" ]) ];
 	}
+
+	//print_r( $post );exit;
+	//return [200,"application/json",[], json_encode($post) ];
 	$action = "";
 	if( $method =="POST"){
 		if( !isset($post['action']) ){
@@ -211,6 +215,9 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 									if( $ad == "*" || $ad == $action ){
 										$ad_allow = true;break;
 									}
+									if( ($action == "findMany" || $action == "findOne") && ($ad == "find"||$ad=="scan") ){
+										$ad_allow = true;break;
+									}
 								}
 							}
 							if( isset($ip['things']) && is_array($ip['things']) ){
@@ -234,7 +241,13 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 					}
 				}
 				if( $allow_policy == false ){
-					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Policy Rejected" ]) ];
+					return [403,"application/json",[], json_encode([
+						"status"=>"fail", 
+						"error"=>"Access-Key Policy Rejected" ,
+						"ad"=>$ad_allow,
+						"thing"=>$td_allow,
+						"action"=>$action,
+					]) ];
 				}else{
 					$resu = $mongodb_con->update_one( $db_prefix . "_user_keys", [
 						"app_id"=>$app_id,

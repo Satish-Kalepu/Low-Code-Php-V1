@@ -1,5 +1,7 @@
 <?php
 
+$max_records_limit = 200000;
+
 function enc_data( $data ){
 	global $pass;
 	if( $pass ){
@@ -73,6 +75,12 @@ if( $_POST['action'] == "tables_dynamic_delete" ){
 			json_response("fail", "Table metadata deleted but dataset deletion failed\n" . $res2['error']);
 		}
 	}
+
+	event_log( "tables_dynamic", "table_delete", [
+		"app_id"=>$config_param1,
+		"table_id"=>$_POST['dynamic_table_id'],
+	]);
+
 	json_response( $res );
 }
 
@@ -104,6 +112,10 @@ if( $_POST['action'] == "create_table_dynamic" ){
 		$resc = $mongodb_con->create_collection( $config_global_apimaker['config_mongo_prefix'] . "_dt_" . $res['inserted_id'] );
 		json_response( $resc );
 	}
+	event_log( "tables_dynamic", "table_create", [
+		"app_id"=>$config_param1,
+		"table_id"=>$res['inserted_id'],
+	]);
 	json_response($res);
 	exit;
 }
@@ -184,13 +196,16 @@ if( $config_param3 == "importdump" ){
 			$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", [
 				"app_id"=>$config_param1,
 				'table'=>$table_d['table']
-			], ['projection'=>[
-				'table'=>1, 'des'=>1,
-			]]);
+			], [
+				'projection'=>[
+					'table'=>1, 'des'=>1,
+				]
+			]);
 			if( $res['data'] ){
 				$name_exists = $res['data'];
 			}
 		}
+
 		json_response([
 			"status"=>"success",
 			"table"=>[
@@ -314,6 +329,11 @@ if( $config_param3 == "importdump" ){
 			$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_dt_" . $table_d['_id'], $record );
 		}
 
+		event_log( "tables_dynamic", "table_importdump", [
+			"app_id"=>$config_param1,
+			"table_id"=>$table_d['_id'],
+		]);
+
 		json_response(['status'=>"success", "new_table_id"=>$table_d['_id'] ]);
 		exit;
 	}
@@ -403,6 +423,12 @@ if( $config_param3 == "importdump" ){
 				$resc['inserted_id'] = $res['inserted_id'];
 				json_response( $resc );
 			}
+
+			event_log( "tables_dynamic", "table_import_create", [
+				"app_id"=>$config_param1,
+				"table_id"=>$res['inserted_id'],
+			]);
+
 			json_response( $res );
 		}else{
 			json_response( $res );
@@ -428,7 +454,7 @@ if( $config_param3 == "importdump" ){
 		if( $res['status'] != "success" ){
 			json_response(['status'=>"fail", "error"=>"Count check failed: " . $res['error']]);
 		}
-		if( $res['data'] > 20000 ){
+		if( $res['data'] > $max_records_limit ){
 			json_response(['status'=>"fail", "error"=>"Table already has more than 20k records"]);
 		}
 
@@ -445,6 +471,14 @@ if( $config_param3 == "importdump" ){
 			}
 			$success++;
 		}
+
+		event_log( "tables_dynamic", "table_import_data", [
+			"app_id"=>$config_param1,
+			"table_id"=>$new_table_id,
+			"success"=>$success,
+			"skipped"=>$skipped,
+			"skipped_items"=>$skipped_items,
+		]);
 
 		if( $error ){
 			json_response([
@@ -542,6 +576,12 @@ if( $config_param3 == "importdump" ){
 							"app_id"=>$_POST['app_id'],
 							"_id"=> $_POST['table_id']
 						], $data );
+
+						event_log( "tables_dynamic", "table_save", [
+							"app_id"=>$config_param1,
+							"table_id"=>$_POST['table_id'],
+						]);
+
 						json_response( $res );
 					}
 				}
@@ -586,6 +626,13 @@ if( $config_param3 == "importdump" ){
 				'keys_list'=>$keys_list,
 				'keys'=>$keys
 			]);
+
+			event_log( "tables_dynamic", "table_index_drop", [
+				"app_id"=>$config_param1,
+				"table_id"=>$_POST['table_id'],
+				"index"=>$_POST['index']
+			]);
+
 			json_response($resu);
 
 			exit;
@@ -649,6 +696,12 @@ if( $config_param3 == "importdump" ){
 					'keys_list'=>$keys_list,
 					'keys'=>$keys
 				]);
+
+				event_log( "tables_dynamic", "table_index_create", [
+					"app_id"=>$config_param1,
+					"table_id"=>$_POST['table_id'],
+					"index"=>$_POST['new_index']['name']
+				]);
 				json_response( $resu );
 			}
 			exit;
@@ -676,6 +729,10 @@ if( $config_param3 == "importdump" ){
 			if($insert_id["status"] == "fail"){
 				json_response("fail","Server Error ".$insert_id["error"]  );
 			}
+			event_log( "tables_dynamic", "table_create", [
+				"app_id"=>$config_param1,
+				"table_id"=>$insert_id['inserted_id'],
+			]);
 			json_response("success",$insert_id["data"]);
 		}
 		/*Browse*/
@@ -774,12 +831,14 @@ if( $config_param3 == "importdump" ){
 					unset($data['_id']);
 					$res = $mongodb_con->update_one( $dynamic_table_name, ['_id'=>$id], ['$set'=>$data] );
 					$data['_id'] = $id;
-				}else{
-					$res = $mongodb_con->insert( $dynamic_table_name, $data );
-					$data['_id'] = (string)$res['inserted_id'];
 				}
 			}
 			$res['record'] = $data;
+			event_log( "tables_dynamic", "record_edit", [
+				"app_id"=>$config_param1,
+				"table_id"=>$config_param3,
+				"record_id"=>$data['_id']
+			]);
 			json_response($res);
 			exit;
 		}
@@ -788,18 +847,26 @@ if( $config_param3 == "importdump" ){
 			if( $res["status"] == "fail"){
 				json_response( "fail" , "Server Error ".$res['error'] );
 			}
+			event_log( "tables_dynamic", "record_delete", [
+				"app_id"=>$config_param1,
+				"table_id"=>$config_param3,
+				"record_id"=>$_POST['record_id']
+			]);
 			json_response("success","ok");
 		}
 		if( $_POST['action'] == "table_dynamic_delete_record_multiple" ){
-			{
-				foreach($_POST["record"] as $index => $_id ){
-					$res = $mongodb_con->delete_one($dynamic_table_name, ["_id"=>$_id ] );
-					if($res == false){
-						json_response("fail", "Server Error");
-					}
+			foreach($_POST["record"] as $index => $_id ){
+				$res = $mongodb_con->delete_one($dynamic_table_name, ["_id"=>$_id ] );
+				if($res == false){
+					json_response("fail", "Server Error");
 				}
-				json_response("success","ok");
+				event_log( "tables_dynamic", "record_delete", [
+					"app_id"=>$config_param1,
+					"table_id"=>$config_param3,
+					"record_id"=>$_id
+				]);
 			}
+			json_response("success","ok");
 		}
 		/*Export*/
 		if($_POST["action"] == "export_dynamic_data"){
@@ -953,6 +1020,12 @@ if( $config_param3 == "importdump" ){
 			}else{
 				$export_path = "./tempfiles/" . $export_filename . ".json";
 			}
+
+			event_log( "tables_dynamic", "table_export", [
+				"app_id"=>$config_param1,
+				"table_id"=>$config_param3,
+			]);
+
 			$fp = fopen( $export_path, "w"); 
 			if($_POST["export_type"] == "csv"){
 				fputs($fp, implode($delimeter, $titles) . "\r\n" ); 
@@ -986,7 +1059,7 @@ if( $config_param3 == "importdump" ){
 			if( $res['status'] != "success" ){
 				json_response(['status'=>"fail", "error"=>"Count check failed: " . $res['error']]);
 			}
-			if( $res['data'] > 20000 ){
+			if( $res['data'] > $max_records_limit ){
 				json_response(['status'=>"fail", "error"=>"Table already has more than 20k records"]);
 			}
 
@@ -1001,8 +1074,21 @@ if( $config_param3 == "importdump" ){
 					$error = $res['error'];
 					break;
 				}
+				event_log( "tables_dynamic", "record_create", [
+					"app_id"=>$config_param1,
+					"table_id"=>$config_param3,
+					"record_id"=>$res['inserted_id'],
+				]);
 				$success++;
 			}
+
+			event_log( "tables_dynamic", "table_import_data", [
+				"app_id"=>$config_param1,
+				"table_id"=>$config_param3,
+				"success"=>$success,
+				"skipped"=>$skipped,
+				"skipped_items"=>$skipped_items,
+			]);
 
 			if( $error ){
 				json_response([
@@ -1079,6 +1165,10 @@ if( $config_param3 == "importdump" ){
 			}
 			fclose($fp);
 			chmod($tmfn, 0777);
+			event_log( "tables_dynamic", "table_export", [
+				"app_id"=>$config_param1,
+				"table_id"=>$config_param3,
+			]);
 			json_response(['status'=>"success", "temp_fn"=>str_replace("/tmp/phpengine_backups/", "", $tmfn), "sz"=>filesize($tmfn)]);
 			exit;
 		}
@@ -1122,6 +1212,11 @@ if( $config_param3 == "importdump" ){
 			exec("gzip " . $tmfn);
 			$tmfn .= ".gz";
 			chmod($tmfn, 0777);
+
+			event_log( "tables_dynamic", "table_export_dump", [
+				"app_id"=>$config_param1,
+				"table_id"=>$config_param3,
+			]);
 
 			json_response([
 				'status'=>"success", 

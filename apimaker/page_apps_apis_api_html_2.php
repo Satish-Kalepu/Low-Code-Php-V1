@@ -12,9 +12,9 @@
 			<div style="padding: 10px;" >
 				<div>
 					<h5 class="d-inline">{{ property_type.toUpperCase() }}: {{ (property_type=='api'?s2_iiiiiiiipa['path']:'') }}{{ s2_iiiiiiiipa['name'] }}</h5>
-					<a v-bind:href="path+'apis?path='+s2_iiiiiiiipa['path']" class="btn btn-outline-secondary btn-sm me-1" style="float:right;" >Back</a>
-					<div v-on:click="s2_mrof_tide_nepo" class="btn btn-outline-dark btn-sm me-1" style="float:right;" >Edit</div>
-					<div class="btn btn-outline-dark btn-sm me-1" style="float:right;" v-html="s2_eton_noisrev_teg()" v-on:click="s2_snoisrev_wohs()" ></div>
+					<a v-bind:href="path+'apis?path='+s2_iiiiiiiipa['path']" class="btn btn-outline-secondary btn-sm me-1" id="top:back" style="float:right;" >Back</a>
+					<div v-on:click="s2_mrof_tide_nepo" class="btn btn-outline-dark btn-sm me-1" style="float:right;" id="top:edit" >Edit</div>
+					<div class="btn btn-outline-dark btn-sm me-1" style="float:right;" v-html="s2_eton_noisrev_teg()" v-on:click="s2_snoisrev_wohs()" id="top:showversions" ></div>
 				</div>
 				<div class="d-inline" >{{ s2_iiiiiiiipa['des'] }}</div>
 				<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
@@ -29,13 +29,13 @@
 					<?php require("page_apps_apis_api_html_logic_2.php"); ?>
 				</div>
 			</div>
-			<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true"  >
+			<div class="codeeditor_block_b" v-if="s2_lluf_rotide_edoc==false" v-on:click="s2_bat_tset_wohs=false;s2_lluf_rotide_edoc=true" id="logicshow" >
 				<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>L<BR/>O<BR/>G<BR/>I<BR/>C</div>
 			</div>
-			<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false&&s2_evas_tsrif==true" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" >
+			<div class="test_menu_div_a" v-if="s2_bat_tset_wohs==false&&s2_evas_tsrif==true" v-on:click="s2_bat_tset_wohs=true;s2_lluf_rotide_edoc=false" id="codeshow" >
 				<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>T<BR/>E<BR/>S<BR/>T</div>
 			</div>
-			<div class="test_menu_div_a" v-else-if="s2_bat_tset_wohs==false" v-on:click="s2_aatad_evas" >
+			<div class="test_menu_div_a" v-else-if="s2_bat_tset_wohs==false" v-on:click="s2_aatad_evas" id="savebtn1" >
 				<div style="padding:5px; text-align:center;"><i class="fa-solid fa-bars" ></i><BR/>S<BR/>A<BR/>V<BR/>E</div>
 			</div>
 			<div class="test_menu_div_b" v-if="s2_bat_tset_wohs" >
@@ -46,10 +46,10 @@
 	</template>
 
 	<div v-if="s2_ddeen_evas&&page_type!='codeeditor'" class="save_block_a" >
-		<input spellcheck="false" type="button" class="btn btn-primary btn-sm" v-on:click="s2_aatad_evas" value="SAVE">
+		<input spellcheck="false" type="button" class="btn btn-primary btn-sm" id="save2" v-on:click="s2_aatad_evas" value="SAVE">
 	</div>
 	<div v-if="s2_ddeen_evas&&page_type=='codeeditor'" class="save_block_aa" >
-		<input spellcheck="false" type="button" class="btn btn-primary btn-sm" v-on:click="s2_aatad_evas" value="SAVE">
+		<input spellcheck="false" type="button" class="btn btn-primary btn-sm" id="save5" v-on:click="s2_aatad_evas" value="SAVE">
 	</div>
 	<div v-if="s2_gnivas_wohs&&page_type!='codeeditor'" class="save_block_b">{{ s2_egassem_evas }}</div>
 	<div v-if="s2_gnivas_wohs&&page_type=='codeeditor'" class="save_block_bb">{{ s2_egassem_evas }}</div>
@@ -341,7 +341,7 @@
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <h5 class="modal-title">Edit API Meta Data</h5>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	        <button type="button" id="edit_modal_close_btn" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
 	      <div class="modal-body">
 	        	<div>Name</div>
@@ -366,7 +366,7 @@
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <h5 class="modal-title">Import Engine</h5>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	        <button type="button" class="btn-close"  id="import_modal_close_btn" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
 	      <div class="modal-body">
 	        	<div>Password</div>
@@ -394,7 +394,7 @@
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <h5 class="modal-title">Versions</h5>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	        <button type="button" class="btn-close"  id="version_modal_close_btn" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
 	      <div class="modal-body">
 	      	<table class="table table-bordered table-sm w-auto" >
@@ -431,7 +431,7 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<h4 class="modal-title">Sessions Expired</h4>
-					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<button type="button" class="close"  id="session_modal_close_btn" data-dismiss="modal">&times;</button>
 				</div>
 				<div class="modal-body">
 					<p>
@@ -447,7 +447,7 @@
 	<div class="modal-content">
 	  <div class="modal-header">
 	    <div class="modal-title" ><h5 class="d-inline">Help</h5></div>
-	    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	    <button type="button" class="btn-close"  id="doc_modal_close_btn" data-bs-dismiss="modal" aria-label="Close"></button>
 	  </div>
 	  <div class="modal-body" style="position: relative;">
 	  	<div v-html="s2_txet_pupop_cod" ></div>
@@ -462,7 +462,7 @@
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <div class="modal-title" ><h5 class="d-inline">HTML Editor</h5></div>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" v-on:click="s2_etadpu_TH_pupop()"></button>
+	        <button type="button" class="btn-close"  id="popup_html_modal_close_btn" data-bs-dismiss="modal" aria-label="Close" v-on:click="s2_etadpu_TH_pupop()"></button>
 	      </div>
 	      <div class="modal-body" v-bind:data-stagei="s2_di_egats_pupop" style="position: relative;">
 	      	<div id="popup_html_editor" style="width:100%; height:350px; position: relative;" ></div>
@@ -478,7 +478,7 @@
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <div class="modal-title" ><h5 class="d-inline">{{ s2_eltit_pupop }}</h5></div>
-	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"  id="popup_modal_close_btn"></button>
 	      </div>
 	      <div class="modal-body" id="s2_ydob_ladom_pupop" v-bind:data-stagei="s2_di_egats_pupop" style="position: relative;">
 	      		<template v-if="s2_epyt_pupop=='O2'" >

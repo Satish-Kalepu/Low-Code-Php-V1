@@ -58,6 +58,12 @@ if( $_POST['action'] == "delete_file" ){
 	$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
 		'_id'=>$_POST['file_id']
 	]);
+
+	event_log( "files", "delete", [
+		"app_id"=>$config_param1, 
+		"file_id"=>$_POST['file_id']
+	]);
+
 	update_app_pages( $config_param1 );
 	json_response($res);
 }
@@ -112,6 +118,12 @@ if( $_POST['action'] == "create_file" ){
 		"updated"=>date("Y-m-d H:i:s"),
 		"sz"=>100
 	]);
+
+	event_log( "files", "create", [
+		"app_id"=>$config_param1, 
+		"file_id"=>$res['inserted_id']
+	]);
+
 	update_app_pages( $config_param1 );
 	json_response($res);
 	exit;
@@ -141,6 +153,11 @@ if( $_POST['action'] == "files_create_folder" ){
 		't'=>'inline', //inline/s3/disc/base64
 		"created"=>date("Y-m-d H:i:s"),
 		"updated"=>date("Y-m-d H:i:s"),
+	]);
+	event_log( "files", "folder_create", [
+		"app_id"=>$config_param1, 
+		"file_id"=>$res['inserted_id'],
+		"name"=>$_POST['new_folder']
 	]);
 	update_app_pages( $config_param1 );
 	json_response($res);
@@ -177,6 +194,14 @@ if( $_POST['action'] == "apps_file_upload" ){
 			"updated"=>date("Y-m-d H:i:s"),
 		]);
 		if( $res['status'] == "success" ){
+
+			event_log( "files", "upload", [
+				"app_id"=>$config_param1, 
+				"file_id"=>$res['inserted_id'],
+				'name'=>$_POST['name'],
+				"path"=>$_POST['path'],
+			]);
+
 			$res['data'] = [
 				"_id"=>$res['inserted_id'],
 				"app_id"=>$config_param1,
@@ -262,6 +287,14 @@ if( $_POST['action'] == "mount_storage_vault" ){
 		"type"=>"mounted",
 		"vault"=>$_POST['new_mount'],
 	]);
+
+	event_log( "files", "upload", [
+		"app_id"=>$config_param1, 
+		"file_id"=>$res['inserted_id'],
+		'path'=>$path, "name"=>$name,
+		"vault_id"=>$_POST['new_mount']['vault_id'],
+	]);
+
 	json_response($res);
 
 	exit;
@@ -337,6 +370,12 @@ if( $config_param3 ){
 		if( $res["status"] == "fail" ){
 			json_response("fail",$res["error"]);
 		}
+
+		event_log( "files", "save", [
+			"app_id"=>$config_param1, 
+			"file_id"=>$config_param3,
+		]);
+
 		update_app_pages( $config_param1 );
 		json_response("success","ok");
 	}
@@ -376,6 +415,11 @@ if( $config_param3 ){
 			'type'=>$type,
 			'ext'=>$ext,
 			"updated"=>date("Y-m-d H:i:s"),
+		]);
+
+		event_log( "files", "update_settings", [
+			"app_id"=>$config_param1, 
+			"file_id"=>$_POST['file_id'],
 		]);
 		update_app_pages( $config_param1 );
 		json_response($res);

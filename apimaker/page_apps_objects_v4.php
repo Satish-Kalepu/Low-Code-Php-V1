@@ -9,8 +9,7 @@ div.zz::-webkit-scrollbar-thumb:hover { background: #555;}
 a.zz::-webkit-scrollbar {width: 6px;height: 6px;}
 a.zz::-webkit-scrollbar-track { background: #f1f1f1;}
 a.zz::-webkit-scrollbar-thumb { background: #888;}
-a.zz::-webkit-scrollbar-thumb:hover { background: #555;}	
-
+a.zz::-webkit-scrollbar-thumb:hover { background: #555;}
 
 table.zz td div{ max-width:250px; max-height:75px;overflow:auto; white-space:nowrap; }
 table.zz thead td { background-color:#666; color:white; }
@@ -38,6 +37,28 @@ pre.sample_data::-webkit-scrollbar-track { background: #f1f1f1;}
 pre.sample_data::-webkit-scrollbar-thumb { background: #888;}
 pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
+.graph_tabs_nav_bar{ position:relative; height:30px; border-bottom:2px solid #aaa; margin-bottom:10px;  }
+.graph_tabs_nav_container{ position:absolute; display:flex; height:30px; width:calc( 100% - 30px ); overflow:hidden; }
+.graph_tabs_nav_scrollbtn{ position:absolute; right:0px; height:30px; z-index:5; background-color:#f8f0f0; display:none; }
+.graph_tabs_nav_scrollbtn2{ position:absolute; left:0px; height:30px; z-index:5; background-color:#f8f0f0; display:none; }
+.graph_tab_btn{ display: flex; column-gap:10px; margin-left:5px; padding:0px 10px; border:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px; border-bottom:2px solid #aaa; white-space:nowrap; cursor:pointer; align-items:center; }
+.graph_tab_btn .head{  }
+.graph_tab_btn .cbtn{}
+.graph_tab_btn:hover{ background-color:#f8f8f8;  }
+.graph_btn_active{border:1px solid #999; border-bottom:2px solid white; }
+.graph_tab_btn:hover .graph_btn_active{ border-bottom:2px solid white; }
+.graph_tabs_container{ position:relative; height:calc( 100% - 150px ); background-color: white; overflow:auto;  padding-right:10px; }
+
+.graph_object_tabs_nav_bar{ position:relative; height:30px; border-bottom:2px solid #aaa; }
+.graph_object_tabs_nav_container{ position:absolute; display:flex; height:30px; width:calc( 100% - 30px ); overflow:hidden; }
+.graph_object_tabs_nav_scrollbtn{ position:absolute; right:0px; height:30px; z-index:5; background-color:#f8f0f0; }
+.graph_object_tab_btn{ display: flex; column-gap:10px; margin-left:5px; padding:0px 10px; border:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px; border-bottom:2px solid #aaa; white-space:nowrap; cursor:pointer; align-items:center; }
+.graph_object_tab_btn .head{  }
+.graph_object_tab_btn .cbtn{}
+.graph_object_tab_btn:hover{ background-color:#f8f8f8;  }
+.graph_object_btn_active{border:1px solid #999; border-bottom:2px solid white; }
+.graph_object_tab_btn:hover .graph_btn_active{ border-bottom:2px solid white; }
+.graph_object_tabs_container{ position:relative; height:calc( 100% - 150px ); background-color: white; overflow:auto;  padding-right:10px; }
 
 </style>
 
@@ -49,48 +70,44 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 		<div style="padding: 10px;" >
 
 			<a class="btn btn-sm btn-outline-dark float-end" v-bind:href="path+'objects'" >Back</a>
-			<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="create_with_template_popup()" >Create Node</div>
+			
 			<div v-if="thing_id!=-1" class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="thing_id=-1" >Home</div>
 
 			<div class="h3 mb-3"><span class="text-secondary" >Object Store</span> <span>{{ db_name }}</span></div>
-			<div style="display:flex; width:300px; column-gap:5px;border:1px solid #ccc;background-color: white; align-items: center; margin-bottom:10px; ">
-				<div class="thing_search_bar" title="Thing" data-type="dropdown" data-var="search_thing:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" data-context-callback-function="goto1" >Search</div>
-				<div><i class="fa fa-search"></i></div>
+
+			<div style="margin-bottom:10px;">
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="show_create()" >Create Node</div>
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="window_open_newtab('import2')" >Import</div>
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="window_open_newtab('ops')" >Ops</div>
+
+				<div style="display:flex; width:300px; column-gap:5px;border:1px solid #ccc;background-color: white; align-items: center; ">
+					<div class="thing_search_bar" title="Thing" data-type="dropdown" data-var="search_thing:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" data-context-callback-function="goto1" >Search</div>
+					<div><i class="fa fa-search"></i></div>
+				</div>
 			</div>
 
-			<div style="position:relative;overflow: auto; height: calc( 100% - 100px );">
-				<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
-				<div v-if="err" class="alert alert-danger" >{{ err }}</div>
-
-					<!-- <div class="btn btn-outline-dark btn-sm" v-on:click="import_template_create_popup_open()">Create Open</div> -->
-
-					<div v-if="thing_id!=-1" >
-						<div v-if="'l' in thing==false" >Loading...</div>
-						<div v-else >
-							<graph_object ref="thing_object" refname="thing_object" datavar="thing" v-bind:v="thing"  v-bind:edit_z_t="edit_z_t" v-bind:temp="temp" ></graph_object>
-						</div>
+			<div class="graph_tabs_nav_bar">
+				<div class="graph_tabs_nav_scrollbtn2" id="tabs_left_scrollbar" v-on:click="window_tabs_focus_left()"><div class="btn btn-light btn-sm" style="height:30px;" ><i class="fa-solid fa-chevron-left"></i></div></div>
+				<div class="graph_tabs_nav_container" id="tabs_container">
+					<div v-bind:class="{'graph_tab_btn':true,'graph_btn_active':(vtabi==current_tab)}" v-for="vtabi,i in window_tabs_order" v-bind:id="'tab_'+vtabi">
+						<div v-on:click.prevent.stop="window_open_tab(vtabi)">{{ window_tabs[ vtabi ]['title'] }}</div>
+						<div v-if="vtabi!='home'&&vtabi!='summary'&&vtabi!='browse'&&vtabi!='import2'"><div class="btn btn-outline-danger btn-sm py-0 px-0" v-on:click.prevent.stop="window_close_tab(vtabi)" ><i class="fa-solid fa-xmark"></i></div></div>
 					</div>
-					<template v-else >
-
-						<ul class="nav nav-tabs">
-							<li class="nav-item">
-								<a v-bind:class="{'nav-link py-0':true, 'active':tab=='home'}" href="#" v-on:click.prevent.stop="open_tab_home()">Summary</a>
-							</li>
-							<li class="nav-item">
-								<a v-bind:class="{'nav-link py-0':true, 'active':tab=='browse'}"  href="#" v-on:click.prevent.stop="open_tab_browse()">Browse</a>
-							</li>
-							<li class="nav-item">
-								<a v-bind:class="{'nav-link py-0':true, 'active':tab=='import'}"  href="#" v-on:click.prevent.stop="open_tab_import()">Import</a>
-							</li>							
-						</ul>
-						<div>&nbsp;</div>
-						<template v-if="tab=='home'" >
-							<div v-for="v in things" >
-								<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i'])" >{{ v['l']['v'] }}</div> <span class="text-secondary">({{ v['i'] }})</span> in 
-								<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i_of']['i'])">{{ v['i_of']['v'] }}</div> [<div type="button" class="btn btn-link btn-sm"  v-on:click.prevent.stop="getlink2(v['i'])">{{ v['cnt'] }}</div>]
-							</div>
-						</template>
-						<template v-else-if="tab=='browse'" >
+				</div>
+				<div class="graph_tabs_nav_scrollbtn"  id="tabs_right_scrollbar"  v-on:click="window_tabs_focus_right()"><div class="btn btn-light btn-sm" style="height:30px;" ><i class="fa-solid fa-chevron-right"></i></div></div>
+			</div>
+			<template v-for="vtab,vtabi in window_tabs" >
+				<div class="graph_tabs_container" v-show="current_tab==vtabi" >
+					<template v-if="vtabi=='summary'" >
+						<div v-for="v in things" >
+							<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i'])" >{{ v['l']['v'] }}</div> in 
+							<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i_of']['i'])">{{ v['i_of']['v'] }}</div> ({{ v['cnt'] }})
+						</div>
+					</template>
+					<template v-else-if="vtabi=='import2'" >
+						<objects_import_v2 ref="import2" refname="import2" v-bind:vtab="window_tabs[vtabi]" ></objects_import_v2>
+					</template>
+					<template v-else-if="vtabi=='browse'" >
 
 							<div style="height:40px; display:flex; column-gap:20px; padding:5px; border:1px solid #ccc;" >
 								<div>
@@ -136,78 +153,39 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 										<th>Instance Of</th>
 										<th>Nodes</th>
 										<th>UpdatedOn</th>
+										<th>-</th>
 									</tr>
 									</thead>
 									<tbody>
 										<tr v-for="rec,reci in browse_list">
-											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="getlink(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
-											<td><div class="zz" >{{ rec['l']['v'] }}</div></td>
-											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="getlink(rec['i_of']['i'])" >{{ rec['i_of']['v'] }}</a></div></td>
-											<td><a v-if="'cnt' in rec" href="#" v-on:click.prevent.stop="getlink2(rec['_id'])" >{{ rec['cnt'] }}</a></td>
+											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
+											<td><div class="zz" ><span v-if="'l' in rec" >{{ rec['l']['v'] }}</span></div></td>
+											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['i_of']['i'])" >{{ rec['i_of']['v'] }}</a></div></td>
+											<td><a v-if="'cnt' in rec" href="#" v-on:click.prevent.stop="show_thing2(rec['_id'])" >{{ rec['cnt'] }}</a></td>
 											<td><span v-if="'m_u' in rec" >{{ rec['m_u'].substr(0,10) }}</span></td>
+											<td><div class="btn btn-light btn-sm py-1 text-danger"  v-on:click="browse_list_delete(reci)" ><i class="fa-regular fa-trash-can"></i></div></td>
 										</tr>
 									</tbody>
 								</table>
 							</div>
 
-						</template>
-						<template v-else-if="tab=='import'" >
-							<objects_import ref="objects_import_component__" refname="objects_import_component__" v-bind:app_id="app_id" ></objects_import>
-						</template>
-						<template v-else-if="tab=='browse'" >
-							<p>Unknown tab: {{ tab }}</p>
-						</template>
 					</template>
-			</div>
+					<object_template_create_v2 v-else-if="vtabi=='thingnew'" v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:data="vtab['data']" ></object_template_create_v2>
+					<template v-else-if="vtabi=='ops'" >
+						<object_ops v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:data="vtab['data']" ></object_ops>
+					</template>
+					<template v-else-if="vtab['type']=='thing'" >
+						<graph_object_v2 v-bind:ref="vtabi" v-bind:refname="vtabi" v-bind:object_id="vtab['thing_id']" v-bind:data="vtab['data']" ></graph_object_v2>
+					</template>
+					<template v-else >
+						<pre>{{ vtab }}</pre>
+					</template>
+				</div>
+
+			</template>
 
 		</div>
 	</div>
-	<div class="modal fade" id="create_popup" tabindex="-1" >
-		<div class="modal-dialog modal-lg ">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Create Object</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body" id="create_popup_body">
-					<p>Create a new Node / DataSet / Document / Media</p>
-					<div class="code_row code_line">
-						<table class="table table-bordered table-sm w-auto" >
-							<tr>
-								<td>Instance Of</td>
-								<td>
-									<div class="codeline_thing codeline_thing_T" >
-										<div title="Thing" data-type="dropdown" v-bind:data-var="'new_thing:i_of:v'"  data-list="graph-thing" v-bind:data-thing="'GT-ALL'" data-thing-label="Things" >{{ new_thing['i_of']['v'] }}</div>
-									</div>
-								</td>
-							</tr>
-							<tr>
-								<td>Label</td>
-								<td><inputtextbox2 types="T,GT" v-bind:v="new_thing['l']" v-bind:datavar="'new_thing:l'" ></inputtextbox2></td>
-							</tr>
-							<tr>
-								<td>Type</td>
-								<td>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="N" > Node (A thing/Person/Place etc)</label></div>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="L" > DataSet (Tabular Data)</label> </div>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="D" > Document (Article/Blog)</label> </div>
-									<div><label><input type="radio" v-model="new_thing['i_t']['v']" value="M" > Media (Image/Video)</label></div>
-								</td>
-							</tr>
-						</table>
-					</div>
-
-					<div><input type="button" class="btn btn-outline-dark btn-sm" value="Create Object" v-on:click="create_new_thing()"></div>
-					<div v-if="cmsg" class="alert alert-primary" >{{ cmsg }}</div>
-					<div v-if="cerr" class="alert alert-danger" >{{ cerr }}</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-				</div>
-			</div>
-		</div>
-	</div>
-
 
 
 
@@ -229,6 +207,9 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 		</template>
 		<template v-else-if="context_type__=='list'" >
 			<div v-for="id in context_list__" class="context_item" v-on:click.stop="context_select__(id,'')" >{{ id }}</div>
+		</template>
+		<template v-else-if="context_type__=='list-assoc'" >
+			<div v-for="v,k in context_list__" class="context_item" v-on:click.stop="context_select__(k,'')" >{{ v }}</div>
 		</template>
 		<template v-else-if="context_type__=='list-kv'" >
 			<div v-for="iv,ik in context_list__" class="context_item" v-on:click.stop="context_select__(iv,'kv')" >{{ iv['v'] }}</div>
@@ -258,7 +239,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				</template>
 			</template>
 			<div class="context_menu_list__" data-context="contextmenu" >
-				<!--<pre>{{ context_thing_list__ }}</pre>-->
 				<div v-if="context_thing_msg__" class="text-success" >{{ context_thing_msg__ }}</div>
 				<div v-if="context_thing_err__" class="text-danger" >{{ context_thing_err__ }}</div>
 				<template v-if="context_thing__ in context_thing_list__" >
@@ -270,20 +250,13 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 			</div>
 		</template>
 		<template v-else-if="context_type__=='graph-thing'" >
+			<div v-if="context_thing_allow_create__" style="float:right;" class="btn btn-outline-dark btn-sm py-0" v-on:click.prevent.stop="context_change_to_graph_create__()" >Create Node</div>
 			<div>{{ context_thing_label__ }}</div>
 			<div><input spellcheck="false" type="text" id="contextmenu_key1" data-context="contextmenu" data-context-key="contextmenu"  class="form-control form-control-sm" v-model="context_menu_key__" v-on:keyup="context_menu_key_edit__" ></div>
 			<div class="context_menu_list__" data-context="contextmenu" >
-				<!--<pre>{{ context_thing_list__ }}</pre>-->
 				<div v-if="context_thing_msg__" class="text-success" >{{ context_thing_msg__ }}</div>
 				<div v-if="context_thing_err__" class="text-danger" >{{ context_thing_err__ }}</div>
 				<div v-for="fv,fi in context_thing_graph_list__" class="context_item" v-on:click.stop="context_select__(fv,context_type__)" v-html="fv['r']" ></div>
-				<!-- <template v-if="context_thing__ in context_thing_list__" >
-					<template v-for="fv,fi in context_thing_list__[ context_thing__ ]" >
-						<div v-if="context_menu_key_match__(fv['l']['v'])" class="context_item" v-on:click.stop="context_select__(fv,context_type__)" v-html="context_menu_thing_highlight_graph_thing__(fv)" ></div>
-					</template>
-				</template> 
-				<div v-else>List undefined</div>
-				-->
 			</div>
 		</template>
 		<div v-else>No list configured {{ context_type__ }}</div>
@@ -301,7 +274,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 	      			<template v-if="popup_import__==false" >
 			      		<div align="right"><div class="btn btn-link btn-sm" style="position:absolute; margin-top:-60px; margin-left:-100px;" v-on:click="popup_import__=true" >Import</div></div>
 						<div class="code_line" style="overflow: auto; max-width:calc( 100% - 20px );max-height: 400px;" >
-			      		<!-- <pre>{{ popup_data__}}</pre> -->
 			        	<vobject v-if="popup_type__=='O'" v-bind:v="popup_data__" v-bind:datafor="popup_for__" v-bind:datavar="popup_datavar__"  ></vobject>
 			        	<vlist v-else-if="popup_type__=='L'" v-bind:v="popup_data__" v-bind:datafor="popup_for__" v-bind:datavar="popup_datavar__"  ></vlist>
 			        	</div>
@@ -325,7 +297,13 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 					<object_template_edit ref="objects_component_template" refname="objects_component_template"  v-bind:object_id="popup_data__['object_id']" ></object_template_edit>
 				</div>
 				<div v-else-if="popup_type__=='import_template_create'||popup_type__=='template_create'" class="code_line" >
-					<object_template_create ref="objects_component_template" refname="objects_component_template" ></object_template_create>
+					<object_template_create_v2 ref="create_popup_component" refname="create_popup_component" v-bind:data="popup_data__['data']" ></object_template_create_v2>
+				</div>
+				<div v-else-if="popup_type__=='dataset_edit_record'" >
+					<object_dataset_edit_record ref="dataset_record_edit" refname="dataset_record_edit" v-bind:data="popup_data__" ></object_dataset_edit_record>
+				</div>
+				<div v-else-if="popup_type__=='dataset_create_record'" >
+					<object_dataset_create_record ref="dataset_record_create" refname="dataset_record_create" v-bind:data="popup_data__" ></object_dataset_create_record>
 				</div>
 	        	<div v-else >Unhandled popup type {{ popup_type__ }}</div>
 	      </div>
@@ -362,6 +340,25 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 			<template v-else-if="simple_popup_type__=='ts'" >
 				<vts v-bind:v="simple_popup_data__" v-bind:datafor="simple_popup_for__" v-bind:datavar="simple_popup_datavar__" v-on:close="simple_popup_modal__=false"  v-on:update="simple_popup_set_value__($event)"></vts>
 			</template>
+			<template v-else-if="simple_popup_type__=='graph-create'" >
+				<div style="display:flex; column-gap: 20px; margin-bottom:10px;" class="code_line">
+					<div>
+						<div>Instance</div>
+						<div title="Thing" data-type="dropdown" data-var="create_node__:i_of:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" >{{ create_node__['i_of']['v'] }}</div>
+					</div>
+					<div>
+						<div>Node</div>
+						<div title="Text" class="editable" data-var="create_node__:l:v" ><div style="white-space:nowrap;" contenteditable spellcheck="false" data-type="editable" data-var="create_node__:l:v" id="create_node__:l:v" data-allow="T" >{{ create_node__['l']['v'] }}</div></div>
+					</div>
+				</div>
+				<div style="margin-bottom: 10px;">
+					<input type="button" class="btn btn-outline-secondary btn-sm me-2" v-on:click.prevent.stop="hide_simple_popup__()" value="Cancel" >
+					<input type="button" class="btn btn-outline-dark btn-sm" v-on:click.prevent.stop="create_node_on_fly__" value="Create" >
+				</div>
+				<div v-if="create_node_msg__" style="color:blue;" >{{ create_node_msg__}}</div>
+				<div v-if="create_node_err__" style="color:red;" >{{ create_node_err__}}</div>
+				<p>&nbsp;-</p>
+			</template>
 			<div v-else>
 				<div>context editor</div>
 				<div>{{ simple_popup_type__ }}</div>
@@ -379,7 +376,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 		  </div>
 			<div class="modal-body" >
 				<p>Objects database is enabled</p>
-
 		  	</div>
 		</div>
 	</div>
@@ -387,14 +383,16 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
 </div>
 
-<?php require("page_apps_objects_import.php"); ?>
+<?php require("page_apps_objects_import_v2.php"); ?>
 <?php require("page_apps_objects_component_template.php"); ?>
-<?php require("page_apps_objects_component_template_create.php"); ?>
-<?php require("page_apps_objects_component_graph_object.php"); ?>
+<?php require("page_apps_objects_component_template_create_v2.php"); ?>
+<?php require("page_apps_objects_component_graph_object_v2.php"); ?>
+<?php require("page_apps_objects_component_dataset_create.php"); ?>
+<?php require("page_apps_objects_component_dataset_edit.php"); ?>
+<?php require("page_apps_objects_component_ops.php"); ?>
 <script>
 <?php
 $components = [
-	"graph_object_new",
 	"inputtextbox", "inputtextbox2", "inputtextview", 
 	"varselect", "varselect2", 
 	"vobject", "vobject2", "vlist", 
@@ -424,7 +422,7 @@ var app = Vue.createApp({
 			"things": [],
 			"thing": {}, "thing_save_need": false, "thing_loading": false, "thing_save_msg": "", "thing_save_err": "",
 			"browse_list": [],
-			"browse_from": "", "browse_last": "", "browse_sort": "label", "browse_order": "asc",
+			"browse_from": "", "browse_last": "", "browse_sort": "label", "browse_order": "asc", "browse_list_index":-1,
 			"search_thing": {'t':'GT','v':"Search Thing",'i':""},
 			"records": [],
 			"tab": "home",
@@ -440,11 +438,19 @@ var app = Vue.createApp({
 				"i_of": {"t":"GT", "i":"", "v":""},
 				"i_t": {"t":"T", "v":"N"}
 			},
+			"create_node__": {
+				"l": {"t":"T", "v":""},
+				"i_of": {"t":"GT", "i":"", "v":""},
+			},
+			"create_node_msg__": "","create_node_err__": "",
 			"vtemplate": {
 				"template": {},
 				"edit_field": "",
 			},
-			"convert_to_link_temp": {"link": {"t": "GT", "i": "", "v": "Click to search"}, "label": {"t":"T", "v": ""} },
+			"convert_to_link_temp": {
+				"link": {"t": "GT", "i": "", "v": "Click to search"}, 
+				"label": {"t":"T", "v": ""}
+			},
 			"edit_z_t": {}, 
 			"is_locked__"			: false,
 			"all_factors__"			: {},
@@ -494,6 +500,7 @@ var app = Vue.createApp({
 			context_el__: false,
 			context_style__: "display:none;",
 			context_list__: [],
+			context_data__: {},
 			context_list_filter__: [],
 			context_type__: "",
 			context_value__: "",
@@ -504,7 +511,9 @@ var app = Vue.createApp({
 			context_expand_key__: "",
 			context_thing__: "",
 			context_thing_label__: "",
+			context_thing_allow_create__: false,
 			context_thing_list__: {},
+			context_thing_list_basic__: [],
 			context_thing_graph_list__: [],
 			context_thing_list_keys__: {},
 			context_thing_loaded__: false,
@@ -545,28 +554,18 @@ var app = Vue.createApp({
 			thing_options_err__: "",
 			things_used__: {},
 
+			current_tab: "summary",
 			window_tabs: {
-				"home": {
-					"title": "Home",
-					"type": "home",
-				},
 				"summary": {
 					"title": "Summary",
 					"type": "summary",
 				},
-				"t1": {
-					"title": "Person:Satish Kalepu",
-					"type": "node",
+				"browse": {
+					"title": "Browse",
+					"type": "browse",
 				},
-				"t2": {
-					"title": "Root:Person",
-					"type": "node",
-				},
-				"t3": {
-					"title": "People in CarTrade",
-					"type": "list"
-				}
-			}
+			},
+			window_tabs_order: ["summary", "browse"],
 		};
 	},
 	mounted:function(){
@@ -577,11 +576,22 @@ var app = Vue.createApp({
 		document.addEventListener("blur", this.event_blur__, true);
 		window.addEventListener("paste", this.event_paste__, true);
 		this.load_nodes();
+		//setTimeout(this.load_sample_tabs,1000);
 	},
 	watch: {
 
 	},
 	methods: {
+		load_sample_tabs: function(){
+			this.show_thing("T1");
+			this.show_thing("T2");
+			this.show_thing("T3");
+			this.show_thing("T4");
+			this.show_thing("T5");
+			this.show_thing("T6");
+			this.show_thing("T7");
+			setTimeout(this.show_thing,2000,"T8");
+		},
 		convert_to_link( el, vdatavar ){
 			var v = this.get_editable_value__({'data_var':vdatavar});
 			if( v === false ){console.log("convert_to_link: datavar value false");return false;}
@@ -597,7 +607,7 @@ var app = Vue.createApp({
 			this.set_simple_popup_style__();
 		},
 		convert_to_link_do: function(){
-			this.simple_popup_modal__ = false;
+			this.hide_simple_popup__();
 			var v = this.convert_to_link_temp['label']['v']+'';
 			if( v=="" ){
 				v = this.convert_to_link_temp['link']['v']+'';
@@ -608,14 +618,17 @@ var app = Vue.createApp({
 				"v": v
 			});
 		},
-		getlink: function(vi){
-			//return this.$root.objectpath+'?object_id='+vi;
-			this.load_new_thing(vi);
+		after_create: function(vi){
+			if( "thing-"+vi in this.window_tabs ){
+				this.$refs[ "thing-"+vi ][0].open_records();
+			}
 		},
-		getlink2: function(vi){
-			//return this.$root.objectpath+'?object_id='+vi;
-			this.load_new_thing(vi);
-			setTimeout(this.thing_open_records,1000);
+		show_thing: function(vi){
+			console.log( "show_thing:" + vi );
+			this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false} );
+		},
+		show_thing2: function(vi){
+			this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false, "open_records":true} );
 		},
 		thing_open_records: function(){
 			console.log( this.$refs );
@@ -625,7 +638,7 @@ var app = Vue.createApp({
 			this.tab = 'home';
 		},
 		open_tab_import: function(){
-			this.tab = 'import';
+			this.tab = 'import2';
 		},
 		open_tab_browse: function(){
 			this.tab = 'browse';
@@ -681,71 +694,35 @@ var app = Vue.createApp({
 				this.berr = this.get_http_error__(error);
 			});
 		},
-		load_new_thing: function(vi){
-			this.thing = {};
-			this.records = {};
-			this.show_thing( vi );
-		},
-		show_thing: function(vi){
-			this.thing_id = vi;
-			this.msg = "loading thing";
-			this.thing_loading = true;
-			this.thing = {};this.records = [];
-			axios.post("?",{
-				"action": "objects_load_object",
-				"object_id": vi
-			}).then(response=>{
-				this.msg = "";
-				if( response.status == 200 ){
-					if( typeof( response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								var v = response.data['data'];
-								this.thing = v;
-								//setTimeout(function(v){v.load_records();},500,this);
-								setTimeout(function(v){v.thing_loading = false;},200,this);
-								this.thing_save_need = false;
+		browse_list_delete: function(vi){
+			this.browse_list_index = vi;
+			if( confirm("Are you sure to delete the node?" ) ){
+				axios.post("?",{
+					"action": "objects_delete_node",
+					"object_id": this.browse_list[ vi ]['_id'],
+				}).then(response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.browse_list.splice( this.browse_list_index, 1 );
+									alert("Node is deleted successfully");
+								}else{
+									alert(response.data['error']);
+								}
 							}else{
-								this.err = response.data['error'];
+								alert( "Incorrect response");
 							}
 						}else{
-							this.err = "Incorrect response";
+							alert("Incorrect response");
 						}
 					}else{
-						this.err = "Incorrect response";
+						alert("http error: " . response.status );
 					}
-				}else{
-					this.err = "http error: " . response.status ;
-				}
-			}).catch(error=>{
-				this.err = this.get_http_error__(error);
-			});
-		},
-		load_records: function(){
-			axios.post("?",{
-				"action": "objects_load_records",
-				"object_id": this.thing['_id'],
-			}).then(response=>{
-				if( response.status == 200 ){
-					if( typeof( response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								this.records = response.data['data'];
-							}else{
-								this.err = response.data['error'];
-							}
-						}else{
-							this.err = "Incorrect response";
-						}
-					}else{
-						this.err = "Incorrect response";
-					}
-				}else{
-					this.err = "http error: " . response.status ;
-				}
-			}).catch(error=>{
-				this.err = this.get_http_error__(error);
-			});
+				}).catch(error=>{
+					alert(this.get_http_error__(error) );
+				});
+			}
 		},
 		load_nodes: function(){
 			this.err = "";this.msg = "";
@@ -771,49 +748,6 @@ var app = Vue.createApp({
 				}
 			}).catch(error=>{
 				this.err = this.get_http_error__(error);
-			});
-		},
-		create_new_thing: function(){
-			this.cerr = "";this.cmsg = "";
-			if( this.new_thing['l']['v'] == "" ){
-				this.cerr = "Need label";return false;
-			}else if( this.new_thing['l']['v'].match(/^[a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}$/i) == null ){
-				this.cerr = "Label should follow format [a-z0-9\-\_\,\.\@\%\&\*\(\)\+\=\?\"\'\ ]{2,100}";return false;
-			}
-			if( this.new_thing['i_of']['v'] == "" || this.new_thing['i_of']['i'] == "" ){
-				this.cerr = "Need instance/tag";return false;
-			}
-			if( this.new_thing['i_t']['v'] == "" ){
-				this.cerr = "Need Node Type";return false;
-			}
-			axios.post("?",{
-				"action": "object_create_object",
-				"data": this.new_thing
-			}).then(response=>{
-				if( response.status == 200 ){
-					if( typeof( response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								this.cmsg = "Successfully created: " + response.data['inserted_id'];
-								setTimeout(function(vi,v){
-									v.create_popup.hide();
-									v.create_popup_displayed__ = false;
-									v.load_new_thing(vi);
-								},1000,response.data['inserted_id'],this);
-							}else{
-								this.cerr = response.data['error'];
-							}
-						}else{
-							this.cerr = "Incorrect response";
-						}
-					}else{
-						this.cerr = "Incorrect response";
-					}
-				}else{
-					this.cerr = "http error: " . response.status ;
-				}
-			}).catch(error=>{
-				this.cerr = this.get_http_error__(error);
 			});
 		},
 		get_http_error__: function(e){
@@ -876,7 +810,7 @@ var app = Vue.createApp({
 				if( this.context_menu__ ){
 					this.hide_context_menu__();
 				}else if( this.simple_popup_modal__ ){
-					this.simple_popup_modal__ = false;
+					this.hide_simple_popup__();
 				}
 			}
 			if( e.target.hasAttribute("data-type") ){
@@ -1029,7 +963,6 @@ var app = Vue.createApp({
 					this.context_menu_key__ = "";
 					this.context_datavar__ = data_var;
 					var v = this.get_editable_value__({'data_var':data_var});
-					console.log( v );
 					if( v === false ){console.log("event_click: value false 4");return false;}
 					this.context_type__ = el_data_type.getAttribute("data-list");
 					if( el_data_type.hasAttribute("data-context-dependency") ){
@@ -1072,7 +1005,13 @@ var app = Vue.createApp({
 						if( el_data_type.hasAttribute("data-thing") ){
 							this.context_thing__ = el_data_type.getAttribute("data-thing");
 							this.context_thing_label__ = el_data_type.getAttribute("data-thing-label");
-							console.log( this.context_thing__ );
+							//console.log("xxx: " + el_data_type.hasAttribute("allow-create") );
+							if( el_data_type.hasAttribute("allow-create") ){
+								this.context_thing_allow_create__ = true;
+							}else{
+								this.context_thing_allow_create__ = false;
+							}
+							//console.log( this.context_thing__ );
 							setTimeout(this.context_thing_list_load_check__,300);
 						}else{
 							this.context_thing__ = "UnKnown";
@@ -1096,8 +1035,24 @@ var app = Vue.createApp({
 							}else{
 								this.context_list__ = ["application/json", "application/xml"];
 							}
+						}else if( ld in this.context_data__ ){
+							this.context_list__ = this.context_data__[ ld ];
 						}else{
 							this.context_list__ = ld.split(",");
+						}
+					}
+					if( this.context_type__ == "list-assoc" ){
+						var ld = el_data_type.getAttribute( "data-list-values"   );
+						if( ld == 'node-type' ){
+							this.context_list__ = {"N":'Node',"L":'DataSet',"M":'Media',"D":'Document',"S":'Sheet'};
+						}else if( ld in this.context_data__ ){
+							this.context_list__ = this.context_data__[ ld ];
+						}else{
+							if( typeof(ld) == "string" ){
+								this.context_list__ = JSON.parse(ld);
+							}else{
+								this.context_list__ = ld;
+							}
 						}
 					}
 					if( this.context_type__ == "list-kv" ){
@@ -1120,6 +1075,10 @@ var app = Vue.createApp({
 								{"t":"KV", "k":"TT", "v":"Text Multiline"},
 								{"t":"KV", "k":"HT", "v":"HTML Text"}
 							];
+						}else if( ld in this.context_data__ ){
+							this.context_list__ = this.context_data__[ ld ];
+						}else{
+							this.context_list__ = [];
 						}
 					}
 					this.show_and_focus_context_menu__();
@@ -1136,9 +1095,74 @@ var app = Vue.createApp({
 				if( this.context_menu__ ){
 					this.hide_context_menu__();
 				}else if( this.simple_popup_modal__ ){
-					this.simple_popup_modal__ = false;
+					this.hide_simple_popup__();
 				}
 			}
+		},
+		context_change_to_graph_create__: function(){
+			this.hide_context_menu__();
+			this.simple_popup_el__ = this.context_el__;
+			this.simple_popup_datavar__ = this.context_datavar__;
+			this.simple_popup_data__ = {};
+			this.simple_popup_type__ = "graph-create";
+			this.simple_popup_modal__ = true;
+			this.simple_popup_title__ = "Create Node";
+			//this.show_and_focus_context_menu__();
+			this.set_simple_popup_style__();
+		},
+		create_node_select__: function(vd){
+			console.log( this.simple_popup_datavar__ );
+			var x = this.simple_popup_datavar__.split(/\:/g);
+			x.pop();
+			var parent = x.join(":");
+			this.set_sub_var__(this, parent, {
+				"t": "GT", 
+				"i": vd['i']+'',
+				"v": vd['v']+''
+			});
+			this.hide_simple_popup__();
+			if( this.simple_popup_datavar__ == "search_thing:v" ){
+				this.show_thing( vd['i'] );
+			}else{
+
+			}
+		},
+		create_node_on_fly__: function(){
+			this.create_node_msg__ = "";
+			this.create_node_err__ = "";
+			if( this.create_node__['i_of']['i']=="" ){
+				this.create_node_err__ = "Need instance";return;
+			}
+			if( this.create_node__['l']['v'].match(/^[a-z0-9\.\-\_\@\&\(\)\[\]\{\}\,\?\ ]{2,200}$/i) == null ){
+				this.create_node_err__ = "Label required and plain";return;
+			}
+
+			this.create_node_msg__ = "Creating node...";
+			axios.post("?",{
+				"action": "objects_create_node_on_fly",
+				"node": this.create_node__
+			}).then(response=>{
+				this.create_node_msg__ = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.create_node_select__({"i": response.data['inserted_id'], "v": response.data['label']});
+							}else{
+								this.create_node_err__ = response.data['error'];
+							}
+						}else{
+							this.create_node_err__ = "Incorrect response";
+						}
+					}else{
+						this.create_node_err__ = "Incorrect response";
+					}
+				}else{
+					this.create_node_err__ = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.create_node_err__ = this.get_http_error__(error);
+			});
 		},
 		event_blur__: function( e ){
 			if( e.target.hasAttribute("data-type") ){
@@ -1148,7 +1172,6 @@ var app = Vue.createApp({
 					var s = this.find_parents__(e.target);
 					if( !s ){ return false; }
 					var v = e.target.innerText;
-					console.log( " =====  " + v );
 					v = v.replace(/[\u{0080}-\u{FFFF}]/gu, "");
 					// v = v.replace(/\&nbsp\;/g, " ");
 					// v = v.replace(/\&gt\;/g, ">");
@@ -1210,21 +1233,15 @@ var app = Vue.createApp({
 			}else if( 'i' in vi_of == false || 'v' in vi_of == false ){
 				vi_of = {'t':"GT", "i": "T1", "v": "Root"};
 			}
-			this.cmsg = ""; this.cerr= "";
-			this.new_thing = {
-				"l": {"t":"T", "v":"testing"},
+			this.window_open_newtab("thingnew", {
+				"title": "CreateNode",
+				"type": "thingnew",
 				"i_of": JSON.parse(JSON.stringify(vi_of)),
-				"i_t": {"t":"T", "v":"N"}
-			};
-			this.echo__( this.new_thing );
-			if( this.create_popup == false ){
-				this.create_popup = new bootstrap.Modal(document.getElementById('create_popup'));
-				document.getElementById('create_popup').addEventListener('hide.bs.modal', event => {
-					this.create_popup_displayed__ = false;
-				});
-			}
-			this.create_popup.show();
-			this.create_popup_displayed__ = true;
+				"data": {}
+			});
+			setTimeout(function(v){
+				console.log( v.$refs );
+			},1000,this);
 		},
 		load_keys: function(){
 			var k = "";
@@ -1354,7 +1371,6 @@ var app = Vue.createApp({
 				var x = this.context_datavar__.split(/\:/g);
 				x.pop();
 				var parent = x.join(":");
-				this.echo__( parent );
 				var d = {
 					"t":"GT",
 					"i":k['i']+'',
@@ -1364,6 +1380,8 @@ var app = Vue.createApp({
 					d['v'] = k['ol'];
 				}
 				this.set_sub_var__(this, parent, d);
+			}else{
+				this.set_sub_var__(this, this.context_datavar__, k );
 			}
 			if( this.context_callback__ ){
 				var x = this.context_callback__.split(/\:/g);
@@ -1383,7 +1401,7 @@ var app = Vue.createApp({
 		},
 		goto1: function(){
 			this.echo__(this.search_thing);
-			this.load_new_thing( this.search_thing['i'] );
+			this.show_thing( this.search_thing['i'] );
 		},
 		simple_popup_set_value__: function(k){
 			// var x = this.simple_popup_datavar__.split(/\:/g);
@@ -1398,7 +1416,11 @@ var app = Vue.createApp({
 				if( k == "ref" ){
 					if( x[1] in this.$refs ){
 						x.splice(0,1); k = x.splice(0,1);
-						return this.set_sub_var__( this.$refs[ k ], x.join(":"), value, create_sub_node );
+						if( "length" in this.$refs[ k ] ){
+							return this.set_sub_var__( this.$refs[ k ][0], x.join(":"), value, create_sub_node );
+						}else{
+							return this.set_sub_var__( this.$refs[ k ], x.join(":"), value, create_sub_node );
+						}
 					}
 				}
 				if( k.match(/^[0-9]+$/) ){
@@ -1437,7 +1459,11 @@ var app = Vue.createApp({
 				if( k == "ref" ){
 					if( x[1] in this.$refs ){
 						x.splice(0,1); k = x.splice(0,1);
-						return this.get_sub_var__( this.$refs[ k ], x.join(":") );
+						if( "length" in this.$refs[ k ] ){
+							return this.get_sub_var__( this.$refs[ k ][0], x.join(":") );
+						}else{
+							return this.get_sub_var__( this.$refs[ k ], x.join(":") );
+						}
 					}
 				}
 				//this.echo__( x );
@@ -1458,22 +1484,22 @@ var app = Vue.createApp({
 			}catch(e){console.error(e);console.log("set_sub_var__ error: " + vpath );return false;}
 		},
 		get_sub_var__: function(vv, vpath){
-			this.echo__("get_sub_var__: " + vpath);
-			//this.echo__( vv );
 			try{
 				var x = vpath.split(":");
-				//this.echo__( x );
 				var k = x[0];
 				if( k == "ref" ){
 					if( x[1] in this.$refs ){
 						x.splice(0,1); k = x.splice(0,1);
-						return this.get_sub_var__( this.$refs[ k ], x.join(":") );
+						if( "length" in this.$refs[ k ] ){
+							return this.get_sub_var__( this.$refs[ k ][0], x.join(":") );
+						}else{
+							return this.get_sub_var__( this.$refs[ k ], x.join(":") );
+						}
 					}
 				}
 				if( k.match(/^[0-9]+$/) && "length" in vv ){
 					k = Number(k);
 				}
-				// console.log("Key: " + k );
 				if( k in vv ){
 					if( x.length > 1 ){
 						x.splice(0,1);
@@ -1481,15 +1507,15 @@ var app = Vue.createApp({
 							var a_ = this.get_sub_var__( vv[ k ], x.join(":") );
 							return a_;
 						}else{
-							// console.log( "xx" );
+							console.log( "xx" );
 							return false;
 						}
 					}else{
-						// console.log( "yy" );
+						console.log( "yy" );
 						return vv[k];
 					}
 				}else{
-					// console.log( "dd" );
+					console.log( "dd" );
 					return false;
 				}
 			}catch(e){console.log("get_sub_var__ error: " + vpath + ": " + e );return false;}
@@ -1535,35 +1561,55 @@ var app = Vue.createApp({
 		show_and_focus_context_menu__: function(){
 			setTimeout(function(){try{document.getElementById("contextmenu_key1").focus();}catch(e){}},500);
 			this.context_menu__ = true;
-			if( this.popup_modal_displayed__ ){
+			if( this.simple_popup_modal__ ){
+				document.getElementById("simple_popup_modal__").appendChild( document.getElementById("context_menu__") );
+			}else if( this.popup_modal_displayed__ ){
 				document.getElementById("popup_modal_body__").appendChild( document.getElementById("context_menu__") );
 			}else if( this.create_popup_displayed__ ){
 				document.getElementById("create_popup_body").appendChild( document.getElementById("context_menu__") );
-			}else if( this.simple_popup_modal__ ){
-				document.getElementById("simple_popup_modal__").appendChild( document.getElementById("context_menu__") );
 			}
 			this.context_expand_key__ = '';
 		},
 		set_context_menu_style__: function(){
 			var s = this.context_el__.getBoundingClientRect();
 			//this.finx_zindex(this.context_el__);
-			if( this.popup_modal_displayed__ ){
+			if( this.simple_popup_modal__ ){
+				var s2 = document.getElementById("simple_popup_modal__").getBoundingClientRect();
+				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+				//console.log( this.context_style__ );
+			}else if( this.popup_modal_displayed__ ){
 				var s2 = document.getElementById("popup_modal_body__").getBoundingClientRect();
 				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
 			}else if( this.create_popup_displayed__ ){
 				var s2 = document.getElementById("create_popup_body").getBoundingClientRect();
 				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
-			}else if( this.simple_popup_modal__ ){
-				var s2 = document.getElementById("simple_popup_modal__").getBoundingClientRect();
-				this.context_style__ = "display:block;top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
-				console.log( this.context_style__ );
 			}else{
 				this.context_style__ = "display:block;top: "+s.top+"px;left: "+s.left+"px;";
 			}
 		},
 		set_simple_popup_style__: function(){
 			var s = this.simple_popup_el__.getBoundingClientRect();
-			this.simple_popup_style__ = "top: "+s.top+"px;left: "+s.left+"px;";
+			if( this.popup_modal_displayed__ ){
+				var s2 = document.getElementById("popup_modal_body__").getBoundingClientRect();
+				document.getElementById("popup_modal_body__").appendChild( document.getElementById("simple_popup_modal__") );
+				this.simple_popup_style__ = "top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+			}else if( this.create_popup_displayed__ ){
+				var s2 = document.getElementById("create_popup_body").getBoundingClientRect();
+				document.getElementById("create_popup_body").appendChild( document.getElementById("simple_popup_modal__") );
+				this.simple_popup_style__ = "top: "+(Number(s.top)-Number(s2.top))+"px;left: "+(Number(s.left)-Number(s2.left))+"px;";
+			}else{
+				this.simple_popup_style__ = "top: "+(Number(s.top))+"px;left: "+(Number(s.left))+"px;";
+			}
+		},
+		hide_simple_popup__: function(){
+			if( document.getElementById("simple_popup_modal__").parentNode.nodeName != "BODY" ){
+				console.log("moving simple_popup_modal__ back to body ");
+				document.body.appendChild( document.getElementById("simple_popup_modal__") );
+			}
+			setTimeout(this.hide_simple_popup2__,100);
+		},
+		hide_simple_popup2__: function(){
+			this.simple_popup_modal__ = false;
 		},
 		editablebtn_click__: function( el_data_type, data_var,e ){
 			var v = el_data_type.previousSibling.innerText;
@@ -1768,7 +1814,7 @@ var app = Vue.createApp({
 											for(var i=0;i<v.length;i++){
 												var f = false;
 												for(var j=0;j<v2.length;j++){
-													if( v2[j]['l']['v'] == v[i]['l']['v'] && v2[j]['i_of']['i'] == v[i]['i_of']['i'] ){
+													if( v2[j]['l']['v'].toLowerCase() == v[i]['l']['v'].toLowerCase() && v2[j]['i_of']['i'] == v[i]['i_of']['i'] ){
 														f = true;break;
 													}
 												}
@@ -1779,16 +1825,17 @@ var app = Vue.createApp({
 											//console.log( "new length: " + v2.length );
 											for(var i=0;i<v2.length;i++){
 												for(var j=0;j<v2.length-1;j++){
-													if( v2[j]['l']['v'] > v2[j+1]['l']['v'] ){
+													if( v2[j]['l']['v'].toLowerCase() > v2[j+1]['l']['v'].toLowerCase() ){
 														var t = v2.splice(j,1);
 														v2.splice(j+1,0,t[0]);
-														// v2[i] = v2[i+1];
-														// v2[i+1] = t;
 													}
 												}
 											}
 											//this.echo__( v2 );
 											this.context_thing_list__[ this.context_thing__ ] = v2;
+											if( this.context_menu_key__ == "" && this.context_thing_list_basic__.length == 0 ){
+												this.context_thing_list_basic__ = v2;
+											}
 											this.context_thing_list_keys__[ this.context_thing__ ][ response.data['keyword'] ] = v.length;
 											setTimeout(this.context_thing_filter_final__, 100);
 										}else{
@@ -1815,14 +1862,17 @@ var app = Vue.createApp({
 		},
 		context_thing_filter_final__: function(){
 			if( this.context_thing__ in this.context_thing_list__ ){
-				var v2 = this.context_thing_list__[ this.context_thing__ ];
 				if( this.context_menu_key__ == "" ){
-					var v3 = v2.slice(0,100);
-					for(var i=0;i<v3.length;i++){
-						v3[i]['r'] = "<b>" + v3[i]['l']['v'] + "</b> in <span class='text-secondary'>" + v3[i]['i_of']['v'] + "</span> [" + v3[i]['i'] + "]";
+					var v3 = [];
+					var vbasic = this.context_thing_list_basic__;
+					//this.echo__(vbasic);
+					for(var i=0;i<vbasic.length&&v3.length<50;i++){
+						vbasic[i]['r'] = "<b>" + vbasic[i]['l']['v'] + "</b> in <span class='text-secondary'>" + vbasic[i]['i_of']['v'] + "</span> [" + vbasic[i]['i'] + "]";
+						v3.push(vbasic[i]);
 					}
 					this.context_thing_graph_list__ = v3;
 				}else{
+					var v2 = this.context_thing_list__[ this.context_thing__ ];
 					var vkey = this.context_menu_key__+'';
 					var w = vkey.split(/\W+/g);
 					//this.echo__( w );
@@ -1830,82 +1880,83 @@ var app = Vue.createApp({
 					var key2 = w.join(".*");
 					var k = vkey.trim().replace(/\W+/g, ".*");
 					var kpr = new RegExp("^"+k,"i");
+					w.reverse();
 					var v3 = [];
 					var vkeys = {};
 					var k = this.context_menu_key__.toLowerCase();
-					for(var i=0;i<v2.length&&v3.length<200;i++){
-						if( v2[i]['i'] in vkeys == false )
-						{
-						console.log( v2[i]['l']['v'] + ' in ' + v2[i]['i_of']['v'] );
-						if( v2[i]['l']['v'].match(kpr) ){
-							console.log( "Matched1" );
-							var vres = JSON.parse(JSON.stringify(v2[i]));
-							vres['r'] = vres['l']['v']+'';
-							//console.log( "1: " + vres['r'] );
-							for(var wi=0;wi<w.length;wi++){
-								var rg = new RegExp( w[wi], "i" );
-								//console.log( rg );
-								var rgm = vres['r'].match(rg);
-								//console.log( rgm );
-								if( rgm ){
-									vres['r'] = vres['r'].replace(rgm[0], "zzzz"+rgm+"-zzzz");
-									vres['rg'] = rgm;
-									//console.log( rgm[0] );
-									//console.log( "Matched: " + vres['r'] );
-								}else{
-									delete(vres['rg']);
+
+					var match_found_at = -1;
+					//console.log("Total: " + v2.length);
+					for(var i=0;i<v2.length;i++){
+						if( v2[i]['i'] in vkeys == false ){
+							if( v2[i]['l']['v'].match(kpr) ){
+								var vres = JSON.parse(JSON.stringify(v2[i]));
+								v3.push( vres );
+								vkeys[ v2[i]['i'] ] = 1;
+								if( match_found_at == -1 ){
+									match_found_at = i;
+									//console.log("1stmatch: " + i);
 								}
+							}else if( match_found_at > -1 ){
+								//console.log("lastmatch: " + i);
+								break;
 							}
-							vres['r'] = vres['r'].replace( /\-zzzz/g, "</span>" );
-							vres['r'] = vres['r'].replace( /zzzz/g, "<span class='text-danger'>" );
-							if( 'ol' in vres ){
-								if( vres['ol'] != vres['l']['v'] ){
-									if( 'rg' in vres && vres['t'] != 'a' ){
-										vres['r'] = "<b><span class='text-danger'>" + vres['rg'] + "</span></b> alias <b>"+vres['ol']+"</b> in <span class='text-secondary'><em><b>" + vres['i_of']['v'] + "</b></em></span> ["+ vres['i'] + "]";
-									}else{
-										vres['r'] = "<b>" + vres['r'] + "</b> alias <b>"+vres['ol']+"</b> in <span class='text-secondary'><em><b>" + vres['i_of']['v'] + "</b></em></span> ["+ vres['i'] + "]";
-									}
-								}else{
-									vres['r'] = "<b>" + vres['r'] + "</b> in <span class='text-secondary'><em><b>" + vres['i_of']['v'] + "</b></em></span> ["+ vres['i'] + "]";
-								}
-							}else{
-								vres['r'] = "<b>" + vres['r'] + "</b> in <span class='text-secondary'><em><b>" + vres['i_of']['v'] + "</b></em></span> ["+ vres['i'] + "]";
-							}
-							v3.push( vres );
-							vkeys[ v2[i]['i'] ] = 1;
-						}
 						}
 					}
-					if( v3.length < 200 ){
+					//console.log("v3:"+v3.length);
+					if( v3.length < 100 ){
 						var kpr = new RegExp(k,"i");
 						var kpr2 = new RegExp(key2,"i");
-						for(var i=0;i<v2.length&&v3.length<200;i++){
-							//console.log( v2[i]['l']['v'] );
+						for(var i=0;i<v2.length&&v3.length<100;i++){
 							if( v2[i]['l']['v'].match(kpr) || v2[i]['l']['v'].match(kpr2) ){
-								//console.log( "Matched 2" );
 								if( v2[i]['i'] in vkeys == false ){
 									var vres = JSON.parse(JSON.stringify(v2[i]));
-									vres['r'] = vres['l']['v']+'';
-									//console.log( "2: " + vres['r'] );
-									for(var wi=0;wi<w.length;wi++){
-										var rg = new RegExp( w[wi], "i" );
-										var rgm = vres['r'].match(rg);
-										if( rgm ){
-											vres['r'] = vres['r'].replace(rgm[0], "zzzz"+rgm+"-zzzz");
-											//vres['rg'] = rgm;
-										}else{
-											//delete(vres['rg']);
-										}
-									}
-									vres['r'] = vres['r'].replace( /\-zzzz/g, "</span>" );
-									vres['r'] = vres['r'].replace( /zzzz/g, "<span class='text-danger'>" );
-									vres['r'] = "<b>" + vres['r'] + "</b> in <span class='text-secondary'><em><b>" + vres['i_of']['v'] + "</b></em></span> [" + vres['i'] + "]";
 									v3.push( vres );
-								}else{
-									//console.log( "But Skipped ");
 								}
 							}
 						}
+					}
+					//console.log("v3:"+v3.length);
+					for(var i=0;i<v3.length;i++){
+							v3[i]['r'] = v3[i]['l']['v']+'';
+							for(var wi=0;wi<w.length;wi++){
+								var rg = new RegExp( w[wi], "i" );
+								var rgm = v3[i]['r'].match(rg);
+								if( rgm ){
+									v3[i]['r'] = v3[i]['r'].replace(rgm[0], "zzzz"+rgm+"-zzzz");
+									//console.log( w[wi] );
+									v3[i]['rg'] = w[wi];
+									//v3[i]['rg'] = rgm;
+								}
+							}
+							v3[i]['r'] = v3[i]['r'].replace( /\-zzzz/g, "</span>" );
+							v3[i]['r'] = v3[i]['r'].replace( /zzzz/g, "<span class='text-danger'>" );
+							if( 'ol' in v3[i] ){
+								if( v3[i]['ol'] != v3[i]['l']['v'] ){
+									if( 'rg' in v3[i] && v3[i]['t'] != 'a' ){
+										//this.echo__( v3[i] );
+										var rg = "";
+										var w2 = v3[i]['ol'].split(/\W+/g);
+										for(var wi=0;wi<w2.length;wi++){
+											var rgm = w2[wi].match( new RegExp(w[0],"i") );
+											if( rgm ){
+												rg = w2[wi];
+												rg = rg.replace(rgm[0], "zzzz"+rgm+"-zzzz");
+												break;
+											}
+										}
+										rg = rg.replace( /\-zzzz/g, "</span>" );
+										rg = rg.replace( /zzzz/g, "<span class='text-danger'>" );
+										v3[i]['r'] = "<b>" + rg + " </b> alias <b>"+v3[i]['ol']+"</b> in <span class='text-secondary'><em><b>" + v3[i]['i_of']['v'] + "</b></em></span> ["+ v3[i]['i'] + "]";
+									}else{
+										v3[i]['r'] = "<b>" + v3[i]['r'] + "</b> alias <b>"+v3[i]['ol']+"</b> in <span class='text-secondary'><em><b>" + v3[i]['i_of']['v'] + "</b></em></span> ["+ v3[i]['i'] + "]";
+									}
+								}else{
+									v3[i]['r'] = "<b>" + v3[i]['r'] + "</b> in <span class='text-secondary'><em><b>" + v3[i]['i_of']['v'] + "</b></em></span> ["+ v3[i]['i'] + "]";
+								}
+							}else{
+								v3[i]['r'] = "<b>" + v3[i]['r'] + "</b> in <span class='text-secondary'><em><b>" + v3[i]['i_of']['v'] + "</b></em></span> ["+ v3[i]['i'] + "]";
+							}
 					}
 					this.context_thing_graph_list__ = v3;
 					//this.echo__( v3 );
@@ -2045,6 +2096,8 @@ var app = Vue.createApp({
 			if( this.popup_modal__ == false ){
 				this.popup_modal__ = new bootstrap.Modal(document.getElementById('popup_modal__'));
 					document.getElementById('popup_modal__').addEventListener('hide.bs.modal', event => {
+						this.echo__(this.popup_type__ );
+						this.popup_type__ = "";
 					console.log("Popup closed");
 					this.popup_modal_displayed__ = false;
 					if( this.popup_type__ == 'import_template_edit' ){
@@ -2061,19 +2114,50 @@ var app = Vue.createApp({
 		popup_callback__: function( vdata ){
 			if( this.popup_type__ =='import_template_create' ){
 				this.popup_modal_hide__();
-				this.$refs['objects_import_component__'].new_thing_created( vdata );
+				if( "length" in this.$refs['import2'] ){
+					this.$refs['import2'][0].new_thing_created( vdata );
+				}else{
+					this.$refs['import2'].new_thing_created( vdata );
+				}
+			}else if( this.popup_type__ =='dataset_edit_record' ){
+				if( "length" in this.$refs[ this.popup_source__ ] ){
+					this.$refs[ this.popup_source__ ][0].dataset_record_updated( vdata );
+				}else{
+					this.$refs[ this.popup_source__ ].dataset_record_updated( vdata );
+				}
+			}else if( this.popup_type__ =='dataset_create_record' ){
+				if( "length" in this.$refs[ this.popup_source__ ] ){
+					this.$refs[ this.popup_source__ ][0].dataset_record_created( vdata );
+				}else{
+					this.$refs[ this.popup_source__ ].dataset_record_created( vdata );
+				}
+			}else{
+				this.call_callback__( this.popup_type__, vdata );
+			}
+		},
+		call_callback__: function( refname, vdata ){
+			if( refname in this.$refs == false ){
+				console.log("call_callback__:" + refname + ": not found");
+			}else if( "length" in this.$refs[ refname ] ){
+				this.$refs[ refname ][0].callback__( vdata );
+			}else{
+				this.$refs[ refname ].callback__( vdata );
 			}
 		},
 		import_template_edit_popup_open: function( vobject_id, vobject_name ){
 			this.popup_datavar__ = "none";
 			this.popup_data__ = {"object_id":vobject_id, "object_name": vobject_name};
 			this.popup_type__ = 'import_template_edit';
+			//this.popup_source__ = refname;
 			this.popup_title__ = "Edit Template of `" + vobject_name + "`";
 			this.popup_modal_open__();
 		},
-		import_template_create_popup_open: function( vobject_id, vobject_name ){
+		import_template_create_popup_open: function( vdefault = {} ){
 			this.popup_datavar__ = "none";
-			this.popup_data__ = {};
+			if( 'data' in vdefault == false ){
+				vdefault['data'] = {};
+			}
+			this.popup_data__ = vdefault;
 			this.popup_type__ = 'import_template_create';
 			this.popup_title__ = "Create a Node & Template";
 			this.popup_modal_open__();
@@ -2085,16 +2169,242 @@ var app = Vue.createApp({
 			this.popup_title__ = "Create a Node";
 			this.popup_modal_open__();
 		},
+		show_create_dataset_record: function(refname, vd){
+			this.popup_datavar__ = "none";
+			this.popup_data__ = vd;
+			this.popup_source__ = refname;
+			this.popup_type__ = 'dataset_create_record';
+			this.popup_title__ = "Dataset '"+vd['thing']['l']['v']+"' Create Record";
+			this.popup_modal_open__();
+		},
+		show_edit_dataset_record: function(refname, vd){
+			this.popup_datavar__ = "none";
+			this.popup_data__ = JSON.parse(JSON.stringify(vd));
+			this.popup_source__ = refname;
+			this.popup_type__ = 'dataset_edit_record';
+			this.popup_title__ = "Dataset '"+vd['thing']['l']['v']+"' Edit Record: '"+vd['record']['_id']+"'";
+			//this.popup_title__ = "Edit Record in DataSet: " + vd['v'];
+			this.popup_modal_open__();
+		},
+		window_close_tab: function(vtabi){
+			this.current_tab = '';
+			var vt = vtabi+'';
+			if( vt != 'home' && vt != 'summary' && vt != 'browse' && vt != 'import2' ){
+				var i = this.window_tabs_order.indexOf( vt+'' );
+				this.window_tabs_order.splice(i,1);
+				delete(this.window_tabs[ vt ]);
+				setTimeout(function(v){
+					var k = Object.keys( v.window_tabs );
+					v.current_tab = k[ k.length-1 ]+'';
+				}, 500, this);
+			}
+		},
+		window_open_tab: function(vtabi){
+			this.current_tab = '';
+			setTimeout(this.window_open_tab2,200,vtabi);
+		},
+		window_open_tab2: function(vtabi){
+			var tb = vtabi+'';
+			if( tb in this.window_tabs ){
+				if( tb == 'browse' ){
+					if( this.browse_list.length == 0 ){
+						this.load_browse_list();
+					}
+				}
+				if( tb == 'summary' ){
+					this.load_nodes();
+				}
+				// var i = this.window_tabs_order.indexOf( tb );
+				// if( i > 2 ){
+				// 	this.window_tabs_order.splice(i,1);
+				// 	this.window_tabs_order.splice(3,0,tb+'');
+				// }
+				this.current_tab = tb+'';
+			}else{
+				alert("tabindex not found:  " + tb);
+			}
+			setTimeout(this.window_tab_focus,500);
+		},
+		window_tab_focus: function(){
+
+			//this.echo__( this.window_tabs );
+			//this.echo__( "window_tab_focus");
+			var d = document.getElementById("tabs_container").children;
+			var sw = 0;
+			for(var i=d.length-1;i>=0;i--){
+				var s = d[i].getBoundingClientRect();
+				sw = sw + s.width + 5;
+			}
+			//console.log( "container_width: " + sw );
+			var ml= document.getElementById("tabs_container").firstElementChild.style.marginLeft;
+			// console.log( ml );
+			if( ml != "initial" && ml != "" ){
+				ml = Number( ml.replace("px","") );
+			}else{ml = 0;}
+			//console.log( sw );
+			// sw = sw + ml;
+			var pw = document.getElementById("tabs_container").parentNode.clientWidth;
+			console.log( "ScrollWidth:"+ sw + " > PageWidth: " + pw );
+			if( sw > pw ){
+				document.getElementById("tabs_left_scrollbar").style.display ='block';
+				document.getElementById("tabs_container").style.marginLeft = "30px";
+				document.getElementById("tabs_right_scrollbar").style.display ='block';
+			}else{
+				document.getElementById("tabs_left_scrollbar").style.display ='none';
+				document.getElementById("tabs_container").style.marginLeft = "initial";
+				document.getElementById("tabs_container").children[0].style.marginLeft = "initial";
+				document.getElementById("tabs_right_scrollbar").style.display ='none';
+			}
+			var id = "tab_"+this.current_tab;
+			//console.log(id);
+			if( document.getElementById(id) != null ){
+				var s = document.getElementById(id).getBoundingClientRect();
+				//this.echo__(s);
+				var s2 = document.getElementById("tabs_container").getBoundingClientRect();
+				//this.echo__(s2);
+				//this.echo__(w);
+				//console.log( document.getElementById("tabs_container").firstElementChild );
+				if( s['right'] > s2['right'] ){
+					var dif = s['right']-s2['right'];
+					ml = ml - dif - 30;
+					//console.log( ml );
+					document.getElementById("tabs_container").firstElementChild.style.marginLeft = ml+"px";
+				}
+			}
+		},
+		window_tabs_focus_left: function(){
+			var s1 = document.getElementById("tabs_left_scrollbar").getBoundingClientRect();
+			//console.log( s1.left + ": " + s1.right );
+			var s1left = s1.left + 30;
+			var d = document.getElementById("tabs_container").children;
+			for(var i=d.length-1;i>=0;i--){
+				var s = d[i].getBoundingClientRect();
+				//console.log( i + ": " + s.left + ": " + s.right );
+				if( s1left > s.left ){
+					//console.log( "need to move right: " + (s1left-s.left) );
+					var ml = document.getElementById("tabs_container").firstElementChild.style.marginLeft;
+					if( ml == "initial" ){ var so = 0; }else{
+						var so = Number( document.getElementById("tabs_container").firstElementChild.style.marginLeft.replace("px","") );
+					}
+					//console.log( so );
+					so = so + (s1left-s.left);
+					//console.log( so );
+					document.getElementById("tabs_container").firstElementChild.style.marginLeft = (so) + "px";
+					break;
+				}
+			}
+		},
+		window_tabs_focus_right: function(){
+			var s1 = document.getElementById("tabs_right_scrollbar").getBoundingClientRect();
+			//console.log( s1.left + ": " + s1.right );
+			var s1right = s1.right-30;
+			var d = document.getElementById("tabs_container").children;
+			for(var i=0;i<d.length;i++){
+				var s = d[i].getBoundingClientRect();
+				//console.log( i + ": " + s.left + ": " + s.right );
+				if( s1right < s.right ){
+					//console.log( "need to move left: " + (s.right-s1right) );
+					var ml = document.getElementById("tabs_container").firstElementChild.style.marginLeft;
+					if( ml == "initial" ){ var so = 0; }else{
+						var so = Number( document.getElementById("tabs_container").firstElementChild.style.marginLeft.replace("px","") );
+					}
+					//console.log( so );
+					so = so - (s.right-s1right);
+					//console.log( so );
+					document.getElementById("tabs_container").firstElementChild.style.marginLeft = (so) + "px";
+					break;
+				}
+			}
+		},
+		window_open_newtab: function(vtabi,vd){
+			this.current_tab = '';
+			var tb = vtabi+'';
+			if( tb in this.window_tabs ){
+				if( typeof(vd) == "object" ){
+					if( "type" in vd ){
+						if( vd['type'] == 'thing' ){
+							vd['msg'] = "Reloading...";
+						}
+					}
+				}
+			}else{
+				if( typeof(vd) == "object" ){
+					if( "type" in vd ){
+						if( vd['type'] == 'thing' ){
+							vd['title'] = "Thing: " + vd['thing_id'] +' Loading';
+							vd['msg'] = "Loading...";
+							vd['err'] = "";
+							vd['thing'] = {};
+						}
+					}
+				}
+				if( vtabi == "import2" ){
+					var vd = {
+						"title": "Import",
+						"type": "import2",
+						"vimport": {
+							"i_of": {"t": "GT", "i": "", "v": ""},
+							"data": [],
+							"template":{},
+							"edit_field":"",
+						},
+					};
+				}
+				if( vtabi == "ops" ){
+					var vd = {
+						"title": "Operations",
+						"type": "ops",
+						"data": {"op":""}
+					};
+				}
+				this.window_tabs[ vtabi+'' ] = vd;
+				//this.window_tabs_order.splice(3,0,tb);
+				this.window_tabs_order.push(tb);
+			}
+			this.window_open_tab(tb);
+		}
 	}
 });
 
 <?php foreach( $components as $i=>$j ){ ?>
 	app.component( "<?=$j ?>", <?=$j ?> );
 <?php } ?>
-app.component( "objects_import", objects_import );
+app.component( "objects_import_v2", objects_import_v2 );
 app.component( "object_template_edit", object_template_edit );
-app.component( "object_template_create", object_template_create );
-app.component( "graph_object", graph_object );
+app.component( "object_template_create_v2", object_template_create_v2 );
+app.component( "graph_object_v2", graph_object_v2 );
+app.component( "object_dataset_create_record", object_dataset_create_record );
+app.component( "object_dataset_edit_record", object_dataset_edit_record );
+app.component( "object_ops", object_ops );
 var app1 = app.mount("#app");
+
+function get_http_error__(e){
+	if( typeof(e) == "object" ){
+		if( 'status' in e ){
+			if( 'error' in e ){
+				return e['error'];
+			}else{
+				return "There was no error";
+			}
+		}else if( 'response' in e ){
+			var s = e.response.status;
+			if( typeof( e['response']['data'] ) == "object" ){
+				if( 'error' in e['response']['data'] ){
+					return s + ": " + e['response']['data']['error'];
+				}else{
+					return s + ": " + JSON.stringify(e['response']['data']).substr(0,100);
+				}
+			}else{
+				return s + ": " + e['response']['data'].substr(0,100);
+			}
+		}else if( 'message' in e ){
+			return e['message'];
+		}else{
+			return "Incorrect response";
+		}
+	}else{
+		return "Invalid response"
+	}
+}
 
 </script>

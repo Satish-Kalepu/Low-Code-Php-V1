@@ -17,7 +17,9 @@ if( $_GET['action'] == "initialize3" ){
 			$res = $mongodb_con->insert($graph_things, [
 				'_id'=>$id,
 				'l'=>['v'=>$label,'t'=>'T'],
-				'i_of'=>$iof
+				'i_of'=>$iof,
+				'i_t'=>['t'=>'T','v'=>"N"],
+				'm_i'=>date("Y-m-d H:i:s"),'m_u'=>date("Y-m-d H:i:s"),
 			]);
 			send_to_keywords_queue($id);
 			print_r($res);
@@ -219,6 +221,8 @@ if( $_GET['action'] == "initialize3" ){
 					'v'=>"Root",
 					't'=>"GT",
 				],
+				'i_t'=>['t'=>"T", "v"=>"N"],
+				'm_i'=>date("Y-m-d H:i:s"),'m_u'=>date("Y-m-d H:i:s"),
 			];
 			echo "Created: ".$parent_id."\n";
 			$res2 = $mongodb_con->insert($graph_things, $parent_object);
@@ -252,6 +256,7 @@ if( $_GET['action'] == "initialize3" ){
 					'v'=>$j['i_of'],
 					't'=>"GT",
 				],
+				'i_t'=>['t'=>"T", "v"=>"N"], 'm_i'=>date("Y-m-d H:i:s"),'m_u'=>date("Y-m-d H:i:s"),
 			]);
 			send_to_keywords_queue($id);
 			echo "Label inserted: ".$id."\n";
@@ -267,6 +272,7 @@ if( $_GET['action'] == "initialize3" ){
 					'v'=>$j['i_of'],
 					't'=>"GT",
 				],
+				'i_t'=>['t'=>"T", "v"=>"N"]
 			];
 		}else{
 			$object = $res['data'];
@@ -326,6 +332,17 @@ if( $_GET['action'] == "initialize3" ){
 		// $res = $mongodb_con->find_one($graph_things, ['_id'=>$id]);
 		// print_r( $res['data']['props'] );
 
+	}
+
+	$res = $mongodb_con->aggregate( $graph_things, [
+		['$group'=>['_id'=>'$i_of.i', 'cnt'=>['$sum'=>1]]]
+	]);
+
+	print_r( $res );
+
+	foreach( $res['data'] as $i=>$j ){
+		$r = $mongodb_con->update_one( $graph_things, ["_id"=>$j['_id']], ["cnt"=>(int)$j['cnt']] );
+		print_r( $r );
 	}
 
 }

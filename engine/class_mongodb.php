@@ -268,7 +268,7 @@ class mongodb_connection{
 			return false;
 		}
 
-		function update_many($collection,$data,$condition){
+		function update_many($collection, $data, $condition){
 			if( !is_string($collection) ){
 				return ["status"=>"fail","error"=>"collection name required"];
 			}
@@ -300,7 +300,7 @@ class mongodb_connection{
 			return true;
 		}
 
-		function update_one($collection,$condition,$data, $op = []){
+		function update_one($collection, $condition, $data, $op = []){
 			if( !is_string($collection) ){
 				return ["status"=>"fail","error"=>"collection name required"];
 			}
@@ -370,7 +370,9 @@ class mongodb_connection{
 				$option = [
 					'upsert'=> true,
 					'new' => true,
+					'returnNewDocument' => true,
 					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+					'projection'=>[$val=>true],
 				];
 				$cur =$col->findOneAndUpdate([
 					'_id'=>$this->get_id($key)
@@ -382,7 +384,7 @@ class mongodb_connection{
 						$val=>$incr
 					]
 				],$option);
-				return ["status"=>"success","data"=>$cur];;
+				return ["status"=>"success","data"=>$cur[$val]];
 			}catch(Exception $ex){
 				return ["status"=>"fail","error"=>$ex->getMessage()];
 			}
@@ -410,6 +412,57 @@ class mongodb_connection{
 					]
 				],$option);
 				return ["status"=>"success","data"=>$cur];;
+			}catch(Exception $ex){
+				return ["status"=>"fail","error"=>$ex->getMessage()];
+			}
+		}
+		function critical_increment($collection, $key = "something", $val = "val", $incr = 1){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required"];
+			}
+			if( !is_string($key) ){
+				return ["status"=>"fail","error"=>"key is not string"];
+			}
+			$incr = (int)$incr;
+			$col = $this->database->{$collection};
+			try{
+				$option = [
+					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+					'projection'=>[$val=>true],
+				];
+				$cur =$col->findOneAndUpdate([
+					'_id'=>$this->get_id($key)
+				],[
+					'$inc'=>[
+						$val=>$incr
+					]
+				],$option);
+				return ["status"=>"success","data"=>$cur[$val]];
+			}catch(Exception $ex){
+				return ["status"=>"fail","error"=>$ex->getMessage()];
+			}
+		}
+		function critical_decrement($collection, $key = "something", $val = "val", $incr = 1){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required"];
+			}
+			if( !is_string($key) ){
+				return ["status"=>"fail","error"=>"key is not string"];
+			}
+			$incr = (int)$incr;
+			$col = $this->database->{$collection};
+			try{
+				$option =[
+					'returnNewDocument' => false,
+				];
+				$cur =$col->findOneAndUpdate([
+					'_id'=>$this->get_id($key)
+				],[
+					'$inc'=>[
+						$val=>$incr
+					]
+				],$option);
+				return ["status"=>"success","data"=>$cur[$val]];;
 			}catch(Exception $ex){
 				return ["status"=>"fail","error"=>$ex->getMessage()];
 			}
@@ -491,7 +544,7 @@ class mongodb_connection{
 			return true;
 		}
 
-		function find_and_delete($collection,$condition){
+		function find_and_delete($collection, $condition){
 			$col = $this->database->{$collection};
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){

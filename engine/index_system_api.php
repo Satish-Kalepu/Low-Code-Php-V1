@@ -66,16 +66,6 @@ function system_api( $method, $content_type, $path_params, $php_input ){
 		}
 		if( $post['action'] == "start_taskscheduler" ){
 
-			// exec("crontab -l", $jobs);
-			// print_r( $jobs );
-			// exit;
-			// $msg = '@reboot cd '.__DIR__.';php cron_daemon.php '. $post['app_id'] .' > ' . $post['app_id'] . '_scheduler.task.log &';
-			// echo $msg;
-			// $jobs[] = $msg;
-			// file_put_contents("/tmp/cron_jobs", implode("\n",$jobs));
-			// exec("crontab /tmp/cron_jobs", $out);
-			// print_r( $out );
-			// exit;
 			$res = $mongodb_con->find_one( $db_prefix . "_apps", ['_id'=>$post['app_id']], ['projection'=>['settings'=>1] ] );
 			if( !$res['data'] ){
 				return [200, "application/json", [], json_encode(["status"=>"fail", "error"=>"App data not found", "action"=>$post['action'] ]) ];

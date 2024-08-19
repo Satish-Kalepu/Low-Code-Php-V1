@@ -124,6 +124,10 @@
 			json_response(['status'=>"fail","error"=>"Incorrect user id" ]);
 		}
 		$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_user_pool", ["app_id"=>$config_param1,'_id'=>$_POST['user_id']] );
+		event_log( "system", "auth_user_delete", [
+			"app_id"=>$config_param1, 
+			"user_id"=>$_POST['user_id'],
+		]);
 		json_response(['status'=>"success"]);
 	}
 	if( $_POST['action'] == "auth_session_key_delete" ){
@@ -131,6 +135,10 @@
 			json_response(['status'=>"fail","error"=>"Incorrect key" ]);
 		}
 		$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", ["app_id"=>$config_param1, 't'=>"uk", '_id'=>$_POST['access_key_id']] );
+		event_log( "system", "auth_session_key_delete", [
+			"app_id"=>$config_param1, 
+			"access_key_id"=>$_POST['access_key_id'],
+		]);
 		json_response(['status'=>"success"]);
 	}
 
@@ -139,6 +147,10 @@
 			json_response(['status'=>"fail","error"=>"Incorrect key id" ]);
 		}
 		$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", [ "app_id"=>$config_param1, 't'=>"ak", '_id'=>$_POST['access_key_id']] );
+		event_log( "system", "auth_access_key_delete", [
+			"app_id"=>$config_param1, 
+			"access_key_id"=>$_POST['access_key_id'],
+		]);
 		json_response(['status'=>"success"]);
 	}
 
@@ -163,7 +175,11 @@
 			$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_user_pool", ["app_id"=>$config_param1, "username"=>$user['username']] );
 		}
 		if( $res['data'] ){
-			json_response(['status'=>"fail", "error"=>"username already exists", "rec"=>$res['data'] ]);
+			json_response([
+				'status'=>"fail", 
+				"error"=>"username already exists", 
+				"rec"=>$res['data']
+			]);
 		}
 		unset($user['ch_pwd']);
 		unset($user['_id_enc']);
@@ -180,7 +196,12 @@
 			$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_user_pool", [ "app_id"=>$config_param1, '_id'=>$user_id ], $user );
 		}else{
 			$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_user_pool", $user );
+			$user_id = $res['inserted_id'];
 		}
+		event_log( "system", "auth_save_user", [
+			"app_id"=>$config_param1, 
+			"user_id"=>$user_id,
+		]);
 		json_response($res);
 	}
 
@@ -216,6 +237,11 @@
 			$key_id = $res['inserted_id'];
 		}
 
+		event_log( "system", "auth_save_key", [
+			"app_id"=>$config_param1, 
+			"access_key_id"=>$key_id,
+		]);
+
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", ['_id'=>$key_id]);
 		$res['data']['_id_enc'] = md5($res['data']['_id'].session_id());
 		json_response([
@@ -248,6 +274,11 @@ if( $_POST['action'] == "auth_save_role" ){
 		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_user_roles", $key );
 		$key_id = $res['inserted_id'];
 	}
+
+	event_log( "system", "auth_save_role", [
+		"app_id"=>$config_param1, 
+		"role_id"=>$key_id,
+	]);
 
 	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_user_roles", ['_id'=>$key_id]);
 	$res['data']['_id_enc'] = md5($res['data']['_id'].session_id());

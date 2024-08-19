@@ -41,6 +41,10 @@ if( $_POST['action'] == "app_update_name" ){
 		'app'=>$name,
 		'des'=>$des,
 	]);
+
+	event_log( "system", "app_update_name", [
+		"app_id"=>$config_param1,
+	]);
 	json_response($res);
 
 	exit;
@@ -144,6 +148,10 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 		json_response( $res );
 	}
 
+	event_log( "system", "app_save_custom_settings", [
+		"app_id"=>$config_param1,
+	]);
+
 	update_app_pages( $config_param1 );
 
 	json_response([
@@ -245,6 +253,10 @@ if( $_POST['action'] == "app_save_cloud_settings" ){
 		]);
 	}
 
+	event_log( "system", "app_save_cloud_settings", [
+		"app_id"=>$config_param1,
+	]);
+
 	update_app_pages( $config_param1 );
 
 	json_response([
@@ -304,6 +316,10 @@ if( $_POST['action'] == "app_save_other_settings" ){
 	}
 
 	update_app_pages( $config_param1 );
+
+	event_log( "system", "app_save_other_settings", [
+		"app_id"=>$config_param1,
+	]);
 
 	json_response([
 		"status"=>"success",
@@ -449,7 +465,7 @@ if( $_POST['action'] == 'settings_load_tasks_log' ){
 			json_response("fail", "Incorrect _id");
 		}
 	}
-	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_zlog_tasks", $cond, [
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_zlog_tasks_". $config_param1, $cond, [
 		'sort'=>['_id'=>-1], 
 		'limit'=>100,
 		'projection'=>['ip'=>false],
@@ -480,6 +496,33 @@ foreach( $queue_res['data'] as $i=>$j ){
 		"workers"=>isset($j['workers'])?sizeof($j['workers']):0,
 	];
 }
+
+$daemon_run_status = false;
+$daemon_run_last = 0;
+if( isset($settings['tasks']['workers']) ){
+	foreach( $settings['tasks']['workers'] as $i=>$j ){
+		if( $daemon_run_last < $j['time'] ){
+			$daemon_run_last = $j['time'];
+		}
+		if( time()- $j['time'] < 30 ){
+			$daemon_run_status = true;
+		}
+	}
+}
+if( $daemon_run_last == 0 ){
+	$daemon_run_last = "Never";
+}else{
+	$d = (time()-$daemon_run_last);
+	if( $d < 60 ){
+		$daemon_run_last = $d . " seconds ago ";
+	}else if( $d < 3600 ){
+		$daemon_run_last = round($d/60) . " minutes ago ";
+	}else{
+		$daemon_run_last = round($d/3600) . " hours ago ";
+	}
+}
+$settings['daemon_run_last'] = $daemon_run_last;
+$settings['daemon_run_status'] = $daemon_run_status;
 
 if( $_POST['action'] == 'settings_load_background_job_log' ){
 	$cond = [];
