@@ -89,6 +89,43 @@
 		}
 
 </script>
+<script>
+	var path = '<?=$config_global_apimaker_path ?>apps/<?=$config_param1 ?>/';
+	var page_version_id = "<?=$config_param4 ?>";
+	function switchTab(tabName, button) {
+		//button active or inactive code start
+		var buttons = document.querySelectorAll('.btn-add');
+		buttons.forEach(function(btn) {
+			btn.classList.remove('active');
+		});
+		button.classList.add('active');
+		//button active or inactive code end
+		const frame = document.getElementById('iframe1');
+    	const controlFrame = document.getElementById('iframe1');
+		console.log('pavan kumar',page__)
+    if (tabName === "Control") {
+		document.getElementById('header-id').style.display = 'none';
+		document.getElementById('bottom-panel').style.display = 'none';
+		document.getElementById('top-panel').style.display = 'none';
+		document.getElementById('iframe-layer').style.display = 'none';
+		document.getElementById('right-panel').style.display = 'none';
+		document.getElementById('tree-list').style.display = 'none';
+		controlFrame.src = path + "codeeditor/pagecontrol/" + page_version_id;
+    }
+	if (tabName === "Html") {
+		document.getElementById('header-id').style.display = 'block';
+		document.getElementById('bottom-panel').style.display = 'block';
+		document.getElementById('top-panel').style.display = 'block';
+		document.getElementById('iframe-layer').style.display = 'block';
+		document.getElementById('right-panel').style.display = 'block';
+		document.getElementById('tree-list').style.display = 'block';
+		frame.contentWindow.document.open();
+		frame.contentWindow.document.write(page__['html']);
+		frame.contentWindow.document.close();
+    }
+    editTab = tabName;
+}
+</script>
 <div class="modal fade" id="url_modal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
