@@ -109,8 +109,8 @@ class mongodb_connection{
 				]];
 			}
 			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
-			if( !$options['limit'] ){
-				$options['limit'] = 500;
+			if( !$option['limit'] ){
+				$option['limit'] = 500;
 			}
 			$col = $this->database->{$collection};
 			try{
@@ -143,10 +143,10 @@ class mongodb_connection{
 				return ["status"=>['t'=>'T', 'v'=>"fail"],"error"=>['t'=>'T', 'v'=>"condition is not array"]];
 			}
 			$col = $this->database->{$collection};
-			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			if( !$options['limit'] ){
 				$options['limit'] = 500;
 			}
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			$newcur = [];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
@@ -184,11 +184,11 @@ class mongodb_connection{
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"condition is not array"];
 			}
 			$col = $this->database->{$collection};
-			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			if( !$options['limit'] ){
 				$options['limit'] = 500;
 			}
-			$options['projection'] = [ $key=>1, $value=>1];
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
+			$option['projection'] = [ $key=>1, $value=>1];
 			$newcur = [];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
@@ -219,6 +219,7 @@ class mongodb_connection{
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"condition is not array"];
 			}
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
 					$condition["_id"] = $this->get_id( $condition["_id"] );
@@ -237,6 +238,7 @@ class mongodb_connection{
 		}
 		function count($collection, $filter = array(), $option = array() ){
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				$cnt = $col->count( $filter, $option );
 				return ['t'=>"O", 'v'=>[
@@ -248,7 +250,7 @@ class mongodb_connection{
 			return false;
 		}
 
-		function update_many($collection,$data,$condition){
+		function update_many($collection,$data,$condition, $option = []){
 			if( !is_string($collection) ){
 				return ['t'=>"O", 'v'=>[
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"collection name required"];
@@ -258,6 +260,7 @@ class mongodb_connection{
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"condition is not array"];
 			}
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				if( $data['$set'] || $data['$inc'] || $data['$rename'] || $data['$unset'] ){
 				}else{
@@ -266,7 +269,7 @@ class mongodb_connection{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
 					$condition["_id"] = $this->get_id( $condition["_id"] );
 				}
-				$res=$col->updateMany($condition, $data);
+				$res=$col->updateMany($condition, $data, $option);
 				return ['t'=>"O", 'v'=>[
 					"status"=>['t'=>"T", 'v'=>"success"], "data"=>["matched_count"=>$res->getMatchedCount(),"modified_count"=>$res->getModifiedCount()] ];
 			}catch(Exception $ex){
@@ -276,7 +279,7 @@ class mongodb_connection{
 			return true;
 		}
 
-		function update_one($collection,$condition,$data, $op = []){
+		function update_one($collection,$condition,$data, $option = []){
 			if( !is_string($collection) ){
 				return ['t'=>"O", 'v'=>[
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"collection name required"];
@@ -290,6 +293,7 @@ class mongodb_connection{
 					"status"=>['t'=>'T', 'v'=>"fail"],"error"=>"data is not array"];
 			}
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
 					$condition["_id"] = $this->get_id( $condition["_id"] );
@@ -298,7 +302,7 @@ class mongodb_connection{
 				}else{
 					$data = ['$set'=>$data];
 				}
-				$res=$col->updateOne($condition, $data, $op);
+				$res=$col->updateOne($condition, $data, $option);
 				return ['t'=>"O", 'v'=>[
 					"status"=>['t'=>"T", 'v'=>"success"], 
 					"data"=>[
@@ -412,6 +416,7 @@ class mongodb_connection{
 				return ["status"=>['t'=>'T', 'v'=>"fail"],"error"=>"pipeline is not array"];
 			}
 			$col = $this->database->{$collection};
+			$options["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				$res=$col->aggregate($pipeline, $options)->toArray();
 				return $res;
@@ -421,7 +426,7 @@ class mongodb_connection{
 			return false;
 		}
 
-		function delete_one( $collection, $condition ){
+		function delete_one( $collection, $condition, $option = [] ){
 			if( !is_string($collection) ){
 				return ["status"=>['t'=>'T', 'v'=>"fail"],"error"=>"collection name required"];
 			}
@@ -429,11 +434,12 @@ class mongodb_connection{
 				return ["status"=>['t'=>'T', 'v'=>"fail"],"error"=>"condition is not array"];
 			}
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
 					$condition["_id"] = $this->get_id( $condition["_id"] );
 				}
-				$res = $col->deleteOne( $condition );
+				$res = $col->deleteOne( $condition, $option );
 				return [ "status"=>['t'=>"T", 'v'=>"success"], "deleted_count"=>$res->getDeletedCount() ];
 				return true;
 			}catch(Exception $ex){
@@ -442,13 +448,14 @@ class mongodb_connection{
 			return true;
 		}
 
-		function delete_many($collection, $condition){
+		function delete_many($collection, $condition, $option ){
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
 					$condition["_id"] = $this->get_id( $condition["_id"] );
 				}
-				$res = $col->deletemany($condition);
+				$res = $col->deletemany($condition, $option);
 				return [ "status"=>['t'=>"T", 'v'=>"success"], "deleted_count"=>$res->getDeletedCount() ];
 			}catch(Exception $ex){
 				return ["status"=>['t'=>'T', 'v'=>"fail"],"error"=>$ex->getMessage()];
@@ -456,13 +463,14 @@ class mongodb_connection{
 			return true;
 		}
 
-		function find_and_delete($collection,$condition){
+		function find_and_delete($collection,$condition, $option){
 			$col = $this->database->{$collection};
+			$option["collation"] = [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				if( $condition["_id"] && is_string( $condition["_id"] ) ){
 					$condition["_id"] = $this->get_id( $condition["_id"] );
 				}
-				$col->findOneAndDelete($condition);
+				$col->findOneAndDelete($condition, $option);
 				return [ "status"=>['t'=>"T", 'v'=>"success"], "deleted_count"=>$res->getDeletedCount() ];
 			}catch(Exception $ex){
 				return ["status"=>['t'=>'T', 'v'=>"fail"],"error"=>$ex->getMessage()];

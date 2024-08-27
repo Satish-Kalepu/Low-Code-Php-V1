@@ -25,6 +25,22 @@
 		}
 	}
 
+	function start_background_task( $d ){
+		/*
+		type = function / system
+		function_id = function_id
+		task_name = name of task
+		task_id = randomId
+		data = data
+		max_duration = 60 //seconds
+		max_memory = 1GB RAM
+		*/
+		global $mongodb_con;
+		global $db_prefix;
+		$res = $mongodb_con->insert( $db_prefix . "_bg_tasks", $d);
+		return $res;
+	}
+
 	if( file_exists("common_functions_new.php") ){
 		require("common_functions_new.php");
 	}

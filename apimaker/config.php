@@ -1,5 +1,6 @@
 <?php
 
+
 if( !isset($config_global_apimaker) ){
 	http_response_code(500);
 	echo "Incorrect setup!";exit;
@@ -15,14 +16,14 @@ ini_set("date.timezone", $config_global_apimaker['timezone'] );
 ini_set("short_open_tag", "1");
 ini_set("post_max_size", "20M");
 ini_set("upload_max_filesize", "50M");
-ini_set("memory_limit", "128M");
+ini_set("memory_limit", "512M");
 ini_set("max_execution_time", "20");
 ini_set("max_input_time", "20");
 ini_set("error_reporting", 373);
 ini_set('session.name', $config_session_name );
 ini_set("session.cookie_lifetime", $config_global_apimaker['config_session_timeout'] );
 ini_set("session.gc_maxlifetime", $config_global_apimaker['config_session_timeout'] );
-ini_set("session.cookie_path", $config_global_apimaker['config_apimaker_path'] );
+ini_set("session.cookie_path", "/" );
 if( $config_global_apimaker['config_use_https_only'] ){
 	ini_set("session.cookie_httponly", "1" );
 	ini_set("session.cookie_secure", "On" );

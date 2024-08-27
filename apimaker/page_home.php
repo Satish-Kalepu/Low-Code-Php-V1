@@ -87,9 +87,12 @@
 
 	      		<p>Import App</p>
 
-	      		<div v-if="restore_status==5" >
-					<p>Imported</p>
+	      		<div v-if="restore_status==5||restore_task" >
+					<p>Import is initiated...</p>
 					<p><span v-html="restore_msg" ></span></p>
+					<!-- <p><button class="btn btn-outline-dark btn-sm py-0" >Check Status</button></p> -->
+					<p>Status: Running</p>
+					<div v-if="restore_app_id" ><a class="btn btn-link" v-bind:href="path+'apps/'+restore_app_id" >{{ restore_app_name }}</a></div>
 				</div>
 				<template v-else >
 					<p>You can restore any app which will delete all the settings of the current app. Or you can create a new app.</p>
@@ -105,9 +108,9 @@
 								<p v-if="restore_status==1" >Uploading {{ restore_pg }}%</p>
 								<div v-if="restore_status==2" >
 									<p>Uploaded</p>
-									<p>App Name: {{ this.restore_app_name }}</p>
+									<p>App Name: {{ restore_app_name }}</p>
 									<ul>
-										<li v-for="v,i in this.restore_summary" >{{ i }}: {{ v }}</li>
+										<li v-for="v,i in restore_summary" >{{ i }}: {{ v }}</li>
 									</ul>
 									<p><span v-html="restore_msg" ></span></p>
 									<p><input type="button" class="btn btn-outline-dark btn-sm" value="Proceed" v-on:click="restore_step2now" ></p>
@@ -141,14 +144,8 @@ var app = Vue.createApp({
 			clone_modal__: false,
 			import_modal__: false,
 			delete_app_id: "",
-			new_app: {
-				'app': '',
-				"des": "",
-			},
-			new_app_err: {
-				'app': false,
-				"des": false,
-			},
+			new_app: {'app': '', "des": "" },
+			new_app_err: {'app': false, "des": false },
 			new_name: "",
 			clone_pr: 0,
 			table_queue: {},
@@ -162,7 +159,9 @@ var app = Vue.createApp({
 			restore_error: "",
 			restore_msg: "",
 			restore_rand: "",
+			restore_task: <?=$restore_task?"true":"false" ?>,
 			restore_app_name: "",
+			restore_app_id: "",
 			restore_summary: {},
 		};
 	},
@@ -211,6 +210,9 @@ var app = Vue.createApp({
 				this.import_modal__ = new bootstrap.Modal( document.getElementById('import_modal__') );
 			}
 			this.import_modal__.show();
+			if( this.restore_task ){
+				this.check_import_status();
+			}
 		},
 		show_clone_app: function(){
 			if( this.clone_modal__ == false ){
@@ -396,16 +398,19 @@ var app = Vue.createApp({
 						if( 'status' in response.data ){
 							if( response.data['status'] == "success" ){
 								this.restore_status = 5;
-								this.restore_msg = "Restoration Successfull<BR>New App Name: <a class='btn btn-outline-dark btn-sm' href='"+this.path+'apps/'+response.data['app_id']+'/'+"' >" + response.data['app'] + "</a>";
-								this.load_apps();
+								this.restore_msg = "Background Task Initiated.";
+								setTimeout(this.check_import_status,3000);
 							}else{
 								this.restore_status = 9;
 								this.restore_error = "Restore Failed: " + response.data['error'];
 							}
 						}else{
 							this.restore_status = 9;
-							this.restore_error = "Something wrong";
+							this.restore_error = "Incorrect Response";
 						}
+					}else{
+						this.restore_status = 9;
+						this.restore_error = "Invalid Response";
 					}
 				}
 			}).catch(error=>{
@@ -440,6 +445,37 @@ var app = Vue.createApp({
 								this.restore_summary = response.data['summary'];
 								this.restore_app_name = response.data['app'];
 								this.restore_rand = response.data['rand'];
+							}else{
+								alert("Incorrect response");
+							}
+						}else{
+							this.restore_status = 9;
+							this.restore_error = "Something wrong";
+						}
+					}
+				}
+			}).catch(error=>{
+				this.restore_status = 9;
+				this.restore_error = error.msg;
+				cosole.log( error );
+			});
+		},
+		check_import_status: function(){
+			axios.post("?", {
+				"action": "home_check_import_status"
+			}).then(response=>{
+				console.log( response );
+				if( response.status == 200 ){
+					if( typeof( response.data ) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.restore_msg = response.data['data']['status'];
+								if( 'new_app_id' in response.data['data'] ){
+									this.restore_app_id = response.data['data']['new_app_id'];
+									this.restore_app_name = response.data['data']['new_app'];
+								}else{
+									setTimeout(this.check_import_status,3000);
+								}
 							}else{
 								alert("Incorrect response");
 							}

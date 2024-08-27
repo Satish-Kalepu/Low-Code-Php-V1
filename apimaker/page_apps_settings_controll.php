@@ -162,6 +162,19 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 
 if( $_POST['action'] == "app_save_cloud_settings" ){
 
+	$all_app_ids = [];
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apps", [], ['projection'=>['app'=>1] ] );
+	foreach( $res['data'] as $i=>$j ){
+		$all_app_ids[ $j['_id'] ] = $j['app'];
+	}
+
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains" );
+	foreach( $res['data'] as $i=>$j ){
+		if( !isset($all_app_ids[ $j['app_id'] ]) ){
+			$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", ['app_id'=>$j['app_id']] );
+		}
+	}
+
 	$settings = $_POST['settings'];
 
 	if( !isset($settings['cloud']) ){
@@ -186,6 +199,8 @@ if( $_POST['action'] == "app_save_cloud_settings" ){
 		}
 	}
 
+	$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", ['app_id'=>$j['app_id']] );
+
 	$cloud_record = false;
 	$alias_record = false;
 	if( isset($settings['cloud']) && $settings['cloud'] ){
@@ -199,7 +214,7 @@ if( $_POST['action'] == "app_save_cloud_settings" ){
 			}
 		}
 	}
-	if( isset($settings['alias']) && $settings['alias'] ){
+	if( isset($settings['alias']) && $settings['alias'] == true ){
 		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
 			'_id'=>$settings['alias-domain']
 		]);
@@ -240,17 +255,19 @@ if( $_POST['action'] == "app_save_cloud_settings" ){
 			'app_id'=>$config_param1,
 		]);
 	}
-	if( $alias_record ){
-		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-			'_id'=>$settings['alias-domain']
-		], [
-			'app_id'=>$config_param1,
-		]);
-	}else{
-		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-			'_id'=>$settings['alias-domain'],
-			'app_id'=>$config_param1,
-		]);
+	if( $settings['alias'] == true ){
+		if( $alias_record ){
+			$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
+				'_id'=>$settings['alias-domain']
+			], [
+				'app_id'=>$config_param1,
+			]);
+		}else{
+			$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
+				'_id'=>$settings['alias-domain'],
+				'app_id'=>$config_param1,
+			]);
+		}
 	}
 
 	event_log( "system", "app_save_cloud_settings", [

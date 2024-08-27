@@ -270,6 +270,65 @@
 				  </div>
 
 
+
+				  <div class="accordion-item">
+				    <h2 class="accordion-header" id="objects">
+				      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseobjects"  aria-controls="collapseobjects">
+				        Graph Objects
+				      </button>
+				    </h2>
+				    <div id="collapseobjects" class="accordion-collapse collapse" aria-labelledby="objects" data-bs-parent="#main">
+				      <div class="accordion-body">
+
+							<template v-if="apis['objects'].length==0" >
+								<p>No Graph databases were defined</p>
+							</template>
+
+							<div class="accordion" id="objects_list">
+							  <div v-for="d,ti in apis['objects']" class="accordion-item">
+							    <h2 class="accordion-header" v-bind:id="d['_id']">
+							      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" v-bind:data-bs-target="'#collapse'+d['_id']"  v-bind:aria-controls="'collapse'+d['_id']">
+							        {{ d['name'] }}
+							      </button>
+							    </h2>
+							    <div v-bind:id="'collapse'+d['_id']" class="accordion-collapse collapse" v-bind:aria-labelledby="d['_id']" data-bs-parent="#objects_list">
+							      <div class="accordion-body">
+
+									<div class="accordion" v-bind:id="'object'+d['_id']">
+									  <div class="accordion-item" v-for="objectapi, apitype in d['apis']" >
+									    <h2 class="accordion-header" v-bind:id="d['_id']+apitype">
+									      <button v-bind:class="{'accordion-button':true,'collapsed':d['show']!=apitype}" type="button" v-on:click="toggle_object(ti,apitype)" >
+									        {{ apitype }}
+									      </button>
+									    </h2>
+									    <div v-bind:id="'collapse'+d['_id']+apitype" v-bind:class="{'accordion-collapse':true, 'collapse':d['show']!=apitype}">
+									      <div class="accordion-body" style="overflow: auto;">
+									      	<div v-if="apitype in d['apis'] == false" >API Configuration Missing</div>
+									      	<div v-else>
+										      	<div class="btn btn-outline-dark btn-sm" style="float:right;" v-on:click="show_test_graph('objects',ti,apitype)">Test</div>
+										      	<div>POST {{ test_url__ }}{{ d['path'] }}</div>
+										      	<div>Content-Type: application/json</div>
+												<div>Access-Key: xxxxxxx</div>
+												<div>&nbsp;</div>
+										        <pre v-if="apitype in d['apis']">{{ objectapi }}</pre>
+										        <pre v-else>api data not found</pre>
+										    </div>
+									      </div>
+									    </div>
+									  </div>
+									</div>
+
+
+							      </div>
+							    </div>
+							  </div>
+							</div>
+
+				      </div>
+				    </div>
+				  </div>
+
+
 				  
 				  <div class="accordion-item">
 				    <h2 class="accordion-header" id="files">
@@ -510,10 +569,6 @@ var app = Vue.createApp({
 			apis: {},
 			show_create_api: false,
 			api_types: ['getSchema','findOne','findMany','insertOne','insertMany','updateOne', 'updateMany', 'deleteOne', 'deleteMany'],
-			new_api: {
-				"name": "",
-				"des": "",
-			},
 			access_token__: "",
 			create_app_modal: false,
 			token: "",
@@ -789,6 +844,13 @@ var app = Vue.createApp({
 				this.apis['tables_dynamic'][ ti ]['show'] = o;
 			}
 		},
+		toggle_object: function( ti, o ){
+			if( this.apis['objects'][ ti ]['show'] == o ){
+				this.apis['objects'][ ti ]['show'] = "";
+			}else{
+				this.apis['objects'][ ti ]['show'] = o;
+			}
+		},
 		toggle_sapi: function( ti, o ){
 			if( this.apis['storage'][ ti ]['show'] == o ){
 				this.apis['storage'][ ti ]['show'] = "";
@@ -814,6 +876,22 @@ var app = Vue.createApp({
 			// console.log( this.apis[ t ][ ti ][ at ] );
 			this.test_path__ = this.apis['tables_dynamic'][ ti ]['path']+'';
 			this.test_data__ = JSON.stringify( this.apis[ t ][ ti ][ at ], null, 4 );
+			// console.log( this.test_data__ );
+			this.test_popup__ = new bootstrap.Modal( document.getElementById('popup_test__') );
+			this.test_popup__.show();
+			setTimeout(this.init_ace, 500);
+		},
+		show_test_graph: function(t,ti,at){
+			this.terr = "";
+			this.test_response__ = {};
+			this.test_error__ = {};
+			this.test_type__ = t;
+			this.test_thing_id__ = this.apis[ t ][ ti ]['_id'];
+			this.test_api_type__ = at;
+			this.test_api_method__ = "POST";
+			// console.log( this.apis[ t ][ ti ][ at ] );
+			this.test_path__ = this.apis['objects'][ ti ]['path']+'';
+			this.test_data__ = JSON.stringify( this.apis[ t ][ ti ]['apis'][ at ], null, 4 );
 			// console.log( this.test_data__ );
 			this.test_popup__ = new bootstrap.Modal( document.getElementById('popup_test__') );
 			this.test_popup__.show();

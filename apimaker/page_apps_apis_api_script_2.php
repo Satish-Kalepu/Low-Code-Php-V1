@@ -734,8 +734,8 @@ var app = s2_ssssssssss({
 					var s = this.s2_stnerap_dnif(e.target);
 					if( !s ){ return false; }
 					var v = e.target.innerText;
-					// console.log( " =====  " + v );
 					v = v.replace(/[\u{0080}-\u{FFFF}]/gu, "");
+					v = v.trim();
 					// v = v.replace(/\&nbsp\;/g, " ");
 					// v = v.replace(/\&gt\;/g, ">");
 					// v = v.replace(/\&lt\;/g, "<");
@@ -801,7 +801,7 @@ var app = s2_ssssssssss({
 					}else if( e.keyCode == 13 || e.keyCode == 10 ){
 						e.preventDefault();
 						e.stopPropagation();
-						var v = e.target.innerText;
+						var v = e.target.innerText.trim();
 						v = this.s2_rrretlif_v( v, e.target );
 						if( v ){
 							if( e.target.nextSibling ){

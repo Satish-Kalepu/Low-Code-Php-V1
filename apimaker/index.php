@@ -50,31 +50,45 @@ if(sizeof($x)>6){$config_param6=$x[6];}
 if(sizeof($x)>7){$config_param7=$x[7];}
 if(sizeof($x)>8){$config_param8=$x[8];}
 
-if( isset($config_session_name) ){
-	if( isset($_COOKIE[$config_session_name]) ){
-		session_start();
-		if( $_SESSION['ua'] ){
-			if( $_SESSION['ua'] != $_SERVER['HTTP_USER_AGENT'] || $_SESSION['ip'] != $_SERVER['REMOTE_ADDR'] ){
-				session_destroy();
-				session_regenerate_id();
-				header("Location: " . $config_global_apimaker_path . "?event=Session_unRecognised");
-				exit;
-			}
+session_start();
+if( !isset($_SESSION['time']) ){
+	$_SESSION['time'] = time();
+}
+if( $_SERVER['REQUEST_METHOD'] != "POST" ){
+	$d = time()-$_SESSION['time'];
+	if( $d > 300 ){
+		if( $config_global_apimaker['config_session_timeout'] > $d ){
+			session_regenerate_id();
+			$_SESSION['time'] = time();
 		}
-		if( !$_POST['action'] && !$_GET['action'] ){
-			if( $config_global_apimaker['config_use_https_only'] ){
-				setcookie( $config_session_name, session_id(), (time()+(int)$config_global_apimaker[ 'config_session_timeout']), $config_global_apimaker_path, "", TRUE, TRUE);
-			}else{
-				setcookie( $config_session_name, session_id(), (time()+(int)$config_global_apimaker[ 'config_session_timeout']), $config_global_apimaker_path);
-			}
-		}
-	}else{
-		unset($_GET[ $config_session_name ]);
-		session_start();
-		$_SESSION['ua'] = $_SERVER['HTTP_USER_AGENT'];
-		$_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
 	}
 }
+
+// if( isset($config_session_name) ){
+// 	if( isset($_COOKIE[$config_session_name]) ){
+// 		session_start();
+// 		if( $_SESSION['ua'] ){
+// 			if( $_SESSION['ua'] != $_SERVER['HTTP_USER_AGENT'] || $_SESSION['ip'] != $_SERVER['REMOTE_ADDR'] ){
+// 				session_destroy();
+// 				session_regenerate_id();
+// 				header("Location: " . $config_global_apimaker_path . "?event=Session_unRecognised");
+// 				exit;
+// 			}
+// 		}
+// 		if( !$_POST['action'] && !$_GET['action'] ){
+// 			if( $config_global_apimaker['config_use_https_only'] ){
+// 				setcookie($config_session_name, session_id(), (time()+(int)$config_global_apimaker[ 'config_session_timeout']), "/", "", TRUE, TRUE);
+// 			}else{
+// 				setcookie($config_session_name, session_id(), (time()+(int)$config_global_apimaker[ 'config_session_timeout']), "/");
+// 			}
+// 		}
+// 	}else{
+// 		unset($_GET[ $config_session_name ]);
+// 		session_start();
+// 		$_SESSION['ua'] = $_SERVER['HTTP_USER_AGENT'];
+// 		$_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
+// 	}
+// }
 
 $g =$_GET;
 unset($g['request_url']);
@@ -152,12 +166,14 @@ if( $config_global_apimaker['config_allow_concurrent_login'] === false ){
 	}
 }}
 
-if( !$_SESSION['apimaker_login_ok'] && $config_page != "login" && $config_page != "captcha" && $config_page != "install"  && $config_page != "config_api" ){
-	if( $_POST['action'] || $_GET['action'] ){
-		json_response("fail", "SessionExpired");
+if( !$_SESSION['apimaker_login_ok'] ){
+	if( $config_page != "login" && $config_page != "captcha" && $config_page != "install"  && $config_page != "config_api" ){
+		if( $_POST['action'] || $_GET['action'] ){
+			json_response("fail", "SessionExpired");
+		}
+		header("Location: " . $config_global_apimaker_path . "login?event=SessionExpired");
+		exit;
 	}
-	header("Location: " . $config_global_apimaker_path . "login?event=SessionExpired");
-	exit;
 }
 
 if( $_SESSION['apimaker_login_ok'] && $config_page == "login" ){
@@ -181,6 +197,10 @@ if( $_SESSION['apimaker_login_ok'] ){
 		header("Location: " . $config_global_apimaker_path . "login?event=UserNotFound");
 		exit;
 	}
+}
+
+if( !isset($db_prefix) ){
+	$db_prefix = $config_global_apimaker['config_mongo_prefix'];
 }
 
 require_once( "common_controll.php" );

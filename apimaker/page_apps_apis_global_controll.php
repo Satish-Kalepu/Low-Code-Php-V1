@@ -32,8 +32,7 @@ function input_factors_to_values($v){
 	return $vv;
 }
 
-
-function schema_to_values( $v  ){
+function schema_to_values( $v ){
 	$vv = [];
 	foreach( $v as $k=>$val ){
 		if( $val['type'] == "text" ){
@@ -65,6 +64,7 @@ if( $_POST['action'] == "get_global_apis" ){
 		"captcha"=>[],
 		"tables_dynamic"=>[],
 		"databases"=>[],
+		"objects"=>[],
 		"files"=>[],
 		"storage"=>[],
 	];
@@ -698,6 +698,190 @@ if( $_POST['action'] == "get_global_apis" ){
 	];
 	$apis['files'][] = $d;
 
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_graph_dbs", [
+		'app_id'=>$config_param1
+	],[
+		'sort'=>['name'=>1],
+		'limit'=>200,
+	]);
+	foreach( $res['data'] as $i=>$j ){
+
+		$j['apis'] = [];
+
+		$j['apis']['listObjects'] = [
+			"action"=> "listObjects",
+			"order"=>"asc",
+			"from"=>"",
+			"last"=>"",
+		];
+		$j['apis']['getObject'] = [
+			"action"=> "getObject",
+			"object_id"=>"T1",
+		];
+		$j['apis']['getObjectTemplate'] = [
+			"action"=> "getObjectTemplate",
+			"object_id"=>"T1",
+		];
+		$j['apis']['getObjectRecords'] = [
+			"action"=> "getObjectRecords",
+			"object_id"=>"T1",
+			"sort"=>"_id",
+			"order"=>"asc",
+			"from"=>"",
+			"last"=>"",
+			"filter"=>[
+				[
+					"field"=>"", "op"=>"=", "value"=>"",
+				]
+			]
+		];
+		$j['apis']['getObjectNodes'] = [
+			"action"=> "getObjectNodes",
+			"instance_id"=>"T1",
+			"sort"=>"id", //label,id,nodes
+			"order"=>"asc",
+			"from"=>"",
+			"last"=>"",
+			"filter"=>[
+				[
+					"field"=>"", "op"=>"=", "value"=>"",
+				]
+			]
+		];
+		$j['apis']['objectCreate'] = [
+			"action"=> "objectCreate",
+			"instance_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
+			"label"=> ["t"=>"T", "v"=>""],
+		];
+		$j['apis']['objectCreateWithTemplate'] = [
+			"action"=> "objectCreateWithTemplate",
+			"object_id"=> "",
+			"record_id"=> "",
+			"properties"=> [
+				"p1"=> [["t"=>"T","v"=>""]]
+			],
+			"template"=> [
+				"z_t"=>[
+				],
+				"z_o"=>[],
+				"z_n"=>1
+			]
+		];
+		$j['apis']['objectLabelUpdate'] = [
+			"action"=> "objectLabelUpdate",
+			"object_id"=> "",
+			"label"=>["t"=>"T", "v"=>""],
+		];
+		$j['apis']['objectTypeUpdate'] = [
+			"action"=> "objectTypeUpdate",
+			"object_id"=> "",
+			"type"=>["t"=>"T", "v"=>"N"],
+		];
+		$j['apis']['objectAliasUpdate'] = [
+			"action"=> "objectAliasUpdate",
+			"object_id"=> "",
+			"alias"=>[
+				["t"=>"T", "v"=>"N"]
+			]
+		];
+		$j['apis']['objectInstanceUpdate'] = [
+			"action"=> "objectInstanceUpdate",
+			"object_id"=> "",
+			"instance_of"=>[
+				["t"=>"GT", "v"=>"", "i"=>""]
+			]
+		];
+		$j['apis']['objectPropertiesUpdate'] = [
+			"action"=> "objectPropertiesUpdate",
+			"object_id"=> "",
+			"properties"=> [
+				"p1"=> [["t"=>"T","v"=>""]]
+			]
+		];
+		$j['apis']['objectNodesTruncate'] = [
+			"action"=> "objectNodesTruncate",
+			"object_id"=> "",
+		];
+		$j['apis']['objectDelete'] = [
+			"action"=> "objectDelete",
+			"object_id"=> "",
+		];
+		$j['apis']['objectConverToDataset'] = [
+			"action"=> "objectConverToDataset",
+			"object_id"=> "",
+		];
+		$j['apis']['objectConverToNode'] = [
+			"action"=> "objectConverToNode",
+			"object_id"=> "",
+		];
+
+		$j['apis']['objectTemplateFieldCreate'] = [
+			"action"=> "objectTemplateFieldCreate",
+			"object_id"=> "",
+			"field"=>["t"=>"T", "v"=>"N"],
+			"config"=>[
+				"l"=> ["t"=> "T", "v"=> "Description"],
+				"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
+				"m"=> ["t"=> "B", "v"=> "false"]
+			]
+		];
+		$j['apis']['objectTemplateFieldUpdate'] = [
+			"action"=> "objectTemplateFieldUpdate",
+			"object_id"=> "",
+			"field"=>["t"=>"T", "v"=>"N"],
+			"config"=>[
+				"l"=> ["t"=> "T", "v"=> "Description"],
+				"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
+				"m"=> ["t"=> "B", "v"=> "false"]
+			]
+		];
+		$j['apis']['objectTemplateFieldDelete'] = [
+			"action"=> "objectTemplateFieldDelete",
+			"object_id"=> "",
+			"field"=>"",
+		];
+		$j['apis']['objectTemplateEnable'] = [
+			"action"=> "objectTemplateEnable",
+			"object_id"=> "",
+		];
+		$j['apis']['objectTemplateOrderUpdate'] = [
+			"action"=> "objectTemplateOrderUpdate",
+			"object_id"=> "",
+			"order"=> ["p1", "p2"],
+		];
+		$j['apis']['dataSetRecordCreate'] = [
+			"action"=> "dataSetRecordCreate",
+			"object_id"=> "",
+			"record_id"=> "",
+			"properties"=> [
+				"p1"=> [["t"=>"T","v"=>""]]
+			]
+		];
+		$j['apis']['dataSetRecordUpdate'] = [
+			"action"=> "dataSetRecordUpdate",
+			"object_id"=> "",
+			"record_id"=> "",
+			"properties"=> [
+				"p1"=> [["t"=>"T","v"=>""]]
+			]
+		];
+		$j['apis']['dataSetRecordDelete'] = [
+			"action"=> "dataSetRecordDelete",
+			"object_id"=> "",
+			"record_id"=> "",
+		];
+		$j['apis']['dataSetTruncate'] = [
+			"action"=> "dataSetTruncate",
+			"object_id"=> "",
+		];
+		$j['apis']['keywordSearch'] = [
+			"action"=> "keywordSearch",
+			"keyword"=> "value"
+		];
+		$j["path"] = "_api/objects/".$j['_id'];
+		$apis['objects'][] = $j;
+	}
+
 	json_response([
 		'status'=>"success", 
 		"apis"=>$apis
@@ -749,6 +933,12 @@ if( $_POST['action'] == "generate_access_token" ){
 		$thing = [
 			"_id"=>"storage_vault:".$_POST['thing_id'],
 			"thing"=>"storage_vault:something"
+		];
+	}else if( $_POST['type'] == "objects" ){
+		$service = "objects";
+		$thing = [
+			"_id"=>"object:".$_POST['thing_id'],
+			"thing"=>"object:something"
 		];
 	}else{
 		json_response("fail", "unknown type");

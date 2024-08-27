@@ -1,5 +1,17 @@
 <?php
 
+$task_insert_id = 1000;
+function generate_task_queue_id($delay=0){
+	global $task_insert_id;
+	if( gettype($delay) != "integer" ){
+		$delay = 0;
+	}else if( $delay > (600) ){
+		$delay =600; // max is 10 minutes
+	}
+	return date("YmdHis",time()+$delay).":".rand(100,999).":".$task_insert_id;
+	$task_insert_id++;
+}
+
 function engine_api( $method, $content_type, $path_params, $php_input ){
 	global $mongodb_con;
 	global $app_id;
@@ -133,6 +145,23 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Vault not found" ]) ];
 		}
 		$storage_vault = $res['data'];
+	}
+	if( $path_params[1] == "objects" ){
+		$thing_type = "object";
+		if( !isset($path_params[2]) ){
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Not found" ]) ];
+		}
+		$thing_id = $path_params[2];
+		if( !preg_match("/^[a-f0-9]{24}$/", $thing_id) ){
+			return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Incorrect Vault ID" ]) ];
+		}
+		$graphres = $mongodb_con->find_one( $db_prefix . "_graph_dbs", [
+			"app_id"=>$app_id, "_id"=>$thing_id
+		]);
+		if( !$graphres['data'] ){
+			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Vault not found" ]) ];
+		}
+		$graph_db = $graphres['data'];
 	}
 	$config_public_apis = [
 		["auth","verify_session_key"]
@@ -370,8 +399,14 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 		return engine_api_storage_vault( $storage_vault, $action, $post );
 	}else if( $thing_type == "file" ){
 		return engine_api_files( $post );
+	}else if( $thing_type == "object" ){
+		return engine_api_object($graph_db, $action, $post );
 	}
 
-	return [400,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access Key Accepted. But action missing","action"=>$post['action'] ]) ];
+	return [400,"application/json",[], json_encode([
+		"status"=>"fail", 
+		"error"=>"Access Key Accepted. But action missing",
+		"action"=>$post['action'] ]
+	)];
 
 }

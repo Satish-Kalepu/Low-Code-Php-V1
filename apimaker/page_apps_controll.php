@@ -1,5 +1,6 @@
 <?php
 
+
 if( !$config_param1 ){
 	echo404();
 }else if( !preg_match("/^[a-f0-9]{24}$/", $config_param1) ){
@@ -8,7 +9,9 @@ if( !$config_param1 ){
 $res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
 	'_id'=>$config_param1
 ], [
-	'settings'=>true,
+	'projection'=>[
+		'pages'=>false,'files'=>false,'functions'=>false,
+	]
 ]);
 if( !$res['data'] ){
 	echo404("App not found!");
@@ -79,8 +82,10 @@ if( !isset($app['settings']) ){
 }
 if( $take_to_settings ){
 	if( $config_param2 != "settings" ){
-		header("Location: " . $config_global_apimaker_path . "apps/" . $config_param1 . "/settings");
-		exit;
+		if( $_POST['action'] != "exports_check_import_status" ){
+			header("Location: " . $config_global_apimaker_path . "apps/" . $config_param1 . "/settings");
+			exit;
+		}
 	}
 }
 if( $config_param2 == "apis" || $config_param2 == "" ){

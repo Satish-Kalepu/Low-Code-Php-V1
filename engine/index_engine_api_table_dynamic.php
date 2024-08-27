@@ -56,7 +56,7 @@ function engine_api_table_dynamic( $action, $table_res, $options, $post ){
 		}
 		$res = $mongodb_con->find_one( $db_prefix . "_dt_" . $table_res['data']['_id'], $cond, $ops );
 		if( $res['status'] != "success" ){
-			return json_response(500,$res);
+			return json_response(200,$res);
 		}
 		return json_response(200,[
 			"status"=>"success", "data"=>$res['data'], "query"=>$cond

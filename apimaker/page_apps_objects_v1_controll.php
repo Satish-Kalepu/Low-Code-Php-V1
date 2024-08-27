@@ -1047,7 +1047,7 @@ if( $_POST['action'] == "objects_create_with_template" ){
 				}
 			}
 		}
-		$things['props'] = $props;
+		$thing['props'] = $props;
 	}
 	$z_t = [];
 	if( isset($thing['z_t']) ){
@@ -1100,7 +1100,7 @@ if( $_POST['action'] == "objects_create_node_on_fly" ){
 	if( !isset( $thing['l'] ) || !isset( $thing['i_of'] ) ){
 		json_response("fail", "Data missing");
 	}
-	if( !is_array( $thing['l'] ) || !is_array( $thing['i_of'] ) ){
+	if( !is_array( $thing['i_of'] ) || !is_array( $thing['i_of'] ) ){
 		json_response("fail", "Data missing");
 	}
 	if( !isset( $thing['l']['v'] ) || !$thing['l']['v'] ){

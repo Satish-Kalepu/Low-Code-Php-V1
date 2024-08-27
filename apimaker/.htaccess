@@ -5,9 +5,9 @@
 <IfModule prefork.c>
 php_value date.timezone 'Asia/Kolkata'
 php_value short_open_tag 1
-php_value post_max_size 20M
+php_value post_max_size 200M
 php_value upload_max_filesize 50M
-php_value memory_limit 128M
+php_value memory_limit 512M
 php_value max_execution_time 20	
 php_value max_input_time 20
 php_value error_reporting 4181
