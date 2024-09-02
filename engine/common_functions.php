@@ -30,7 +30,6 @@ function event_log( $system, $event, $data =[] ){
 	}
 }
 
-
 function get_request($options){
 	$headers = [];
 	$curl = curl_init();

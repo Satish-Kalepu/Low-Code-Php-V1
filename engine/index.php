@@ -48,6 +48,7 @@
 	require("index_engine_api_storage_vault.php");
 	require("index_engine_api_table.php");
 	require("index_engine_api_table_dynamic.php");
+	require("index_engine_api_object.php");
 	require("index_api.php");
 	require("index_page.php");
 	require("index_file.php");

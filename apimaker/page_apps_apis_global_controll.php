@@ -709,174 +709,323 @@ if( $_POST['action'] == "get_global_apis" ){
 		$j['apis'] = [];
 
 		$j['apis']['listObjects'] = [
-			"action"=> "listObjects",
-			"order"=>"asc",
-			"from"=>"",
-			"last"=>"",
+			"post"=>[
+				"action"=> "listObjects",
+				"sort"=>"ID", // ID, label, nodes
+				"order"=>"asc",
+				"from"=>"",
+				"last"=>"",
+				"limit"=>100,
+			],
+			"help"=>[
+				"sort"=> "Required. ID, label, nodes",
+				"order"=> "Required. asc|dsc",
+				"limit"=> "Required. results size. max 500",
+				"from"=> "Optional. Start keyword, respective to the sort field",
+				"last"=> "Optional. Start keyword for next page of results, from and last overrides each other"
+			]
 		];
 		$j['apis']['getObject'] = [
-			"action"=> "getObject",
-			"object_id"=>"T1",
+			"post"=>[
+				"action"=> "getObject",
+				"object_id"=>"T1",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['getObjectTemplate'] = [
-			"action"=> "getObjectTemplate",
-			"object_id"=>"T1",
+			"post"=>[
+				"action"=> "getObjectTemplate",
+				"object_id"=>"T1",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['getObjectRecords'] = [
-			"action"=> "getObjectRecords",
-			"object_id"=>"T1",
-			"sort"=>"_id",
-			"order"=>"asc",
-			"from"=>"",
-			"last"=>"",
-			"filter"=>[
-				[
-					"field"=>"", "op"=>"=", "value"=>"",
+			"post"=>[
+				"action"=> "getObjectRecords",
+				"object_id"=>"T1",
+				"sort"=>"_id",
+				"order"=>"asc",
+				"from"=>"",
+				"last"=>"",
+				"filter"=>[
+					[
+						"field"=>"", "op"=>"=", "value"=>"",
+					]
 				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['getObjectNodes'] = [
-			"action"=> "getObjectNodes",
-			"instance_id"=>"T1",
-			"sort"=>"id", //label,id,nodes
-			"order"=>"asc",
-			"from"=>"",
-			"last"=>"",
-			"filter"=>[
-				[
-					"field"=>"", "op"=>"=", "value"=>"",
+			"post"=>[
+				"action"=> "getObjectNodes",
+				"instance_id"=>"T1",
+				"sort"=>"id", //label,id,nodes
+				"order"=>"asc",
+				"from"=>"",
+				"last"=>"",
+				"filter"=>[
+					[
+						"field"=>"", "op"=>"=", "value"=>"",
+					]
 				]
+			],
+			"help"=>[
+				"instance_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['objectCreate'] = [
-			"action"=> "objectCreate",
-			"instance_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
-			"label"=> ["t"=>"T", "v"=>""],
+			"post"=>[
+				"action"=> "objectCreate",
+				"instance_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
+				"label"=> ["t"=>"T", "v"=>""],
+			],
+			"help"=>[
+
+			]
 		];
 		$j['apis']['objectCreateWithTemplate'] = [
-			"action"=> "objectCreateWithTemplate",
-			"object_id"=> "",
-			"record_id"=> "",
-			"properties"=> [
-				"p1"=> [["t"=>"T","v"=>""]]
-			],
-			"template"=> [
-				"z_t"=>[
+			"post"=>[
+				"action"=> "objectCreateWithTemplate",
+				"object_id"=> "",
+				"record_id"=> "",
+				"properties"=> [
+					"p1"=> [["t"=>"T","v"=>""]]
 				],
-				"z_o"=>[],
-				"z_n"=>1
+				"template"=> [
+					"z_t"=>[
+					],
+					"z_o"=>[],
+					"z_n"=>1
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['objectLabelUpdate'] = [
-			"action"=> "objectLabelUpdate",
-			"object_id"=> "",
-			"label"=>["t"=>"T", "v"=>""],
+			"post"=>[
+				"action"=> "objectLabelUpdate",
+				"object_id"=> "",
+				"label"=>["t"=>"T", "v"=>""],
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['objectTypeUpdate'] = [
-			"action"=> "objectTypeUpdate",
-			"object_id"=> "",
-			"type"=>["t"=>"T", "v"=>"N"],
+			"post"=>[
+				"action"=> "objectTypeUpdate",
+				"object_id"=> "",
+				"type"=>["t"=>"T", "v"=>"N"],
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['objectAliasUpdate'] = [
-			"action"=> "objectAliasUpdate",
-			"object_id"=> "",
-			"alias"=>[
-				["t"=>"T", "v"=>"N"]
+			"post"=>[
+				"action"=> "objectAliasUpdate",
+				"object_id"=> "",
+				"alias"=>[
+					["t"=>"T", "v"=>"N"]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['objectInstanceUpdate'] = [
-			"action"=> "objectInstanceUpdate",
-			"object_id"=> "",
-			"instance_of"=>[
-				["t"=>"GT", "v"=>"", "i"=>""]
+			"post"=>[
+				"action"=> "objectInstanceUpdate",
+				"object_id"=> "",
+				"instance_of"=>[
+					["t"=>"GT", "v"=>"", "i"=>""]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['objectPropertiesUpdate'] = [
-			"action"=> "objectPropertiesUpdate",
-			"object_id"=> "",
-			"properties"=> [
-				"p1"=> [["t"=>"T","v"=>""]]
+			"post"=>[
+				"action"=> "objectPropertiesUpdate",
+				"object_id"=> "",
+				"properties"=> [
+					"p1"=> [["t"=>"T","v"=>""]]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['objectNodesTruncate'] = [
-			"action"=> "objectNodesTruncate",
-			"object_id"=> "",
+			"post"=>[
+				"action"=> "objectNodesTruncate",
+				"object_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['objectDelete'] = [
-			"action"=> "objectDelete",
-			"object_id"=> "",
+			"post"=>[
+				"action"=> "objectDelete",
+				"object_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['objectConverToDataset'] = [
-			"action"=> "objectConverToDataset",
-			"object_id"=> "",
+			"post"=>[
+				"action"=> "objectConverToDataset",
+				"object_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['objectConverToNode'] = [
-			"action"=> "objectConverToNode",
-			"object_id"=> "",
+			"post"=>[
+				"action"=> "objectConverToNode",
+				"object_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 
-		$j['apis']['objectTemplateFieldCreate'] = [
-			"action"=> "objectTemplateFieldCreate",
-			"object_id"=> "",
-			"field"=>["t"=>"T", "v"=>"N"],
-			"config"=>[
-				"l"=> ["t"=> "T", "v"=> "Description"],
-				"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
-				"m"=> ["t"=> "B", "v"=> "false"]
+		$j['apis']['objectTemplatePropertyCreate'] = [
+			"post"=>[
+				"action"=> "objectTemplatePropertyCreate",
+				"object_id"=> "",
+				"property"=>["t"=>"T", "v"=>"N"],
+				"config"=>[
+					"l"=> ["t"=> "T", "v"=> "Description"],
+					"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
+					"m"=> ["t"=> "B", "v"=> "false"]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"property"=>"Required. Unique property key from the template",
+				"config"=>"An object defines configuration.\n\"l\" = Defines Label of the Property.\n\"t\" = Defines Data Type of the Property. Allowed Values are T,N,GT\n\"m\" = Defines mandatory flag. true/false."
 			]
 		];
-		$j['apis']['objectTemplateFieldUpdate'] = [
-			"action"=> "objectTemplateFieldUpdate",
-			"object_id"=> "",
-			"field"=>["t"=>"T", "v"=>"N"],
-			"config"=>[
-				"l"=> ["t"=> "T", "v"=> "Description"],
-				"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
-				"m"=> ["t"=> "B", "v"=> "false"]
+		$j['apis']['objectTemplatePropertyUpdate'] = [
+			"post"=>[
+				"action"=> "objectTemplatePropertyUpdate",
+				"object_id"=> "",
+				"property"=>["t"=>"T", "v"=>"N"],
+				"config"=>[
+					"l"=> ["t"=> "T", "v"=> "Description"],
+					"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
+					"m"=> ["t"=> "B", "v"=> "false"]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"property"=>"Required. Unique property key from the template",
+				"config"=>"An object defines configuration.\n\"l\" = Defines Label of the Property.\n\"t\" = Defines Data Type of the Property. Allowed Values are T,N,GT\n\"m\" = Defines mandatory flag. true/false."
 			]
 		];
-		$j['apis']['objectTemplateFieldDelete'] = [
-			"action"=> "objectTemplateFieldDelete",
-			"object_id"=> "",
-			"field"=>"",
+		$j['apis']['objectTemplatePropertyDelete'] = [
+			"post"=>[
+				"action"=> "objectTemplatePropertyDelete",
+				"object_id"=> "",
+				"property"=>"",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"property"=>"Required. Unique property key from the template"
+			]
 		];
 		$j['apis']['objectTemplateEnable'] = [
-			"action"=> "objectTemplateEnable",
-			"object_id"=> "",
+			"post"=>[
+				"action"=> "objectTemplateEnable",
+				"object_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['objectTemplateOrderUpdate'] = [
-			"action"=> "objectTemplateOrderUpdate",
-			"object_id"=> "",
-			"order"=> ["p1", "p2"],
+			"post"=>[
+				"action"=> "objectTemplateOrderUpdate",
+				"object_id"=> "",
+				"order"=> ["p1", "p2"],
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"order"=>"Required. List of strings represents existing property names in the template. All properties should be mentioned",
+			]
 		];
 		$j['apis']['dataSetRecordCreate'] = [
-			"action"=> "dataSetRecordCreate",
-			"object_id"=> "",
-			"record_id"=> "",
-			"properties"=> [
-				"p1"=> [["t"=>"T","v"=>""]]
+			"post"=>[
+				"action"=> "dataSetRecordCreate",
+				"object_id"=> "",
+				"record_id"=> "",
+				"properties"=> [
+					"p1"=> [["t"=>"T","v"=>""]]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"record_id"=>"Required. Unique record ID",
+				"properties"=>"Required. A List pf Objects contains the Property Key and correspond list of values.\nproperty = Field name from the template\nfor value notation refer documentation",
 			]
 		];
 		$j['apis']['dataSetRecordUpdate'] = [
-			"action"=> "dataSetRecordUpdate",
-			"object_id"=> "",
-			"record_id"=> "",
-			"properties"=> [
-				"p1"=> [["t"=>"T","v"=>""]]
+			"post"=>[
+				"action"=> "dataSetRecordUpdate",
+				"object_id"=> "",
+				"record_id"=> "",
+				"properties"=> [
+					"p1"=> [["t"=>"T","v"=>""]]
+				],
+				"method"=>"Replace"
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"record_id"=>"Required. Unique record ID",
+				"properties"=>"Required. A List pf Objects contains the Property Key and correspond list of values.\nproperty = Field name from the template\nfor value notation refer documentation",
+				"method"=>"Optional. Default Replace. \nreplace = Replace properties with given values. deletes other existing properties.\nupdate = Add/Update only the given properties. Keeps other existing properties",
 			]
 		];
 		$j['apis']['dataSetRecordDelete'] = [
-			"action"=> "dataSetRecordDelete",
-			"object_id"=> "",
-			"record_id"=> "",
+			"post"=>[
+				"action"=> "dataSetRecordDelete",
+				"object_id"=> "",
+				"record_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+				"record_id"=>"Required. Unique record ID",
+			]
 		];
 		$j['apis']['dataSetTruncate'] = [
-			"action"=> "dataSetTruncate",
-			"object_id"=> "",
+			"post"=>[
+				"action"=> "dataSetTruncate",
+				"object_id"=> "",
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
 		];
 		$j['apis']['keywordSearch'] = [
-			"action"=> "keywordSearch",
-			"keyword"=> "value"
+			"post"=>[
+				"action"=> "keywordSearch",
+				"keyword"=> "value"
+			],
+			"help"=>[
+				"keyword"=>"Required. a keyword text to start search from. max keys returned are 500. can be used for AutoSuggest Actions"
+			]
 		];
 		$j["path"] = "_api/objects/".$j['_id'];
 		$apis['objects'][] = $j;
