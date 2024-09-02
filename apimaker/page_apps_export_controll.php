@@ -793,10 +793,8 @@ if( $_POST['action'] == "exports_hub_logout" ){
 		"Session-Key: " . $hub_session_key
 	]);
 
-	$res = $mongodb_con->update_one( $db_prefix . "_apps", [
-		"_id"=>$config_param1,
-	],[
-		'$unset'=>["hub"=>true]
+	$res = $mongodb_con->delete_one( $db_prefix . "_settings", [
+		"_id"=>"hub",
 	]);
 
 	json_response("success", "OK");
