@@ -211,7 +211,7 @@ if( $_POST['action'] == "app_backup" ){
 
 	//sleep( 30 );
 	$pass = isset($_POST['backup_pass'])?$_POST['backup_pass']:"version1";
-	create_snapshot_file($app, $pass);
+	$tmfn = create_snapshot_file($app, $pass);
 
 	event_log( "system", "app_export", [
 		"app_id"=>$config_param1, 
