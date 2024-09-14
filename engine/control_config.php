@@ -68,6 +68,7 @@ if( $execution_mode == "local_folder" ){
 
 	//print_r( $config_global_engine );
 	if( $config_global_engine['timezone'] ){
+		$timezone = $config_global_engine['timezone'];
 		date_default_timezone_set($config_global_engine['timezone']);
 	}
 

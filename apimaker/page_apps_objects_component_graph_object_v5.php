@@ -122,7 +122,7 @@ const graph_object_v2 =  {
 				}
 				this.$root.context_data__[ "props_fields_"+this.data['thing']['_id'] ] = pd;
 			}
-		},
+		}
 		enable_template: function(){
 			this.data['thing_z_t_edit'] = {
 				"p1":{ 
@@ -1806,6 +1806,7 @@ const graph_object_v2 =  {
 		</div>
 
 		<div v-if="is_records_to_show()" style="border:1px solid #999;margin-bottom:20px; background-color:white;" >
+
 		<template v-if="data['thing']['i_t']['v']=='N'" >
 
 			<div style="line-height:30px; border-bottom:1px solid #ccc; padding:10px; background-color:#f8f8f8;">
@@ -1994,10 +1995,6 @@ const graph_object_v2 =  {
 				</div>
 			</div>
 		</template>
-		</div>
-
-		<div v-if="data['thing']['i_t']['v']=='N'||data['thing']['i_t']['v']=='D'" data-id="root-document" style="border:1px solid #999;margin-bottom:20px; background-color:white;" >
-			<!-- <graph_document v-bind:ref="refname + '_doc'" v-bind:refname="refname + '_doc'" v-bind:object_id="" v-bind:data="data['thing']" ></graph_document> -->
 		</div>
 
 		<div>&nbsp;-&nbsp;</div>

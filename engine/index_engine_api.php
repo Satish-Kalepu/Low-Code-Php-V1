@@ -94,6 +94,12 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 			$thing_id = "10004";
 		}else if( $api_slug == "assume_session_key" ){
 			$thing_id = "10005";
+		}else if( $api_slug == "verify_user_session" ){
+			$thing_id = "10006";
+		}else if( $api_slug == "assume_user_session_key" ){
+			$thing_id = "10007";
+		}else if( $api_slug == "user_session_logout" ){
+			$thing_id = "10009";
 		}
 	}
 	if( $path_params[1] == "tables_dynamic" ){
@@ -193,11 +199,22 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 					"_id"=>$_SERVER['HTTP_ACCESS_KEY']
 				] );
 				if( !$res['data'] ){
-					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key not found" ]) ];
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key not found","_id"=>$_SERVER['HTTP_ACCESS_KEY'] ]) ];
 				}
 				if( $res['data']['expire'] < time() || $res['data']['active'] != 'y' ){
 					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key Expired/InActive" ]) ];
 				}
+
+				if( isset($res['data']['sess_id']) ){
+					$sessres = $mongodb_con->find_one( $db_prefix . "_user_sessions", [
+						"app_id"=>$app_id,
+						"_id"=>$res['data']['sess_id']
+					]);
+					if( !$sessres['data'] ){
+						return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Session Expired","_id"=>$res['data']['sess_id'] ]) ];
+					}
+				}
+
 				$ipf = false;
 				$x = explode(".", $_SERVER['REMOTE_ADDR']);
 				$ip2 = implode(".",[$x[0],$x[1],$x[2]] );
@@ -230,7 +247,7 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 					}
 				}
 				if( $ipf == false ){
-					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key IP rejected" ]) ];
+					return [403,"application/json",[], json_encode(["status"=>"fail", "error"=>"Access-Key IP rejected. " . $_SERVER['REMOTE_ADDR'] ]) ];
 				}
 				//print_r( $res['data']['policies'] );exit;
 				$allow_policy = false;

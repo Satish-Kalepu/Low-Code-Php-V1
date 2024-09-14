@@ -289,6 +289,18 @@ const object_template_create_v2 = {
 				}else{
 					delete(this.data['thing']['z_t'][ x[1] ]['z']);
 				}
+			}else if( x[0] == "type_change" ){
+				if( this.data['thing']['i_t']['v'] == "L" ){
+					if( 'z_t' in this.data['thing'] == false ){
+						this.enable_template();
+					}
+				}else{
+					if( 'z_t' in this.data['thing'] ){
+						delete(this.data['thing']['z_o']);
+						delete(this.data['thing']['z_t']);
+						delete(this.data['thing']['z_n']);
+					}
+				}
 			}else if( x[0] == "i_of_select" ){
 				delete(this.data['thing_i_of']['z']);
 				setTimeout(this.load_template,100);
@@ -331,7 +343,7 @@ const object_template_create_v2 = {
 				</div>
 				<div class="code_line">
 					<div>Node Type</div>
-					<div><div title="Node Type" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:thing:i_t:v'" data-list="list-assoc" data-list-values="node-type" ><span v-if="data['thing']['i_t']['v'] in instance_type" >{{ instance_type[ data['thing']['i_t']['v'] ] }}</span><span v-else>{{ data['thing']['i_t']['v'] }}</span></div></div>
+					<div><div title="Node Type" data-type="dropdown" v-bind:data-var="'ref:'+refname+':data:thing:i_t:v'" data-list="list-assoc" data-list-values="node-type" v-bind:data-context-callback="refname+':type_change'" ><span v-if="data['thing']['i_t']['v'] in instance_type" >{{ instance_type[ data['thing']['i_t']['v'] ] }}</span><span v-else>{{ data['thing']['i_t']['v'] }}</span></div></div>
 				</div>
 				<div class="code_line">
 					<div>Node Name</div>
@@ -387,8 +399,11 @@ const object_template_create_v2 = {
 				</table>
 				</div>
 			</div>
-			<div v-if="'z_t' in data['thing']==false" >
+			<div v-if="'z_t' in data['thing']==false&&(data['thing']['i_t']['v']=='N')" >
 				<div class="btn btn-outline-dark btn-sm py-0" v-on:click="enable_template()" >Enable Sub Nodes</div>
+			</div>
+			<div v-if="'z_t' in data['thing']==false&&(data['thing']['i_t']['v']=='L')" >
+				<div class="btn btn-outline-dark btn-sm py-0" v-on:click="enable_template()" >Enable DataSet Columns Template</div>
 			</div>
 			<div style="border:1px solid #ccc; margin-bottom:10px;" v-if="'z_t' in data['thing']" >
 				<div style="background-color:#f0f0f0; padding:5px;">Template for "{{ data['thing']['l']['v'] }}"</div>

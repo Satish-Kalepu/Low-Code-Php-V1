@@ -1,5 +1,91 @@
 <?php
 
+
+
+	$config_allow_actions = [
+		"apis"=> [ "*", "invoke" ],
+		"tables"=> ["*","find", "scan", "insert", "update", "delete"],
+		"storage"=> ["*","list_files", "get_file", "get_raw_file", "put_file", "delete_file"],
+		"files"=> ["*","list_files", "get_file", "get_raw_file", "get_file_by_id", "get_raw_file_by_id", "put_file", "delete_file"],
+		"objects"=> ["*","listObjects","getObject","getObjectTemplate","getObjectRecords","getObjectNodes","objectCreate","objectCreateWithTemplate","objectLabelUpdate","objectTypeUpdate","objectAliasUpdate","objectInstanceUpdate","objectPropertiesUpdate","objectNodesTruncate","objectDelete","objectConverToDataset","objectConverToNode","objectTemplatePropertyCreate","objectTemplatePropertyUpdate","objectTemplatePropertyDelete","objectTemplateEnable","objectTemplateOrderUpdate","dataSetRecordCreate","dataSetRecordUpdate","dataSetRecordDelete","dataSetTruncate","keywordSearch"],
+	];
+
+	function validate_policy($p){
+		global $config_allow_actions;
+		if( gettype($p) != "array" ){
+			return ['status'=>"fail", "error"=>"Invalid policy format (1)"];
+		}
+		if( array_keys($p)[0] !== 0 ){
+			return ['status'=>"fail", "error"=>"Invalid policy format (2)"];
+		}
+		if( sizeof($p) > 5 ){
+			return ['status'=>"fail", "error"=>"Max 5 policies allowed (3)"];
+		}
+		foreach( $p as $pi=>$pd ){
+			if( !isset($pd['service']) || !isset($pd['actions']) || !isset($pd['things']) || !isset($pd['records']) ){
+				return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Key:".$pdi];
+			}
+			if( !is_string($pd['service']) || !is_array($pd['actions']) || !is_array($pd['things']) || !is_array($pd['records']) ){
+				return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Policy Format"];
+			}
+			foreach( $pd as $pdi=>$pdd ){
+				if( !in_array($pdi, ["service", "actions", "records", "things"] ) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Key:".$pdi];
+				}
+			}
+			if( !in_array($pd['service'], ["apis", "tables", "files", "storage", "objects"] ) ){
+				return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Service:".$pd['service']];
+			}
+			if( !isset($config_allow_actions[ $pd['service'] ]) ){
+				return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Actions not available for service:".$pd['service']];
+			}
+			foreach( $pd['actions'] as $pdacti=>$pdaction ){
+				if( !in_array( $pdaction, $config_allow_actions[ $pd['service'] ]) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Action `".$pdaction."` in Service:".$pd['service']];
+				}
+			}
+			$k = [];
+			//print_r( $pd['things'] );
+			foreach( $pd['things'] as $pdti=>$pdthing ){
+				if( !is_array($pdthing) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Property `".($pdti+1)."` Invalid"];
+				}
+				if( isset($k[ $pdthing['thing'] ]) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Property `".$pdthing['thing']."` repeated"];
+				}
+				if( isset($k[ $pdthing['_id'] ]) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Property `".$pdthing['_id']."` repeated"];
+				}
+				$k[ $pdthing['_id'] ]=1;
+				$k[ $pdthing['thing'] ]=1;
+				if( $pdthing['_id'] != "*" && !preg_match("/^[a-z0-9\:\-\_\.]{1,250}$/i", $pdthing['_id']) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Property `".$pdthing['_id']."` "];
+				}
+				if( $pdthing['thing'] != "*" && !preg_match("/^[a-z0-9\:\-\_\.]{1,250}$/i", $pdthing['thing']) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Property `".$pdthing['thing']."` "];
+				}
+			}
+			if( sizeof($pd['things']) > 10 ){
+				return ['status'=>"fail", "error"=>"Policy ".($pi+1)." too many properties. use `*` or create separate policies"];
+			}
+
+			$k = [];
+			foreach( $pd['records'] as $pdti=>$pdthing ){
+				if( isset($k[ $pdthing ]) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Record `".$pdthing."` repeated"];
+				}
+				$k[ $pdthing ]=1;
+				if( $pdthing != "*" && !preg_match("/^[a-z0-9\:\-\_\.]{1,250}$/i", $pdthing) ){
+					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Record `".$pdthing."` "];
+				}
+			}
+			if( sizeof($pd['records']) > 10 ){
+				return ['status'=>"fail", "error"=>"Policy ".($pi+1)." too many record entries. use `*` or create separate policies"];
+			}
+		}
+		return ['status'=>"success"];
+	}
+
 	if( $_POST['action'] == "auth_load_users" ){
 		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_user_pool", [ "app_id"=>$config_param1 ], ['projection'=>['password'=>false] ] );
 		foreach( $res['data'] as $i=>$j ){
@@ -66,7 +152,10 @@
 		$apis[] = ["thing"=>"auth_api:user_auth", "_id"=>"auth_api:10002"];
 		$apis[] = ["thing"=>"auth_api:user_auth_captcha", "_id"=>"auth_api:10003"];
 		$apis[] = ["thing"=>"auth_api:verify_session_key", "_id"=>"auth_api:10004"];
+		$apis[] = ["thing"=>"auth_api:verify_user_session", "_id"=>"auth_api:10006"];
 		$apis[] = ["thing"=>"auth_api:assume_session_key", "_id"=>"auth_api:10005"];
+		$apis[] = ["thing"=>"auth_api:assume_user_session_key", "_id"=>"auth_api:10007"];
+		$apis[] = ["thing"=>"auth_api:user_session_logout", "_id"=>"auth_api:10009"];
 		$apis[] = ["thing"=>"captcha:get", "_id"=>"captcha:10101"];
 
 		$files = [];
@@ -89,13 +178,26 @@
 			$storage[] = ["thing"=>"file:storage_vault:".$j['des'], "_id"=>"storage_vault:".$j['_id']];
 		}
 
+		$objects = [];
+		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_graph_dbs", [
+			'app_id'=>$config_param1
+		],[
+			'sort'=>['name'=>1],
+			'limit'=>200,
+			'projection'=>['name'=>true, 'type'=>true]
+		]);
+		foreach( $res['data'] as $i=>$j ){
+			$objects[] = ["thing"=>"object:".$j['name'], "_id"=>"object:".$j['_id']];
+		}
 
 		json_response([
 			'status'=>"success", 
 			"tables"=>$tables, 
 			"apis"=>$apis, 
 			"files"=>$files, 
-			"storage"=>$storage
+			"storage"=>$storage,
+			"objects"=>$objects,
+			"actions"=>$config_allow_actions,
 		]);
 	}
 	if( $_POST['action'] == "load_access_keys" ){
@@ -107,7 +209,15 @@
 		json_response($res);
 	}
 	if( $_POST['action'] == "load_tokens" ){
-		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", ['t'=>"uk", "app_id"=>$config_param1], ['sort'=>['_id'=>-1]] );
+		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", [
+			't'=>"uk", "app_id"=>$config_param1
+		], ['sort'=>['_id'=>-1]] );
+		json_response($res);
+	}
+	if( $_POST['action'] == "load_sessions" ){
+		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_user_sessions", [
+			"app_id"=>$config_param1
+		], ['sort'=>['_id'=>-1], 'projection'=>['roles'=>false] ] );
 		json_response($res);
 	}
 	if( $_POST['action'] == "load_roles" ){
@@ -153,6 +263,17 @@
 		]);
 		json_response(['status'=>"success"]);
 	}
+	if( $_POST['action'] == "auth_role_delete" ){
+		if( !preg_match("/^[a-f0-9]{24}$/", $_POST['role_id']) ){
+			json_response(['status'=>"fail","error"=>"Incorrect Role Id" ]);
+		}
+		$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_user_roles", [ "app_id"=>$config_param1, '_id'=>$_POST['role_id']] );
+		event_log( "system", "auth_role_delete", [
+			"app_id"=>$config_param1, 
+			"role_id"=>$_POST['role_id'],
+		]);
+		json_response(['status'=>"success"]);
+	}
 
 	if( $_POST['action'] == "save_user" ){
 		$user = $_POST['user'];
@@ -192,6 +313,25 @@
 			$user["pwdexpire_date"] = date("Y-m-d H:i:s", time()+(30*86400) );
 		}
 		$user["app_id"]=$config_param1;
+
+		if( isset($user['roles']) ){
+			if( !is_array($user['roles']) ){
+				unset($user['roles']);
+			}
+			$k = [];
+			foreach( $user['roles'] as $i=>$j ){
+				if( !is_array($j) ){
+					json_response(['status'=>"fail", "error"=>"Role Invalid"]);
+				}
+				if( !isset($j['_id']) || !isset($j['name']) ){
+					json_response(['status'=>"fail", "error"=>"Role Invalid"]);
+				}
+				if( isset($k[ $j['_id'] ]) ){
+					json_response(['status'=>"fail", "error"=>"Role Repeated"]);
+				}
+				$k[ $j['_id'] ] =1;
+			}
+		}
 		if( $user_id ){
 			$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_user_pool", [ "app_id"=>$config_param1, '_id'=>$user_id ], $user );
 		}else{
@@ -219,17 +359,41 @@
 				json_response(['status'=>"fail", "error"=>"Key not found"]);
 			}
 		}
-		$key["expire"] = (int)$key["expire"];
-		if( isset($_POST['expire_minits']) ){
-			date_default_timezone_set("UTC");
-			$key["expire"] = time()+((int)$_POST['expire_minits']*60);
+		if( !isset($key['des']) ){
+			json_response(['status'=>"fail", "error"=>"Description is required"]);
+		}else if( !preg_match("/^[a-z0-9\-\_\,\.\(\)\ ]{1,200}$/i",$key['des']) ){
+			json_response(['status'=>"fail", "error"=>"Description should be simple. no special chars. max length 200."]);
 		}
-		//$key['expiret'] = date("Y-m-d H:i:s", $key['expire']);
-		$key['expiret'] = new \MongoDB\BSON\UTCDateTime($key["expire"]*1000);
+		if( $key['s'] === true || $key['s'] === "true" ){
+			$key['s'] = true;
+			if( !preg_match("/^[0-9]+$/",$key['max_s']) && $key['max_s'] != "-1" ){
+				json_response(['status'=>"fail", "error"=>"Max Sessions should be between 1 to 1000"]);
+			}
+			$key['max_s'] = (int)$key['max_s'];
+			if( $key['max_s'] != "-1" ){
+				if( $key['max_s'] < 1 || $key['max_s'] > 1000 ){
+					json_response(['status'=>"fail", "error"=>"Max Sessions should be between 1 to 1000"]);
+				}
+			}
+		}
+
+		date_default_timezone_set("UTC");
+		$key['expiret'] = new \MongoDB\BSON\UTCDateTime( (strtotime($key['expire_utc'])*1000)+(5*86400*1000) );
+		//$key['expiret'] = [ '$date'=> [ '$numberLong'=> (string)((strtotime($key['expire_utc'])*1000) ) ] ];
+		//+(5*86400*1000)
+		//disabled for Admin AccessKeys
+		date_default_timezone_set( $config_global_apimaker['timezone'] );
 		$key["updated"] = date("Y-m-d H:i:s");
 		unset($key['_id_enc']);
 		$key['app_id'] = $config_param1;
 		$key['t'] = "ak"; // ak admin key, uk user key
+
+		//print_r( $key['policies'] );
+		$vres = validate_policy( $key['policies'] );
+		if( $vres['status'] == "fail" ){
+			json_response($vres);
+		}
+		//print_r( $key );exit;
 		if( $key_id ){
 			$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_user_keys", [ "app_id"=>$config_param1, '_id'=>$key_id] , $key );
 		}else{
@@ -268,6 +432,12 @@ if( $_POST['action'] == "auth_save_role" ){
 	$key["updated"] = date("Y-m-d H:i:s");
 	unset($key['_id_enc']);
 	$key['app_id'] = $config_param1;
+
+	$vres = validate_policy( $key['policies'] );
+	if( $vres['status'] == "fail" ){
+		json_response($vres);
+	}
+
 	if( $key_id ){
 		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_user_roles", [ "app_id"=>$config_param1, '_id'=>$key_id] , $key );
 	}else{

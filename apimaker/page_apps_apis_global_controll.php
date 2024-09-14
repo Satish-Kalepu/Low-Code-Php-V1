@@ -208,6 +208,51 @@ if( $_POST['action'] == "get_global_apis" ){
 	"session_key": "",
 }',
 	];
+	$apis['auth_apis'][] = [
+		"_id"=>"10006",
+		"path" => "_api/auth/verify_user_session",
+		"name"=>"verify_user_session",
+		"des"=>"Verify user session id validity",
+		'input-method'=>"POST",
+		"vpost"=>json_encode([
+			"action"=>"verify_user_session",
+			'user_session_id'=>"",
+		],JSON_PRETTY_PRINT),
+		"vpost_help"=>'{
+	"action"=>"verify_user_session",
+	"user_session_id": "",
+}',
+	];
+	$apis['auth_apis'][] = [
+		"_id"=>"10007",
+		"path" => "_api/auth/assume_user_session_key",
+		"name"=>"assume_user_session_key",
+		"des"=>"Verify user session id validity",
+		'input-method'=>"POST",
+		"vpost"=>json_encode([
+			"action"=>"assume_user_session_key",
+			'user_session_id'=>"",
+		],JSON_PRETTY_PRINT),
+		"vpost_help"=>'{
+	"action"=>"assume_user_session_key",
+	"user_session_id": "",
+}',
+	];
+	$apis['auth_apis'][] = [
+		"_id"=>"10009",
+		"path" => "_api/auth/user_session_logout",
+		"name"=>"user_session_logout",
+		"des"=>"Delete user session id and respective session tokens created for the session",
+		'input-method'=>"POST",
+		"vpost"=>json_encode([
+			"action"=>"user_session_logout",
+			'user_session_id'=>"",
+		],JSON_PRETTY_PRINT),
+		"vpost_help"=>'{
+	"action"=>"user_session_logout",
+	"user_session_id": "",
+}',
+	];
 
 	$apis['captcha'][] = [
 		"_id"=>"10101",
@@ -1093,18 +1138,24 @@ if( $_POST['action'] == "generate_access_token" ){
 		json_response("fail", "unknown type");
 	}
 
-	$expire = time()+(5*60);
+	$expire = date("Y-m-d H:i:s", time()+(5*60) );
+	date_default_timezone_set("UTC");
+	$expire_utc = date("Y-m-d H:i:s", time()+(5*60) );
+	$expiret = new \MongoDB\BSON\UTCDateTime( time()+(5*60) );
+	date_default_timezone_set( $config_global_apimaker['timezone'] );
 	$data = [
 		'app_id'=>$config_param1,
 		"t"=>"uk",
 		"active"=>'y',
 		"expire"=>$expire,
-		"expiret"=> new \MongoDB\BSON\UTCDateTime($expire),
+		"expire_utc"=>$expire_utc,
+		"expiret"=> $expiret,
 		"policies"=>[
 			[
 				"service"=> $service,
 				"actions"=> ["*"],
 				"things"=> [$thing],
+				"records"=> ["*"],
 			],
 		],
 		"ips"=>[$_SERVER['REMOTE_ADDR']."/32"],

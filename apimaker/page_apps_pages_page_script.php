@@ -2,6 +2,7 @@
 <script  src="<?=$config_global_apimaker_path ?>js/beautify-html.js" ></script>
 <script  src="<?=$config_global_apimaker_path ?>js/beautify-css.js" ></script>
 <script  src="<?=$config_global_apimaker_path ?>js/beautify.js" ></script>
+<script  src="<?=$config_global_apimaker_path ?>js/htmlclean.js" ></script>
 <!-- 
 <script  src="<?=$config_global_apimaker_path ?>ace/src/ext-language_tools.js" ></script>
 <script  src="<?=$config_global_apimaker_path ?>ace/src/ext-beautify.js" ></script>
@@ -19,7 +20,7 @@
 
 <?php
 	$css_data = file_get_contents("page_apps_pages_page_editor_css.css");
-	$template_data = file_get_contents("page_apps_pages_page_editor_template.html");
+	//$template_data = file_get_contents("page_apps_pages_page_editor_template.html");
 	$tag_settings = file_get_contents("page_apps_pages_page_tag_config.js");
 
 	$components = [
@@ -37,9 +38,7 @@
 
 ?>
 var css_data = `<?=$css_data ?>`;
-var template_data = `<?=$template_data ?>`;
-
-
+//var template_data = `<?=$template_data ?>`;
 
 String.prototype.toProperCase = function(){
     return this.replace(/\w\S*/g, function(txt){
@@ -335,9 +334,6 @@ var app = s__({
 		this.frame.document.body.innerHTML = ``;
 
 		global_frame = this.frame;
-		<?php 
-		//require("page_apps_pages_page_script2.js");
-		?>
 		console.log("OKK");
 		setTimeout(this.init,500);
 		setTimeout(this.initialize_events,1000);

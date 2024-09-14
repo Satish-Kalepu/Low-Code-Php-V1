@@ -310,7 +310,7 @@
 										      	<div>Content-Type: application/json</div>
 												<div>Access-Key: xxxxxxx</div>
 												<div>&nbsp;</div>
-										        <pre v-if="apitype in d['apis']">{{ objectapi }}</pre>
+										        <pre v-if="apitype in d['apis']">{{ objectapi['post'] }}</pre>
 										        <pre v-else>api data not found</pre>
 										    </div>
 									      </div>
@@ -891,7 +891,7 @@ var app = Vue.createApp({
 			this.test_api_method__ = "POST";
 			// console.log( this.apis[ t ][ ti ][ at ] );
 			this.test_path__ = this.apis['objects'][ ti ]['path']+'';
-			this.test_data__ = JSON.stringify( this.apis[ t ][ ti ]['apis'][ at ], null, 4 );
+			this.test_data__ = JSON.stringify( this.apis[ t ][ ti ]['apis'][ at ]['post'], null, 4 );
 			// console.log( this.test_data__ );
 			this.test_popup__ = new bootstrap.Modal( document.getElementById('popup_test__') );
 			this.test_popup__.show();

@@ -222,7 +222,7 @@ if( $config_param3 ){
 	$graph_links = 		$db_prefix . "_graph_" . $graph_id . "_links";
 	$graph_queue	= $db_prefix . "_zd_queue_graph_". $graph_id;
 
-	require("page_apps_objects_v1_controll.php");
+	require("page_apps_objects_database_controll.php");
 
 	if( $_GET['action'] == "initialize2" ){
 		require("page_apps_objects_controll2.php");
@@ -232,7 +232,6 @@ if( $config_param3 ){
 		require("page_apps_objects_controll3.php");
 		exit;
 	}
-
 
 }
 
