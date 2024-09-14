@@ -1595,6 +1595,38 @@ function engine_api_object( $graph_db, $action, $post ){
 
 	}else if( $action == "keywordSearch" ){
 
+		$things = [];
+		$cond = [];
+		$sort = [];
+		if( !isset($post['keyword']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Input Missing: keyword" ]);
+		}
+		if( !preg_match("/^[a-z0-9\ \-]$/", $post['keyword']) ){
+			return json_response(200,["status"=>"success", "things"=>[] ]);
+		}
+		$cond['p'] = ['$gte'=>$post['keyword'], '$lte'=>$post['keyword']."zzz" ];
+		$sort = ['p'=>1];
+		$debug_t = true;
+		$res = $mongodb_con->find( $graph_keywords, $cond, [
+			"sort"=>$sort, 
+			"limit"=>200,
+		]);
+		foreach( $res['data'] as $i=>$j ){
+			$things[] = [
+				'l'=>['t'=>'T', 'v'=>$j['p']],
+				'i_of'=>['i'=>$j['pid'],'v'=>$j['pl'],'t'=>"GT"],
+				'i'=>$j['tid'],
+				'ol'=>$j['l'],
+				'm'=>isset($j['m'])?true:false,
+				't'=>$j['t'],
+			];
+		}
+		$res= [
+			"status"=>"success",
+			"things"=>$things,
+			"keyword"=>$post['keyword'],
+		];
+		return json_response(200,$res);
 	
 	}else{
 		return json_response(404, ["status"=>"fail", "error"=>"Unknown action"]);

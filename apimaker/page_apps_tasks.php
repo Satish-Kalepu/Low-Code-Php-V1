@@ -3,6 +3,10 @@
 	.mongoid:hover{ background-color:#eee; }
 	.mongoid div{ display:none; }
 	.mongoid:hover div{ display: block; position:absolute; background-color:white; box-shadow:2px 2px 5px #666; border:1px solid #999; padding:0px 10px; }
+	div.vid{ padding:0px 2px; cursor:pointer; }
+	div.vid pre.vid{display: none; position: absolute; background-color: white; padding: 3px; border: 1px solid #aaa;}
+	div.vid:hover pre.vid{display: block;}
+
 </style>
 <div id="app" >
 	<div class="leftbar" >
@@ -43,12 +47,13 @@
 
 					<table class="table table-bordered table-sm w-auto" >
 						<tr>
-							<td>Topic</td><td>Function</td><td>Type</td>
+							<td>#<td>Topic</td><td>Function</td><td>Type</td>
 							<td>Queue</td><td>Success</td><td>Fail</td>
 							<td>Workers</td>
 							<td>Action</td><td>&nbsp;</td>
 						</tr>
 						<tr v-for="d,di in settings['internal']">
+							<td><div class="vid">#<pre class="vid">{{d['_id']}}</pre></div></td>
 							<td nowrap>{{ d['topic'] }}</td>
 							<td nowrap><a v-bind:href="path+'functions/'+d['fn_id']+'/'+d['fn_vid']" >{{ d['fn'] }}</a></td>
 							<td nowrap>{{ d['type']=='s'?'Single Thread':'Multi Threaded' }}</td>
