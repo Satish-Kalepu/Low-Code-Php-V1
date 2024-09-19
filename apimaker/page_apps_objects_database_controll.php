@@ -1048,23 +1048,27 @@ if( $_POST['action'] == "objects_create_with_template" ){
 		$thing['_id'] = $new_id;
 	}
 
+	//print_r( $thing['props']['p1'] );
+
 	$props =[];
 	if( isset( $thing['props'] ) ){
-		foreach( $thing['props'] as $i=>$j ){
+		foreach( $thing['props'] as $propf=>$j ){
 			$k = [];
 			if( is_array($j) ){
 				for($ii=0;$ii<sizeof($j);$ii++){
 					if( isset($j[ $ii ]['t']) && isset($j[ $ii ]['v']) ){
-						$k[]=$j;
+						$k[]=$j[ $ii ];
 					}
 				}
-				if( sizeof($k) ){
-					$props[ $i ] = $k;
-				}
+			}
+			if( sizeof($k) ){
+				$props[ $propf ] = $k;
 			}
 		}
 		$thing['props'] = $props;
 	}
+
+	//print_r( $props['p1'] );exit;
 	$z_t = [];
 	if( isset($thing['z_t']) ){
 		foreach( $thing['z_t'] as $i=>$j ){

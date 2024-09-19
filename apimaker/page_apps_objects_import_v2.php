@@ -190,6 +190,12 @@ var objects_import_v2 = {
 			if( d.trim() == "" ){
 				return "end";
 			}
+			if( d.length < 1024 ){
+				if( d.match(/\n$/) == null ){
+					d = d + "\n";
+				}
+			}
+
 			var p = 0;
 			var r = [];
 			var cnt = 0;
@@ -226,7 +232,7 @@ var objects_import_v2 = {
 						if( m1[2] == "\n" ){ this.fpos += p; return r; }
 					}else{
 						console.log("Null");
-						return "error";
+						return "error: `" + JSON.stringify([dd]) + "`: " + JSON.stringify(d);
 					}
 				}
 			}

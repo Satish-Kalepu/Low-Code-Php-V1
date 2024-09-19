@@ -1,5 +1,5 @@
 var editor_component = {
-	props:["editor_div_id", "editor_wrapper_div_id", "data"],
+	props:["editor_div_id", "editor_wrapper_div_id"],
 	data: function(){
 		return {
 			target_editor_id__: "editor_div",
@@ -152,25 +152,11 @@ var editor_component = {
 		};
 	},
 	mounted: function(){
-		if( typeof(this.data) == undefined ){
-			this.data["body"]= "<p class='text-danger'>Something wrong</p>";
-			this.data['options'] = {};
-		}else if( typeof(this.data)!="object" ){
-			this.data["body"]= "<p class='text-danger'>Something wrong2</p>";
-			this.data['options'] = {};
-		}else if( 'body' in this.data == false ){
-			this.data["body"]= "<p class='text-danger'>Something wrong3</p>";
-			this.data['options'] = {};
-		}
 		if( typeof(this.$root.graph_key) != "undefined" ){
 			this.graph_search_api_key__ = this.$root.graph_key+'';
-		}else{
-			console.error("graph search key missing");
 		}
 		if( typeof(this.$root.graph_search_api) != "undefined" ){
 			this.graph_search_api__ = this.$root.graph_search_api+'';
-		}else{
-			console.error("graph search api missing");
 		}
 		this.target_editor_id__= this.editor_div_id+'';
 		this.target_wrapper_id__= this.editor_wrapper_div_id+'';
@@ -179,7 +165,6 @@ var editor_component = {
 			this.css_template__ = editor_component['css_template__'];
 			if( this.gt__("editor_css_style_tag__") == null ){
 				var vl = this.ce__("style");
-				vl.id = "editor_css_style_tag__";
 				vl.innerText = this.css_template__;
 				document.body.appendChild(vl);
 			}
@@ -412,16 +397,14 @@ var editor_component = {
 		},
 		initialize_events__: function(){
 			if( this.gt__(this.target_wrapper_id__) == null ){
-				console.error(this.target_wrapper_id__ + " not found");
-				//setTimeout(this.initialize_events__,1000);
+				console.log(this.target_wrapper_id__ + " not found");
+				setTimeout(this.initialize_events__,1000);
 				return;
 			}
 			if( this.gt__(this.target_editor_id__) == null ){
-				console.error("Editor initialization failed: Missing "+this.target_editor_id__);
+				console.log("Editor initialization failed: Missing "+this.target_editor_id__);
 				return;
 			}
-			this.echo__( this.data );
-			this.gt__(this.target_editor_id__).innerHTML = this.data['body'];
 			this.find_relative_positon__();
 			var vl2 = this.gt__(this.target_wrapper_id__);
 			vl2.addEventListener("scroll", this.editor_scroll__);

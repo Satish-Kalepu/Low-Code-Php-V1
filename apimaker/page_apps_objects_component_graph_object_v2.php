@@ -1997,7 +1997,7 @@ const graph_object_v2 =  {
 		</div>
 
 		<div v-if="data['thing']['i_t']['v']=='N'||data['thing']['i_t']['v']=='D'" data-id="root-document" style="border:1px solid #999;margin-bottom:20px; background-color:white;" >
-			<!-- <graph_document v-bind:ref="refname + '_doc'" v-bind:refname="refname + '_doc'" v-bind:object_id="" v-bind:data="data['thing']" ></graph_document> -->
+			<editor_component editor_div_id="editor_div" editor_wrapper_div_id="editor_block_a" v-bind:data="thing" v-on:edited="thing_body_updated">
 		</div>
 
 		<div>&nbsp;-&nbsp;</div>

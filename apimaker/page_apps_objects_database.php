@@ -110,8 +110,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 							</div>
 						</div>
 
-						<editor_component editor_div_id="editor_div" editor_wrapper_div_id="tabs_container2"></editor_component>
-
 					</template>
 					<template v-else-if="vtabi=='import2'" >
 						<objects_import_v2 ref="import2" refname="import2" v-bind:vtab="window_tabs[vtabi]" ></objects_import_v2>
@@ -390,17 +388,18 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 	</div>
 	</div>
 
+	<editor_component v-if="editor_enable" v-bind:editor_div_id="editor_div_id" v-bind:editor_wrapper_div_id="editor_wrapper_div_id" v-bind:data="editor_data" v-on:edited="editor_updated"></editor_component>
+
 </div>
 
 <?php require("page_apps_objects_import_v2.php"); ?>
 <?php require("page_apps_objects_component_template.php"); ?>
 <?php require("page_apps_objects_component_template_create_v2.php"); ?>
 <?php require("page_apps_objects_component_graph_object_v2.php"); ?>
-<?php require("page_apps_objects_component_document.php"); ?>
 <?php require("page_apps_objects_component_dataset_create.php"); ?>
 <?php require("page_apps_objects_component_dataset_edit.php"); ?>
 <?php require("page_apps_objects_component_ops.php"); ?>
-<script><?php require("page_apps_objects_component_editor.js"); ?></script>
+<script><?php require("js/editor_mixed.js"); ?></script>
 <script>
 <?php
 $components = [
@@ -577,6 +576,12 @@ var app = Vue.createApp({
 				},
 			},
 			window_tabs_order: ["summary", "browse"],
+			editor_enable: false,
+			editor_div_id: "",
+			editor_wrapper_div_id: "",
+			editor_data: {
+			}
+
 		};
 	},
 	mounted:function(){
@@ -593,6 +598,9 @@ var app = Vue.createApp({
 
 	},
 	methods: {
+		editor_updated: function(v){
+			
+		},
 		get_node_type: function( v ){
 			if( v in this.node_types ){
 				return this.node_types[v];
@@ -2325,7 +2333,6 @@ app.component( "objects_import_v2", objects_import_v2 );
 app.component( "object_template_edit", object_template_edit );
 app.component( "object_template_create_v2", object_template_create_v2 );
 app.component( "graph_object_v2", graph_object_v2 );
-app.component( "graph_document", graph_document );
 app.component( "object_dataset_create_record", object_dataset_create_record );
 app.component( "object_dataset_edit_record", object_dataset_edit_record );
 app.component( "object_ops", object_ops );
