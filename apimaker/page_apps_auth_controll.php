@@ -61,7 +61,7 @@
 				if( $pdthing['_id'] != "*" && !preg_match("/^[a-z0-9\:\-\_\.]{1,250}$/i", $pdthing['_id']) ){
 					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Property `".$pdthing['_id']."` "];
 				}
-				if( $pdthing['thing'] != "*" && !preg_match("/^[a-z0-9\:\-\_\.]{1,250}$/i", $pdthing['thing']) ){
+				if( $pdthing['thing'] != "*" && !preg_match("/^[a-z0-9\:\-\_\.\ ]{1,250}$/i", $pdthing['thing']) ){
 					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Property `".$pdthing['thing']."` "];
 				}
 			}

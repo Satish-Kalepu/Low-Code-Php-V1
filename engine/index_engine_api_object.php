@@ -73,6 +73,7 @@ function engine_api_object( $graph_db, $action, $post ){
 		getObjectTemplate    - objects_load_template
 		getObjectRecords    - objects_load_records
 		getObjectNodes    - objects_load_browse_list
+		getObjectLibrarySettings    - 
 		objectCreate    - objects_create_node_on_fly
 		objectCreateWithTemplate    - objects_create_with_template
 		objectLabelUpdate    - objects_edit_label
@@ -80,12 +81,12 @@ function engine_api_object( $graph_db, $action, $post ){
 		objectAliasUpdate    - objects_edit_alias
 		objectInstanceUpdate    - objects_edit_i_of
 		objectPropertiesUpdate    - objects_save_props
+		objectHtmlUpdate  -  objects_save_object_html
 		objectNodesTruncate    - objects_nodes_empty
 		objectDelete    - objects_delete_node
 		objectConverToDataset    - objects_ops_convert_to_dataset
 		objectConverToNode    - objects_ops_convert_to_nodelist
 		objectSetIcon    -  objects_set_icon
-		objectSaveHtml  -  objects_save_object_html
 		objectTemplateFieldCreate    - objects_object_add_field
 		objectTemplateFieldUpdate    - objects_save_object_z_t
 		objectTemplateFieldDelete    - objects_delete_field
@@ -197,8 +198,8 @@ function engine_api_object( $graph_db, $action, $post ){
 		$things = [];
 		$cond = [];
 		$sort = [];
-		if( isset($post['keyword']) && $post['keywrod'] ){
-			if( !preg_match("/^[a-z0-9\ \-]$/", $post['keyword']) ){
+		if( isset($post['keyword']) && $post['keyword'] ){
+			if( !preg_match("/^[a-z0-9\ \-]+$/i", $post['keyword']) ){
 				return json_response(200,["status"=>"success", "things"=>[] ]);
 			}
 			$cond['p'] = ['$gte'=>$post['keyword'], '$lte'=>$post['keyword']."zzz" ];
@@ -322,7 +323,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(400,["status"=>"fail", "error"=>"Input invalid" ]);
 		}
 		$res = $mongodb_con->find( $graph_things, $cond, [
-			'projection'=>['l'=>1,'i_of'=>1, 'm_i'=>1, 'm_u'=>1,'cnt'=>1],
+			'projection'=>['l'=>1,'i_of'=>1, 'm_i'=>1, 'm_u'=>1,'cnt'=>1,'ic'=>1, 'i_t'=>1],
 			'sort'=>$sort,
 			'limit'=>100,
 		]);
@@ -343,7 +344,7 @@ function engine_api_object( $graph_db, $action, $post ){
 		$res = $mongodb_con->find_one( $graph_things, ["_id"=>$post['object_id']], $ops );
 		if( $res['status'] != "success" ){
 			return json_response(500,[
-				"status"=>"success", "data"=>$res['data'], "query"=>$cond
+				"status"=>"fail", "error"=>"Node not found"
 			]);
 		}
 		if( $res['data'] ){
@@ -445,6 +446,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			$res['sort'] = $sort;
 			return json_response(200,$res);
 		}
+	
 	}else if( $action == "getObjectNodes" ){ //objects_load_browse_list
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
@@ -470,7 +472,7 @@ function engine_api_object( $graph_db, $action, $post ){
 				$cond['l.v'] = ['$gt'=> $post['last']];
 			}
 			$res = $mongodb_con->find( $graph_things, $cond, [
-				'projection'=>['l'=>1,'props'=>1,'i_of'=>1,'m_u'=>1],
+				'projection'=>['l'=>1,'props'=>1,'i_of'=>1,'m_u'=>1,'ic'=>1, 'i_t'=>1],
 				'sort'=>['l.v'=>1],
 				'limit'=>100,
 			]);
@@ -480,6 +482,38 @@ function engine_api_object( $graph_db, $action, $post ){
 			$res['sort'] = $sort;
 			return json_response(200,$res);
 		}
+	
+	}else if( $action == "getObjectLibrarySettings" ){ 
+
+		if( !isset($graph_db['settings']) ){
+			$settings = ['enabled'=>false, 'library'=>false];
+		}else{
+
+			$library = false;
+			if( $graph_db['settings']['library_enable'] ){
+				$library = [
+					'vault_id'=>		$graph_db['settings']['library']['vault_id'],
+					'vault_name'=>		$graph_db['settings']['library']['vault']['des'],
+					'vault_type'=>		$graph_db['settings']['library']['vault']['vault_type'],
+					'file_id'=>			$graph_db['settings']['library']['vault']['file_id'],
+					'upload'=>			$graph_db['settings']['library']['upload'],
+					'size'=>			$graph_db['settings']['library']['size'],
+					'dest_path'=>		$graph_db['settings']['library']['dest_path'],
+					'thumb_path'=>		$graph_db['settings']['library']['thumb_path'],
+					'thing_id'=>		$graph_db['settings']['library']['thing_id'],
+				];
+			}
+
+			$settings = [
+				'enabled'=>$graph_db['settings']['library_enable'],
+				'library'=>$library
+			];
+		}
+
+		return json_response(200, [
+			'status'=>'success',
+			'library_settings'=>$settings,
+		]);
 
 	}else if( $action == "objectCreate" ){ //objects_create_node_on_fly
 		if( !isset($post['node']) ){
@@ -1018,6 +1052,33 @@ function engine_api_object( $graph_db, $action, $post ){
 
 		return json_response(200,$res);
 
+	}else if( $action == "objectHtmlUpdate" ){ //objects_save_object_html
+		if( !isset($post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Need Thing id"]);
+		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing id incorrect"]);
+		}
+
+		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
+		if( !$res['data'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing not found"]);
+		}
+		if( !isset($post['body']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+		}else if( !isset($post['body']['html']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+		}else{
+			$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
+				'body'=>$post['body'],
+			]);
+			event_log( "objects", "html_save", [
+				"app_id"=>$config_param1,
+				"graph_id"=>$graph_id,
+				"object_id"=>$post['object_id'],
+			]);
+			$res['cnt'] = $post['cnt'];
+			return json_response(200, $res );
+		}
 
 	}else if( $action == "objectNodesTruncate" ){ //objects_nodes_empty
 		if( !isset($post['instance_id']) ){
@@ -1396,34 +1457,6 @@ function engine_api_object( $graph_db, $action, $post ){
 		]);
 		return json_response(200, $res );
 		exit;
-
-	}else if( $action == "objectSaveHtml" ){ //objects_save_object_html
-		if( !isset($post['object_id']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Need Thing id"]);
-		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Thing id incorrect"]);
-		}
-
-		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
-		if( !$res['data'] ){
-			return json_response(400,["status"=>"fail", "error"=>"Thing not found"]);
-		}
-		if( !isset($post['body']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
-		}else if( !isset($post['body']['html']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
-		}else{
-			$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
-				'body'=>$post['body'],
-			]);
-			event_log( "objects", "html_save", [
-				"app_id"=>$config_param1,
-				"graph_id"=>$graph_id,
-				"object_id"=>$post['object_id'],
-			]);
-			$res['cnt'] = $post['cnt'];
-			return json_response(200, $res );
-		}
 
 	}else if( $action == "objectTemplateFieldCreate" ){ //objects_object_add_field
 
@@ -2091,9 +2124,7 @@ function engine_api_object( $graph_db, $action, $post ){
 	}else{
 		return json_response(404, ["status"=>"fail", "error"=>"Unknown action"]);
 	}
-
 }
-
 
 function find_or_insert( $instance, $thing_name ){
 	global $mongodb_con; global $db_prefix; global $graph_things; global $graph_queue; global $graph_keywords;

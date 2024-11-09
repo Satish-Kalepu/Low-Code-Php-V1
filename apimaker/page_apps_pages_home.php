@@ -54,18 +54,14 @@
 		        	<textarea class="form-control" v-model="new_page['des']" ></textarea>
 		        	<div class="text-secondary small">no special chars except (-_,.&). minmum 5 chars</div>
 		        	<div>&nbsp;</div>
-		        	<div>Use Template</div>
-		        	<select v-model="new_page['template']" class="form-select form-select-sm" >
-		        		<option value="home">Home</option>
-		        		<option value="sample1">Sample</option>
-		        		<option value="static_form">Static Form</option>
-		        		<option value="album">Album</option>
-		        		<option value="pricing">Pricing</option>
-		        		<option value="checkout">Checkout</option>
-		        		<option value="product">Product</option>
-		        		<option value="cover">Cover</option>
-		        		<option value="carousal">Carousal</option>
-		        	</select>
+		        	<div>Type</div>
+					<select v-model="new_page['type']" class="form-select form-select-sm" >
+						<option value="html">Simple HTML Static Page</option>
+						<option value="vuejs">VueJS APP</option>
+						<option value="vuejsrouter">VueJS APP with Router</option>
+						<option value="reactjs">React JS APP</option>
+						<option value="reactjsrouter">React JS APP with Router</option>
+					</select>
 		        	<div>&nbsp;</div>
 		        	<div v-if="cmsg" class="alert alert-success" >{{ cmsg }}</div>
 		        	<div v-if="cerr" class="alert alert-success" >{{ cerr }}</div>
@@ -94,6 +90,7 @@ var app = Vue.createApp({
 			new_page: {
 				"name": "",
 				"des": "",
+				"type": "",
 			},
 			create_app_modal: false,
 			token: "",
@@ -204,6 +201,10 @@ var app = Vue.createApp({
 			}
 			if( this.new_page['des'].match(/^[a-z0-9\.\-\_\&\,\!\@\'\"\ \r\n]{2,200}$/i) == null ){
 				this.cerr = "Description incorrect. Special chars not allowed. Length minimum 5 max 200";
+				return false;
+			}
+			if( this.new_page['type'] == "" ){
+				this.cerr = "Need Page Type";
 				return false;
 			}
 			this.cmsg = "Creating...";

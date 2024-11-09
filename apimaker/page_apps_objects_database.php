@@ -101,8 +101,8 @@ div.objecticoninline .objecticonimg img{ min-width:initial; min-height:initial; 
 
 			<div style="margin-bottom:10px;">
 				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="show_create()" >Create Node</div>
-				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="window_open_newtab('import2')" >Import</div>
-				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="window_open_newtab('ops')" >Ops</div>
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="router_open_newtab('import2')" >Import</div>
+				<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="router_open_newtab('ops')" >Ops</div>
 
 				<div style="display:flex; width:300px; column-gap:5px;border:1px solid #ccc;background-color: white; align-items: center; ">
 					<div class="thing_search_bar" title="Thing" data-type="dropdown" data-var="search_thing:v" data-list="graph-thing" data-thing="GT-ALL" data-thing-label="Things" data-context-callback-function="goto1" >Search</div>
@@ -114,7 +114,7 @@ div.objecticoninline .objecticonimg img{ min-width:initial; min-height:initial; 
 				<div class="graph_tabs_nav_scrollbtn2" id="tabs_left_scrollbar" v-on:click="window_tabs_focus_left()"><div class="btn btn-light btn-sm" style="height:30px;" ><i class="fa-solid fa-chevron-left"></i></div></div>
 				<div class="graph_tabs_nav_container" id="tabs_container">
 					<div v-bind:class="{'graph_tab_btn':true,'graph_btn_active':(vtabi==current_tab)}" v-for="vtabi,i in window_tabs_order" v-bind:id="'tab_'+vtabi">
-						<div v-on:click.prevent.stop="window_open_tab(vtabi)">{{ window_tabs[ vtabi ]['title'] }}</div>
+						<div v-on:click.prevent.stop="router_open_newtab(vtabi)">{{ window_tabs[ vtabi ]['title'] }}</div>
 						<div v-if="vtabi!='home'&&vtabi!='summary'&&vtabi!='browse'&&vtabi!='import2'"><div class="btn btn-outline-danger btn-sm py-0 px-0" v-on:click.prevent.stop="window_close_tab(vtabi)" ><i class="fa-solid fa-xmark"></i></div></div>
 					</div>
 				</div>
@@ -673,12 +673,9 @@ var app = Vue.createApp({
 				"browse": {	"title": "Browse", "type": "browse",},
 			},
 			window_tabs_order: ["summary", "browse"],
-			editor_enable: false,
-			editor_div_id: "",
-			editor_wrapper_div_id: "",
-			editor_data: {},
 			float_msg: "", float_err: "",
-
+			toasts:[],
+			auth_error_msg: false,
 		};
 	},
 	mounted: function(){
@@ -706,7 +703,10 @@ var app = Vue.createApp({
 
 	},
 	methods: {
-		get_access_token: function(){ //called from editor.js
+		make_graph_url: function(){ // no underscores
+
+		},
+		get_access_token: function(){ //called from editor.js // no underscores
 			console.log('step1');
 			this.float_err = "";
 			this.float_msg = "Loading...";
@@ -812,6 +812,29 @@ var app = Vue.createApp({
 				this.set_err = "Error: " + this.get_http_error__(error);
 			});
 		},
+		goto_required_path: function(){
+        	console.log( "goto required path");
+        	console.log( this.$route.path );
+        	vpath = this.$route.path.substr(1,9999);
+        	if( vpath == '' ){
+        		vpath = 'summary';
+        	}
+        	var thing_id = "";
+			var m = vpath.match(/^thing\/([a-z0-9]+)$/i);
+			if( m ){
+				thing_id = m[1];
+				vpath = 'thing-'+thing_id;
+			}
+			if( vpath in this.window_tabs == false ){
+				if( thing_id ){
+					this.window_open_newtab( vpath, {"type":"thing", "thing_id": thing_id, "loaded":false} );
+				}else{
+					this.window_open_newtab( vpath );
+				}
+			}else{
+				setTimeout(this.window_open_tab2,100,vpath);
+			}
+        },
 		thing_editor_updated: function(vtabi, vdata){
 			// console.log( "thing editor updated" );
 			// console.log( vtabi );
@@ -871,10 +894,18 @@ var app = Vue.createApp({
 		},
 		show_thing: function(vi){
 			console.log( "show_thing:" + vi );
-			this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false} );
+			this.$router.push(this.objectpath+ '/thing/'+vi);
+			//this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false} );
 		},
 		show_thing2: function(vi){
-			this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false, "open_records":true} );
+			this.$router.push({'path':this.objectpath+'/thing/'+vi, 'query':{'open_records':true} } );
+			//this.window_open_newtab( "thing-"+vi, {"type":"thing", "thing_id": vi, "loaded":false, "open_records":true} );
+		},
+		show_thing_path: function(vtabi){
+			if( vtabi.match(/^thing\-/i) ){
+				vtabi = vtabi.replace('\-', '/');
+			}
+			this.$router.push(this.objectpath+'/'+vtabi);
 		},
 		thing_open_records: function(){
 			console.log( this.$refs );
@@ -1466,6 +1497,13 @@ var app = Vue.createApp({
 			}
 		},
 		show_create: function( vi_of ){
+			if( typeof(vi_of) != "undefined" ){
+				this.$router.push({'path':this.objectpath + '/thingnew','query':JSON.stringify({'vi_of':vi_of}) });
+			}else{
+				this.$router.push({'path':this.objectpath + '/thingnew'});
+			}
+		},
+		show_create2: function(vi_of){
 			if( typeof(vi_of) == "undefined" ){
 				if( this.thing_id != -1 ){
 					vi_of = {'t':"GT", "i": this.thing['i_of']['i']+'', "v": this.thing['i_of']['v']+''};
@@ -2370,12 +2408,18 @@ var app = Vue.createApp({
 				setTimeout(function(v){
 					var k = Object.keys( v.window_tabs );
 					v.current_tab = k[ k.length-1 ]+'';
+					var vpath = v.current_tab+'';
+					if( vpath.match(/^thing\-/) ){
+						vpath = vpath.replace("-","/");
+					}
+					v.$router.push(v.objectpath+'/'+vpath);
 				}, 500, this);
 			}
 		},
 		window_open_tab: function(vtabi){
 			this.current_tab = '';
-			setTimeout(this.window_open_tab2,200,vtabi);
+			console.log( "Router add: " + vtabi );
+			this.$router.push(this.objectpath+"/"+vtabi);
 		},
 		window_open_tab2: function(vtabi){
 			var tb = vtabi+'';
@@ -2489,6 +2533,9 @@ var app = Vue.createApp({
 				}
 			}
 		},
+		router_open_newtab: function(vtabi,vd){
+			this.$router.push(this.objectpath + '/'+vtabi);
+		},
 		window_open_newtab: function(vtabi,vd){
 			this.current_tab = '';
 			var tb = vtabi+'';
@@ -2534,7 +2581,7 @@ var app = Vue.createApp({
 				//this.window_tabs_order.splice(3,0,tb);
 				this.window_tabs_order.push(tb);
 			}
-			this.window_open_tab(tb);
+			this.window_open_tab2(tb);
 		},
 	}
 });
@@ -2590,7 +2637,87 @@ app.component( "object_ops", object_ops );
 app.component( "editor_component", editor_component );
 app.component( "iconsapp_component", iconsapp_component );
 app.component( "icon_view", icon_view );
+
+
+const component_default = {
+	template: `<div>okk</div>`
+};
+
+const routes = [
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/summary', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/browse', component: component_default },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/about', component: component_default },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/thing/:id', component: component_default },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/thingnew', component: component_default },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/ops', component: component_default },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>/import2', component: component_default },
+];
+
+const router = VueRouter.createRouter({
+	history: VueRouter.createWebHistory(), routes
+});
+
+router.beforeEach((to,from)=>{
+	console.log("Router changed: ");
+	console.log( from );
+	console.log( to );
+
+	var vpath = to.path.replace( '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/objects/<?=$config_param3 ?>', '');
+	vpath = vpath.substr(1,9999);
+
+	if( vpath == "" ){
+		vpath = "summary";
+	}
+
+	if( vpath == 'thingnew' ){
+		if( 'query' in to ){
+			if( 'vi_of' in to.query ){
+				router.app_object.show_create2(JSON.parse(to.query['vi_of']));
+			}else{
+				router.app_object.show_create2();
+			}
+		}else{
+			router.app_object.show_create2();
+		}
+		return true;
+	}
+
+	var thing_id = "";
+	var m = vpath.match(/^thing\/([a-z0-9]+)$/i);
+	if( m ){
+		thing_id = m[1];
+		vpath = 'thing-'+thing_id;
+	}
+
+	console.log( Object.keys(router.app_object.window_tabs) );
+
+	if( vpath in router.app_object.window_tabs == false ){
+		if( thing_id ){
+			router.app_object.window_open_newtab( vpath, {"type":"thing", "thing_id": thing_id, "loaded":false} );
+		}else{
+			router.app_object.window_open_newtab( vpath );
+		}
+	}else{
+		setTimeout(router.app_object.window_open_tab2,100,vpath);
+	}
+	// if (!isAuthenticated &&	to.name !== 'Login' ) {
+	// 	return { name: 'Login' }
+	// }
+});
+router.afterEach((to, from) => {
+	// do something...
+
+	// if (Object.keys(to.query).length)
+    // return { path: to.path, query: {}, hash: to.hash }
+
+    //if (to.hash) return { path: to.path, query: to.query, hash: '' }
+
+});
+
+app.use(router);
 var app1 = app.mount("#app");
+router.app_object = app1;
 
 function getElementFocused(){
 	return document.getSelection().getRangeAt(0).startContainer;

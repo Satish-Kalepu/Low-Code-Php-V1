@@ -130,7 +130,6 @@ if( $_POST['action'] == "create_file" ){
 	exit;
 }
 
-
 if( $_POST['action'] == "files_create_folder" ){
 	if( !preg_match("/^[a-z0-9\.\-\_\/]{2,100}$/i", $_POST['new_folder']) ){
 		json_response("fail", "Name incorrect. Min 2 chars Max 100. No special chars");

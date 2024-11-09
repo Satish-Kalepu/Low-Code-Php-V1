@@ -572,6 +572,10 @@
 								<div v-if="ra_err" class="text-danger" >{{ ra_err }}</div>
 								<div v-if="ra_msg" class="text-success" >{{ ra_msg }}</div>
 
+
+							<!-- <pre>{{ role_record }}</pre> -->
+
+
 		      </div>
 		      <div class="modal-footer">
 		        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
@@ -1899,6 +1903,24 @@ var app = Vue.createApp({
 				for(var j=0;j<this.config_allow_apis.length;j++){
 					if( this.role_record['policies'][pi]['things'][i]['_id'] == this.config_allow_apis[j]['_id'] ){
 						this.role_record['policies'][pi]['things'][i]['thing'] = this.config_allow_apis[j]['thing']+'';
+					}
+				}
+			}else if( this.role_record['policies'][pi]['service']=='objects' ){
+				for(var j=0;j<this.config_allow_objects.length;j++){
+					if( this.role_record['policies'][pi]['things'][i]['_id'] == this.config_allow_objects[j]['_id'] ){
+						this.role_record['policies'][pi]['things'][i]['thing'] = this.config_allow_objects[j]['thing']+'';
+					}
+				}
+			}else if( this.role_record['policies'][pi]['service']=='storage' ){
+				for(var j=0;j<this.config_allow_storage.length;j++){
+					if( this.role_record['policies'][pi]['things'][i]['_id'] == this.config_allow_storage[j]['_id'] ){
+						this.role_record['policies'][pi]['things'][i]['thing'] = this.config_allow_storage[j]['thing']+'';
+					}
+				}
+			}else if( this.role_record['policies'][pi]['service']=='files' ){
+				for(var j=0;j<this.config_allow_files.length;j++){
+					if( this.role_record['policies'][pi]['things'][i]['_id'] == this.config_allow_files[j]['_id'] ){
+						this.role_record['policies'][pi]['things'][i]['thing'] = this.config_allow_files[j]['thing']+'';
 					}
 				}
 			}

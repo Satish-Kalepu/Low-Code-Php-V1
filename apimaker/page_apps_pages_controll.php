@@ -50,9 +50,12 @@ if( $_POST['action'] == "create_page" ){
 	if( !preg_match("/^[a-z0-9\!\@\%\^\&\*\.\-\_\'\"\n\r\t\ ]{2,250}$/i", $_POST['new_page']['des']) ){
 		json_response("fail", "Description incorrect");
 	}
+	if( !preg_match("/^(html|vuejs|vuejsrouter|reactjs|reactjsrouter)$/i", $_POST['new_page']['type']) ){
+		json_response("fail", "Type incorrect");
+	}
 	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
 		"app_id"=>$config_param1,
-		'name'=>$_POST['new_page']['name']
+		'name'=>$_POST['new_page']['name'],
 	]);
 	if( $res['data'] ){
 		json_response("fail", "Already exists");
@@ -69,6 +72,7 @@ if( $_POST['action'] == "create_page" ){
 		"app_id"=>$config_param1,
 		"name"=>$_POST['new_page']['name'],
 		"des"=>$_POST['new_page']['des'],
+		"type"=>$_POST['new_page']['type'],
 		"created"=>date("Y-m-d H:i:s"),
 		"updated"=>date("Y-m-d H:i:s"),
 		"active"=>true,

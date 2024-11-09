@@ -144,7 +144,14 @@ if( $_POST['action'] == "objects_create_database" ){
 	exit;
 }
 if( $_POST['action'] == "objects_delete_database" ){
-	
+
+	if( !is_set($_POST['graph_id']) ){
+		json_response("fail", "Need graph id");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['graph_id']) ){
+		json_response("fail", "Incorrect graph id");
+	}
+
 	$res = $mongodb_con->find_one( $db_prefix . "_graph_dbs", [
 		"app_id"=>$config_param1,
 		"_id"=>$_POST['graph_id']
@@ -152,6 +159,8 @@ if( $_POST['action'] == "objects_delete_database" ){
 	if( !$res['data'] ){
 		json_response("fail", "Database not found");
 	}
+
+	$graph = $res['data'];
 
 	$res = $mongodb_con->delete_one($db_prefix . "_graph_dbs", ["app_id"=>$config_param1, "_id"=>$_POST['graph_id']] );
 	$graph_things = $db_prefix . "_graph_" . $_POST['graph_id'] . "_things";
@@ -172,10 +181,19 @@ if( $_POST['action'] == "objects_delete_database" ){
 		}
 	}
 
+	if( $graph['settings']['library_enable'] == true && isset($graph['settings']['library']['file_id']) ){
+		$ires = $mongodb_con->delete_one( $db_prefix . "_files", [
+			"app_id"=>$config_param1,
+			"_id"=>$graph['settings']['library']['file_id']
+		]);
+	}
+
 	event_log( "system", "objects_delete_database", [
 		"app_id"=>$config_param1,
 		"graph_id"=>$_POST['graph_id'],
 	]);
+
+	update_app_pages($config_param1);
 
 	json_response("success");
 }
@@ -280,6 +298,10 @@ if( $config_param3 ){
 	$graph_settings=[
 		"graph_api_url"=> $test_environments[0]['u'] . "_api/objects/".$graph_id,
 		"graph_thing_image"=> "T21",
+		"graph_landing_url_type"=>"qs",
+		"graph_landing_url"=> "https://".$_SERVER['HTTP_HOST'] . "/apimaker/apps/".$config_param1."/objects/".$config_param3,
+		"graph_landing_url_type"=> "qs",
+		"graph_landing_target"=> "same", //same, newtab	
 	];
 	if( !isset($config_global_apimaker['icon_settings']) ){
 		$icon_settings=[

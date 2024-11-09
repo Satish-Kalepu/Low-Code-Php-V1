@@ -165,7 +165,7 @@ function engine_api( $method, $content_type, $path_params, $php_input ){
 			"app_id"=>$app_id, "_id"=>$thing_id
 		]);
 		if( !$graphres['data'] ){
-			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Vault not found" ]) ];
+			return [500,"application/json",[], json_encode(["status"=>"fail", "error"=>"Objects DB not found" ]) ];
 		}
 		$graph_db = $graphres['data'];
 	}

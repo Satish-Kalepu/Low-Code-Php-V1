@@ -1,5 +1,10 @@
 <?php
 
+$config_cloud_enabled = false;
+if( isset($config_global_apimaker['config_cloud_enabled']) && $config_global_apimaker['config_cloud_enabled'] ){
+	$config_cloud_enabled = $config_global_apimaker['config_cloud_enabled'];
+}
+
 $akey = pass_encrypt_static(json_encode([
 	"action"=>"start_taskscheduler", 
 	"app_id"=>$config_param1,
@@ -161,6 +166,10 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 }
 
 if( $_POST['action'] == "app_save_cloud_settings" ){
+
+	if( !$config_cloud_enabled ){
+		json_response("fail", "Cloud is not enabled");
+	}
 
 	$all_app_ids = [];
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apps", [], ['projection'=>['app'=>1] ] );

@@ -848,6 +848,14 @@ if( $_POST['action'] == "get_global_apis" ){
 				"instance_id"=>"Required. Unique node ID or Key",
 			]
 		];
+		$j['apis']['getObjectLibrarySettings'] = [
+			"post"=>[
+				"action"=> "getObjectLibrarySettings",
+			],
+			"help"=>[
+				
+			]
+		];
 		$j['apis']['objectCreate'] = [
 			"post"=>[
 				"action"=> "objectCreate",
@@ -973,6 +981,18 @@ if( $_POST['action'] == "get_global_apis" ){
 		$j['apis']['objectPropertiesUpdate'] = [
 			"post"=>[
 				"action"=> "objectPropertiesUpdate",
+				"object_id"=> "",
+				"properties"=> [
+					"p1"=> [["t"=>"T","v"=>""]]
+				]
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
+		];
+		$j['apis']['objectHtmlUpdate'] = [
+			"post"=>[
+				"action"=> "objectHtmlUpdate",
 				"object_id"=> "",
 				"properties"=> [
 					"p1"=> [["t"=>"T","v"=>""]]

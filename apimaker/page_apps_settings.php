@@ -61,7 +61,7 @@
 				</div>
 			</div>
 
-			<div style="border: 1px solid #999; margin-bottom: 20px; " >
+			<div v-if="config_cloud_enabled" style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Cloud Hosting</div>
 				<div style="padding:10px;">
 
@@ -313,10 +313,12 @@
 		      </div>
 					<div class="modal-body" >
 						<p>Select Execution Environment: </p>
-						<p><select v-model="qei" class="form-select form-select-sm w-auto" >
-							<option value="-1" >Select environment</option>
-							<template v-for="d,i in test_environments" ><option v-if="d['t']!='cloud-alias'" v-bind:value="i" >{{ d['u'] }}</option></template>
-						</select></p>
+						<p>
+							<select v-model="qei" class="form-select form-select-sm w-auto" >
+								<option value="-1" >Select environment</option>
+								<template v-for="d,i in test_environments" ><option v-if="d['t']!='cloud-alias'" v-bind:value="i" >{{ d['u'] }}</option></template>
+							</select>
+						</p>
 						<div><input type="button" value="Start Worker" class="btn btn-outline-dark btn-sm" v-on:click="start_background_job2" ></div>
 
 						<div v-if="jmsg" class="alert alert-primary" >{{ jmsg }}</div>
@@ -459,6 +461,7 @@ var app = Vue.createApp({
 			app_id: "<?=$app['_id'] ?>",
 			app__: <?=json_encode($app) ?>,
 			edit_app: {"app":"", "des":""},
+			config_cloud_enabled: <?=isset($config_global_apimaker['config_cloud_enabled'])?($config_global_apimaker['config_cloud_enabled']?"true":"false"):false ?>,
 			cd: <?=isset($config_global_apimaker['config_cloud_domains'])?json_encode($config_global_apimaker['config_cloud_domains']):'[]' ?>,
 			alb_cname: "<?=$config_global_apimaker['config_cloud_alb_cname'] ?>",
 			msg1: "",err1: "",msg2: "",err2: "",msg3: "",err3: "",msg4: "",err4: "",jmsg: "",jerr: "",
@@ -499,7 +502,7 @@ var app = Vue.createApp({
 			"app": this.app__['app']+'',
 			"des": this.app__['des']+''
 		};
-		if( 'cloud' in this.settings == false ){
+		if( 'cloud' in this.settings == false && this.config_cloud_enabled ){
 			this.settings['cloud'] = false;
 			this.settings['cloud-domain'] = "backendmaker.com";
 			this.settings['cloud-subdomain'] = this.app__['app']+'';
@@ -704,7 +707,11 @@ var app = Vue.createApp({
 			});
 		},
 		getclouddomain: function(){
-			return 'https://'+this.settings['cloud-subdomain'] + '.' + this.settings['cloud-domain'] +'/'+ (this.settings['cloud-enginepath']!=''?this.settings['cloud-enginepath']+'/':'');
+			if( this.config_cloud_enabled){
+				return 'https://'+this.settings['cloud-subdomain'] + '.' + this.settings['cloud-domain'] +'/'+ (this.settings['cloud-enginepath']!=''?this.settings['cloud-enginepath']+'/':'');
+			}else{
+				return "Disabled";
+			}
 		},
 		load_pages: function(){
 			axios.post("?", {
@@ -902,57 +909,60 @@ var app = Vue.createApp({
 			});
 		},
 		app_save_cloud_settings: function(){
-
-			if( 'alias' in this.settings ){
-				if( this.settings['alias'] ){
-					if( this.settings['alias-domain'].match(/^[a-z0-9\-\_\.]{2,50}$/i) == null ){
-						alert("Cloud alias domain invalid");return false;
+			if( this.config_cloud_enabled ){
+				if( 'alias' in this.settings ){
+					if( this.settings['alias'] ){
+						if( this.settings['alias-domain'].match(/^[a-z0-9\-\_\.]{2,50}$/i) == null ){
+							alert("Cloud alias domain invalid");return false;
+						}
 					}
 				}
-			}
-			if( 'cloud' in this.settings ){
-				if( this.settings['cloud'] ){
-					if( this.settings['cloud-subdomain'].match(/^[a-z0-9\-\_\.]{2,50}$/i) == null ){
-						alert("Cloud sub domain invalid");return false;
-					}
-					if( this.settings['cloud-enginepath'] != "" ){
-					if( this.settings['cloud-enginepath'].match(/^[a-z0-9\-\_\.]{2,50}$/i) == null ){
-						alert("Cloud sub domain should be plain text without spaces\n\nEngine path is not mandatory");return false;
-					}
+				if( 'cloud' in this.settings ){
+					if( this.settings['cloud'] ){
+						if( this.settings['cloud-subdomain'].match(/^[a-z0-9\-\_\.]{2,50}$/i) == null ){
+							alert("Cloud sub domain invalid");return false;
+						}
+						if( this.settings['cloud-enginepath'] != "" ){
+						if( this.settings['cloud-enginepath'].match(/^[a-z0-9\-\_\.]{2,50}$/i) == null ){
+							alert("Cloud sub domain should be plain text without spaces\n\nEngine path is not mandatory");return false;
+						}
+						}
 					}
 				}
-			}
 
-			this.msg2 = "Loading...";
-			this.err2 = "";
-			axios.post("?", {
-				"action":"get_token",
-				"event":"cloud_settings."+this.app_id,
-				"expire":2
-			}).then(response=>{
-				this.msg2 = "";
-				if( response.status == 200 ){
-					if( typeof(response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								this.token = response.data['token'];
-								if( this.is_token_ok(this.token) ){
-									this.app_save_cloud_settings2();
+				this.msg2 = "Loading...";
+				this.err2 = "";
+				axios.post("?", {
+					"action":"get_token",
+					"event":"cloud_settings."+this.app_id,
+					"expire":2
+				}).then(response=>{
+					this.msg2 = "";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.token = response.data['token'];
+									if( this.is_token_ok(this.token) ){
+										this.app_save_cloud_settings2();
+									}
+								}else{
+									alert("Token error: " + response.dat['data']);
+									this.err2 = "Token Error: " + response.data['data'];
 								}
 							}else{
-								alert("Token error: " + response.dat['data']);
-								this.err2 = "Token Error: " + response.data['data'];
+								this.err2 = "Incorrect response";
 							}
 						}else{
-							this.err2 = "Incorrect response";
+							this.err2 = "Incorrect response Type";
 						}
 					}else{
-						this.err2 = "Incorrect response Type";
+						this.err2 = "Response Error: " . response.status;
 					}
-				}else{
-					this.err2 = "Response Error: " . response.status;
-				}
-			});
+				});
+			}else{
+				alert("Disabled");
+			}
 		},
 		app_save_cloud_settings2: function(){
 			this.err2 = "";
