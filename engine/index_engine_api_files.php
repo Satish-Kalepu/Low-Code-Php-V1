@@ -300,15 +300,23 @@ function engine_api_files( $post ){
 			}
 		}
 
-		if( $path_first != "/" ){
+		//return json_response(200, $path_first . ": " . $path_last);
+
+		$path_type = "folder";
+		if( $path_last != "/" ){
 			$res = $mongodb_con->find_one( $db_prefix . "_files", [
 				'app_id'=>$app_id,
 				"path"=>$path_first,
 				"name"=>$path_last,
-				"vt"=>"folder"
+				"vt"=>"folder",
 			]);
 			if( !$res['data'] ){
 				return json_response(200,"fail", "path `" .$path . "` not found");
+			}
+			//return json_response(200, "fail", $res['data'] );
+			if( $res['data']['type'] == 'mounted' ){
+				$path_type = "mounted";
+				return json_response(200, "fail", "Upload to a mounted folder is prohibited");
 			}
 		}
 

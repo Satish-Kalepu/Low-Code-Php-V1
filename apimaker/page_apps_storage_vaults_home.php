@@ -13,7 +13,7 @@
 				<div v-if="msg" class="alert alert-primary" >{{ msg }}</div>
 				<div v-if="err" class="alert alert-danger" >{{ err }}</div>
 
-				<table class="table table-sm table-bordered" >
+				<table class="table table-sm table-bordered w-auto" >
 					<thead style="position:sticky;top:0px; background-color:white;border-collapse: separate;" >
 					<tr class="bg-white bb-1">
 						<td>Description</td>
@@ -35,8 +35,8 @@
 						</td>
 						<td>
 							<div v-if="'default' in v==false" >
-							<button class="btn btn-sm btn-outline-dark ms-2" v-on:click="edit_vault(v['_id'])">E</button>
-							<button class="btn btn-sm btn-outline-danger ms-2" v-on:click="delete_vault(v['_id'])">D</button>
+							<button class="btn btn-sm btn-outline-dark ms-2" v-on:click="edit_vault(v['_id'])">Settings</button>
+							<button class="btn btn-sm btn-outline-danger ms-2" v-on:click="delete_vault(v['_id'])">Delete</button>
 							</div>
 						</td>
 					</tr>
@@ -56,8 +56,7 @@
 	        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 	      </div>
 	      <div class="modal-body">
-	        	
-	        	<table class="table table-bordered">
+			<table class="table table-bordered table-sm w-auto">
 				<tr>
 					<td>Description</td>
 					<td>
@@ -76,19 +75,21 @@
 					<td>Details</td>
 					<td>
 						<table class="table table-bordered table-sm">
-						<tr v-for="val,prop in template[ edit_data['vault_type'] ]" >
-							<td>{{ val['name'] }}</td>
-							<td>
-								<div>
-									<input v-if="val['type']=='boolean'" type="checkbox" v-model="edit_data['details'][ prop ]" >
-									<select v-else-if="val['type']=='select'" v-model="edit_data['details'][ prop ]" >
-										<option v-for="dd,di in val['values']" v-bind:value="dd" >{{ dd }}</option>
-									</select>
-									<input v-else v-bind:type="val['type']" v-model="edit_data['details'][ prop ]" >
-								</div>
-								<div v-if="'h' in val" class="text-secondary">{{ val['h'] }}</div>
-							</td>
-						</tr>
+							<template v-for="val,prop in template[ edit_data['vault_type'] ]" >
+								<tr v-if="show_field(prop)" >
+									<td>{{ val['name'] }}</td>
+									<td>
+										<div>
+											<input v-if="val['type']=='boolean'" type="checkbox" v-model="edit_data['details'][ prop ]" >
+											<select v-else-if="val['type']=='select'" v-model="edit_data['details'][ prop ]" >
+												<option v-for="dd,di in val['values']" v-bind:value="dd" >{{ dd }}</option>
+											</select>
+											<input v-else v-bind:type="val['type']" v-model="edit_data['details'][ prop ]" >
+										</div>
+										<div v-if="'h' in val" class="text-secondary" v-html="val['h']" ></div>
+									</td>
+								</tr>
+							</template>
 						</table>
 					</td>
 				</tr>
@@ -136,6 +137,34 @@ var app = Vue.createApp({
 			this.load_vaults();
 		},
 		methods: {
+			show_field: function( vprop){
+				var template = this.template[ this.edit_data['vault_type'] ];
+				if( vprop in template ){
+					if( 'vif' in template[ vprop ] ){
+						var vif = template[ vprop ][ 'vif' ];
+						var conds = vif.split(/\&/g);
+						var f = true;
+						for(var i=0;i<conds.length;i++){
+							var cx = conds[i].split(/\=/);
+							if( cx[0] in template ){
+								var v = this.edit_data['details'][ cx[0] ];
+								var t = template[ cx[0] ]['type'];
+								if( t == "boolean" ){
+									if( v !== true && v != "true" ){
+										f = false;
+									}
+								}else if( v != cx[1] ){
+									f = false;
+								}
+							}else{
+								f = false;
+							}
+						}
+						return f;
+					}
+				}
+				return true;
+			},
 			isenc: function(v){
 				if( typeof(v) =="string" ){
 				if( v.match(/^k[0-9]+/) ){

@@ -559,4 +559,11 @@ table.customborder3 td,table.customborder3 th{
     min-height: 50px;
     min-width: 50px;
 }
+
+.thing_icon{ position: absolute; padding:5px; width:25px; height:25px; cursor:pointer; color:black; }
+.thing_icon:hover{ color:red; background-color:#eee; }
+
+.thing_icon_false{ position: absolute; padding:5px; width:25px; height:25px; cursor:pointer; color:#bbb; }
+.thing_icon_false:hover{ color:black; background-color:#eee; }
+
 </style>

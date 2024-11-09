@@ -168,12 +168,12 @@ if( $_POST['action'] == "app_save_cloud_settings" ){
 		$all_app_ids[ $j['_id'] ] = $j['app'];
 	}
 
-	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains" );
-	foreach( $res['data'] as $i=>$j ){
-		if( !isset($all_app_ids[ $j['app_id'] ]) ){
-			$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", ['app_id'=>$j['app_id']] );
-		}
-	}
+	// $res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains" );
+	// foreach( $res['data'] as $i=>$j ){
+	// 	if( !isset($all_app_ids[ $j['app_id'] ]) ){
+	// 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", ['app_id'=>$j['app_id']] );
+	// 	}
+	// }
 
 	$settings = $_POST['settings'];
 

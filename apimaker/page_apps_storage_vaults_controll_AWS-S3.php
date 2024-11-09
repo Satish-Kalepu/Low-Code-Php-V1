@@ -252,6 +252,12 @@ if( $_POST['action'] == "files_create_folder" ){
 }
 
 if( $_POST['action'] == "apps_file_upload" ){
+
+	$is_public = false;
+	if( $vault['details']['public'] ){
+		$is_public = true;
+	}
+
 	$t = validate_token( "file.upload.".$config_param1, $_POST['token'] );
 	if( $t != "OK" ){
 		json_response("fail", $t);
@@ -265,7 +271,8 @@ if( $_POST['action'] == "apps_file_upload" ){
 				"Bucket"=>$s3_bucket,
 				"Key"=>$fn,
 				"SourceFile"=>$_FILES['file']['tmp_name'],
-				"ContentType"=>$_POST['type']
+				"ContentType"=>$_POST['type'],
+				"ACL"=>$is_public?"public-read":"private"
 			]);
 		}catch( Aws\S3\Exception\S3Exception $ex ){
 			json_response([

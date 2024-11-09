@@ -13,6 +13,7 @@
 	<script src="<?=$config_global_apimaker_path ?>js/axios.min.js"></script>
 	<link rel="stylesheet" href="<?=$config_global_apimaker_path ?>common.css" />
 	<link rel="stylesheet" href="<?=$config_global_apimaker_path ?>fontawesome/css/all.min.css" />
+	<link rel="stylesheet" href="<?=$config_global_apimaker_path ?>RemixIcon/fonts/remixicon.css" />
 </head>
 <body><?php	require("block_header.php"); ?>
 <div class="container-fluid" >

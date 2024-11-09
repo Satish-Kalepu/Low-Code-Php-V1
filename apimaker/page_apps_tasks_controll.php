@@ -316,7 +316,7 @@ if( $_POST['action'] == 'task_queue_start' ){
 		}
 	}
 
-	if( $queue['type'] == 's' ){
+	if( $queue['type'] == 's' || $_POST['mode'] == "single" ){
 		$total_pending = 1-$sz;
 	}else{
 		$total_pending = $queue['con']-$sz;

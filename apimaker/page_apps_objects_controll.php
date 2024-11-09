@@ -73,6 +73,16 @@ if( $_POST['action'] == "objects_create_database" ){
 	}
 
 	$things = ["Person", "Country", "State", "City", "Pincode", "Company", "Brand", "Website", "DataSet", "Product", "Place"];
+	$datasets = [
+		"Article Images"=>[
+			"z_t"=>[ 
+				"p1"=>["l"=>["t"=>"T","v"=>"Description"], "t"=>["t"=>"KV", "v"=>"Text", "k"=>"T"], "e"=>false, "m"=>["t"=>"B", "v"=>"false" ] ],
+				"p2"=>["l"=>["t"=>"T","v"=>"Keywords"], "t"=>["t"=>"KV", "v"=>"Text", "k"=>"T"], "e"=>false, "m"=>["t"=>"B", "v"=>"false" ] ],
+				"p3"=>["l"=>["t"=>"T","v"=>"Filename"], "t"=>["t"=>"KV", "v"=>"Text", "k"=>"T"], "e"=>false, "m"=>["t"=>"B", "v"=>"false" ] ] 
+			],
+			"z_o"=>["p1","p2","p3"], "z_n"=>4,
+		]
+	];
 
 	//  label can be a link as well. 
 	//  i_of is single per object
@@ -101,6 +111,25 @@ if( $_POST['action'] == "objects_create_database" ){
 			],
 			"z_t"=>[ "p1"=>["l"=>["t"=>"T","v"=>"Description"], "t"=>["t"=>"KV", "v"=>"Text", "k"=>"T"], "e"=>false, "m"=>["t"=>"B", "v"=>"false"] ] ],
 			"z_o"=>["p1"], "z_n"=>2,
+			'm_i'=>date("Y-m-d H:i:s"),
+			'm_u'=>date("Y-m-d H:i:s"),
+		];
+
+		$mongodb_con->insert($graph_things, $rec);
+		$mongodb_con->increment($graph_things, "T1", "cnt", 1);
+		$node_series++;
+	}
+	foreach( $datasets as $table=>$vdata ){
+		$rec = [
+			"_id"=>"T".$node_series, 
+			"l"=>["t"=>"T", "v"=>$table],
+			"i_of"=>["t"=>"GT", "i"=> "T1", "v"=>"Root"],
+			'i_t'=> ["t"=>"T", "v"=>"L"],
+			"props"=>[
+				"p1"=>[["t"=>"T", "v"=>$table ]],
+			],
+			"z_t"=>$vdata['z_t'],
+			"z_o"=>$vdata['z_o'], "z_n"=>$vdata['z_n'],
 			'm_i'=>date("Y-m-d H:i:s"),
 			'm_u'=>date("Y-m-d H:i:s"),
 		];
@@ -222,19 +251,76 @@ if( $config_param3 ){
 	$graph_links = 		$db_prefix . "_graph_" . $graph_id . "_links";
 	$graph_queue	= $db_prefix . "_zd_queue_graph_". $graph_id;
 
+	$image_library_settings = [
+		"upload_enable"=> false,
+		"library_api_url"=> "",
+		"library_type"=> "AWS-S3",
+		"upload_path"=> "/",
+		"image_domain"=> "/",
+		"image_path"=> "/",
+		"thing_id"=> "T1",
+	];
+
+	// echo "<pre>";
+	// print_r( $test_environments );exit;
+
+	if( isset($graph['settings']) ){
+		if( $graph['settings']['library_enable'] == true && isset($graph['settings']['library']) ){
+			$image_library_settings['upload_enable'] = $graph['settings']['library']['upload']?true:false;
+			if( $graph['settings']['library']['upload'] ){
+				$image_library_settings['library_api_url'] = $test_environments[0]['u'] . "_api/storage_vaults/".$graph['settings']['library']['vault_id'];
+				$image_library_settings['library_type'] = "vault_s3";
+				$image_library_settings['upload_path'] = $graph['settings']['library']['dest_path'];
+				$image_library_settings['image_domain'] = $test_environments[0]['d'];
+				$image_library_settings['image_path'] = str_replace("//", "/", $test_environments[0]['e'] . $graph['settings']['library']['thumb_path'] );
+				$image_library_settings['thing_id'] = $graph['settings']['library']['thing_id'];
+			}
+		}
+	}
+	$graph_settings=[
+		"graph_api_url"=> $test_environments[0]['u'] . "_api/objects/".$graph_id,
+		"graph_thing_image"=> "T21",
+	];
+	if( !isset($config_global_apimaker['icon_settings']) ){
+		$icon_settings=[
+			"upload_enable"=> true,
+			"icon_domain"=> "testicons.satishk.com",
+			"image_domain"=> "d2pvd0cq261fl4.cloudfront.net",
+			"image_path"=> "/graph-icons/",
+		];
+	}else{
+		$icon_settings = $config_global_apimaker['icon_settings'];
+	}
+	if( !isset($config_global_apimaker['html_editor_settings']) ){
+		$html_editor_settings=[
+			"editor_domain"=> "testeditor.satishk.com",
+		];
+	}else{
+		$html_editor_settings = $config_global_apimaker['html_editor_settings'];
+	}
+
+	// echo "<pre>";
+	// print_r( $graph );
+	// print_r( $image_upload_settings );exit;
+
 	require("page_apps_objects_database_controll.php");
 
-	if( $_GET['action'] == "initialize2" ){
-		require("page_apps_objects_controll2.php");
-		exit;
-	}
-	if( $_GET['action'] == "initialize3" ){
-		require("page_apps_objects_controll3.php");
-		exit;
-	}
+	// if( $_GET['action'] == "initialize2" ){
+	// 	require("page_apps_objects_controll2.php");
+	// 	exit;
+	// }
+
+	// if( $_GET['action'] == "initialize3" ){
+	// 	require("page_apps_objects_controll3.php");
+	// 	exit;
+	// }
 
 }
 
 // $v = find_permutations("Mohandas");
 // echo "final perms<BR>";
 // print_r($v);exit;
+
+
+
+

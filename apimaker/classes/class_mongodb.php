@@ -532,6 +532,7 @@ class mongodb_connection{
 				'upsert'=> true,
 				'new' => true,
 				'returnNewDocument' => true,
+				'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
 				'projection'=>[$val=>true],
 			];
 			$cur =$col->findOneAndUpdate([

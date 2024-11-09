@@ -48,6 +48,7 @@ if( $_POST['action'] == "delete_file" ){
 	if( $res['data'] ){
 		if( $res['data']['vt'] == "folder" ){
 			$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+				"app_id"=>$config_param1,
 				'path'=>$res['data']['path'] . $res['data']['name'] . '/'
 			]);
 			if( $res2['data'] ){

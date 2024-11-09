@@ -1,3 +1,7 @@
+<style>
+	.download_url div{display: none;}
+	.download_url:hover div{position: absolute; display: block; margin-top:-25px; background-color: white; padding: 5px; border: 1px solid #aaa;}
+</style>
 <div id="app" >
 	<div class="leftbar" >
 		<?php require("page_apps_leftbar.php"); ?>
@@ -62,7 +66,16 @@
 					<template v-for="v,i in keys">
 					<tr>
 						<td>
-							<div style="float:left;"><a target="_blank" v-bind:href="'?action=download&key='+encodeURIComponent(v['Key'])" >/{{ v['Key'] }}</a></div>
+							<div v-if="get_download_url(v['Key'])" style="float:left; width:20px; height:20px;" class="download_url" title="CDN URL">
+								<div><a v-bind:href="get_download_url(v['Key'])" target="_blank" title="CDN URL" >{{ get_download_url(v['Key']) }}</a></div>
+								<svg viewBox="0 0 64 64" fill="currentcolor"><path d="m27.75,44.73l4.24,4.24-3.51,3.51c-2.34,2.34-5.41,3.51-8.49,3.51-6.63,0-12-5.37-12-12,0-3.07,1.17-6.14,3.51-8.49l10-10c2.34-2.34,5.41-3.51,8.49-3.51s6.14,1.17,8.49,3.51l1.41,1.41-4.24,4.24-1.41-1.41c-1.13-1.13-2.64-1.76-4.24-1.76s-5.11,2.62-6.24,3.76l-8,8c-1.13,1.13-1.76,2.64-1.76,4.24,0,3.31,2.69,6,6,6,1.6,0,3.11-.62,4.24-1.76l3.51-3.51ZM44,8c-3.07,0-6.14,1.17-8.49,3.51l-3.51,3.51,4.24,4.24,3.51-3.51c1.13-1.13,2.64-1.76,4.24-1.76,3.31,0,6,2.69,6,6,0,1.6-.62,3.11-1.76,4.24l-10,10c-1.13,1.13-2.64,1.76-4.24,1.76s-3.11-.62-4.24-1.76l-1.41-1.41-4.24,4.24,1.41,1.41c2.34,2.34,5.41,3.51,8.49,3.51s6.14-1.17,8.49-3.51l10-10c2.34-2.34,3.51-5.41,3.51-8.49,0-6.63-5.37-12-12-12Z" /></svg>
+							</div>
+							<div v-if="get_mapped_url(v['Key'])" style="float:left; width:20px; height:20px;" class="download_url" title="Engine mapped URL" >
+								<div><a v-bind:href="get_mapped_url(v['Key'])" target="_blank" title="Engine mapped URL" >{{ get_mapped_url(v['Key']) }}</a></div>
+								<svg viewBox="0 0 64 64" fill="currentcolor"><path d="m27.75,44.73l4.24,4.24-3.51,3.51c-2.34,2.34-5.41,3.51-8.49,3.51-6.63,0-12-5.37-12-12,0-3.07,1.17-6.14,3.51-8.49l10-10c2.34-2.34,5.41-3.51,8.49-3.51s6.14,1.17,8.49,3.51l1.41,1.41-4.24,4.24-1.41-1.41c-1.13-1.13-2.64-1.76-4.24-1.76s-5.11,2.62-6.24,3.76l-8,8c-1.13,1.13-1.76,2.64-1.76,4.24,0,3.31,2.69,6,6,6,1.6,0,3.11-.62,4.24-1.76l3.51-3.51ZM44,8c-3.07,0-6.14,1.17-8.49,3.51l-3.51,3.51,4.24,4.24,3.51-3.51c1.13-1.13,2.64-1.76,4.24-1.76,3.31,0,6,2.69,6,6,0,1.6-.62,3.11-1.76,4.24l-10,10c-1.13,1.13-2.64,1.76-4.24,1.76s-3.11-.62-4.24-1.76l-1.41-1.41-4.24,4.24,1.41,1.41c2.34,2.34,5.41,3.51,8.49,3.51s6.14-1.17,8.49-3.51l10-10c2.34-2.34,3.51-5.41,3.51-8.49,0-6.63-5.37-12-12-12Z" /></svg>
+							</div>
+							<div style="float:left; width:20px; height:20px;" title="Download File" ><a target="_blank" class="text-dark" style="" title="Download File" v-bind:href="'?action=download&key='+encodeURIComponent(v['Key'])" ><i class="ri ri-ri ri-download-2-fill" ></i></a></div>
+							<div>/{{ v['Key'] }}</div>
 							<div style="color:gray;float:right;">
 								<div v-if="'Size' in v" style="display: inline-block; width: 100px; overflow: hidden;">{{ getsz(v['Size']) }}</div>
 								<div style="display: inline-block; width:100px; overflow: hidden; ">{{ getc(v) }}</div>
@@ -180,6 +193,7 @@ var app = Vue.createApp({
 				"vault_id"		: "<?=$vault['_id'] ?>",
 				"cmsg": "", "cerr":"","msg": "", "err":"",
 				"keys": [], "prefixes":[],
+				"test_environments": <?=json_encode($test_environments) ?>,
 				upload_list: [],
 				new_folder_name: "",
 				current_path: "<?=$_GET['path']?$_GET['path']:'/' ?>",
@@ -215,6 +229,29 @@ var app = Vue.createApp({
 			setInterval(this.check_queue,100);
 		},
 		methods: {
+			get_download_url: function( vkey ){
+				if( this.vault['vault_type'] == 'AWS-S3' ){
+					if( 'public' in this.vault['details'] && 'static' in this.vault['details'] ){
+						if( this.vault['details']['public']===true && this.vault['details']['static']===true ){
+							if( this.vault['details']['alias'] ){
+								return "/"+"/"+this.vault['details']['alias'] + "/" + vkey;
+							}else{
+								return "http:"+"/"+"/"+this.vault['details']['bucket'] + ".s3-website."+this.vault['details']['region'] + ".amazonaws.com/" + vkey;
+							}
+						}
+					}
+				}
+				return false;
+			},
+			get_mapped_url: function( vkey ){
+				console.log( this.test_environments );
+				if( this.vault['vault_type'] == 'AWS-S3' ){
+					if( 'rewrite' in this.vault['details'] && 'rewrite_path' in this.vault['details'] && 'dest_path' in this.vault['details'] ){
+						return this.test_environments[0]['u'].substr(0,this.test_environments[0]['u'].length-1) + this.vault['details']['rewrite_path'] + vkey;
+					}
+				}
+				return false;
+			},
 			getc: function(v){
 				if( 'LastModified' in v ){
 					return v['LastModified'].substr(0,10);
@@ -601,6 +638,7 @@ var app = Vue.createApp({
 			start_upload: function(vi){
 
 				this.active_uploads++;
+
 				this.upload_list[ vi ]['st'] = 'uploading';
 				this.upload_list[ vi ]['pg'] = 0;
 				axios.post("?", {

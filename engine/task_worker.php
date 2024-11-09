@@ -1,6 +1,6 @@
 <?php
 
-require("cron_daemon_config.php");
+require( "cron_daemon_config.php" );
 
 if( sizeof($argv) <3 ){
 	echo "Need Arguments: app_id and queue_id";exit;
@@ -44,8 +44,6 @@ function shutdown(){
 	}
 	logit("Shutdown");
 }
-
-
 
 set_error_handler(function($errno, $errstr, $errfile, $errline ){
 	global $mongodb_con;
@@ -168,7 +166,8 @@ while( 1 ){
 	}
 
 	$res = $mongodb_con->find_one( $db_prefix . "_queues", [
-		"app_id"=>$app_id, "_id"=>$queue_id
+		"app_id"=>$app_id,
+		"_id"=>$queue_id
 	]);
 
 	$processed = false;
@@ -240,3 +239,5 @@ while( 1 ){
 	}
 	//break;
 }
+
+

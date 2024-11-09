@@ -375,7 +375,7 @@ class mongodb_connection{
 					'upsert'=> true,
 					'new' => true,
 					'returnNewDocument' => true,
-					//'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
 					'projection'=>[$val=>true],
 				];
 				$cur =$col->findOneAndUpdate([
@@ -388,7 +388,7 @@ class mongodb_connection{
 						$val=>$incr
 					]
 				],$option);
-				return ["status"=>"success","data"=>$cur[$val]];
+				return ["status"=>"success","data"=>$cur];
 			}catch(Exception $ex){
 				return ["status"=>"fail","error"=>$ex->getMessage()];
 			}

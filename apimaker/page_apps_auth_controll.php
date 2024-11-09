@@ -5,7 +5,7 @@
 	$config_allow_actions = [
 		"apis"=> [ "*", "invoke" ],
 		"tables"=> ["*","find", "scan", "insert", "update", "delete"],
-		"storage"=> ["*","list_files", "get_file", "get_raw_file", "put_file", "delete_file"],
+		"storage"=> ["*","list_files", "get_file", "get_raw_file", "put_file", "create_signed_url", "delete_file"],
 		"files"=> ["*","list_files", "get_file", "get_raw_file", "get_file_by_id", "get_raw_file_by_id", "put_file", "delete_file"],
 		"objects"=> ["*","listObjects","getObject","getObjectTemplate","getObjectRecords","getObjectNodes","objectCreate","objectCreateWithTemplate","objectLabelUpdate","objectTypeUpdate","objectAliasUpdate","objectInstanceUpdate","objectPropertiesUpdate","objectNodesTruncate","objectDelete","objectConverToDataset","objectConverToNode","objectTemplatePropertyCreate","objectTemplatePropertyUpdate","objectTemplatePropertyDelete","objectTemplateEnable","objectTemplateOrderUpdate","dataSetRecordCreate","dataSetRecordUpdate","dataSetRecordDelete","dataSetTruncate","keywordSearch"],
 	];
@@ -75,7 +75,7 @@
 					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Record `".$pdthing."` repeated"];
 				}
 				$k[ $pdthing ]=1;
-				if( $pdthing != "*" && !preg_match("/^[a-z0-9\:\-\_\.]{1,250}$/i", $pdthing) ){
+				if( $pdthing != "*" && !preg_match("/^[a-z0-9\:\.\-\_\/\@\*]{1,200}$/i", $pdthing) ){
 					return ['status'=>"fail", "error"=>"Policy ".($pi+1)." Invalid Record `".$pdthing."` "];
 				}
 			}

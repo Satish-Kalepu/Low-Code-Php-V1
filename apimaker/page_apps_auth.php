@@ -1376,7 +1376,7 @@ var app = Vue.createApp({
 							this.ak_add_error= "Policy "+(pi+1)+": Records `*` Duplicate";return false;
 						}
 						ra = true;
-					}else if( this.ak_record['policies'][pi]['records'][i].match(/^[a-z0-9\.\-\_]{1,32}$/i) == null ){
+					}else if( this.ak_record['policies'][pi]['records'][i].match(/^[a-z0-9\:\.\-\_\/\@\*]{1,200}$/i) == null ){
 						this.ak_add_error= "Policy "+(pi+1)+": Records `"+this.ak_record['policies'][pi]['records'][i]+"` Invalid Format";return false;
 					}
 				}
@@ -1399,12 +1399,12 @@ var app = Vue.createApp({
 					var m = this.ak_record['ips'][i].match( /^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\/(32|24|16)$/ );
 					if( Number(m[1]) < 1 || Number(m[1]) > 255 ){
 						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 1-255";return false;
-					}else if( Number(m[2]) < 1 || Number(m[2]) > 255 ){
-						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 1-255";return false;
+					}else if( Number(m[2]) < 0 || Number(m[2]) > 255 ){
+						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 0-255";return false;
 					}else if( Number(m[3]) < 0 || Number(m[3]) > 255 ){
-						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 1-255";return false;
+						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 0-255";return false;
 					}else if( Number(m[4]) < 0 || Number(m[4]) > 255 ){
-						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 1-255";return false;
+						this.ak_add_error= "Ip address should be #.#.#.#/(32/24/16). digit should be between 0-255";return false;
 					}
 				}
 			}
@@ -2002,7 +2002,7 @@ var app = Vue.createApp({
 							this.ra_err= "Policy "+(pi+1)+": Records `*` Duplicate";return false;
 						}
 						ra = true;
-					}else if( this.role_record['policies'][pi]['records'][i].match(/^[a-z0-9\.\-\_]{1,32}$/i) == null ){
+					}else if( this.role_record['policies'][pi]['records'][i].match(/^[a-z0-9\:\.\-\_\/\@\*]{1,200}$/i) == null ){
 						this.ra_err= "Policy "+(pi+1)+": Records `"+this.role_record['policies'][pi]['records'][i]+"` Invalid Format";return false;
 					}
 				}

@@ -66,6 +66,42 @@ function engine_api_object( $graph_db, $action, $post ){
 	$graph_things = $db_prefix . "_graph_" . $graph_id . "_things";
 	$graph_keywords = $db_prefix . "_graph_" . $graph_id . "_keywords";	
 
+/*
+		keywordSearch    - context_load_things
+		listObjects    - objects_load_basic
+		getObject    - objects_load_object
+		getObjectTemplate    - objects_load_template
+		getObjectRecords    - objects_load_records
+		getObjectNodes    - objects_load_browse_list
+		objectCreate    - objects_create_node_on_fly
+		objectCreateWithTemplate    - objects_create_with_template
+		objectLabelUpdate    - objects_edit_label
+		objectTypeUpdate    - objects_edit_type
+		objectAliasUpdate    - objects_edit_alias
+		objectInstanceUpdate    - objects_edit_i_of
+		objectPropertiesUpdate    - objects_save_props
+		objectNodesTruncate    - objects_nodes_empty
+		objectDelete    - objects_delete_node
+		objectConverToDataset    - objects_ops_convert_to_dataset
+		objectConverToNode    - objects_ops_convert_to_nodelist
+		objectSetIcon    -  objects_set_icon
+		objectSaveHtml  -  objects_save_object_html
+		objectTemplateFieldCreate    - objects_object_add_field
+		objectTemplateFieldUpdate    - objects_save_object_z_t
+		objectTemplateFieldDelete    - objects_delete_field
+		objectTemplateEnable    - objects_save_enable_z_t
+		objectTemplateOrderUpdate    - objects_save_z_o
+		dataSetRecordCreate    - objects_dataset_record_create
+		dataSetRecordUpdate    - objects_dataset_record_save_props
+		dataSetRecordDelete    - objects_dataset_record_delete
+		dataSetTruncate    - objects_records_empty
+
+		objects_import_data_check
+		object_import_batch
+		save_settings_library
+*/
+
+
 		/*
 		$j['apis']['objectPropertiesUpdate'] = [
 			"action"=> "objectPropertiesUpdate",
@@ -156,7 +192,70 @@ function engine_api_object( $graph_db, $action, $post ){
 		];
 		*/
 
-	if( $action == "listObjects" ){
+	if( $action == "keywordSearch" ){ //context_load_things
+
+		$things = [];
+		$cond = [];
+		$sort = [];
+		if( isset($post['keyword']) && $post['keywrod'] ){
+			if( !preg_match("/^[a-z0-9\ \-]$/", $post['keyword']) ){
+				return json_response(200,["status"=>"success", "things"=>[] ]);
+			}
+			$cond['p'] = ['$gte'=>$post['keyword'], '$lte'=>$post['keyword']."zzz" ];
+			$sort = ['p'=>1];
+			$debug_t = true;
+			$res = $mongodb_con->find( $graph_keywords, $cond, [
+				"sort"=>$sort, 
+				"limit"=>200,
+			]);
+			foreach( $res['data'] as $i=>$j ){
+				$things[] = [
+					'l'=>['t'=>'T', 'v'=>$j['p']],
+					'i_of'=>['i'=>$j['pid'],'v'=>$j['pl'],'t'=>"GT"],
+					'i'=>$j['tid'],
+					'ol'=>$j['l'],
+					'm'=>isset($j['m'])?true:false,
+					't'=>$j['t'],
+				];
+			}
+			$res= [
+				"status"=>"success",
+				"things"=>$things,
+				"keyword"=>$post['keyword'],
+			];
+			return json_response(200,$res);
+		}else{
+			$cond['cnt'] = ['$gt'=>1];
+			$sort = ['cnt'=>-1];
+			$res = $mongodb_con->find( $graph_things, $cond, [
+				"sort"=>$sort, 
+				"projection"=>['l'=>true, 'i'=>true,'i_of'=>true,'i'=>'$_id', '_id'=>false],
+				"limit"=>100,
+			]);
+			foreach( $res['data'] as $i=>$j ){
+				$j['i'] = (string)$j['i'];
+				$things[] = $j;
+			}
+			if( sizeof($things) < 50 ){
+				$res = $mongodb_con->find( $graph_things, [], [
+					"sort"=>['_id'=>1], 
+					"projection"=>['l'=>true, 'i'=>true,'i_of'=>true,'i'=>'$_id', '_id'=>false],
+					"limit"=>100,
+				]);
+				foreach( $res['data'] as $i=>$j ){
+					$j['i'] = (string)$j['i'];
+					$things[] = $j;
+				}
+			}
+			$res= [
+				"status"=>"success",
+				"things"=>$things,
+				"keyword"=>$post['keyword'],
+			];
+			return json_response(200,$res);
+		}
+
+	}else if( $action == "listObjects" ){ //objects_load_basic
 		if( !isset($post['sort']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Input Missing: sort" ]);
 		}
@@ -231,11 +330,11 @@ function engine_api_object( $graph_db, $action, $post ){
 			"status"=>"success", "data"=>$res['data'], "query"=>$cond
 		]);
 
-	}else if( $action == "getObject" ){
+	}else if( $action == "getObject" ){ //objects_load_object
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$ops = [
@@ -257,15 +356,15 @@ function engine_api_object( $graph_db, $action, $post ){
 			]);
 		}
 
-	}else if( $action == "getObjectTemplate" ){
+	}else if( $action == "getObjectTemplate" ){ //objects_load_template
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$ops = [
-			'projection'=>['z_t'=>1,'z_o'=>1, 'z_n'=>1]
+			'projection'=>['z_t'=>1,'z_o'=>1, 'z_n'=>1,'l'=>1,'i_of'=>1, 'i_t'=>1]
 		];
 		$res = $mongodb_con->find_one( $graph_things, ["_id"=>$post['object_id']], $ops );
 		if( $res['status'] != "success" ){
@@ -281,11 +380,11 @@ function engine_api_object( $graph_db, $action, $post ){
 			]);
 		}
 
-	}else if( $action == "getObjectRecords" ){
+	}else if( $action == "getObjectRecords" ){ //objects_load_records
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
@@ -346,11 +445,11 @@ function engine_api_object( $graph_db, $action, $post ){
 			$res['sort'] = $sort;
 			return json_response(200,$res);
 		}
-	}else if( $action == "getObjectNodes" ){
+	}else if( $action == "getObjectNodes" ){ //objects_load_browse_list
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
@@ -382,7 +481,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(200,$res);
 		}
 
-	}else if( $action == "objectCreate" ){
+	}else if( $action == "objectCreate" ){ //objects_create_node_on_fly
 		if( !isset($post['node']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
@@ -416,6 +515,10 @@ function engine_api_object( $graph_db, $action, $post ){
 		}
 		$instance = $res['data'];
 
+		if( $instance['i_t']['v'] != "N" ){
+			return json_response(400,["status"=>"fail", "error"=>"Instance is not of type Node. Sub Nodes are not allowed"]);
+		}
+
 		if( $instance['l']['v'] == "Root" && $thing['l']['t'] == "GT" ){
 			return json_response(400,["status"=>"fail", "status"=>"Nodes under Root instance should not refer other nodes"]);
 		}
@@ -444,44 +547,36 @@ function engine_api_object( $graph_db, $action, $post ){
 			}
 			$thing['_id'] = $new_id;
 		}
-		$new_thing = [
-			'_id'=>$new_id,
-			'l'=>[
-				't'=>"T", "v"=>$post['l']['v']
-			],
-			'i_of'=>[
-				't'=>"GT",
-				'i'=>$instance_id,
-				'v'=>$post['i_of']['v']
-			],
-			'i_t'=> ["t"=>"T", "v"=>"N"],
-			'm_i'=> date("Y-m-d H:i:s"),
-			'm_u'=> date("Y-m-d H:i:s")
-		];
-		$res = $mongodb_con->insert( $graph_things, $new_thing );
+		
+		$thing['i_t']=["t"=>"T", "v"=>"N"];
+		$thing['m_i']=date("Y-m-d H:i:s");
+		$thing['m_u']=date("Y-m-d H:i:s");
+		$res = $mongodb_con->insert( $graph_things, $thing );
 		$res2 = $mongodb_con->increment( $graph_things, $instance_id, "cnt", 1 );
+
 		send_to_keywords_queue($graph_id, $res['inserted_id'] );
+
 		event_log( "objects", "create_on_fly", [
 			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$res['inserted_id'],
 		]);
-		$res['object'] = $new_thing;
+		$res['object'] = $thing;
 		return json_response(200,$res);
 
-	}else if( $action == "objectCreateWithTemplate" ){
-		if( !isset($post['node']) ){
+	}else if( $action == "objectCreateWithTemplate" ){ //objects_create_with_template
+		if( !isset($post['thing']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
-		$thing = $post['node'];
+		$thing = $post['thing'];
 		if( !is_array( $thing ) ){
 			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
-		if( !isset( $thing['l'] ) || !isset( $thing['i_of'] ) ){
+		if( !isset( $thing['l'] ) || !isset( $thing['i_t'] ) || !isset( $thing['i_of'] ) || !isset( $thing['props'] ) ){
 			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
-		if( !is_array( $thing['i_of'] ) || !is_array( $thing['i_of'] ) ){
-			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
+		if( !is_array( $thing['l'] ) || !is_array( $thing['i_t'] ) || !is_array( $thing['i_of'] ) || !is_array( $thing['props'] ) ){
+			return json_response(400,["status"=>"fail", "error"=>"Data incorrect format 1"]);
 		}
 		if( !isset( $thing['l']['v'] ) || !$thing['l']['v'] ){
 			return json_response(400,["status"=>"fail", "error"=>"Node name missing"]);
@@ -504,6 +599,32 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(400,["status"=>"fail", "error"=>"Node Label invalid"]);
 		}
 
+		if( !isset( $thing['i_t'] ) ){
+			return json_response(400, ["status"=>"fail", "error"=>"Node type missing"]);
+		}
+		if( !isset( $thing['i_t']['t'] ) || !isset( $thing['i_t']['v'] ) ){
+			return json_response(400, ["status"=>"fail", "error"=>"Node type missing"]);
+		}
+		if( $thing['i_t']['t'] != "T" || !preg_match("/^(N|L|M|D)$/", $thing['i_t']['v'] ) ){
+			return json_response(400, ["status"=>"fail", "error"=>"Node type missing"]);
+		}
+		if( $thing['i_t']['t'] == "L" ){
+			if( !isset($thing['z_t']) ){
+				return json_response(400, ["status"=>"fail", "error"=>"Template is must for a DataSet"]);
+			}
+		}
+		if( $thing['i_t']['t'] == "D" || $thing['i_t']['t'] == "M" ){
+			if( isset($thing['z_t']) ){
+				unset($thing['z_t']);
+				unset($thing['z_o']);
+				unset($thing['z_n']);
+			}
+		}
+
+		if( !is_array( $thing['i_of'] ) || !is_array( $thing['i_of'] ) ){
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
+		}
+
 		$instance_id = $thing['i_of']['i'];
 		if( !preg_match("/^[a-z0-9]{2,24}$/i", $instance_id) ){
 			return json_response(400,["status"=>"fail", "status"=>"Instance id incorrect"]);
@@ -523,65 +644,11 @@ function engine_api_object( $graph_db, $action, $post ){
 
 		if( isset($instance['z_t']) ){
 			if( !isset( $thing['props'] ) ){
-				json_response("fail", "Properties Data missing");
+				return json_response(400, ["status"=>"fail", "error"=>"Properties Data missing"]);
 			}
 			if( !is_array( $thing['props'] ) ){
-				json_response("fail", "Properties Data missing");
+				return json_response(400, ["status"=>"fail", "error"=>"Properties Data missing"]);
 			}
-		}
-
-		$new_thing = [
-			'l'=>[
-				't'=>"T", "v"=>$post['l']['v']
-			],
-			'i_of'=>[
-				't'=>"GT",
-				'i'=>$instance_id,
-				'v'=>$post['i_of']['v']
-			],
-			'i_t'=> ["t"=>"T", "v"=>"N"],
-			'm_i'=> date("Y-m-d H:i:s"),
-			'm_u'=> date("Y-m-d H:i:s")
-		];
-
-		$props =[];
-		if( isset( $thing['props'] ) ){
-			foreach( $thing['props'] as $i=>$j ){
-				$k = [];
-				if( is_array($j) ){
-					for($ii=0;$ii<sizeof($j);$ii++){
-						if( isset($j[ $ii ]['t']) && isset($j[ $ii ]['v']) ){
-							$k[]=$j;
-						}
-					}
-					if( sizeof($k) ){
-						$props[ $i ] = $k;
-					}
-				}
-			}
-			$thing['props'] = $props;
-		}
-		$z_t = [];
-		if( isset($thing['z_t']) ){
-			foreach( $thing['z_t'] as $i=>$j ){
-				if( !isset($j['name']) || !isset($j['type']) ){
-					json_response("fail", "Template error: " . $i );
-				}
-				if( !$j['name']['v'] || !$j['type']['k'] ){
-					json_response("fail", "Template error: " . $i );
-				}
-				$z_t[ $i ] = ['l'=>$j['name'],'t'=>$j['type'],'e'=>false,'m'=>false];
-				if( $j['type']['k'] =="GT" ){
-					if( !isset($j['i_of']) ){
-						json_response("fail", "Template error: " . $i . " Graph instance" );
-					}
-					if( !$j['i_of']['i'] || !$j['i_of']['v'] ){
-						json_response("fail", "Template error: " . $i . " Graph instance" );
-					}
-					$z_t[ $i ]['i_of'] = $j['i_of'];
-				}
-			}
-			$thing['z_t'] = $z_t;
 		}
 
 		$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$instance_id, 'l.v'=>$thing['l']['v']] );
@@ -597,7 +664,7 @@ function engine_api_object( $graph_db, $action, $post ){
 				$res5 = $mongodb_con->increment( $graph_things, $instance_id, "series", 1 );
 				$new_id = "T" . $res5['data']['series'];
 			}
-			$new_thing['_id'] = $new_id;
+			$thing['_id'] = $new_id;
 		}else{
 			if( !isset($instance['series']) ){
 				$new_id = $instance_id."T1";
@@ -606,32 +673,83 @@ function engine_api_object( $graph_db, $action, $post ){
 				$res5 = $mongodb_con->increment( $graph_things, $instance_id, "series", 1 );
 				$new_id = $instance_id."T" . $res5['data']['series'];
 			}
-			$new_thing['_id'] = $new_id;
+			$thing['_id'] = $new_id;
 		}
 
-		$res = $mongodb_con->insert( $graph_things, $new_thing );
-		$res2 = $mongodb_con->increment( $graph_things, $instance_id, "cnt", 1 );
-		send_to_keywords_queue($graph_id, $res['inserted_id'] );
-		event_log( "objects", "create_on_fly", [
-			"app_id"=>$app_id,
-			"graph_id"=>$graph_id,
-			"object_id"=>$res['inserted_id'],
-		]);
-		$res['object'] = $new_thing;
-		return json_response(200, $res);
+		$props = [];
+		if( isset( $thing['props'] ) ){
+			foreach( $thing['props'] as $propf=>$j ){
+				$k = [];
+				if( is_array($j) ){
+					for($ii=0;$ii<sizeof($j);$ii++){
+						if( isset($j[ $ii ]['t']) && isset($j[ $ii ]['v']) ){
+							$k[]=$j[ $ii ];
+						}
+					}
+				}
+				if( sizeof($k) ){
+					$props[ $propf ] = $k;
+				}
+			}
+			$thing['props'] = $props;
+		}
 
-	}else if( $action == "objectLabelUpdate" ){
+		//return json_response(200, $thing['props']);
+
+		$z_t = [];
+		if( isset($thing['z_t']) ){
+			foreach( $thing['z_t'] as $i=>$j ){
+				if( !isset($j['name']) || !isset($j['type']) ){
+					return json_response(400, ["status"=>"fail", "error"=>"Template error: " . $i ]);
+				}
+				if( !$j['name']['v'] || !$j['type']['k'] ){
+					return json_response(400, ["status"=>"fail", "error"=>"Template error: " . $i ]);
+				}
+				$z_t[ $i ] = ['l'=>$j['name'],'t'=>$j['type'],'e'=>false,'m'=>false];
+				if( $j['type']['k'] =="GT" ){
+					if( !isset($j['i_of']) ){
+						return json_response(400, ["status"=>"fail", "error"=>"Template error: " . $i . " Graph instance" ]);
+					}
+					if( !$j['i_of']['i'] || !$j['i_of']['v'] ){
+						return json_response(400, ["status"=>"fail", "error"=>"Template error: " . $i . " Graph instance" ]);
+					}
+					$z_t[ $i ]['i_of'] = $j['i_of'];
+				}
+			}
+			$thing['z_t'] = $z_t;
+		}
+
+		$thing['m_i']=date("Y-m-d H:i:s");
+		$thing['m_u']=date("Y-m-d H:i:s");
+		$res = $mongodb_con->insert( $graph_things, $thing );
+		if( $res['status'] == "success" ){
+			$res2 = $mongodb_con->increment( $graph_things, $instance_id, "cnt", 1 );
+			send_to_keywords_queue($graph_id, $res['inserted_id'] );
+			event_log( "objects", "create_with_template", [
+				"app_id"=>$app_id,
+				"graph_id"=>$graph_id,
+				"object_id"=>$res['inserted_id'],
+			]);
+			$res['object'] = $thing;
+			return json_response(200, $res);
+		}else{
+			$res['object'] = $thing;
+			return json_response(400, $res);
+		}
+
+	}else if( $action == "objectLabelUpdate" ){ //objects_edit_label
 
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
+		$object = $res['data'];
 		if( !isset($post['label']) ){
 			return json_response(400, ["status"=>"fail", "error"=>"Need Label"]);
 		}else if( !is_array($post['label']) ){
@@ -643,7 +761,7 @@ function engine_api_object( $graph_db, $action, $post ){
 
 		$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$object['i_of']['i'], 'l.v'=>$label['v'], '_id'=>['$ne'=>$object_id] ] );
 		if( $res['data'] ){
-			json_response("fail", "Duplicate Node Exists");
+			return json_response(400,["status"=>"fail", "error"=>"Duplicate Node Exists"]);
 		}
 
 		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$object_id ], [
@@ -651,40 +769,47 @@ function engine_api_object( $graph_db, $action, $post ){
 			'updated'=>date("Y-m-d H:i:s")
 		]);
 
-		send_to_keywords_queue($object_id);
+		send_to_keywords_queue($graph_id, $object_id);
 
 		event_log( "objects", "edit_label", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 		]);
 
-		json_response( $res );
-	}else if( $action == "objectTypeUpdate" ){
+		return json_response(200, $res );
+	}else if( $action == "objectTypeUpdate" ){ //objects_edit_type
 
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$object_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
+		$object = $res['data'];
 		$current_type = $object['i_t']['v'];
 		if( !isset($post['type']) ){
-			json_response("fail", "Need type");
+			return json_response(404,["status"=>"fail", "error"=>"Need type"]);
 		}else if( !is_array($post['type']) ){
-			json_response("fail", "Need Type");
+			return json_response(404,["status"=>"fail", "error"=>"Need Type"]);
 		}else if( !isset($post['type']['t']) || !isset($post['type']['v']) ){
-			json_response("fail", "Need Type");
+			return json_response(404,["status"=>"fail", "error"=>"Need Type"]);
 		}
 		$type = $post['type'];
 
 		if( $current_type == "N" && $type['v'] != "N" ){
 			if( isset($object['cnt']) && $object['cnt'] > 0 ){
-				json_response("fail", "There are nodes " . $object['cnt'] . " under this object");
+				return json_response(404,["status"=>"fail", "error"=>"There are nodes " . $object['cnt'] . " under this object"]);
+			}
+		}
+		if( $current_type == "L" && $type['v'] != "L" ){
+			if( isset($object['cnt']) && $object['cnt'] > 0 ){
+				return json_response(404,["status"=>"fail", "error"=>"There are records " . $object['cnt'] . " under this DataSet"]);
 			}
 		}
 
@@ -693,32 +818,34 @@ function engine_api_object( $graph_db, $action, $post ){
 			'updated'=>date("Y-m-d H:i:s")
 		]);
 
-		send_to_keywords_queue($object_id);
+		send_to_keywords_queue($graph_id, $object_id);
 
 		event_log( "objects", "edit_type", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 		]);
 
-		json_response( $res );
+		return json_response(200, $res );
 
-	}else if( $action == "objectAliasUpdate" ){
+	}else if( $action == "objectAliasUpdate" ){ //objects_edit_alias
 
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$object_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
+		$object = $res['data'];
 		if( !isset($post['alias']) ){
-			json_response("fail", "Need alias");
+			return json_response(404,["status"=>"fail", "error"=>"Need alias"]);
 		}else if( !is_array($post['alias']) ){
-			json_response("fail", "Need alias");
+			return json_response(404,["status"=>"fail", "error"=>"Need alias"]);
 		}else{
 			if( array_keys($post['alias'])[0] !== 0 ){
 				$post['alias'] = [];
@@ -729,7 +856,7 @@ function engine_api_object( $graph_db, $action, $post ){
 				if( !isset($v['t']) || !isset($v['v']) || $v['v'] == "" ){
 					array_splice($post['alias'],$i,1);$i--;
 				}else if( strtolower($v['v']) == strtolower($object['l']['v']) ){
-					json_response("fail", "Label and Alias should be different");
+					return json_response(404,["status"=>"fail", "error"=>"Label and Alias should be different"]);
 				}
 				if( in_array(strtolower($v['v']), $als) ){
 					array_splice($post['alias'],$i,1);$i--;
@@ -750,72 +877,75 @@ function engine_api_object( $graph_db, $action, $post ){
 				'$set'=>['updated'=>date("Y-m-d H:i:s")],
 			]);
 		}
-		send_to_keywords_queue($object_id);
+		send_to_keywords_queue($graph_id, $object_id);
 		event_log( "objects", "edit_alias", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 		]);
-		json_response( $res );
+		return json_response(200, $res );
 
-	}else if( $action == "objectInstanceUpdate" ){
+	}else if( $action == "objectInstanceUpdate" ){ //objects_edit_i_of
 
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$object_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
 
+		$object = $res['data'];
 		if( !isset($post['i_of']) ){
-			json_response("fail", "Need Instance Of");
+			return json_response(400,["status"=>"fail", "error"=>"Need Instance Of"]);
 		}else if( !is_array($post['i_of']) ){
-			json_response("fail", "Need Instance Of");
+			return json_response(400,["status"=>"fail", "error"=>"Need Instance Of"]);
 		}else if( !isset($post['i_of']['t']) || !isset($post['i_of']['v']) ){
-			json_response("fail", "Need Instance Of");
+			return json_response(400,["status"=>"fail", "error"=>"Need Instance Of"]);
 		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['i_of']['i']) && !preg_match("/^[0-9]+$/i", $post['i_of']['i'] ) ){
-			json_response("fail", "Instance id incorrect");
+			return json_response(400,["status"=>"fail", "error"=>"Instance id incorrect"]);
 		}
 		$i_of = $post['i_of'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$i_of['i']] );
 		if( !$res['data'] ){
-			json_response("fail", "Instance not found");
+			return json_response(400,["status"=>"fail", "error"=>"Instance not found"]);
 		}
 		$instance = $res['data'];
 
 		$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$i_of['i'], 'l.v'=>$object['l']['v'], '_id'=>['$ne'=>$object_id] ] );
 		if( $res['data'] ){
-			json_response("fail", "Duplicate Node Exists in Instance: " . $i_of['v']);
+			return json_response(400,["status"=>"fail", "error"=>"Duplicate Node Exists in Instance: " . $i_of['v']]);
 		}
 		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$object_id ], [
 			'i_of'=>$i_of,
 			'updated'=>date("Y-m-d H:i:s")
 		]);
-		send_to_keywords_queue($object_id);
+		send_to_keywords_queue($graph_id, $object_id);
 
 		$res2 = $mongodb_con->increment( $graph_things, $object['i_of']['i'], "cnt", -1 );
 		$res2 = $mongodb_con->increment( $graph_things, $post['data']['i_of']['i'], "cnt", 1 );
 
 		event_log( "objects", "edit_instance", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 		]);
 
-		json_response( $res );
+		return json_response(200, $res );
 
-	}else if( $action == "objectPropertiesUpdate" ){
+	}else if( $action == "objectPropertiesUpdate" ){ //objects_save_props
 
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$thing_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
@@ -823,21 +953,21 @@ function engine_api_object( $graph_db, $action, $post ){
 
 		$res2 = $mongodb_con->find_one( $graph_things, ['_id'=>$res['data']['i_of']['i']] );
 		if( !$res2['data'] ){
-			json_response("fail", "parent not found");
+			return json_response(400,["status"=>"fail", "error"=>"parent not found"]);
 		}
 		$parent = $res2['data'];
 
 		if( !isset($post['props']) ){
-			json_response("fail", "Data missing");
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}else if( !is_array($post['props']) ){
-			json_response("fail", "Data missing");
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
 
 		$props = $post['props'];
 
 		foreach( $props as $field=>$values ){
 			if( !is_array($values) ){
-				json_response("fail", "Property `" . $field . "` has invalid value");
+				return json_response(400,["status"=>"fail", "error"=>"Property `" . $field . "` has invalid value"]);
 			}
 			if( isset($parent['z_t'][ $field ]) ){
 				if( $parent['z_t'][ $field ]['t']['k'] == "O" ){
@@ -865,7 +995,7 @@ function engine_api_object( $graph_db, $action, $post ){
 						if( isset($pd['t']) && isset($pd['v']) ){
 
 						}else{
-							json_response("fail", "Property `" . $field . "` item: ".($pi+1)." has invalid value: ".json_encode($pd));
+							return json_response(400,["status"=>"fail", "error"=>"Property `" . $field . "` item: ".($pi+1)." has invalid value: ".json_encode($pd)]);
 						}
 					}
 				}
@@ -881,24 +1011,24 @@ function engine_api_object( $graph_db, $action, $post ){
 		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$thing_id], $data );
 
 		event_log( "objects", "props_save", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
-			"object_id"=>$post['object_id'],
+			"object_id"=>$thing_id,
 		]);
 
-		json_response($res);
+		return json_response(200,$res);
 
 
-	}else if( $action == "objectNodesTruncate" ){
+	}else if( $action == "objectNodesTruncate" ){ //objects_nodes_empty
 		if( !isset($post['instance_id']) ){
-			json_response("fail", "Need Instance id");
+			return json_response(400,["status"=>"fail", "error"=>"Need Instance id"]);
 		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['instance_id']) && !preg_match("/^[0-9]+$/i", $post['instance_id']) ){
-			json_response("fail", "Instance id incorrect");
+			return json_response(400,["status"=>"fail", "error"=>"Instance id incorrect"]);
 		}
 		$instance_id = $post['instance_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$instance_id] );
 		if( !$res['data'] ){
-			json_response("fail", "Instance not found");
+			return json_response(400,["status"=>"fail", "error"=>"Instance not found"]);
 		}
 
 		while( 1 ){
@@ -908,9 +1038,9 @@ function engine_api_object( $graph_db, $action, $post ){
 			}
 			foreach( $res['data'] as $i=>$j ){
 				$mongodb_con->delete_one( $graph_things,["i_of.i"=>$instance_id, "_id"=>$j['_id']] );
-				send_to_keywords_delete_queue($j['_id']);
+				send_to_keywords_delete_queue($graph_id,$j['_id']);
 				event_log( "objects", "delete", [
-					"app_id"=>$config_param1,
+					"app_id"=>$app_id,
 					"graph_id"=>$graph_id,
 					"object_id"=>$j['_id'],
 				]);
@@ -918,16 +1048,17 @@ function engine_api_object( $graph_db, $action, $post ){
 		}
 		$mongodb_con->update_one( $graph_things, ["_id"=> $instance_id], ["cnt"=>0] );
 
-		json_response("success");
+		return json_response(200,['status'=>"success"]);
 
 
-	}else if( $action == "objectDelete" ){
+	}else if( $action == "objectDelete" ){ //objects_delete_node
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$object_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
@@ -937,31 +1068,32 @@ function engine_api_object( $graph_db, $action, $post ){
 		$instance_id = $thing['i_of']['i'];
 
 		// if( $thing['i_t'] != "N" ){
-		// 	json_response("fail", "Incorrect node type");
+		// 	return json_response(400,["status"=>"fail", "error"=>"Incorrect node type"]);
 		// }
 		if( $thing['cnt'] > 0 ){
-			json_response("fail", "There are nested ".$thing['cnt']." nodes under ". $thing['l']['v']);
+			return json_response(400,["status"=>"fail", "error"=>"There are nested ".$thing['cnt']." nodes under ". $thing['l']['v']]);
 		}
 
 		$mongodb_con->delete_one( $graph_things,[
 			"_id"=>$object_id
 		]);
-		send_to_keywords_delete_queue($object_id);
+		send_to_keywords_delete_queue($graph_id, $object_id);
 		event_log( "objects", "delete", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 		]);
 		$mongodb_con->increment( $graph_things, $instance_id, "cnt", -1 );
-		json_response("success");
+		return json_response(200,['status'=>"success"]);
 
-	}else if( $action == "objectConverToDataset" ){
+	}else if( $action == "objectConverToDataset" ){ //objects_ops_convert_to_dataset
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$object_id = $_POST['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
@@ -971,21 +1103,21 @@ function engine_api_object( $graph_db, $action, $post ){
 		$instance_id = $thing['i_of']['i'];
 
 		if( $thing['i_t']['v'] == "L" ){
-			json_response("fail", "Object is already a dataset" );
+			return json_response(400,["status"=>"fail", "error"=>"Object is already a dataset" ]);
 		}else if( $thing['i_t']['v'] != "N" ){
-			json_response("fail", "Source Object must be type of Node" );
+			return json_response(400,["status"=>"fail", "error"=>"Source Object must be type of Node" ]);
 		}
 
 		if( !isset($post['label_to']) ){
-			json_response("fail", "Need new Label Property id");
+			return json_response(400,["status"=>"fail", "error"=>"Need new Label Property id"]);
 		}else if( !preg_match("/^[a-z0-9\.\,\-\_\ ]{2,100}$/i", $post['label_to']) ){
-			json_response("fail", "Property name should be plain text");
+			return json_response(400,["status"=>"fail", "error"=>"Property name should be plain text"]);
 		}
 
 		$new_prop = trim($post['label_to']);
 		foreach( $thing['z_t'] as $propf=>$p ){
 			if( strtolower($new_prop) == strtolower($p['l']['v']) ){
-				json_response("fail", "Property name `".$new_prop."` already exists!" );
+				return json_response(400,["status"=>"fail", "error"=>"Property name `".$new_prop."` already exists!" ]);
 			}
 		}
 
@@ -1032,11 +1164,11 @@ function engine_api_object( $graph_db, $action, $post ){
 					"m_u"=>$j['m_u'],
 				]);
 				if( $ires['inserted_id'] ){
-					send_to_records_queue( $object_id, $rec_id, "record_create" );
+					send_to_records_queue($graph_id, $object_id, $rec_id, "record_create" );
 					$mongodb_con->delete_one( $graph_things, ['_id'=>$id]);
-					send_to_keywords_delete_queue($id);
+					send_to_keywords_delete_queue($graph_id,$id);
 					event_log( "objects", "delete", [
-						"app_id" => $config_param1,
+						"app_id" => $app_id,
 						"graph_id" => $graph_id,
 						"object_id" => $id,
 					]);
@@ -1049,21 +1181,22 @@ function engine_api_object( $graph_db, $action, $post ){
 		}
 
 		event_log( "objects", "convert", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 			"from"=>"N",
 			"to"=>"L",
 		]);
-		json_response("success");
+		return json_response(200,['status'=>"success"]);
 
-	}else if( $action == "objectConverToNode" ){
+	}else if( $action == "objectConverToNode" ){ //objects_ops_convert_to_nodelist
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$object_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
@@ -1073,29 +1206,29 @@ function engine_api_object( $graph_db, $action, $post ){
 		$instance_id = $thing['i_of']['i'];
 
 		if( $thing['i_t']['v'] == "N" ){
-			json_response("fail", "Object is already a node list" );
+			return json_response(400,["status"=>"fail", "error"=>"Object is already a node list" ]);
 		}else if( $thing['i_t']['v'] != "L" ){
-			json_response("fail", "Source Object must be type of Dataset" );
+			return json_response(400,["status"=>"fail", "error"=>"Source Object must be type of Dataset" ]);
 		}
 
 		if( !isset($post['primary_field']) ){
-			json_response("fail", "Need NodeID field");
+			return json_response(400,["status"=>"fail", "error"=>"Need NodeID field"]);
 		}
 		if( !isset( $thing['z_t'][ $post['primary_field'] ] ) && $post['primary_field'] != "default-id" ){
-			json_response("fail", "Primary field not found");
+			return json_response(400,["status"=>"fail", "error"=>"Primary field not found"]);
 		}
 		if( !isset($post['label_field']) ){
-			json_response("fail", "Need Label field");
+			return json_response(400,["status"=>"fail", "error"=>"Need Label field"]);
 		}
 		if( !isset( $thing['z_t'][ $post['label_field'] ] ) ){
-			json_response("fail", "Label field not found");
+			return json_response(400,["status"=>"fail", "error"=>"Label field not found"]);
 		}
 		if( isset($post['alias_field']) && sizeof($post['alias_field']) > 1 ){
-			json_response("fail", "One alias field is expected");
+			return json_response(400,["status"=>"fail", "error"=>"One alias field is expected"]);
 		}
 		if( isset($post['alias_field']) && sizeof($post['alias_field']) > 0 ){
 			if( !isset( $thing['z_t'][ $post['alias_field'][0] ] ) ){
-				json_response("fail", "Alias field not found");
+				return json_response(400,["status"=>"fail", "error"=>"Alias field not found"]);
 			}
 		}
 
@@ -1108,18 +1241,18 @@ function engine_api_object( $graph_db, $action, $post ){
 			]);
 			print_r( $res );exit;
 			if( $res['status'] != "success" ){
-				json_response($res);
+				return json_response(200,$res);
 			}
 			if( isset($res['data']) && sizeof($res['data']) > 0 ){
 				if( $res['data'][0]['cnt'] > 1 ){
-					json_response("fail", "Primary field value `" . $res['data'][0]['_id'][0] . "` repeated. " );
+					return json_response(400,["status"=>"fail", "error"=>"Primary field value `" . $res['data'][0]['_id'][0] . "` repeated. " ]);
 				}
 			}else{
-				json_response("fail", "Primary values not found");
+				return json_response(400,["status"=>"fail", "error"=>"Primary values not found"]);
 			}
 			foreach( $res['data'] as $i=>$j ){
 				if( !preg_match( "/^[a-z0-9]{2,24}$/i", $j['_id'][0] ) ){
-					json_response("fail", "Primary field value " . $j['_id'][0] . " is not acceptable");
+					return json_response(400,["status"=>"fail", "error"=>"Primary field value " . $j['_id'][0] . " is not acceptable"]);
 				}
 			}
 		}
@@ -1130,20 +1263,20 @@ function engine_api_object( $graph_db, $action, $post ){
 			['$group'=>['_id'=>'$props.'.$post['label_field'].".v", 'cnt'=>['$sum'=>1]] ],
 			['$sort'=>["cnt"=>-1]]
 		]);
-		//json_response($res);
+		//return json_response(200,$res);
 		if( $res['status'] != "success" ){
-			json_response($res);
+			return json_response(200,$res);
 		}
 		if( isset($res['data']) && sizeof($res['data']) > 0 ){
 			if( $res['data'][0]['cnt'] > 1 ){
-				json_response("fail", "Label field `" . $res['data'][0]['_id'][0] . "` repeated. " );
+				return json_response(400,["status"=>"fail", "error"=>"Label field `" . $res['data'][0]['_id'][0] . "` repeated. " ]);
 			}
 		}else{
-			json_response("fail", "Label values not found");
+			return json_response(400,["status"=>"fail", "error"=>"Label values not found"]);
 		}
 		foreach( $res['data'] as $i=>$j ){
 			if( !preg_match( "/^[a-z][a-z0-9\-\.\_\,\ \(\)\@\!\&\:]{1,200}$/i", $j['_id'][0] ) ){
-				json_response("fail", "Label field value " . $j['_id'][0] . " is not acceptable");
+				return json_response(400,["status"=>"fail", "error"=>"Label field value " . $j['_id'][0] . " is not acceptable"]);
 			}
 		}
 
@@ -1186,10 +1319,10 @@ function engine_api_object( $graph_db, $action, $post ){
 				if( $ires['status'] == "success" ){
 					if( $ires['inserted_id'] ){
 						$mongodb_con->delete_one( $graph_things_dataset, ['_id'=>$j['_id']] );
-						send_to_records_queue( $object_id, $j['_id'], "record_delete" );
-						send_to_keywords_queue( $rec_id );
+						send_to_records_queue($graph_id, $object_id, $j['_id'], "record_delete" );
+						send_to_keywords_queue($graph_id, $ires['inserted_id'] );
 						event_log( "objects", "create", [
-							"app_id" => $config_param1,
+							"app_id" => $app_id,
 							"graph_id" => $graph_id,
 							"object_id" => $rec_id,
 						]);
@@ -1201,7 +1334,7 @@ function engine_api_object( $graph_db, $action, $post ){
 					$failed++;
 					$failed_reasons[ $j['_id'] ] = $ires['error'];
 					$mongodb_con->delete_one( $graph_things_dataset, ['_id'=>$j['_id']] );
-					send_to_records_queue( $object_id, $j['_id'], "record_delete" );
+					send_to_records_queue( $graph_id, $object_id, $j['_id'], "record_delete" );
 				}
 			}
 		}
@@ -1216,7 +1349,7 @@ function engine_api_object( $graph_db, $action, $post ){
 		}
 
 		event_log( "objects", "convert", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$object_id,
 			"from"=>"L",
@@ -1229,12 +1362,75 @@ function engine_api_object( $graph_db, $action, $post ){
 			"failed_reasons"=>$failed_reasons
 		]);
 
-	}else if( $action == "objectTemplateFieldCreate" ){
+
+	}else if( $action == "objectSetIcon" ){ //objects_set_icon
+		if( !isset($post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Need Thing id"]);
+		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing id incorrect"]);
+		}
+		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
+		if( !$res['data'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing not found"]);
+		}
+		if( !isset($post['ic']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+		}else if( !isset($post['ic']['t']) || !isset($post['ic']['v']) || !isset($post['ic']['it']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+		}
+
+		if( $post['ic']['t'] != "IC" ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 5"]);
+		}
+		if( !preg_match( "/^(emoji|svg|font|flag|img|img1|img2|img3|imgf)$/", $post['ic']['it'] ) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 6"]);
+		}
+
+		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
+			'ic'=>$post['ic'],
+		]);
+		event_log( "objects", "icon_save", [
+			"app_id"=>$config_param1,
+			"graph_id"=>$graph_id,
+			"object_id"=>$post['object_id'],
+		]);
+		return json_response(200, $res );
+		exit;
+
+	}else if( $action == "objectSaveHtml" ){ //objects_save_object_html
+		if( !isset($post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Need Thing id"]);
+		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing id incorrect"]);
+		}
+
+		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
+		if( !$res['data'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing not found"]);
+		}
+		if( !isset($post['body']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+		}else if( !isset($post['body']['html']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+		}else{
+			$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
+				'body'=>$post['body'],
+			]);
+			event_log( "objects", "html_save", [
+				"app_id"=>$config_param1,
+				"graph_id"=>$graph_id,
+				"object_id"=>$post['object_id'],
+			]);
+			$res['cnt'] = $post['cnt'];
+			return json_response(200, $res );
+		}
+
+	}else if( $action == "objectTemplateFieldCreate" ){ //objects_object_add_field
 
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
@@ -1243,22 +1439,22 @@ function engine_api_object( $graph_db, $action, $post ){
 		}
 
 		if( !isset($post['field']) ){
-			json_response("fail", "Incorrect data 1");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
 		}else if( !preg_match("/^p[0-9]+$/",$post['field']) ){
-			json_response("fail", "Incorrect data 2");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 2"]);
 		}
 		if( !isset($post['prop']) ){
-			json_response("fail", "Incorrect data 3");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 3"]);
 		}else if( !is_array($post['prop']) ){
-			json_response("fail", "Incorrect data 4");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 4"]);
 		}
 
 		if( isset($res['data']['z_t'][ $post['field'] ]) ){
-			json_response("fail", "Field key ".$post['field']." already exists");
+			return json_response(400,["status"=>"fail", "error"=>"Field key ".$post['field']." already exists"]);
 		}
 		$n = intval(str_replace("p","",$post['field']));
 		if( $n < $res['data']['z_n'] ){
-			json_response("fail", "Field keyindex ".$post['z_n']." already exists");
+			return json_response(400,["status"=>"fail", "error"=>"Field keyindex ".$post['z_n']." already exists"]);
 		}
 
 		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
@@ -1269,18 +1465,18 @@ function engine_api_object( $graph_db, $action, $post ){
 			'$push'=>['z_o'=>$post['field']],
 		]);
 		event_log( "objects", "field_add", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$post['object_id'],
 			"field"=>$post['field']
 		]);
-		json_response( $res );
+		return json_response(200,$res);
 
-	}else if( $action == "objectTemplateFieldUpdate" ){
+	}else if( $action == "objectTemplateFieldUpdate" ){ //objects_save_object_z_t
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
@@ -1289,35 +1485,41 @@ function engine_api_object( $graph_db, $action, $post ){
 		}
 
 		if( !isset($post['field']) ){
-			json_response("fail", "Incorrect data 1");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
 		}else if( !preg_match("/^p[0-9]+$/",$post['field']) ){
-			json_response("fail", "Incorrect data 2");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 2"]);
 		}
 		if( !isset($post['prop']) ){
-			json_response("fail", "Incorrect data 3");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 3"]);
 		}else if( !is_array($post['prop']) ){
-			json_response("fail", "Incorrect data 4");
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 4"]);
 		}
 		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
 			'z_t.'. $post['field']=>$post['prop'],
 		]);
 		event_log( "objects", "template_save", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$post['object_id'],
 		]);
-		json_response( $res );
+		return json_response(200,$res);
 
-	}else if( $action == "objectTemplateFieldDelete" ){
+	}else if( $action == "objectTemplateFieldDelete" ){ //objects_delete_field
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
+		}
+
+		if( !isset($post['prop']) ){
+			return json_response(404,["status"=>"fail", "error"=>"Need Prop ID"]);
+		}else if( !preg_match("/^p[0-9]+$/i", $post['prop']) ){
+			return json_response(404,["status"=>"fail", "error"=>"Need Prop ID"]);
 		}
 
 		$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
@@ -1330,19 +1532,31 @@ function engine_api_object( $graph_db, $action, $post ){
 		]);
 
 		event_log( "objects", "field_delete", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$post['object_id'],
 			"field"=>$post['prop']
 		]);
 
-		json_response($res);
+		return json_response(200,$res);
 
-	}else if( $action == "objectTemplateEnable" ){
+	}else if( $action == "objectTemplateEnable" ){ //objects_save_enable_z_t
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
+		}
+		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
+		if( !$res['data'] ){
+			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
+		}
+		
+	}else if( $action == "objectTemplateOrderUpdate" ){ //objects_save_z_o
+		if( !isset($post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
+		}
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
@@ -1350,25 +1564,14 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
 
-	}else if( $action == "objectTemplateOrderUpdate" ){
+	}else if( $action == "dataSetRecordCreate" ){ //objects_dataset_record_create
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
-		if( !$res['data'] ){
-			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
-		}
-
-	}else if( $action == "dataSetRecordCreate" ){
-		if( !isset($post['object_id']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
-		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
-		}
+		$thing_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
@@ -1376,21 +1579,21 @@ function engine_api_object( $graph_db, $action, $post ){
 
 		$res2 = $mongodb_con->find_one( $graph_things, ['_id'=>$res['data']['i_of']['i']] );
 		if( !$res2['data'] ){
-			json_response("fail", "parent not found");
+			return json_response(400,["status"=>"fail", "error"=>"parent not found"]);
 		}
 		$parent = $res2['data'];
 
 		if( !isset($post['record_props']) ){
-			json_response("fail", "Data missing");
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}else if( !is_array($post['record_props']) ){
-			json_response("fail", "Data missing");
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
 
 		$props = $post['record_props'];
 
 		foreach( $props as $field=>$values ){
 			if( !is_array($values) ){
-				json_response("fail", "Property `" . $field . "` has invalid value");
+				return json_response(400,["status"=>"fail", "error"=>"Property `" . $field . "` has invalid value"]);
 			}
 			if( isset($parent['z_t'][ $field ]) ){
 				if( $parent['z_t'][ $field ]['t']['k'] == "O" ){
@@ -1418,7 +1621,7 @@ function engine_api_object( $graph_db, $action, $post ){
 						if( isset($pd['t']) && isset($pd['v']) ){
 
 						}else{
-							json_response("fail", "Property `" . $field . "` item: ".($pi+1)." has invalid value: ".json_encode($pd));
+							return json_response(400,["status"=>"fail", "error"=>"Property `" . $field . "` item: ".($pi+1)." has invalid value: ".json_encode($pd)]);
 						}
 					}
 				}
@@ -1432,29 +1635,30 @@ function engine_api_object( $graph_db, $action, $post ){
 			'props' => $props
 		];
 		
-		$res = $mongodb_con->insert( $graph_things. "_". $thing_id, $data );
+		$res = $mongodb_con->insert( $graph_things. "_". $post['object_id'], $data );
 
 		event_log( "objects", "record_create", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$post['object_id'],
 			"record_id"=>$res['inserted_id'],
 		]);
-		send_to_records_queue( $post['object_id'], $res['inserted_id'], "record_create" );
+		send_to_records_queue($graph_id, $post['object_id'], $res['inserted_id'], "record_create" );
 
-		json_response($res);
+		return json_response(200,$res);
 
-	}else if( $action == "dataSetRecordUpdate" ){
+	}else if( $action == "dataSetRecordUpdate" ){ //objects_dataset_record_save_props
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$thing_id = $post['object_id'];
 		if( !isset($post['record_id']) ){
-			json_response("fail", "Need Record id");
+			return json_response(400,["status"=>"fail", "error"=>"Need Record id"]);
 		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['record_id']) && !preg_match("/^[0-9]+$/i", $post['record_id']) ){
-			json_response("fail", "Record id incorrect");
+			return json_response(400,["status"=>"fail", "error"=>"Record id incorrect"]);
 		}
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
@@ -1463,27 +1667,27 @@ function engine_api_object( $graph_db, $action, $post ){
 
 		$res2 = $mongodb_con->find_one( $graph_things, ['_id'=>$res['data']['i_of']['i']] );
 		if( !$res2['data'] ){
-			json_response("fail", "parent not found");
+			return json_response(400,["status"=>"fail", "error"=>"parent not found"]);
 		}
 		$parent = $res2['data'];
 
 		$record_id = $post['record_id'];
 		$res = $mongodb_con->find_one( $graph_things . "_". $thing_id, ['_id'=>$record_id] );
 		if( !$res['data'] ){
-			json_response("fail", "Record not found");
+			return json_response(400,["status"=>"fail", "error"=>"Record not found"]);
 		}
 
 		if( !isset($post['props']) ){
-			json_response("fail", "Data missing");
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}else if( !is_array($post['props']) ){
-			json_response("fail", "Data missing");
+			return json_response(400,["status"=>"fail", "error"=>"Data missing"]);
 		}
 
 		$props = $post['props'];
 
 		foreach( $props as $field=>$values ){
 			if( !is_array($values) ){
-				json_response("fail", "Property `" . $field . "` has invalid value");
+				return json_response(400,["status"=>"fail", "error"=>"Property `" . $field . "` has invalid value"]);
 			}
 			if( isset($parent['z_t'][ $field ]) ){
 				if( $parent['z_t'][ $field ]['t']['k'] == "O" ){
@@ -1511,7 +1715,7 @@ function engine_api_object( $graph_db, $action, $post ){
 						if( isset($pd['t']) && isset($pd['v']) ){
 
 						}else{
-							json_response("fail", "Property `" . $field . "` item: ".($pi+1)." has invalid value: ".json_encode($pd));
+							return json_response(400,["status"=>"fail", "error"=>"Property `" . $field . "` item: ".($pi+1)." has invalid value: ".json_encode($pd)]);
 						}
 					}
 				}
@@ -1527,54 +1731,55 @@ function engine_api_object( $graph_db, $action, $post ){
 		$res = $mongodb_con->update_one( $graph_things. "_". $thing_id, ['_id'=>$record_id], $data );
 
 		event_log( "objects", "record_props_save", [
-			"app_id"=>$config_param1,
+			"app_id"=>$app_id,
 			"graph_id"=>$graph_id,
 			"object_id"=>$post['object_id'],
 			"record_id"=>$post['record_id'],
 		]);
 
-		json_response($res);
+		return json_response(200,$res);
 
-	}else if( $action == "dataSetRecordDelete" ){
+	}else if( $action == "dataSetRecordDelete" ){ //objects_dataset_record_delete
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		if( !preg_match("/^[a-z0-9]+$/i", $post['object_id']) ){
+		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
+		$thing_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
 
 		if( !isset($post['record_id']) ){
-			json_response("fail", "Need Record id");
+			return json_response(400,["status"=>"fail", "error"=>"Need Record id"]);
 		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['record_id']) && !preg_match("/^[0-9]+$/i", $post['record_id']) ){
-			json_response("fail", "Record id incorrect");
+			return json_response(400,["status"=>"fail", "error"=>"Record id incorrect"]);
 		}
 		$record_id = $post['record_id'];
 
 		$res = $mongodb_con->find_one( $graph_things . "_" . $thing_id, ['_id'=>$record_id] );
 		if( !$res['data'] ){
-			json_response("fail", "Record not found");
+			return json_response(400,["status"=>"fail", "error"=>"Record not found"]);
 		}
 
 		$res = $mongodb_con->delete_one( $graph_things . "_" . $thing_id, ['_id'=>$record_id] );
 
-		send_to_records_queue( $thing_id, $record_id, "record_delete" );
+		send_to_records_queue($graph_id, $thing_id, $record_id, "record_delete" );
 
-		json_response($res);
+		return json_response(200,$res);
 
-	}else if( $action == "dataSetTruncate" ){
+	}else if( $action == "dataSetTruncate" ){ //objects_records_empty
 		if( !isset($post['instance_id']) ){
-			json_response("fail", "Need Instance id");
+			return json_response(400,["status"=>"fail", "error"=>"Need Instance id"]);
 		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['instance_id']) && !preg_match("/^[0-9]+$/i", $post['instance_id']) ){
-			json_response("fail", "Instance id incorrect");
+			return json_response(400,["status"=>"fail", "error"=>"Instance id incorrect"]);
 		}
 		$instance_id = $post['instance_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$instance_id] );
 		if( !$res['data'] ){
-			json_response("fail", "Instance not found");
+			return json_response(400,["status"=>"fail", "error"=>"Instance not found"]);
 		}
 
 		while( 1 ){
@@ -1584,52 +1789,358 @@ function engine_api_object( $graph_db, $action, $post ){
 			}
 			foreach( $res['data'] as $i=>$j ){
 				$mongodb_con->delete_one( $graph_things . "_". $instance_id, ["_id"=>$j['_id']] );
-				send_to_records_queue( $instance_id, $j['_id'], "record_delete" );
+				send_to_records_queue($graph_id, $instance_id, $j['_id'], "record_delete" );
 			}
 		}
 
 		$mongodb_con->update_one( $graph_things, ["_id"=> $instance_id], ["cnt"=>0] );
 
-		json_response("success");
+		return json_response(200,['status'=>"success"]);
 
 
-	}else if( $action == "keywordSearch" ){
+		/* Import Actions */
 
-		$things = [];
-		$cond = [];
-		$sort = [];
-		if( !isset($post['keyword']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Input Missing: keyword" ]);
+	}else if( $post['action'] == "objects_import_data_check" ){
+
+		if( !isset($post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Need Thing id"]);
+		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing id incorrect"]);
 		}
-		if( !preg_match("/^[a-z0-9\ \-]$/", $post['keyword']) ){
-			return json_response(200,["status"=>"success", "things"=>[] ]);
+		$thing_id = $post['object_id'];
+
+		$res = $mongodb_con->find_one( $graph_things, ["_id"=>$thing_id] );
+		if( !$res['data'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Instance not found"]);
 		}
-		$cond['p'] = ['$gte'=>$post['keyword'], '$lte'=>$post['keyword']."zzz" ];
-		$sort = ['p'=>1];
-		$debug_t = true;
-		$res = $mongodb_con->find( $graph_keywords, $cond, [
-			"sort"=>$sort, 
-			"limit"=>200,
+		$instance = $res['data'];
+
+		if( !isset($post['dataset']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Data missing 1"]);
+		}
+		if( $post['dataset'] === true ){
+			if( $instance['i_t']['v'] != "L" ){
+				return json_response(400,["status"=>"fail", "error"=>"Selected Instance `".$instance['l']['v']."` is not a type of dataset"]);
+			}
+			if( !isset($post['primary']) ){
+				return json_response(400,["status"=>"fail", "error"=>"Data missing 2"]);
+			}
+			//$res = $mongodb_con->
+
+		}else{
+			if( $instance['i_t']['v'] != "N" ){
+				return json_response(400,["status"=>"fail", "error"=>"Selected Instance `".$instance['l']['v']."` is not a type of Node"]);
+			}
+			if( !isset($post['primary']) ){
+				return json_response(400,["status"=>"fail", "error"=>"Data missing 2"]);
+			}
+			if( !isset($post['label']) ){
+				return json_response(400,["status"=>"fail", "error"=>"Data missing 3"]);
+			}
+		}
+		if( !isset($post['schema']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Data missing 4"]);
+		}
+
+		$token = rand(1,99999999);
+		$ires = $mongodb_con->insert( $db_prefix . "_settings", [
+			"_id"=>"import_token_" . $token,
+			"post"=>$post
 		]);
-		foreach( $res['data'] as $i=>$j ){
-			$things[] = [
-				'l'=>['t'=>'T', 'v'=>$j['p']],
-				'i_of'=>['i'=>$j['pid'],'v'=>$j['pl'],'t'=>"GT"],
-				'i'=>$j['tid'],
-				'ol'=>$j['l'],
-				'm'=>isset($j['m'])?true:false,
-				't'=>$j['t'],
-			];
+
+		return json_response(200,["status"=>"success", "token"=>$token]);
+
+
+	}else if( $post['action'] == "object_import_batch" ){
+
+		if( !isset($post['token']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Need Token"]);
 		}
-		$res= [
-			"status"=>"success",
-			"things"=>$things,
-			"keyword"=>$post['keyword'],
-		];
-		return json_response(200,$res);
+
+		$tres = $mongodb_con->find_one( $db_prefix . "_settings", ["_id"=>"import_token_" . $post['token']] );
+		if( !$tres['data'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Token not found"]);
+		}
+		$token_post = $tres['data']['post'];
+
+		if( !isset($post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Need Thing id"]);
+		}else if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
+			return json_response(400,["status"=>"fail", "error"=>"Thing id incorrect"]);
+		}
+		$thing_id = $post['object_id'];
+
+		if( $token_post['object_id'] != $post['object_id'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Token mismatch 1"]);
+		}
+
+		$res = $mongodb_con->find_one( $graph_things, ["_id"=>$thing_id] );
+		if( !$res['data'] ){
+			return json_response(400,["status"=>"fail", "error"=>"Instance not found"]);
+		}
+		$instance = $res['data'];
+
+		//json_response("status", "OK");
+		//print_r( $token_post );exit;
+		//print_r( $post );
+
+		$success = 0; $inserts = 0; $updates = 0; $skipped = 0;
+
+		$data_cache = [];
+
+		if( $token_post['dataset'] == false ){
+
+			foreach( $post['data'] as $i=>$j ){
+
+				if( !isset($j['l']) ){
+					json_response([
+						'status'=>"fail", 
+						"error"=>"Label required for all records",
+						"success"=>$success,
+						"skipped"=>$skipped,
+						"inserts"=>$inserts,
+						"updates"=>$updates
+					]);
+				}
+				if( !is_array($j['l']) ){
+					json_response([
+						'status'=>"fail", 
+						"error"=>"Label required for all records",
+						"success"=>$success,
+						"skipped"=>$skipped,
+						"inserts"=>$inserts,
+						"updates"=>$updates
+					]);
+				}
+				if( !isset($j['l']['t']) || !isset($j['l']['v']) ){
+					json_response([
+						'status'=>"fail", 
+						"error"=>"Label required for all records",
+						"success"=>$success,
+						"skipped"=>$skipped,
+						"inserts"=>$inserts,
+						"updates"=>$updates
+					]);
+				}
+				if( !$j['l']['v'] ){
+					json_response([
+						'status'=>"fail", 
+						"error"=>"Label required for all records",
+						"success"=>$success,
+						"skipped"=>$skipped,
+						"inserts"=>$inserts,
+						"updates"=>$updates
+					]);
+				}
+				if( isset($j['l']['i_of']) ){
+					if( !isset($j['l']['i_of']['i']) || !isset($j['l']['i_of']['v']) ){
+						return json_response(400,["status"=>"fail", "error"=>"Label instance missing"]);
+						json_response([
+							'status'=>"fail", 
+							"error"=>"Label instance missing for: " . $j['l']['v'],
+							"success"=>$success,
+							"skipped"=>$skipped,
+							"inserts"=>$inserts,
+							"updates"=>$updates
+						]);
+					}
+					if( !$data_cache[ $j['l']['i_of']['i'] ] ){
+						$res2 = $mongodb_con->find_one( $graph_things, ["_id"=>$j['l']['i_of']['i']] );
+						if( $res2['data'] ){
+							$data_cache[ $j['l']['i_of']['i'] ] = $res2['data'];
+						}else{
+							return json_response(400,["status"=>"fail", "error"=>"Label instance not found"]);
+							json_response([
+								'status'=>"fail", 
+								"error"=>"Label instance missing for: " . $j['l']['v'],
+								"success"=>$success,
+								"skipped"=>$skipped,
+								"inserts"=>$inserts,
+								"updates"=>$updates
+							]);
+						}
+					}else{
+
+					}
+				}
+
+				$al = false;
+				if( $j['al'] ){
+					$al = $j['al'];
+				}
+				$res2 = $mongodb_con->find_one( $graph_things, ["i_of.i"=>$thing_id, "l.v"=>$j['l']['v'] ] );
+				if( $res2['data'] ){
+					$id = $res2['data']['_id'];
+					$update = [];
+					if( $al ){
+						$update[ "al" ] = $al;
+					}
+					foreach( $j['props'] as $prop=>$propd ){
+						if( isset($propd['i_of']) ){
+							$node_id = find_or_insert( $propd['i_of'], $propd['v'] );
+							$propd = ["t"=>"GT", "v"=>$propd["v"], "i"=>$node_id ];
+						}
+						$update[ "props." . $prop ] = [ $propd ];
+					}
+					$mongodb_con->update_one( $graph_things, ["_id"=>$id], $update);
+					$updates++;
+					$success++;
+					event_log( "objects", "update", [
+						"app_id"=>$config_param1,
+						"graph_id"=>$graph_id,
+						"object_id"=>$id,
+					]);
+					send_to_keywords_queue( $id );
+				}else{
+					$res5 = $mongodb_con->increment( $graph_things, $instance['_id'], "series", 1 );
+					$new_id = $instance['_id']."T" . $res5['data']['series'];
+					$l = [
+						"t"=>"T",
+						"v"=>$j['l']['v'],
+					];
+					if( isset($j['l']['i_of']) ){
+						$node_id = find_or_insert( $j['l']['i_of'], $j['l']['v'] );
+						$l['t'] = "GT"; 
+						$l['i'] = $node_id;
+						unset($l['i_of']);
+					}
+					$insert = [
+						"_id"=>$new_id,
+						"l"=>$l,
+						"i_of"=>["t"=>"GT", "i"=>$instance['_id'], "v"=>$instance['l']['v']],
+						'i_t'=>['t'=>'T','v'=>"N"],
+						"m_i"=>date("Y-m-d H:i:s"),
+						"m_u"=>date("Y-m-d H:i:s"),
+						"props"=>[]
+					];
+					if( $al ){
+						$insert[ "al" ] = $al;
+					}
+					foreach( $j['props'] as $prop=>$propd ){
+						if( isset($propd['i_of']) ){
+							$node_id = find_or_insert( $propd['i_of'], $propd['v'] );
+							$propd = ["t"=>"GT", "v"=>$propd["v"], "i"=>$node_id ];
+						}
+						$insert[ "props" ][ $prop ] = [ $propd ];
+					}
+					$insert['m_i'] = date("Y-m-d H:i:s");
+					$res5 = $mongodb_con->insert( $graph_things, $insert );
+					$res2 = $mongodb_con->increment( $graph_things, $instance["_id"], "cnt", 1 );
+					$inserts++;
+					$success++;
+					event_log( "objects", "create", [
+						"app_id"=>$config_param1,
+						"graph_id"=>$graph_id,
+						"object_id"=>$new_id,
+					]);
+					send_to_keywords_queue( $new_id );
+				}
+			}
+		}else{
+
+			$graph_things_dataset = $graph_things . "_" . $thing_id;
+
+			// $res5 = $mongodb_con->get_max_numeric_id( $graph_things_dataset );
+			// $max_id = $res5['data'];
+			foreach( $post['data'] as $i=>$j ){
+				$id = uniqid();
+				$res2 = $mongodb_con->find_one( $graph_things_dataset, ["_id"=>$id] );
+				if( $res2['data'] ){
+					$update = [];
+					foreach( $j['props'] as $prop=>$propd ){
+						if( isset($propd['i_of']) ){
+							$node_id = find_or_insert( $propd['i_of'], $propd['v'] );
+							$propd = ["t"=>"GT", "v"=>$propd["v"], "i"=>$node_id ];
+						}
+						$update[ "props." . $prop ] = [ $propd ];
+					}
+					$mongodb_con->update_one( $graph_things_dataset, ["_id"=>$id], $update);
+					send_to_records_queue( $thing_id, $id, "record_update" );
+					$updates++;
+					$success++;
+				}else{
+					$insert = [
+						"_id"=>$id,
+						"m_i"=>date("Y-m-d H:i:s"),
+						"m_u"=>date("Y-m-d H:i:s"),
+						"props"=>[]
+					];
+					foreach( $j['props'] as $prop=>$propd ){
+						if( isset($propd['i_of']) ){
+							$node_id = find_or_insert( $propd['i_of'], $propd['v'] );
+							$propd = ["t"=>"GT", "v"=>$propd["v"], "i"=>$node_id ];
+						}
+						$insert[ "props" ][ $prop ] = [ $propd ];
+					}
+					$res5 = $mongodb_con->insert( $graph_things_dataset, $insert );
+					$res2 = $mongodb_con->increment( $graph_things, $instance["_id"], "cnt", 1 );
+					send_to_records_queue( $thing_id, $id, "record_update" );
+					$inserts++;
+					$success++;
+				}
+			}
+		}
+		return json_response(200,[
+			'status'=>"success", 
+			"success"=>$success,
+			"skipped"=>$skipped,
+			"inserts"=>$inserts,
+			"updates"=>$updates
+		]);
 	
 	}else{
 		return json_response(404, ["status"=>"fail", "error"=>"Unknown action"]);
 	}
 
 }
+
+
+function find_or_insert( $instance, $thing_name ){
+	global $mongodb_con; global $db_prefix; global $graph_things; global $graph_queue; global $graph_keywords;
+	global $data_cache; global $config_param1; global $graph_id;
+	if( isset($data_cache[ $instance['i'] . "." . $thing_name ]) ){
+		return $data_cache[ $instance['i'] . "." . $thing_name ];
+	}
+	$res = $mongodb_con->find_one( $graph_things, ['i_of.i'=>$instance['i'], 'l.v'=>$thing_name], ['projection'=>['_id'=>1] ] );
+	if( $res['data'] ){
+		$data_cache[ $instance['i'] . "." . $thing_name ] = $res['data']['_id'];
+		return $res['data']['_id'];
+	}else{
+
+		if( $instance['v'] == "Root" || $instance['i'] == "T1" ){
+			$res5 = $mongodb_con->increment( $graph_things, $instance['i'], "series", 1 );
+			$new_id = "T" . $res5['data']['series'];
+		}else{
+			$res5 = $mongodb_con->increment( $graph_things, $instance['i'], "series", 1 );
+			$new_id = $instance['i']."T" . $res5['data']['series'];
+		}
+
+		$instance['t'] = "GT";
+		$res = $mongodb_con->insert( $graph_things, [
+			"_id"=>$new_id,
+			'i_of'=>$instance, 
+			'l'=>['t'=>"T", "v"=>$thing_name],
+			'i_t'=>['t'=>"T", "v"=>"N"],
+			'm_i'=>date("Y-m-d H:i:s"),
+			'm_u'=>date("Y-m-d H:i:s")
+		]);
+		$node_id = $res['inserted_id'];
+		$data_cache[ $instance['i'] . "." . $thing_name ] = $node_id;
+		$resinc = $mongodb_con->increment( $graph_things, $instance['i'], "cnt", 1 );
+		send_to_keywords_queue( $node_id );
+		event_log( "objects", "create", [
+			"app_id"=>$config_param1,
+			"graph_id"=>$graph_id,
+			"object_id"=>$node_id,
+		]);
+		$data_cache[ $node_id ] = [
+			'i_of'=>$instance, 
+			'l'=>['t'=>"T", "v"=>$thing_name],
+			'i_t'=>['t'=>"T", "v"=>"N"],
+			'm_i'=>date("Y-m-d H:i:s"),
+			'm_u'=>date("Y-m-d H:i:s")
+		];
+		return $node_id;
+	}
+}
+

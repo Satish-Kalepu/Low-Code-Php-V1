@@ -614,9 +614,15 @@ var app = s2_ssssssssss({
 		s2_stnemnorivne_tset_tes: function(){
 			var e = [];
 			for( var d in this.s2_pppppppppa['settings']['domains'] ){
+				var u = this.s2_pppppppppa['settings']['domains'][ d ]['url']+'';
+				if( u.match(/^http\:/) ){
+					if( document.location.protocol == "https" ){
+						u = u.replace("http://", "https://");
+					}
+				}
 				e.push({
 					"t": "custom",
-					"u": this.s2_pppppppppa['settings']['domains'][ d ]['url'],
+					"u": u,
 					"d": this.s2_pppppppppa['settings']['domains'][ d ]['domain'],
 				});
 			}

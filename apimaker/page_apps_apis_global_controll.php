@@ -575,14 +575,38 @@ if( $_POST['action'] == "get_global_apis" ){
 			"payload" => [
 				"action"=> "put_file",
 				"filename"=> "/path/filename",
-				"file"=>"Binary Data"
+				"file"=>"Binary Data",
+				"acl"=>"private"
 			],
 			"formdata" => [
 				"action"=> ["type"=>"text", "value"=>"put_file"],
 				"filename"=> ["type"=>"text", "value"=>"/path/filename"],
 				"file"=> ["type"=>"file", "value"=>""],
+				"acl"=> ["type"=>"text", "value"=>"private"]
 			],
 			"content-type" => "multipart/form-data",
+			"response-type"=>"application/json",
+			"response-body"=>[
+				"status"=>"success", 
+				"error"=>""
+			]
+		];
+		$j['apis']['create_signed_url'] = [
+			"_id"=>"f0031",
+			"name"=>"create_signed_url", "des"=>"Download/Upload a file using signed url",
+			"input-method"=>"POST",
+			"path" => "_api/storage_vaults/" . $j['_id'],
+			"payload" => [
+				"action"=> "create_signed_url",
+				"filename"=> "/path/filename",
+				"acl"=>"private"
+			],
+			"formdata" => [
+				"action"=> ["type"=>"text", "value"=>"create_signed_url"],
+				"filename"=> ["type"=>"text", "value"=>"/path/filename"],
+				"acl"=> ["type"=>"text", "value"=>"private"]
+			],
+			"content-type" =>"application/json",
 			"response-type"=>"application/json",
 			"response-body"=>[
 				"status"=>"success", 
@@ -830,24 +854,73 @@ if( $_POST['action'] == "get_global_apis" ){
 				"instance_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
 				"label"=> ["t"=>"T", "v"=>""],
 			],
-			"help"=>[
-
-			]
+			"help"=>[]
 		];
 		$j['apis']['objectCreateWithTemplate'] = [
 			"post"=>[
 				"action"=> "objectCreateWithTemplate",
-				"object_id"=> "",
-				"record_id"=> "",
-				"properties"=> [
-					"p1"=> [["t"=>"T","v"=>""]]
-				],
-				"template"=> [
-					"z_t"=>[
-					],
-					"z_o"=>[],
-					"z_n"=>1
-				]
+				"thing"=>json_decode('{
+			        "l": {
+			            "t": "T",
+			            "v": "Label"
+			        },
+			        "i_of": {
+			            "t": "GT",
+			            "i": "T1",
+			            "v": "Root"
+			        },
+			        "i_t": {
+			            "t": "T",
+			            "v": "N"
+			        },
+			        "props": {
+			            "p1": [
+			                {
+			                    "t": "T",
+			                    "v": "sfsfsdf"
+			                }
+			            ]
+			        },
+			        "z_t": {
+			            "p1": {
+			                "key": "p1",
+			                "name": {
+			                    "t": "T",
+			                    "v": "Description"
+			                },
+			                "type": {
+			                    "t": "KV",
+			                    "k": "T",
+			                    "v": "text"
+			                },
+			                "m": {
+			                    "t": "B",
+			                    "v": "true"
+			                }
+			            },
+			            "p2": {
+			                "key": "p2",
+			                "name": {
+			                    "t": "T",
+			                    "v": "xx"
+			                },
+			                "type": {
+			                    "t": "KV",
+			                    "k": "T",
+			                    "v": "text"
+			                },
+			                "m": {
+			                    "t": "B",
+			                    "v": "false"
+			                }
+			            }
+			        },
+			        "z_o": [
+			            "p1",
+			            "p2"
+			        ],
+			        "z_n": 3
+			    }', true)
 			],
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
@@ -1082,7 +1155,6 @@ if( $_POST['action'] == "get_global_apis" ){
 	]);
 	exit;
 }
-
 
 if( $_POST['action'] == "generate_access_token" ){
 

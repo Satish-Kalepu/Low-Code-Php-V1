@@ -356,19 +356,22 @@
 		//echo "update app pages: " . $app_id ;exit;
 		global $mongodb_con;
 		global $config_global_apimaker;
+		$db_prefix = $config_global_apimaker['config_mongo_prefix'];
 		if( !$app_id ){
 			error_log("update_app_pages: app_id: missing");
 		}else{
 			$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
 				"_id"=>$app_id,
-			], ['projection'=>['settings.homepage'=>1]]);
+			], [
+				'projection'=>['settings.homepage'=>1]
+			]);
 			if( !$res['data'] ){
 				error_log("update_app_pages: app_id: missing");
 				return false;
 			}
 			$home_id = explode(":",$res['data']['settings']['homepage']['v'])[0];
 			$home_version_id = explode(":",$res['data']['settings']['homepage']['v'])[1];
-			$pages = []; $functions = []; $files = [];
+			$pages = []; $functions = []; $files = []; $mappings = [];
 			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
 				"app_id"=>$app_id,
 			], ['projection'=>[
@@ -387,9 +390,11 @@
 			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
 				"app_id"=>$app_id,
 				"vt"=>"api",
-			], ['projection'=>[
-				'name'=>1, "version_id"=>1, 'input-method'=>1, 'path'=>1, 'vt'=>1,
-			]]);
+			], [
+				'projection'=>[
+					'name'=>1, "version_id"=>1, 'input-method'=>1, 'path'=>1, 'vt'=>1,
+				]
+			]);
 			if( $res['data'] ){
 				foreach( $res['data'] as $i=>$j ){if( !isset( $pages[ $j['name'] ] ) ){if( $j['name'] ){
 					$j['t'] = "api";
@@ -418,143 +423,213 @@
 					}}
 				}
 			}
+
+			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
+				"app_id"=>$app_id,
+				'$or'=>[
+						["details.rewrite"=>true],
+						["details.thumbs"=>true],
+				]
+			]);
+			if( $res['data'] ){
+				foreach( $res['data'] as $i=>$j ){
+					if( $j['details']['rewrite'] ){
+						$fn = $j['details']['rewrite_path'];
+						if( !isset( $mappings[$fn] ) ){
+							$j['type'] = "mapping";
+							$mappings[ $fn ] = $j;
+						}
+					}
+					if( $j['details']['thumbs'] ){
+						$fn = $j['details']['rewrite_path'];
+						if( !isset( $fn ) ){
+							if( !isset($mappings[ $fn ]) ){
+								$j['type'] = "thumbs";
+								$mappings[ $fn ] = $j;
+							}
+						}
+					}
+				}
+			}
+
+			//print_r($mappings);exit;
+
+			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_graph_dbs", [
+				"app_id"=>$app_id,
+				"settings.library_enable"=>true,
+			]);
+			if( $res['data'] ){
+				foreach( $res['data'] as $i=>$j ){
+					if( isset($j['settings']['library']) ){
+						$fn = $j['settings']['library']['thumb_path'];
+						if( !isset( $mappings[ $fn ] ) ){
+							if( !isset($mappings[ $fn ]) ){
+								$mappings[ $fn ] = [
+									"type"=>"thumbs",
+									"for"=>"objects",
+									"graph_id"=>$j['_id'],
+									"vault_id"=>$j['settings']['library']['vault_id'],
+									"vault_type"=>$j['settings']['library']['vault']['vault_type'],
+									"dest_path"=>$j['settings']['library']['dest_path'],
+									"thumb_path"=>$j['settings']['library']['thumb_path'],
+								];
+								if( $j['settings']['library']['vault']['vault_type'] == "AWS-S3" ){
+									$ressv = $mongodb_con->find_one( $db_prefix . "_storage_vaults", ["_id"=>$j['settings']['library']['vault_id']] );
+									if( $ressv['data'] ){
+										$mappings[ $fn ]['vault'] = [
+											"bucket"=>$ressv['data']['details']['bucket'],
+											"region"=>$ressv['data']['details']['region'],
+											"key"=>$ressv['data']['details']['key'],
+											"secret"=>$ressv['data']['details']['secret'],
+										];
+									}
+								}
+							}
+						}
+					}
+				}
+			}
 			//print_r( $pages );exit;
 			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_functions", [
 				"app_id"=>$app_id,
-			], ['projection'=>[
-				'name'=>1, "version_id"=>1,
-			]]);
+			], [
+				'projection'=>[
+					'name'=>1, "version_id"=>1,
+				]
+			]);
 			if( $res['data'] ){
 				foreach( $res['data'] as $i=>$j ){if( !isset( $functions[ $j['name'] ] ) ){if( $j['name'] ){
 					$functions[ $j['name'] ] = $j;
 				}}}
 			}
+
 			$mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
 				'_id'=>$app_id
 			],[
 				'pages'=>$pages,
 				'functions'=>$functions,
+				'mappings'=>$mappings,
 				'last_updated'=>date("Y-m-d H:i:s")
 			]);
 		}
 	}
 
-function curl_post( $url, $post = array(), $vheaders=array() ){
+	function curl_post( $url, $post = array(), $vheaders=array() ){
 
-	$post_data = false;
-	foreach( $vheaders as $i=>$j ){
-		if( !preg_match( "/^[A-Za-z0-9\-\_]+\:[A-Za-z0-9\-\_\/\;\:\.\,\ \=\+]+$/i", $j ) ){
-			return ["status"=>"fail", "error"=>"headers incorrect: " . $j ];
-		}else if( preg_match("/content-type/i", $j ) ){
-			if( preg_match("/json/i", $j) ){
-				$post_data = json_encode($post, JSON_PRETTY_PRINT);
-				if( json_last_error() || $post == "" ){
-					return ["status"=>"fail", "error"=>"json encode failed ".json_last_error()];
-				}
-			}else if( preg_match("/x\-www\-form\-urlencoded/i", $j) ){
-				$post_data = "";
-				if( is_array($post) ){
-					foreach( $post as $m=>$n){
-						$post_data .= $m . "=" . rawurlencode($n) . "&";
+		$post_data = false;
+		foreach( $vheaders as $i=>$j ){
+			if( !preg_match( "/^[A-Za-z0-9\-\_]+\:[A-Za-z0-9\-\_\/\;\:\.\,\ \=\+]+$/i", $j ) ){
+				return ["status"=>"fail", "error"=>"headers incorrect: " . $j ];
+			}else if( preg_match("/content-type/i", $j ) ){
+				if( preg_match("/json/i", $j) ){
+					$post_data = json_encode($post, JSON_PRETTY_PRINT);
+					if( json_last_error() || $post == "" ){
+						return ["status"=>"fail", "error"=>"json encode failed ".json_last_error()];
 					}
-				}else{
-					$post_data = $post;
+				}else if( preg_match("/x\-www\-form\-urlencoded/i", $j) ){
+					$post_data = "";
+					if( is_array($post) ){
+						foreach( $post as $m=>$n){
+							$post_data .= $m . "=" . rawurlencode($n) . "&";
+						}
+					}else{
+						$post_data = $post;
+					}
 				}
 			}
 		}
-	}
-	if( !$post_data ){
-		return ["status"=>"fail", "error"=>"post data read error"];
-	}
-
-    $curl_ch = curl_init();
-    $defaults = array(
-        CURLOPT_POST => 1,
-        CURLOPT_HEADER => 1,
-        CURLOPT_URL => $url,
-        CURLOPT_FRESH_CONNECT => 1,
-        CURLOPT_SSL_VERIFYPEER => 0,
-        CURLOPT_FORBID_REUSE => 1,
-        CURLOPT_HEADER => 0,
-        CURLOPT_TIMEOUT => 2,
-        CURLOPT_RETURNTRANSFER=>1,
-        CURLOPT_POSTFIELDS => $post_data
-    );
-    curl_setopt_array($curl_ch, ($defaults));
-    $vheaders["user-agent: sqs.cartrade.com"];
-    if( sizeof($vheaders) ){
-        curl_setopt( $curl_ch, CURLOPT_HTTPHEADER, $vheaders );
-    }
-    $result = curl_exec($curl_ch);
-    $info_ = curl_getinfo($curl_ch);
-	$info = array();
-	$info["http_code"]=$info_["http_code"];
-	if( $info["http_code"] == 302 || $info["http_code"] == 301 ){
-	$info["redirect_url"]=$info_["redirect_url"];
-	}
-	$info["total_time"]=$info_["total_time"];
-	$info["content_type"]=$info_["content_type"];
-
-    if( !$result && $info['http_code']!=200 ){
-        return ["status"=>"fail", "error"=>curl_error($curl_ch), "info"=>$info];
-    }
-    return ["status"=>$info['http_code'], "body"=>$result, "info"=>$info];
-}
-
-function curl_get($url, $get = array(), $vheaders = array() ){
-	$defaults = array();
-	$query = [];
-	$querystring = "";
-	if( is_array($get) ){
-		foreach( $get as $i=>$j ){
-			$query[] = $i . "=" . rawurlencode($j);
+		if( !$post_data ){
+			return ["status"=>"fail", "error"=>"post data read error"];
 		}
-		$querystring = "?" . implode("&",$query);
-	}else{
-		$querystring = "";
-	}
-	$curl_ch = curl_init();
-	$defaults = array(
-	  CURLOPT_URL => $url.$querystring,
-	  CURLOPT_HEADER => 0,
-	  CURLOPT_RETURNTRANSFER => true,
-	  CURLOPT_TIMEOUT => 2,
-	    CURLOPT_FRESH_CONNECT => 2,
-	    CURLOPT_SSL_VERIFYPEER => 0,
-	    CURLOPT_FORBID_REUSE => 1,
-	);
-	curl_setopt_array($curl_ch, ($defaults));
 
-        $vheaders["user-agent: sqs.cartrade.com"];
-	if( sizeof($vheaders) ){
-		curl_setopt( $curl_ch, CURLOPT_HTTPHEADER, $vheaders );
-	}
-
-	$result = curl_exec($curl_ch);
-	$info_ = curl_getinfo($curl_ch);
-	$info = array();
-	$info["http_code"]=$info_["http_code"];
-	if( $info["http_code"] == 302 || $info["http_code"] == 301 ){
+	    $curl_ch = curl_init();
+	    $defaults = array(
+	        CURLOPT_POST => 1,
+	        CURLOPT_HEADER => 1,
+	        CURLOPT_URL => $url,
+	        CURLOPT_FRESH_CONNECT => 1,
+	        CURLOPT_SSL_VERIFYPEER => 0,
+	        CURLOPT_FORBID_REUSE => 1,
+	        CURLOPT_HEADER => 0,
+	        CURLOPT_TIMEOUT => 2,
+	        CURLOPT_RETURNTRANSFER=>1,
+	        CURLOPT_POSTFIELDS => $post_data
+	    );
+	    curl_setopt_array($curl_ch, ($defaults));
+	    $vheaders["user-agent: sqs.cartrade.com"];
+	    if( sizeof($vheaders) ){
+	        curl_setopt( $curl_ch, CURLOPT_HTTPHEADER, $vheaders );
+	    }
+	    $result = curl_exec($curl_ch);
+	    $info_ = curl_getinfo($curl_ch);
+		$info = array();
+		$info["http_code"]=$info_["http_code"];
+		if( $info["http_code"] == 302 || $info["http_code"] == 301 ){
 		$info["redirect_url"]=$info_["redirect_url"];
-	}
-	$info["total_time"]=$info_["total_time"];
-	$info["content_type"]=$info_["content_type"];
+		}
+		$info["total_time"]=$info_["total_time"];
+		$info["content_type"]=$info_["content_type"];
 
-	if( !$result && $info['http_code']!=200 ){
-	  return ["status"=>"fail", "error"=>curl_error($curl_ch), $info];
+	    if( !$result && $info['http_code']!=200 ){
+	        return ["status"=>"fail", "error"=>curl_error($curl_ch), "info"=>$info];
+	    }
+	    return ["status"=>$info['http_code'], "body"=>$result, "info"=>$info];
 	}
-	
-	return ["status"=>$info['http_code'], "body"=>$result, "info"=>$info];
-}
 
-$task_insert_id = 1000;
-function generate_task_queue_id($delay=0){
-	global $task_insert_id;
-	if( gettype($delay) != "integer" ){
-		$delay = 0;
-	}else if( $delay > (600) ){
-		$delay =600; // max is 10 minutes
+	function curl_get($url, $get = array(), $vheaders = array() ){
+		$defaults = array();
+		$query = [];
+		$querystring = "";
+		if( is_array($get) ){
+			foreach( $get as $i=>$j ){
+				$query[] = $i . "=" . rawurlencode($j);
+			}
+			$querystring = "?" . implode("&",$query);
+		}else{
+			$querystring = "";
+		}
+		$curl_ch = curl_init();
+		$defaults = array(
+		  CURLOPT_URL => $url.$querystring,
+		  CURLOPT_HEADER => 0,
+		  CURLOPT_RETURNTRANSFER => true,
+		  CURLOPT_TIMEOUT => 2,
+		    CURLOPT_FRESH_CONNECT => 2,
+		    CURLOPT_SSL_VERIFYPEER => 0,
+		    CURLOPT_FORBID_REUSE => 1,
+		);
+		curl_setopt_array($curl_ch, ($defaults));
+
+	        $vheaders["user-agent: sqs.cartrade.com"];
+		if( sizeof($vheaders) ){
+			curl_setopt( $curl_ch, CURLOPT_HTTPHEADER, $vheaders );
+		}
+
+		$result = curl_exec($curl_ch);
+		$info_ = curl_getinfo($curl_ch);
+		$info = array();
+		$info["http_code"]=$info_["http_code"];
+		if( $info["http_code"] == 302 || $info["http_code"] == 301 ){
+			$info["redirect_url"]=$info_["redirect_url"];
+		}
+		$info["total_time"]=$info_["total_time"];
+		$info["content_type"]=$info_["content_type"];
+
+		if( !$result && $info['http_code']!=200 ){
+		  return ["status"=>"fail", "error"=>curl_error($curl_ch), $info];
+		}
+		
+		return ["status"=>$info['http_code'], "body"=>$result, "info"=>$info];
 	}
-	return date("YmdHis",time()+$delay).":".rand(100,999).":".$task_insert_id;
-	$task_insert_id++;
-}
+
+	$task_insert_id = 1000;
+	function generate_task_queue_id($delay=0){
+		global $task_insert_id;
+		if( gettype($delay) != "integer" ){
+			$delay = 0;
+		}else if( $delay > (600) ){
+			$delay =600; // max is 10 minutes
+		}
+		return date("YmdHis",time()+$delay).":".rand(100,999).":".$task_insert_id;
+		$task_insert_id++;
+	}

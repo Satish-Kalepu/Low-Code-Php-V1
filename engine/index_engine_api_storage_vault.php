@@ -378,6 +378,49 @@ function engine_api_storage_vault( $storage_vault, $action, $post ){
 			exit;
 		}
 
+		if( $action == "create_signed_url" ){
+
+			$block_extensions = ["fap","apk","jar","ahk","cmd","ipa","run","xbe","0xe","rbf","vlx","workflow","u3p","8ck","bat","bms","exe","bin","elf","air","appimage","xap","gadget","app","mpk","widget","x86","shortcut","fba","mcr","pif","ac","com","xlm","tpk","sh","x86_64","73k","script","scpt","command","out","rxe","scb","ba_","ps1","paf.exe","scar","isu","scr","xex","fas","coffee","ex_","action","tcp","acc","celx","shb","ex5","rfu","ebs2","hta","cgi","xbap","nexe","ecf","fxp","sk","vpm","plsc","rpj","ws","azw2","js","mlx","dld","cof","vxp","caction","vbs","wsh","mcr","iim","ex_","phar","89k","cheat","esh","fpi","wcm","pex","server","gpe","a7r","dek","pyc","exe1","jsf","jsx","acr","ex4","pwc","ear","icd","epk","vexe","rox","mel","zl9","plx","mm","snap","paf","mcr","ms","tiapp","uvm","gm9","atmx","89z","vbscript","actc","pyo","applescript","frs","hms","otm","rgs","n","widget","csh","mrc","wiz","prg","ebs","tms","spr","cyw","sct","e_e","ebm","gs","mrp","osx","fky","xqt","fas","ygh","prg","app","mxe","actm","udf","kix","seed","cel","app","ezs","thm","beam","lo","vbe","kx","jse","prg","rfs","s2a","dmc","hpf","wpk","exz","scptd","ls","ms","msl","mhm","tipa","xys","prc","wpm","sca","ita","eham","wsf","qit","es","arscript","rbx","mem","sapk","ebacmd","upx","ipk","mam","ncl","ksh","dxl","ham","btm","mio","ipf","pvd","vdo","gpu","exopc","ds","mac","sbs","cfs","sts","asb","qpx","p","rpg","mlappinstall","srec","uw8","pxo","afmacros","afmacro","mamc","ore","ezt","smm","73p","bns"];
+
+			if( !isset($post['filename']) ){
+				return json_response(200,["status"=>"fail","error"=>"Filename missing"]);
+			}
+			if( !preg_match("/^\/[a-z0-9\.\,\_\-\ \/\@\!\(\)]+\.[a-z0-9]{2,5}$/i", $post['filename']) || preg_match("/\/\//i", $post['filename']) || preg_match("/\/$/i", $post['filename']) ){
+				return json_response(200,["status"=>"fail","error"=>"Filename format invalid. expected: /filename.ext or /path/filename.ext"]);
+			}
+
+			$ext = array_pop( explode(".",$post['filename']) );
+			if( in_array($ext, $block_extensions) ){
+				return json_response(200,["status"=>"fail", "error"=>"Uploaded File extension is vulnerable hence blocked"]);
+			}
+
+			try{
+				$cmd =$s3con->getCommand('PutObject',[
+					"Bucket"=>$s3_bucket,
+					"Key"=>substr($post['filename'],1,9999),
+				]);
+				$res = $s3con->createPresignedRequest($cmd, '+5 minute');
+			}catch( Aws\S3\Exception\S3Exception $ex ){
+				return json_response(200,[
+					"status"=>"fail", 
+					"error"=>$ex->getAwsErrorType() . ": " . $ex->getAwsErrorCode()
+				]);
+			}
+
+			event_log("storage_vault", "signed_url_create", [
+				"app_id"=>$app_id,
+				"vault_id"=>$storage_vault['_id'],
+				"Bucket"=>$s3_bucket,
+				"type"=>"aws-s3",
+				"name"=>$post['filename']
+			]);
+
+			return json_response(200,[
+				'status'=>"success", "signed_url"=>$res->getUri()
+			]);
+			exit;
+		}
+
 	}else{
 		return json_response(200,['status'=>"fail", "error"=>"Unhandled vault type or under development"]);
 	}

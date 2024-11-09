@@ -1,7 +1,13 @@
 <script>
 const graph_object_v2 =  {
 	data(){
-		return {};
+		return {
+			"html_update_cnt__": 1,
+			"html_save_cnt__": 1,
+			"html_save_busy__": false,
+			"icon_popup__": false,
+			"icon_domain__": "example.com",
+		};
 	},
 	props: ["refname", "data", "object_id"],
 	watch: {},
@@ -45,7 +51,7 @@ const graph_object_v2 =  {
 				"order": "Asc", 
 				"cond":[{"field":{"t":"KV", "k":"_id","v":"ID"}, "ops": {"t":"KV", "k":"=", "v":"="}, "value":{"t":"T", "v":""} }]
 			},
-			"i_of_msg": "", "i_of_err": "",
+			"i_of_msg": "", "i_of_err": "", "ic_msg": "", "ic_err": "",
 			"label_msg": "", "label_err": "","al_msg": "", "al_err": "","type_msg": "", "type_err": "",
 			"props_msg": "", "props_err": "",
 			"delete_field_id": "",
@@ -54,9 +60,44 @@ const graph_object_v2 =  {
 			"vedit": false,
 			"editing_record_index": -1, "editing_record_id": -1, "deleting_record_index": -1, "deleting_record_id":1,
 		};
+		if( typeof(this.$root.icon_domain) != "undefined" ){
+			this.icon_domain__ = this.$root.icon_domain+''
+		}
 		setTimeout(this.load_thing,200);
+		document.addEventListener("click", this.clickit);
+		document.addEventListener("keyup", this.keyup);
 	},
 	methods: {
+		clickit: function(e){
+			var v = e.target;
+			var isin = false;
+			while( 1 ){
+				if( v.nodeName == "#text" ){
+				}else if( v.hasAttribute("data-id") ){
+					if( v.getAttribute("data-id") == "bounds" ){
+						isin = true;
+						break;
+					}
+					break;
+				}
+				if( v.nodeName == "BODY" ){
+					break;
+				}
+				v = v.parentNode;
+			}
+			if( isin == false ){
+				if( this.icon_popup__ ){
+					this.icon_popup__ = false;
+				}
+			}
+		},
+		keyup: function(e){
+			if( e.keyCode == 27 ){
+				if( this.icon_popup__ ){
+					this.icon_popup__ = false;
+				}
+			}
+		},
 		echo__: function(v__){
 			if( typeof(v__)=="object" ){
 				console.log( JSON.stringify(v__,null,4) );
@@ -86,6 +127,7 @@ const graph_object_v2 =  {
 				this.data['thing']['props'] = {};
 			}
 			if( "z_t" in this.data['thing']['i_of'] == false ){
+				this.loadInstanceTemplate();
 			}else if( "z_t" in this.data['thing']['i_of'] ){
 				if( typeof(this.data['thing']['i_of']['z_t']) != "object" || "length" in this.data['thing']['i_of']['z_t'] ){
 					this.data['thing']['i_of']['z_t'] = {
@@ -122,6 +164,14 @@ const graph_object_v2 =  {
 				}
 				this.$root.context_data__[ "props_fields_"+this.data['thing']['_id'] ] = pd;
 			}
+			this.$root.context_data__[ "search_ops" ] = [
+				{"t":"KV", "k":"=", "v":"="},
+				{"t":"KV", "k":"!=", "v":"!="},
+				{"t":"KV", "k":">", "v":">"},
+				{"t":"KV", "k":">=", "v":">="},
+				{"t":"KV", "k":"<", "v":"<"},
+				{"t":"KV", "k":"<=", "v":"<="},
+			];
 		},
 		enable_template: function(){
 			this.data['thing_z_t_edit'] = {
@@ -139,6 +189,62 @@ const graph_object_v2 =  {
 			// this.data['thing_z_o_edit'] = JSON.parse(JSON.stringify(this.data['thing']['z_o']));
 			// this.data['thing_z_n_edit'] = this.data['thing']['z_n']+0;
 		},
+
+
+		thing_add_document_content__: function(){
+			this.data['thing']['body'] = {
+				"html": "<p>Enter Content here...</p>", "options": {}
+			};
+		},
+		html_body_updated__: function(vdata){
+			this.data['thing']['body']['html'] = vdata;
+			this.html_update_cnt__++;
+			this.save_html__();
+		},
+		save_html__: function(){
+			if( this.html_save_busy__ == false ){
+				this.html_save_busy__ = true;
+				setTimeout(this.save_html_queue__,1000);
+			}
+		},
+		save_html_queue__: function(){
+			{
+				axios.post("?",{
+					"action": "objects_save_object_html",
+					"object_id": this.data['thing']['_id'],
+					"body": this.data['thing']['body'],
+					"cnt": this.html_update_cnt__,
+				}).then(response=>{
+					if( response.status == 200 ){
+						if( typeof( response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.html_save_cnt__ = Number(response.data['cnt']);
+									if( this.html_update_cnt__ > this.html_save_cnt__ ){
+										this.html_save_busy__ = true;
+										setTimeout(this.save_html_queue__,500);
+									}else{
+										this.html_save_busy__ = false;
+									}
+								}else{
+									this.data['err'] = response.data['error'];
+								}
+							}else{
+								this.data['err'] = "Incorrect response";
+							}
+						}else{
+							this.data['err'] = "Incorrect response";
+						}
+					}else{
+						this.data['err'] = "http error: " . response.status ;
+					}
+				}).catch(error=>{
+					this.data['err'] = this.get_http_error__(error);
+				});
+			}
+		},
+
+
 		load_thing: function(){
 			this.data['msg'] = "Loading...";
 			this.data['thing'] = {};
@@ -156,6 +262,40 @@ const graph_object_v2 =  {
 								this.data['thing'] = v;
 								this.$root.window_tabs[ this.refname ]['title'] = this.data['thing']['i_of']['v']+": " + this.data['thing']['l']['v'];
 								this.verify_thing();
+								setTimeout(function(v){v.data['msg'] = "";},200,this);
+							}else{
+								this.data['err'] = response.data['error'];
+							}
+						}else{
+							this.data['err'] = "Incorrect response";
+						}
+					}else{
+						this.data['err'] = "Incorrect response";
+					}
+				}else{
+					this.data['err'] = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.data['err'] = get_http_error__(error);
+			});
+		},
+		loadInstanceTemplate: function(){
+			this.data['msg'] = "Loading...";
+			axios.post("?",{
+				    "action": "objects_load_template",
+				    "object_id": this.data['thing']['i_of']['i']
+			}).then(response=>{
+				this.data['msg'] = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								var v = response.data['data'];
+								if( 'z_t' in v ){
+									this.data['thing']['i_of']['z_t'] = v['z_t'];
+									this.data['thing']['i_of']['z_o'] = v['z_o'];
+									this.data['thing']['i_of']['z_n'] = v['z_n'];
+								}
 								setTimeout(function(v){v.data['msg'] = "";},200,this);
 							}else{
 								this.data['err'] = response.data['error'];
@@ -1273,6 +1413,47 @@ const graph_object_v2 =  {
 				this.data['records_search']['cond'].splice(vi,1);
 			}
 		},
+		open_icon_popup__: function(){
+			this.icon_popup__ = true;
+		},
+		get_icon_url__: function(vcountrycode, vsize){
+			return "/"+"/" + this.icon_domain__ + "/flag-icons/flags/"+vsize+"/"+vcountrycode+".svg";
+		},
+		set_icon__: function( vdata ){
+			this.icon_popup__ = false;
+			this.data['thing']['ic'] = vdata;
+			this.save_icon__();
+		},
+		save_icon__: function(){
+			this.data['ic_msg'] = "Saving...";this.data['ic_err'] = "";
+			axios.post("?", {
+				"action": "objects_set_icon",
+				"object_id": this.data['thing']['_id'],
+				"ic": this.data['thing']['ic'],
+			}).then(response=>{
+				this.data['ic_msg'] = "";
+				if( response.status == 200 ){
+					if( typeof( response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								
+							}else{
+								this.data['ic_err'] = response.data['error'];
+							}
+						}else{
+							this.data['ic_err'] = "Incorrect response";
+						}
+					}else{
+						this.data['ic_err'] = "Incorrect response";
+					}
+				}else{
+					this.data['ic_err'] = "http error: " . response.status ;
+				}
+			}).catch(error=>{
+				this.data['ic_msg'] = "";
+				this.data['ic_err'] = error.message;
+			});
+		}
 	},
 	template: `<div class="code_line">
 	<div v-if="typeof(data)=='undefined'" >Loading</div>
@@ -1289,14 +1470,26 @@ const graph_object_v2 =  {
 		<table class="table table-bordered table-sm w-auto" >
 			<tbody>
 			<tr>
+				<td>&nbsp;</td>
+				<td>ID</td>
 				<td>Label</td>
-				<td>Type</td>
-				<td>Alias</td>
-				<td>Instance Of</td>
-				<td>Part Of</td>
 				<td>-</td>
 			</tr>
 			<tr>
+				<td>
+
+					<div v-if="'ic' in data['thing']" class="objecticon" v-on:click.stop.prevent="open_icon_popup__" >
+						<icon_view v-bind:data="data['thing']['ic']"></icon_view>
+					</div>
+					<div v-else class="thing_icon_false" v-on:click.stop.prevent="open_icon_popup__" ><i class="far fa-far fa-smile" ></i></div>
+					<div v-if="icon_popup__" data-id="bounds" style="position:absolute; border:1px solid #999; box-shadow:2px 2px 25px #444; border-radius:5px; background-color:white; z-index:500;" >
+						<iconsapp_component v-on:set_icon="set_icon__($event)" v-bind:icon_domain="icon_domain__" ></iconsapp_component>
+					</div>
+
+				</td>
+				<td>
+					{{ data['thing']['_id'] }}
+				</td>
 				<td>
 					<div v-if="data['edit_label']==false" style="display:flex; column-gap:20px;" >
 						<div style="min-width:250px;" >
@@ -1321,8 +1514,26 @@ const graph_object_v2 =  {
 						<div v-if="data['label_msg']" style="color:blue; padding:5px; border:1px solid blue;" v-html="data['label_msg']" ></div>
 						<div v-if="data['label_err']" style="color:red;  padding:5px; border:1px solid red;"  v-html="data['label_err']" ></div>
 					</div>
-			</td>
-			<td>
+				</td>
+				<td>
+					<div class="btn btn-light btn-sm text-danger py-1" v-on:click="node_delete_main" ><i class="fa-regular fa-trash-can"></i></div>
+				</td>
+			</tr>
+		</tbody>
+		</table>
+		<div v-if="data['ic_err']" class="alert alert-danger py-1 mb-2" >{{ data['ic_err'] }}</div>
+
+
+		<table class="table table-bordered table-sm w-auto" >
+			<tbody>
+			<tr>
+				<td>Type</td>
+				<td>Alias</td>
+				<td>Instance Of</td>
+				<td>Part Of</td>
+			</tr>
+			<tr>
+				<td>
 					<div style="display:flex; column-gap:20px;" >
 						<div >
 							<span v-if="data['thing']['i_t']['v'] in data['instance_type']" >{{ data['instance_type'][ data['thing']['i_t']['v'] ] }}</span>
@@ -1345,8 +1556,8 @@ const graph_object_v2 =  {
 							<div v-if="data['type_err']" style="color:red; padding:5px; border:1px solid red;" v-html="data['type_err']" ></div>
 						</div>
 					</div>
-			</td>
-			<td>
+				</td>
+				<td>
 					<div v-if="data['edit_al']==false"  style="display:flex; column-gap:20px;" >
 						<div>
 							<div v-for="alv in data['thing']['al']">{{ alv['v'] }}</div>
@@ -1369,8 +1580,8 @@ const graph_object_v2 =  {
 						<div v-if="data['al_msg']" style="color:blue; padding:5px; border:1px solid blue;" v-html="data['al_msg']" ></div>
 						<div v-if="data['al_err']" style="color:red; padding:5px; border:1px solid red;"   v-html="data['al_err']" ></div>
 					</div>
-			</td>
-			<td>
+				</td>
+				<td>
 					<div v-if="data['edit_i_of']==false"  style="display:flex; column-gap:20px;" >
 						<div v-if="data['thing']['i_of']['t']=='GT'" >
 							<template v-if="'v' in data['thing']['i_of']&&'i' in data['thing']['i_of']" >
@@ -1388,19 +1599,16 @@ const graph_object_v2 =  {
 						<div v-if="data['i_of_msg']" style="color:blue; padding:5px; border:1px solid blue;" v-html="data['i_of_msg']" ></div>
 						<div v-if="data['i_of_err']" style="color:red;  padding:5px; border:1px solid red;" v-html="data['i_of_err']" ></div>
 					</div>
-			</td>
-			<td>
-				<div v-if="'p_of' in data['thing']" >
-					<template v-for="pd,pi in data['thing']['p_of']" >
-						<template v-if="'v' in pd&&'i' in pd" >
-							<a href="#" v-on:click.prevent.stop="getlink(pd['i'])" >{{ pd['v'] }}</a>
+				</td>
+				<td>
+					<div v-if="'p_of' in data['thing']" >
+						<template v-for="pd,pi in data['thing']['p_of']" >
+							<template v-if="'v' in pd&&'i' in pd" >
+								<a href="#" v-on:click.prevent.stop="getlink(pd['i'])" >{{ pd['v'] }}</a>
+							</template>
 						</template>
-					</template>
-				</div>
-			</td>
-			<td>
-				<div class="btn btn-light btn-sm text-danger py-1" v-on:click="node_delete_main" ><i class="fa-regular fa-trash-can"></i></div>
-			</td>
+					</div>
+				</td>
 			</tr>
 		</tbody>
 		</table>
@@ -1996,8 +2204,16 @@ const graph_object_v2 =  {
 		</template>
 		</div>
 
-		<div v-if="data['thing']['i_t']['v']=='N'||data['thing']['i_t']['v']=='D'" data-id="root-document" style="border:1px solid #999;margin-bottom:20px; background-color:white;" >
-			<editor_component editor_div_id="editor_div" editor_wrapper_div_id="editor_block_a" v-bind:data="thing" v-on:edited="thing_body_updated">
+		<div v-if="data['thing']['i_t']['v']=='N'||data['thing']['i_t']['v']=='D'" data-id="root-document" style="border:1px solid #999;margin-bottom:20px; background-color:white; padding:10px 50px;" >
+
+			<div v-if="'body' in data['thing']==false">
+				<div class="btn btn-outline-dark btn-sm" v-on:click="thing_add_document_content__()" >Add Document Content</div>
+			</div>
+			<template v-else >
+				<div v-bind:id="'editor_div_'+data['thing']['_id']" ></div>
+				<!-- <pre v-if="'body' in data['thing']">{{ data['thing']['body'] }}</pre>-->
+			</template>
+
 		</div>
 
 		<div>&nbsp;-&nbsp;</div>

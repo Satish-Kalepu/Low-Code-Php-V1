@@ -86,6 +86,8 @@ function engine_auth_api( $api_slug, $post ){
 
 	}else if( $api_slug == "assume_session_key" ){
 
+		//respond(200, "application/json", [], json_encode($post));
+
 		if( !isset($post['role_id']) ){
 			respond(400, "application/json", [], json_encode(["status"=>"fail", "error"=>"Role Id"]) );
 		}else if( !preg_match( "/^[a-f0-9]{24}$/", $post['role_id'] ) ){

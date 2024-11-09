@@ -21,6 +21,8 @@
 	}
 
 	// define globals 
+
+	$connections = [];
 	$use_encrypted=true;
 	$request_log_id= "";
 	$php_input= "";
@@ -52,6 +54,8 @@
 	require("index_api.php");
 	require("index_page.php");
 	require("index_file.php");
+	require("index_mapping.php");
+	require("index_thumbs.php");
 
 	$cache_refresh=false;
 	$current_dir = __DIR__;
@@ -300,10 +304,13 @@ function index_normal(){
 	}
 
 	$path = $_GET['request_url'];
+	$sub_path = $_GET['request_url'];
 	$path = $path?$path:"home";
 	function url_repl($m){
 		return "\\" . $m[0];
 	}
+
+	//echo $path;exit;
 
 	$url_parts = parse_url( $path );
 	if( isset($url_parts['path']) ){
@@ -425,47 +432,86 @@ function index_normal(){
 			exit;
 		}
 
-		if( $path != "home" && !isset($config_app['pages'][ $path ]) ){
-			respond(404,"text/plain",[], "Path not found");
-		}else if( isset($config_app['pages'][ $path ]) ){
-			//echo "path found";exit;
-		}else if( $path == "home" ){	
-			if( $config_app['settings']['homepage']['t'] == "page" ){
-				$version_id = explode(":",$config_app['settings']['homepage']['v'])[0];
-				$config_app['pages'][ "home" ] = [
-					't'=>'page',
-					'version_id'=>$version_id,
-				];
-			}else{
-				$config_app['pages'][ "home" ] = [
-					't'=>'file',
-					'_id'=>$config_app['settings']['homepage']['v'],
-				];
+		// print_r( $path_params );
+		// echo "<pre>";print_r( $config_app['mappings'] );exit;
+
+		$page_type = "";
+		$mapping_item = [];
+		if( isset($config_app['mappings']) ){
+			$folders = $path_params;
+			if( sizeof($path_params) > 1 ){
+				$fn = "/" . $path_params[0] . "/";
+				//echo $fn;
+				if( isset( $config_app['mappings'][ $fn ] ) ){
+					$sub_path = str_replace($fn, "", "/". $path);
+					$page_type = $config_app['mappings'][ $fn ]['type'];
+					$mapping_item = $config_app['mappings'][ $fn ];
+				}
+			}
+			if( $page_type == "" && sizeof($folders) > 2 ){
+				$fn = "/" . $path_params[0] . "/" . $path_params[1] . "/";
+				//echo $fn;
+				if( isset( $config_app['mappings'][ $fn ] ) ){
+					$sub_path = str_replace($fn, "", "/".$path);
+					$page_type = $config_app['mappings'][ $fn ]['type'];
+					$mapping_item = $config_app['mappings'][ $fn ];
+				}
+			}
+			if( $page_type == "" && sizeof($folders) > 3 ){
+				$fn = "/" . $path_params[0] . "/" . $path_params[1] . "/" . $path_params[2] . "/";
+				//echo $fn;
+				if( isset( $config_app['mappings'][ $fn ] ) ){
+					$sub_path = str_replace($fn, "", "/".$path);
+					$page_type = $config_app['mappings'][ $fn ]['type'];
+					$mapping_item = $config_app['mappings'][ $fn ];
+				}
 			}
 		}
-		//echo "<pre>";print_r( $config_app );exit;
-		$page_type = $config_app['pages'][ $path ]['t'];
-		if( $page_type == "page" ){
-			$version_id = $config_app['pages'][ $path ]['version_id'];
-			$res = $mongodb_con->find_one($db_prefix."_pages_versions", [ "_id"=>$version_id ] );
-			if( $res['data'] ){ $page_version = $res['data']; }else{
-				respond(404,"text/plain",[], "Page version not found");
+		//exit;
+
+		if( $page_type == "" ){
+			if( $path != "home" && !isset($config_app['pages'][ $path ]) ){
+				respond(404,"text/plain",[], "Path not found");
+			}else if( isset($config_app['pages'][ $path ]) ){
+				//echo "path found";exit;
+			}else if( $path == "home" ){	
+				if( $config_app['settings']['homepage']['t'] == "page" ){
+					$version_id = explode(":",$config_app['settings']['homepage']['v'])[0];
+					$config_app['pages'][ "home" ] = [
+						't'=>'page',
+						'version_id'=>$version_id,
+					];
+				}else{
+					$config_app['pages'][ "home" ] = [
+						't'=>'file',
+						'_id'=>$config_app['settings']['homepage']['v'],
+					];
+				}
 			}
-			$page_id = $page_version['page_id'];
-		}else if( $page_type == "api" ){
-			$version_id = $config_app['pages'][ $path ]['version_id'];
-			$res = $mongodb_con->find_one($db_prefix."_apis_versions", [ "_id"=>$version_id ] );
-			if( $res['data'] ){ $api_version = $res['data']; }else{
-				respond(404,"text/plain",[], "Api version not found");
+			//echo "<pre>";print_r( $config_app );exit;
+			$page_type = $config_app['pages'][ $path ]['t'];
+			if( $page_type == "page" ){
+				$version_id = $config_app['pages'][ $path ]['version_id'];
+				$res = $mongodb_con->find_one($db_prefix."_pages_versions", [ "_id"=>$version_id ] );
+				if( $res['data'] ){ $page_version = $res['data']; }else{
+					respond(404,"text/plain",[], "Page version not found");
+				}
+				$page_id = $page_version['page_id'];
+			}else if( $page_type == "api" ){
+				$version_id = $config_app['pages'][ $path ]['version_id'];
+				$res = $mongodb_con->find_one($db_prefix."_apis_versions", [ "_id"=>$version_id ] );
+				if( $res['data'] ){ $api_version = $res['data']; }else{
+					respond(404,"text/plain",[], "Api version not found");
+				}
+				$api_id = $api_version['api_id'];
+			}else if( $page_type == "file" ){
+				$version_id = $config_app['pages'][ $path ]['_id'];
+				$res = $mongodb_con->find_one($db_prefix."_files", [ "_id"=>$version_id ] );
+				if( $res['data'] ){ $file_version = $res['data']; }else{
+					respond(404,"text/plain",[], "File not found");
+				}
+				$file_id = $file_version['_id'];
 			}
-			$api_id = $api_version['api_id'];
-		}else if( $page_type == "file" ){
-			$version_id = $config_app['pages'][ $path ]['_id'];
-			$res = $mongodb_con->find_one($db_prefix."_files", [ "_id"=>$version_id ] );
-			if( $res['data'] ){ $file_version = $res['data']; }else{
-				respond(404,"text/plain",[], "File not found");
-			}
-			$file_id = $file_version['_id'];
 		}
 	}
 
@@ -479,6 +525,14 @@ function index_normal(){
 
 	}else if( $page_type == "file" ){
 		list($statusCode,$contenttype,$headers,$body,$log) = index_file( $file_version );
+		respond($statusCode,$contenttype,$headers,$body,$log);
+
+	}else if( $page_type == "mapping" ){
+		list($statusCode,$contenttype,$headers,$body,$log) = index_mapping( $mapping_item, $path );
+		respond($statusCode,$contenttype,$headers,$body,$log);
+
+	}else if( $page_type == "thumbs" ){
+		list($statusCode,$contenttype,$headers,$body,$log) = index_thumbs( $mapping_item, $path, $sub_path );
 		respond($statusCode,$contenttype,$headers,$body,$log);
 
 	}else{

@@ -40,28 +40,34 @@
 				<tr v-if="v['vt']=='folder'">
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
-						<div v-if="'vault' in v" >
-							<a v-bind:href="path+'storage/'+v['vault']['vault_id']" >{{ this.current_path + v['name'] }}/</a>
+						<div v-if="'vault' in v&&v['type']=='mounted'" >
+							<a v-bind:href="path+'storage/'+v['vault']['vault_id']" >{{ current_path + v['name'] }}/</a>
 							<div align="right" >
-								Vault {{ v['vault']['vault_type'] + ' ('+v['vault']['vault_name'] + ')'+ v['vault']['vault_path'] }}
+								Mounted Storage Vault {{ v['vault']['vault_type'] + ' ('+v['vault']['vault_name'] + ')'+ v['vault']['vault_path'] }}
+							</div>
+						</div>
+						<div v-else-if="v['type']=='thumbs'" >
+							<a href='#' v-on:click.stop.prevent="open_thumb_rewrite(v)" >{{ current_path + v['name'] }}/</a>
+							<div align="right" >
+								Thumbs Rewrite {{ v['vault']['vault_type'] + ' ('+v['vault']['vault_name'] + ')'+ v['vault']['vault_path'] }}
 							</div>
 						</div>
 						<div v-else >
-							<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a></div>
+							<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ current_path + v['name'] }}/</a></div>
 							<div align="right">
 								Folder
 							</div>
 						</div>
 					</td>
-					<td><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_file(i)" ></td>
+					<td><input v-if="'vault' in v == false&&v['type']!='mounted'" type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_file(i)" ></td>
 				</tr>
 				</template>
 				<template v-for="v,i in files">
 				<tr v-if="v['vt']!='folder'">
 					<td><div class="vid">#<pre class="vid">{{v['_id']}}</pre></div></td>
 					<td width="90%">
-						<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ this.current_path + v['name'] }}/</a></div>
-						<div v-else><a v-bind:href="path+'files/'+v['_id']+'/edit'" >{{ this.current_path + v['name'] }}</a></div>
+						<div v-if="v['vt']=='folder'"><a v-bind:href="path+'files/?path='+v['name']" v-on:click.stop.prevent="enter_path(v['name'])" >{{ current_path + v['name'] }}/</a></div>
+						<div v-else><a v-bind:href="path+'files/'+v['_id']+'/edit'" >{{ current_path + v['name'] }}</a></div>
 						<div align="right" style="color:gray;">
 							<div v-if="'sz' in v" style="display: inline-block; width: 100px; overflow: hidden;">{{ getsz(v['sz']) }}</div>
 							<div style="display: inline-block; width:100px; overflow: hidden; ">{{ getc(v) }}</div>
@@ -162,7 +168,6 @@
 				<div v-if="cfmsg" class="alert alert-primary" >{{ cfmsg }}</div>
 				<div v-if="cferr" class="alert alert-danger" >{{ cferr }}</div>
 
-
 		      </div>
 		    </div>
 		  </div>
@@ -184,19 +189,7 @@
 				<div style="border:1px solid #ccc;">
 					<div style="padding:10px; background-color: #f8f8f8; border-bottom: 1px solid #ccc;">Mount Storage Vault</div>
 					<div style="padding:10px; ">
-						<div>Storage Vault: </div>
-						<div><select v-model="new_mount['vault_id']" v-on:click="select_vault()" >
-							<option v-for="v in storage_vaults" v-bind:value="v['_id']" >{{ v['des'] + ': ' + v['vault_type'] }}</option>
-						</select></div>
-						<div>Vault Path: </div>
-						<input type="text" class="form-control form-control-sm" v-model="new_mount['vault_path']">
-						<div>Local Path: </div>
-						<input type="text" class="form-control form-control-sm" v-model="new_mount['local_path']">
-						<div>&nbsp;</div>
-						<input type="button" class="btn btn-outline-dark btn-sm" value="Mount" v-on:click="mountit()" >
-
-						<div class="alert alert-success" v-if="cnfmsg" >{{ cnfmsg }}</div>
-						<div class="alert alert-danger" v-if="cnferr" >{{ cnferr }}</div>
+						Screen moved to storage vaults
 					</div>
 				</div>
 
@@ -204,6 +197,39 @@
 		    </div>
 		  </div>
 		</div>
+
+
+	<div class="modal fade" id="url_modal" tabindex="-1" >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Browse/Download File</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <template v-if="'cloud' in vurls" >
+                <p>Cloud Hosting: </p>
+                <p>
+                  <a target="_blank" v-bind:href="vurls['cloud']" >{{ vurls['cloud'] }}</a>
+                </p>
+                <template v-if="'alias' in vurls" >
+                  <p>Alias domain:</p>
+                  <p>
+                    <a target="_blank" v-bind:href="vurls['alias']" >{{ vurls['alias'] }}</a>
+                  </p>
+                </template>
+              </template>
+              <template v-if="'domains' in vurls" >
+                <p>Custom Hosting: </p>
+                <p v-for="u in vurls['domains']" >
+                  <a target="_blank" v-bind:href="u" >{{ u }}</a>
+                </p>
+              </template>
+          </div>
+        </div>
+      </div>
+    </div>
+
 </div>
 <script>
 var app = Vue.createApp({
@@ -245,6 +271,11 @@ var app = Vue.createApp({
 			storage_vaults: [],
 			token: "",
 			dropdiv: false,dropdiv2: false,
+			test_envs__: [],
+			test_url__: "",
+			test_domain__: "",
+			url_modal: false,
+			vurls: [],
 		};
 	},
 	mounted(){
@@ -252,8 +283,85 @@ var app = Vue.createApp({
 		this.load_files();
 		setInterval(this.check_queue,100);
 		//document.addEventListener("drop", function(e){e.preventDefault();e.stopPropagation();app.dropit(e);}, true);
+	    this.set_test_environments__();
 	},
 	methods: {
+
+		set_test_environments__: function() {
+			var e = [];
+			for (var d in this.app__['settings']['domains']) {
+				e.push({
+					"t": "custom",
+					"u": this.app__['settings']['domains'][d]['url'],
+					"d": this.app__['settings']['domains'][d]['domain'],
+				});
+			}
+			if ('cloud' in this.app__['settings']) {
+				if (this.app__['settings']['cloud']) {
+					var d = this.app__['settings']['cloud-subdomain'] + "." + this.app__['settings']['cloud-domain'];
+					e.push({
+						"t": "cloud",
+						"u": "https://" + d + "/",
+						"d": d,
+					});
+				}
+			}
+			if ('alias' in this.app__['settings']) {
+				if (this.app__['settings']['alias']) {
+					var d = this.app__['settings']['alias-domain'];
+					e.push({
+						"t": "cloud-alias",
+						"u": "https://" + d + "/",
+						"d": d,
+					});
+				}
+			}
+			this.test_envs__ = e;
+			if (e.length == 1) {
+				this.test_domain__ = e[1]['d'] + '';
+				this.select_test_environment__2();
+			}
+		},
+		select_test_environment__: function() {
+			setTimeout(this.select_test_environment__2, 200);
+		},
+		select_test_environment__2: function() {
+			for (var i = 0; i < this.test_envs__.length; i++) {
+				//in this.app__['settings']['domains'] ){
+				if (this.test_envs__[i]['d'] == this.test_domain__) {
+					//this.test__['path'] = this.app__['settings']['domains'][ d ]['path'];
+					var tu = this.test_envs__[i]['u'] + "?version_id=<?=$config_param4 ?>&test_token=<?=md5($config_param4) ?>";
+					if (this.test_debug__) {
+						tu = tu + "&debug=true";
+					}
+					if (this.api__['input-method'] == "GET") {
+						tu = tu + "&" + this.make_query_string__(this.test__['factors']['v']);
+					}
+					this.test_url__ = tu;
+					break;
+				}
+			}
+		},
+		open_thumb_rewrite: function(vp){
+			var urls = {};
+			if( 'cloud' in this.app__['settings'] ){if( this.app__['settings']['cloud'] ){
+				urls['cloud'] = "https://" + this.app__['settings']['cloud-subdomain'] + '.' + this.app__['settings']['cloud-domain'] + '/' + this.app__['settings']['cloud-enginepath'] + vp['path'].substr(1,500) + vp['name'];
+				if( 'alias' in this.app__['settings'] ){if( this.app__['settings']['alias'] ){
+					urls['alias'] = "https://" + this.app__['settings']['alias-domain'] + vp['path'].substr(1,500) + vp['name'];
+				}}
+			}}
+
+			if( 'domains' in this.app__['settings'] ){
+				urls['domains'] = [];
+				for(var d=0;d<this.app__['settings']['domains'].length;d++ ){
+					urls['domains'].push( this.app__['settings']['domains'][ d ]['url'] + vp['path'].substr(1,500) + vp['name'] );
+				}
+			}
+			this.vurls = urls;
+			this.url_modal = new bootstrap.Modal(document.getElementById('url_modal'));
+			this.url_modal.show();
+		},
+
 		getc: function(v){
 			if( 'm_i' in v ){
 				return v['m_i'].substr(0,10);
@@ -863,49 +971,7 @@ var app = Vue.createApp({
 			}
 		},
 		mountit: function(){
-			this.cnferr = "";this.cnfmsg = "";
-			if( this.new_mount['vault_id'].match(/^[a-f0-9]{24}$/) == null ){
-				this.cnferr = "Select Vault";return;
-			}
-			if( this.new_mount['vault_path'] != "/" && this.new_mount['vault_path'].match(/^\/[a-z0-9\-\_\.\/]+\/$/i) == null ){
-				this.cnferr = "Vault path should be / or /path/  or /path/path/";return;
-			}
-			if( this.new_mount['local_path'].match(/^\/[a-z0-9\-\_\.\/]+\/$/i) == null ){
-				this.cnferr = "Local path should be /path/  or /path/path/";return;
-			}
-			if( this.new_mount['local_path'].match(/[\/]{2,5}/i)  ){
-				this.cnferr = "Local path incorrect format";return;
-			}
-			if( this.new_mount['vault_path'].match(/[\/]{2,5}/i) ){
-				this.cnferr = "Vault path incorrect format";return;
-			}
-			this.cnfmsg = "Mounting..";
-			axios.post("?", {
-				"action":"mount_storage_vault",
-				"new_mount":this.new_mount,
-			}).then(response=>{
-				this.cnfmsg = "";
-				if( response.status == 200 ){
-					if( typeof(response.data) == "object" ){
-						if( 'status' in response.data ){
-							if( response.data['status'] == "success" ){
-								this.cnfmsg = "Success";
-								this.load_files();
-							}else{
-								this.cnferr = "Error: " + response.data['error'];
-							}
-						}else{
-							this.cnferr = "Incorrect Response";
-						}
-					}else{
-						this.cnferr = "Invalid response";
-					}
-				}else{
-					this.cnferr = "http: "+ response.status;
-				}
-			}).catch(error=>{
-				this.cnferr = error.message;
-			});
+			
 		},
 	}
 }).mount("#app");

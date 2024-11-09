@@ -1,4 +1,6 @@
-<?php require("page_apps_objects.css"); ?>
+<?php 
+require("page_apps_objects.css");
+?>
 
 <style>
 div.zz, a.zz{ display: block; max-width:250px; max-height:150px; overflow:auto; white-space:nowrap; }
@@ -37,14 +39,14 @@ pre.sample_data::-webkit-scrollbar-track { background: #f1f1f1;}
 pre.sample_data::-webkit-scrollbar-thumb { background: #888;}
 pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 
-.graph_tabs_nav_bar{ position:relative; height:30px; border-bottom:2px solid #aaa; margin-bottom:10px;  }
+.graph_tabs_nav_bar{ position:relative; height:30px; border-bottom:2px solid #aaa; margin-bottom:10px; }
 .graph_tabs_nav_container{ position:absolute; display:flex; height:30px; width:calc( 100% - 30px ); overflow:hidden; }
 .graph_tabs_nav_scrollbtn{ position:absolute; right:0px; height:30px; z-index:5; background-color:#f8f0f0; display:none; }
 .graph_tabs_nav_scrollbtn2{ position:absolute; left:0px; height:30px; z-index:5; background-color:#f8f0f0; display:none; }
 .graph_tab_btn{ display: flex; column-gap:10px; margin-left:5px; padding:0px 10px; border:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px; border-bottom:2px solid #aaa; white-space:nowrap; cursor:pointer; align-items:center; }
-.graph_tab_btn .head{  }
+.graph_tab_btn .head{}
 .graph_tab_btn .cbtn{}
-.graph_tab_btn:hover{ background-color:#f8f8f8;  }
+.graph_tab_btn:hover{background-color:#f8f8f8;}
 .graph_btn_active{border:1px solid #999; border-bottom:2px solid white; }
 .graph_tab_btn:hover .graph_btn_active{ border-bottom:2px solid white; }
 .graph_tabs_container{ position:relative; height:calc( 100% - 150px ); background-color: white; overflow:auto;  padding-right:10px; }
@@ -53,16 +55,34 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 .graph_object_tabs_nav_container{ position:absolute; display:flex; height:30px; width:calc( 100% - 30px ); overflow:hidden; }
 .graph_object_tabs_nav_scrollbtn{ position:absolute; right:0px; height:30px; z-index:5; background-color:#f8f0f0; }
 .graph_object_tab_btn{ display: flex; column-gap:10px; margin-left:5px; padding:0px 10px; border:1px solid #ccc;border-top-left-radius:5px;border-top-right-radius:5px; border-bottom:2px solid #aaa; white-space:nowrap; cursor:pointer; align-items:center; }
-.graph_object_tab_btn .head{  }
+.graph_object_tab_btn .head{}
 .graph_object_tab_btn .cbtn{}
-.graph_object_tab_btn:hover{ background-color:#f8f8f8;  }
+.graph_object_tab_btn:hover{background-color:#f8f8f8;}
 .graph_object_btn_active{border:1px solid #999; border-bottom:2px solid white; }
 .graph_object_tab_btn:hover .graph_btn_active{ border-bottom:2px solid white; }
 .graph_object_tabs_container{ position:relative; height:calc( 100% - 150px ); background-color: white; overflow:auto;  padding-right:10px; }
 
+div.objecticon{ cursor: pointer; text-align:center; }
+div.objecticon .objecticonsvg{ margin-top:3px; width:50px; }
+div.objecticon .objecticonemoji{ font-size:1.2rem; }
+div.objecticon .objecticonfont{ font-size:1.2rem; }
+div.objecticon .objecticonflag{ width:10px; }
+div.objecticon .objecticonflag img{ min-width:initial; min-height:initial; width:100%; height:initial; }
+div.objecticon .objecticonimg{ width:100px; }
+div.objecticon .objecticonimg img{ min-width:initial; min-height:initial; width:100%; height:initial; }
+
+div.objecticoninline{ text-align:center; width:25px; height:25px; }
+div.objecticoninline .objecticonsvg{ margin-top:3px; width:100%; }
+div.objecticoninline .objecticonemoji{ font-size:1.2rem; }
+div.objecticoninline .objecticonfont{ font-size:1.2rem; }
+div.objecticoninline .objecticonflag{ width:10px; }
+div.objecticoninline .objecticonflag img{ min-width:initial; min-height:initial; width:100%; height:initial; }
+div.objecticoninline .objecticonimg{ }
+div.objecticoninline .objecticonimg img{ min-width:initial; min-height:initial; width:120%; height:initial; }
+
 </style>
 
-<div id="app" >
+<div id="app" v-cloak >
 	<div class="leftbar" >
 		<?php require("page_apps_leftbar.php"); ?>
 	</div>
@@ -70,6 +90,10 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 		<div style="padding: 10px;" >
 
 			<a class="btn btn-sm btn-outline-dark float-end" v-bind:href="path+'objects'" >Back</a>
+			<div class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="open_settings__()" >Settings</div>
+			<button class="btn btn-outline-dark btn-sm me-2 float-end" v-on:click="previewit" id="previewbtn" >
+				<i class="fas fa-fas fa-link" ></i>
+			</button>
 			
 			<div v-if="thing_id!=-1" class="btn btn-sm btn-outline-dark float-end me-2" v-on:click="thing_id=-1" >Home</div>
 
@@ -97,19 +121,12 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				<div class="graph_tabs_nav_scrollbtn"  id="tabs_right_scrollbar"  v-on:click="window_tabs_focus_right()"><div class="btn btn-light btn-sm" style="height:30px;" ><i class="fa-solid fa-chevron-right"></i></div></div>
 			</div>
 			<template v-for="vtab,vtabi in window_tabs" >
-				<div class="graph_tabs_container" id="tabs_container2" v-show="current_tab==vtabi" >
+				<div class="graph_tabs_container" v-bind:id="'tabs_container_'+vtabi" v-show="current_tab==vtabi" >
 					<template v-if="vtabi=='summary'" >
 						<div v-for="v in things" >
 							<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i'])" >{{ v['l']['v'] }}</div> in 
 							<div type="button" class="btn btn-link btn-sm" v-on:click="show_thing(v['i_of']['i'])">{{ v['i_of']['v'] }}</div> ({{ v['cnt'] }})
 						</div>
-
-						<div style="padding: 100px; border: 1px solid red;" >
-							<div id="editor_div" >
-								<p>okok</p>
-							</div>
-						</div>
-
 					</template>
 					<template v-else-if="vtabi=='import2'" >
 						<objects_import_v2 ref="import2" refname="import2" v-bind:vtab="window_tabs[vtabi]" ></objects_import_v2>
@@ -167,7 +184,11 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 									<tbody>
 										<tr v-for="rec,reci in browse_list">
 											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['_id'])" >{{ rec['_id'] }}</a></div></td>
-											<td><div class="zz" ><span v-if="'l' in rec" >{{ rec['l']['v'] }}</span></div></td>
+											<td><div style="display: flex; column-gap:10px;" >
+												<div class="objecticoninline" v-if="'ic' in rec" ><icon_view v-bind:data="rec['ic']" ></icon_view> </div>
+												<div class="zz" ><span v-if="'l' in rec" >{{ rec['l']['v'] }}</span></div>
+											</div>
+											</td>
 											<td>{{ get_node_type(rec['i_t']['v']) }}</td>
 											<td><div class="zz" ><a href="#" v-on:click.prevent.stop="show_thing(rec['i_of']['i'])" >{{ rec['i_of']['v'] }}</a></div></td>
 											<td><a v-if="'cnt' in rec" href="#" v-on:click.prevent.stop="show_thing2(rec['_id'])" >{{ rec['cnt'] }}</a></td>
@@ -192,8 +213,6 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 				</div>
 			</template>
 		</div>
-
-
 	</div>
 
 	<div id="context_menu__" data-context="contextmenu" class="context_menu__" v-bind:style="context_style__">
@@ -375,20 +394,85 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 	</div>
 
 	<div class="modal fade" id="settings_modal" tabindex="-1" >
-	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-		  <div class="modal-header">
-		    <h5 class="modal-title">Configuration</h5>
-		    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-		  </div>
-			<div class="modal-body" >
-				<p>Objects database is enabled</p>
-		  	</div>
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Settings</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" >
+					<template v-if="'settings' in db" >
+						<p>Image Library Settings</p>
+						<p><label><input type="checkbox" v-model="db['settings']['library_enable']" v-on:click="library_enable_click()" > Enable Image Library </label></p>
+						<template v-if="db['settings']['library_enable'] && 'library' in db['settings']" >
+							<div>Storage Vault</div>
+							<div class="mb-2"><select v-model="db['settings']['library']['vault_id']" class="form-select form-select-sm" v-on:change="select_storage_valut__()" >
+								<option value="" >Select Vault</option>
+								<option v-for="vv,vi in storage_vaults_list__" v-bind:value="vv['_id']" >{{ vv['vault_type'] + ': ' + vv['des'] }}</option>
+							</select></div>
+							<div>Allow Uploads</div>
+							<div class="mb-2"><label><input type="checkbox" v-model="db['settings']['library']['upload']" > Allow Uploading </label></div>
+							<div>Size Limit</div>
+							<div class="mb-2"><input type="number" v-model="db['settings']['library']['size']" class="form-control form-control-sm w-auto" ></div>
+							<div>Destination Path</div>
+							<div class="mb-2"><input type="text" v-model="db['settings']['library']['dest_path']" class="form-control form-control-sm" placeholder="/image-path/" ></div>
+							<div>Thumb Rewrite Path</div>
+							<div class="mb-2">
+								<input type="text" v-model="db['settings']['library']['thumb_path']" class="form-control form-control-sm" placeholder="/images-thumbs/" >
+								<div class="text-secondary">/<b>thumb-rewrite-path</b>/thumb-settings/destination-path/filename.image</div>
+							</div>
+							<div>Images Node</div>
+							<div class="mb-2">
+								<input type="text" v-model="db['settings']['library']['thing_id']" class="form-control form-control-sm" placeholder="T1" >
+								<div class="text-secondary">Graph Node where meta data of uploaded images are stored.</div>
+							</div>
+						</template>
+						<div class="mb-2">
+							<input type="button" class="btn btn-outline-dark btn-sm" value="UPDATE" v-on:click="save_settings_library()" >
+							<div class="text-danger">{{ set_err }}</div>
+							<div class="text-success">{{ set_msg }}</div>
+						</div>
+					</template>
+					<div v-else>Settings not initialized</div>
+				</div>
+			</div>
 		</div>
 	</div>
-	</div>
 
-	<editor_component v-if="editor_enable" v-bind:editor_div_id="editor_div_id" v-bind:editor_wrapper_div_id="editor_wrapper_div_id" v-bind:data="editor_data" v-on:edited="editor_updated"></editor_component>
+	<div class="modal fade" id="url_modal" tabindex="-1" >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Engine Environment</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <!-- <pre>{{ test_environments__ }}</pre> -->
+              <div v-for="v,i in test_environments__" class="mb-2" >
+              	<label style="cursor: pointer;" v-on:click="test_environment_select__()" >
+              		<input class="me-2" type="radio" v-model="current_test_environment_selection__" v-bind:value="i" > 
+              		<div style="display:inline-block; width:100px; margin-right:20px; text-align: right;">{{ v['t'] }}</div>
+              		<span> {{ v['u'] }} </span> 
+              	</label>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+	<template v-for="vtab,vtabi in window_tabs" >
+		<template v-if="vtab['type']=='thing'" >
+			<template v-if="'data' in vtab" >
+				<template v-if="'thing' in vtab['data']" >
+					<template v-if="'body' in vtab['data']['thing']" >
+						<editor_component v-if="'_id' in vtab['data']['thing']" v-bind:editor_div_id="'editor_div_'+vtab['data']['thing']['_id']" v-bind:editor_wrapper_div_id="'tabs_container_'+vtabi" v-bind:data="vtab['data']['thing']['body']" v-on:edited="thing_editor_updated(vtabi,$event)"></editor_component>
+					</template>
+				</template>
+			</template>
+		</template>
+	</template>
+	<div v-if="float_msg" style="position:fixed; z-index:500; color:blue; bottom:10px; right:10px; background-color: rgba(0,0,200,0.5); padding:10px;">{{ float_msg }}</div>
+	<div v-if="float_err" style="position:fixed; z-index:500; color:red; bottom:10px; right:10px; background-color: rgba(200,0,0,0.5); padding:10px;">{{ float_red }}</div>
 
 </div>
 
@@ -399,7 +483,11 @@ pre.sample_data::-webkit-scrollbar-thumb:hover { background: #555;}
 <?php require("page_apps_objects_component_dataset_create.php"); ?>
 <?php require("page_apps_objects_component_dataset_edit.php"); ?>
 <?php require("page_apps_objects_component_ops.php"); ?>
-<script><?php require("js/editor_mixed.js"); ?></script>
+
+<script src="//<?=$html_editor_settings['editor_domain'] ?>/editor_enc.js"></script>
+<link rel="stylesheet" href="//<?=$html_editor_settings['editor_domain'] ?>/fontawesome/css/all.min.css" defer async />
+<link rel="stylesheet" href="//<?=$html_editor_settings['editor_domain'] ?>/RemixIcon/fonts/remixicon.css" defer async />
+
 <script>
 <?php
 $components = [
@@ -411,6 +499,7 @@ $components = [
 foreach( $components as $i=>$j ){
 	require($apps_folder."/" . $j . ".js");
 }
+
 ?>
 
 var app = Vue.createApp({
@@ -421,8 +510,22 @@ var app = Vue.createApp({
 			"app_id" : "<?=$app['_id'] ?>",
 			"db_id": "<?=$config_param3 ?>",
 			"db_name": "<?=$graph['name'] ?>",
+			"db": <?=json_encode($graph) ?>,
+			"test_environments__": <?=json_encode($test_environments,JSON_PRETTY_PRINT) ?>,
+			"current_test_environment__": <?=json_encode($test_environments[0],JSON_PRETTY_PRINT) ?>,
+			"current_test_environment_selection__": 0,
+
+			"icon_popup": false,
+			"current_icon": {},
+			"icon_settings": <?=json_encode($icon_settings) ?>,
+			"image_library_settings": <?=json_encode($image_library_settings) ?>,
+			"graph_settings": <?=json_encode($graph_settings) ?>,
+			"editor_session_key": "",
+
+			"storage_vaults_list__": [],
 			"context_api_url__": "?",
 			"smsg": "", "serr":"","msg": "", "err":"","cmsg": "", "cerr":"","kmsg": "", "kerr":"", "bmsg": "", "berr":"",
+			"set_err": "", "set_msg": "",
 			"keyword": "",
 			"token": "",
 			"keys": [], 
@@ -566,38 +669,156 @@ var app = Vue.createApp({
 
 			current_tab: "summary",
 			window_tabs: {
-				"summary": {
-					"title": "Summary",
-					"type": "summary",
-				},
-				"browse": {
-					"title": "Browse",
-					"type": "browse",
-				},
+				"summary": {"title": "Summary",	"type": "summary",},
+				"browse": {	"title": "Browse", "type": "browse",},
 			},
 			window_tabs_order: ["summary", "browse"],
 			editor_enable: false,
 			editor_div_id: "",
 			editor_wrapper_div_id: "",
-			editor_data: {
-			}
+			editor_data: {},
+			float_msg: "", float_err: "",
 
 		};
 	},
-	mounted:function(){
+	mounted: function(){
 		document.addEventListener("keyup", this.event_keyup__ );
 		document.addEventListener("keydown", this.event_keydown__);
 		document.addEventListener("click", this.event_click__, true);
 		document.addEventListener("scroll", this.event_scroll__, true);
 		document.addEventListener("blur", this.event_blur__, true);
 		window.addEventListener("paste", this.event_paste__, true);
+
+		if( 'settings' in this.db == false ){
+			this.db['settings'] = {
+				'library_enable':false,
+			};
+		}
+
 		this.load_nodes();
 		//setTimeout(this.load_sample_tabs,1000);
+		this.image_library_settings['image_domain'] = this.current_test_environment__['d'];
+		if( document.location.hash != "" ){
+			setTimeout(function(v){v.show_thing( document.location.hash.replace("#", "") );},1000,this);
+		}
 	},
 	watch: {
 
 	},
 	methods: {
+		get_access_token: function(){ //called from editor.js
+			console.log('step1');
+			this.float_err = "";
+			this.float_msg = "Loading...";
+			var vpost = {
+				"action":"get_editor_graph_key",
+			};
+			axios.post( '?', vpost, {
+				"headers":{
+					"Content-Type": "application/x-www-form-urlencoded"
+				}
+			}).then(response=>{
+				this.float_msg = "";
+				if( response.status == 200 ){
+					if( typeof(response.data) == "object" ){
+						if( 'status' in response.data ){
+							if( response.data['status'] == "success" ){
+								this.editor_session_key = response.data['session-key'];
+							}else{
+								this.float_err = "Token Failed: " + response.data['error'];
+							}
+						}else{
+							this.float_err = "Token Failed: Incorrect response";
+						}
+					}else{
+						this.float_err = "Token Failed: Incorrect response";
+					}
+				}else{
+					this.float_err = "Token Failed: Incorrect response";
+				}
+			}).catch(error=>{
+				this.float_err = "Token Failed: " + this.get_http_error__(error) ;
+			});
+		},
+		test_environment_select__:function(){
+			setTimeout(this.test_environment_select2__,100);
+		},
+		test_environment_select2__: function(){
+			this.current_test_environment__ = JSON.parse( JSON.stringify( this.test_environments__[ this.current_test_environment_selection__ ] ) );
+			this.image_library_settings['image_domain'] = this.current_test_environment__['d']+'';
+		},
+		previewit: function(){
+			this.url_modal = new bootstrap.Modal(document.getElementById('url_modal'));
+			this.url_modal.show();
+		},
+		open_settings__: function(){
+			this.settings_popup = new bootstrap.Modal( document.getElementById('settings_modal') );
+			this.settings_popup.show();
+			setTimeout(this.load_storage_vaults__, 100);
+		},
+		load_storage_vaults__: function(){
+			axios.get("?action=load_storage_vaults").then(response=>{
+				this.storage_vaults_list__ = response.data['data'];
+			}).catch(error=>{
+				console.error( "Loadstorage vaults: " + error.message );
+			});
+		},
+		select_storage_valut__: function(){
+			if( 'settings' in this.db ){
+				if( 'library' in this.db['settings'] ){
+					if( this.db['settings']['library']['vault_id'] ){
+						for(var i=0;i<this.storage_vaults_list__.length;i++){
+							if( this.storage_vaults_list__[i]['_id'] == this.db['settings']['library']['vault_id'] ){
+								this.db['settings']['library']['vault'] = JSON.parse(JSON.stringify(this.storage_vaults_list__[i]));
+							}
+						}
+					}
+				}
+			}
+		},
+		library_enable_click: function(){
+			setTimeout(this.library_enable_click2, 200);
+		},
+		library_enable_click2: function(){
+			if( this.db['settings']['library_enable'] ){
+				if( 'library' in this.db['settings'] == false ){
+					this.db['settings']['library'] = {
+						'vault_id': "",
+						'vault': {},
+						"upload": false,
+						"size": 5,
+						"dest_path": "/image-library-path/",
+						"thumb_path": "/image-thumbs/",
+						"thing_id": ""
+					};
+				}
+			}
+		},
+		save_settings_library: function(){
+			this.set_msg = "Saving...";
+			this.set_err = "";
+			axios.post("?", {
+				"action": "save_settings_library",
+				"settings": this.db['settings']
+			}).then(response=>{
+				this.set_msg = "";
+				if( response.data['status'] == "success" ){
+					this.set_msg = "Settings updated successfully";
+					setTimeout("document.location.reload()",3000);
+				}else{
+					this.set_err = response.data['error'];
+				}
+			}).catch(error=>{
+				this.set_err = "Error: " + this.get_http_error__(error);
+			});
+		},
+		thing_editor_updated: function(vtabi, vdata){
+			// console.log( "thing editor updated" );
+			// console.log( vtabi );
+			// console.log( vdata );
+			//this.window_tabs[ vtabi ]['data']['thing']['body']['html'] = vdata+'';
+			this.$refs[ vtabi ][0].html_body_updated__(vdata);
+		},
 		editor_updated: function(v){
 			
 		},
@@ -824,7 +1045,7 @@ var app = Vue.createApp({
 					console.log("Error: unknown data-type: " + e.target.getAttribute("data-type") );
 				}
 			}else{
-				console.log("event_keyup__: data-type not found");
+				//console.log("event_keyup__: data-type not found");
 			}
 		},
 		event_keydown__: function(e){
@@ -1244,10 +1465,6 @@ var app = Vue.createApp({
 				}
 			}
 		},
-		show_configure: function(){
-			this.settings_popup = new bootstrap.Modal(document.getElementById('settings_modal'));
-			this.settings_popup.show();
-		},
 		show_create: function( vi_of ){
 			if( typeof(vi_of) == "undefined" ){
 				if( this.thing_id != -1 ){
@@ -1298,14 +1515,12 @@ var app = Vue.createApp({
 			}
 		},
 		context_menu_thing_highlight_graph_thing__: function(v){
-
 			var r = new RegExp( this.context_menu_key__ , "i" );
 			var c = v['l']['v'].match( r );
 			return v['i'] + ": <b>" + v['l']['v'].replace( c, "<span>"+c+"</span>" ) + "</b> in <span class='text-secondary'>" + v['i_of']['v'] + "</span>";
 			// if( v['l']['v'] == v['l']['i'] ){
 			// 	return v['v'].replace( c, "<span>"+c+"</span>" );
 			// }else{
-				
 			// }
 		},
 		context_get_type_notation__: function(v){
@@ -2185,7 +2400,6 @@ var app = Vue.createApp({
 			setTimeout(this.window_tab_focus,500);
 		},
 		window_tab_focus: function(){
-
 			//this.echo__( this.window_tabs );
 			//this.echo__( "window_tab_focus");
 			var d = document.getElementById("tabs_container").children;
@@ -2322,9 +2536,46 @@ var app = Vue.createApp({
 			}
 			this.window_open_tab(tb);
 		},
-
 	}
 });
+
+var icon_view = {
+	data: function(){
+		return {
+			icon_domain: "unknown.com",
+			image_domain: "unknown.com",
+		};
+	},
+	props: ["data"],
+	mounted: function(){
+		if( typeof(this.$root.icon_settings) != "undefined" ){
+			this.icon_domain  = this.$root.icon_settings['icon_domain']  + '';
+			this.image_domain = this.$root.icon_settings['image_domain'] + '';
+		}
+	},
+	methods: {
+		get_icon_url: function(vcountrycode, vsize){
+			return "/"+"/" + this.icon_domain + "/flag-icons/flags/"+vsize+"/"+vcountrycode+".svg";
+		},
+		get_image_url: function(v){
+			return "/"+"/" + this.image_domain + v;
+		},
+	},
+	template: `<div>
+		<div v-if="'t' in data==false" style="font-size:1.2rem;text-align: center;" >
+			<div><i class="fas fa-face-grin-stars"></i> Add Icon</div>
+		</div>
+		<div v-else-if="data['t']!='IC'" style="font-size:1.2rem;text-align: center;" >
+			<div><i class="fas fa-face-grin-stars"></i> Add Icon</div>
+		</div>
+		<div v-else-if="data['it']=='font'||data['it']=='fontawesome'||data['it']=='remix'" class="objecticonfont" v-bind:title="data['l']"><i v-bind:class="data['v']" ></i></div>
+		<div v-else-if="data['it']=='emoji'"  class="objecticonemoji"v-html="data['v']" v-bind:title="data['l']"></div>
+		<div v-else-if="data['it']=='svg'" class="objecticonsvg" v-html="data['v']" v-bind:title="data['l']"></div>
+		<div v-else-if="data['it']=='flag'" class="objecticonflag" ><img v-bind:src="get_icon_url(data['v'], data['sz'])" v-bind:title="data['l']"></div>
+		<div v-else-if="data['it']=='img'" class="objecticonimg" ><img v-bind:src="get_image_url(data['v'])" ></div>
+		<div v-else style="width:50px; height:50px; font-size:0.8rem;">Unknown Format</div>
+	</div>`
+};
 
 <?php foreach( $components as $i=>$j ){ ?>
 	app.component( "<?=$j ?>", <?=$j ?> );
@@ -2337,7 +2588,14 @@ app.component( "object_dataset_create_record", object_dataset_create_record );
 app.component( "object_dataset_edit_record", object_dataset_edit_record );
 app.component( "object_ops", object_ops );
 app.component( "editor_component", editor_component );
+app.component( "iconsapp_component", iconsapp_component );
+app.component( "icon_view", icon_view );
 var app1 = app.mount("#app");
+
+function getElementFocused(){
+	return document.getSelection().getRangeAt(0).startContainer;
+}
+
 
 function get_http_error__(e){
 	if( typeof(e) == "object" ){

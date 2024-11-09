@@ -146,41 +146,115 @@ $variables = [
 	], // empty array allows all ips. ips can be subnet ranges.
 	"config_captcha_bypass"			=> ["t"=>"text", "v"=>"", "label"=>"Captcha Bypass Code","preg"=>"/^[a-z0-9]{3,20}$/"],
 
-	"icon_settings"=>[
-		"t"=>"object",
-		"v"=>[
-			[
-				"key"	=>["t"=>"text", "v"=>"upload_enable", "fixed"=>true],
-				"val"	=>["t"=>"boolean", "v"=>true ]
-			],
-			[
-				"key"	=>["t"=>"text", "v"=>"icon_domain", "fixed"=>true],
-				"val"	=>["t"=>"text", "v"=>"testicons.satishk.com" ]
-			],
-			[
-				"key"	=>["t"=>"text", "v"=>"image_domain", "fixed"=>true],
-				"val"	=>["t"=>"text", "v"=>"d2pvd0cq261fl4.cloudfront.net" ]
-			],
-			[
-				"key"	=>["t"=>"text", "v"=>"image_path", "fixed"=>true],
-				"val"	=>["t"=>"text", "v"=>"/graph-icons/" ]
-			],
-		],
-		"fixed"=>true,
-		"label"=>"Emoji/Icon/Avatar Settings",
-	],
-	"html_editor_settings"=>[
-		"t"=>"object",
-		"v"=>[
-			[
-				"key"	=>["t"=>"text", "v"=>"editor_domain", "fixed"=>true],
-				"val"	=>["t"=>"text", "v"=>"testeditor.satishk.com" ]
-			],
-		],
-		"fixed"=>true,
-		"label"=>"Html editor source",
-	]
+	// "config_engine_path" 			=> ["t"=>"text", "v"=>"/engine/", "label"=>"Engine Path"],
+	// "config_engine_cache"			=> ["t"=>"boolean", "v"=>false, "label"=>"Engine Settings Cache?", "help"=>"If Engine Maker & Processor both on same machine/vpc, Cache is not required<BR>When Engine Processor is hosted on AWS Lambda/Remote VM Cache is required."],
+	// "config_engine_cache_interval"	=> ["t"=>"number", "v"=>60, "label"=>"Engine Settings Refresh Internal"],
+	// "config_engine_type" 			=> ["t"=>"dropdown", "v"=>"database", "label"=>"Engine Connectivity", "datalist"=> ["database", "api"] , "help"=>"For local/vpc setup, database is default. for Remote engine deployment API is required"],
+	// "config_engine_app_id" 			=> ["t"=>"text", "v"=>"default", "label"=>"Engine APP ID", "fixed"=>true, "help"=>"The default app_id which should be served by the engine." ],
 
+	/*
+	"config_engine_keys"=> [
+		"t"=>"object", 
+		"v"=>[
+			[
+				"key"=>[ "t"=>"text", "v"=>"key", "fixed"=>true ],
+				"val"=>[ "t"=>"text", "v"=>"12345" ],
+			],
+			[
+				"key"=>[ "t"=>"text", "v"=>"expire", "fixed"=>true ],
+				"val"=>[ "t"=>"date", "v"=>"2035-12-12" ],
+			],
+			[
+				"key"=>[ "t"=>"text", "v"=>"domains_allowed", "fixed"=>true ],
+				"val"=>[ 
+					"t"=>"object", 
+					"v"=>[
+						[
+							"key"=>["t"=>"text", "v"=>"*"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+						[
+							"key"=>["t"=>"text", "v"=>"*.example.com"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+						[
+							"key"=>["t"=>"text", "v"=>"example.com"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						]
+					], 
+					"fixed"=>false, 
+					"default_item"=> [
+						"key"=>["t"=>"text", "v"=>"*"],
+						"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+					]
+				],
+			],
+			[
+				"key"=>[ "t"=>"text", "v"=>"apps_allowed", "fixed"=>true ],
+				"val"=>[ 
+					"t"=>"object", 
+					"v"=>[
+						[
+							"key"=>["t"=>"text", "v"=>"*"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+						[
+							"key"=>["t"=>"text", "v"=>"SomeAPPId"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+					],
+					"fixed"=>false, 
+					"default_item"=> [
+						"key"=>["t"=>"text", "v"=>"*"],
+						"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+					],
+				],
+			],
+			[
+				"key"=>[ "t"=>"text", "v"=>"ips_allowed", "fixed"=>true ],
+				"val"=>[ 
+					"t"=>"object", 
+					"v"=>[
+						[
+							"key"=>["t"=>"text", "v"=>"*"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+						[
+							"key"=>["t"=>"text", "v"=>"127.0.0.1/32"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+						[
+							"key"=>["t"=>"text", "v"=>"10.10.10.0/24"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+					],
+					"fixed"=>false, 
+					"default_item"=> [
+						"key"=>["t"=>"text", "v"=>"*"],
+						"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+					],
+				],
+			],
+			[
+				"key"=>[ "t"=>"text", "v"=>"ips_denied", "fixed"=>true ],
+				"val"=>[ 
+					"t"=>"object", 
+					"v"=>[
+						[
+							"key"=>["t"=>"text", "v"=>"8.8.8.8/32"],
+							"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+						],
+					],
+					"fixed"=>false, 
+					"default_item"=> [
+						"key"=>["t"=>"text", "v"=>"8.8.8.8/32"],
+						"val"=>["t"=>"text", "v"=>1, "fixed"=>true],
+					],
+				],
+			],
+		]
+	]
+	*/
 ];
 
 //echo "<pre>";
