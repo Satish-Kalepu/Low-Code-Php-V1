@@ -1,0 +1,27 @@
+
+
+<div id="editor_div" class="satish_editor_v1" data-id="root" spellcheck="false" data-id="root" draggable="false" contenteditable="true" ></div>
+
+<div id="editor_controlls" >
+	<div class="satish_editor_controls" id="satish_editor_controls_div" v-cloak>
+		<div v-if="selection_start==false" class="vm_focused"  data-id="bounds" v-bind:style="vm_focused_style" >
+			<!-- <div class="vmtip" v-if="focused_app">{{ focused_app_type }}</div> -->
+			<div class="vm_focused_tip" >{{ focused_type + (focused_className?'.'+focused_className:'') }}</div>
+			<!-- <div v-if="focused_app" style="display: block; position: absolute;align-items: center;width: 100%;text-align: center;height: 100%;line-height: 200px;font-size: 1.5rem;color: #666;vertical-align: middle; user-select: none;" v-on:dblclick="edit_app_component_settings()">Double click to edit app settings</div> -->
+		</div>
+		<div v-if="insert_tag" class="vm_insert_bar"  data-id="bounds" v-bind:style="vm_insert_bar_style" v-on:mouseover="vmtt_focus_t=true" v-on:mouseout="vmtt_focus_t=false">
+			<div class="vm_insert_bar_sub2" v-if="vmtt_focus==false" v-on:mouseout="vmtt_focus_t=false" ></div>
+			<div class="vm_insert_bar_sub" v-else v-on:click="insert_item_form" >
+				<svg height="20px" width="20px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 490 490" xml:space="preserve"><g><g><g><path d="M227.8,174.1v53.7h-53.7c-9.5,0-17.2,7.7-17.2,17.2s7.7,17.2,17.2,17.2h53.7v53.7c0,9.5,7.7,17.2,17.2,17.2 	 s17.1-7.7,17.1-17.2v-53.7h53.7c9.5,0,17.2-7.7,17.2-17.2s-7.7-17.2-17.2-17.2h-53.7v-53.7c0-9.5-7.7-17.2-17.1-17.2 					S227.8,164.6,227.8,174.1z"/><path d="M71.7,71.7C25.5,118,0,179.5,0,245s25.5,127,71.8,173.3C118,464.5,179.6,490,245,490s127-25.5,173.3-71.8 					C464.5,372,490,310.4,490,245s-25.5-127-71.8-173.3C372,25.5,310.5,0,245,0C179.6,0,118,25.5,71.7,71.7z M455.7,245 					c0,56.3-21.9,109.2-61.7,149s-92.7,61.7-149,61.7S135.8,433.8,96,394s-61.7-92.7-61.7-149S56.2,135.8,96,96s92.7-61.7,149-61.7 					S354.2,56.2,394,96S455.7,188.7,455.7,245z"/></g></g></g></svg>
+			</div>
+		</div>
+		<!-- mouse move highlight -->
+		<div v-if="insert_tag" class="vm_over"  data-id="bounds" v-bind:style="vm_over_style" >
+			<div class="vm_over_tip">{{ vm_over_tip }}</div>
+		</div>
+	</div>
+</div>
+
+
+
+

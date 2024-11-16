@@ -434,6 +434,9 @@ if( $_POST['action'] == "app_settings_start_job" ){
 	$env = $_POST['env'];
 
 	if( $env['t'] == "custom" ){
+
+
+
 		$url = "http://" . $env['d'] . $env['e'] . "_api_system/tasks/";
 	}else if( $env['t'] == "cloud" ){
 		$url = $env['u'] . "_api_system/tasks/";

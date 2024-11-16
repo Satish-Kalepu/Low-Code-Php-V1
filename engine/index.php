@@ -469,6 +469,15 @@ function index_normal(){
 		}
 		//exit;
 
+		if( $mapping_item && $page_type == "page_rewrite" ){
+			$version_id = $mapping_item['version_id'];
+			$res = $mongodb_con->find_one($db_prefix."_pages_versions", [ "_id"=>$version_id ] );
+			if( $res['data'] ){ $page_version = $res['data']; }else{
+				respond(404,"text/plain",[], "Page version not found");
+			}
+			$page_id = $page_version['page_id'];
+		}
+
 		if( $page_type == "" ){
 			if( $path != "home" && !isset($config_app['pages'][ $path ]) ){
 				respond(404,"text/plain",[], "Path not found");
@@ -515,7 +524,16 @@ function index_normal(){
 		}
 	}
 
+	// print_r( $config_global_engine );
+	// echo "--";
+	// print_r( $config_global_apimaker_engine );
+	// exit;
+
 	if( $page_type == "page" ){
+		list($statusCode,$contenttype,$headers,$body,$log) = index_page( $page_version, $_GET, $_POST );
+		respond($statusCode,$contenttype,$headers,$body,$log);
+
+	}else if( $page_type == "page_rewrite" ){
 		list($statusCode,$contenttype,$headers,$body,$log) = index_page( $page_version, $_GET, $_POST );
 		respond($statusCode,$contenttype,$headers,$body,$log);
 

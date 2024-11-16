@@ -1,23 +1,8 @@
 <?php
 
-$apps_folder = "apps";
-
-$_use_encrypted_scripts = false;
-if( $_GET['action'] == "convert_scripts" ){
-	
-}
-
-$_convert = false;
-if( $_GET['convert'] == "skip" ){
-	$_convert = false;
-}
-if( $_convert ){
-	ob_start();
-}
-
-require("page_apps_pages_page_html_css.php"); 
-require("page_apps_pages_page_html_template.php"); 
-require("page_apps_pages_page_html_script.php");
+require("page_apps_pages_page_vuejs_css.php"); 
+require("page_apps_pages_page_vuejs_template.php"); 
+require("page_apps_pages_page_vuejs_script.php");
 
 if( $_convert ){
 	//	echo ob_get_clean() ;exit;

@@ -94,6 +94,10 @@ if( $config_param2 == "apis" || $config_param2 == "" ){
 if( $config_param2 == "apis_global" ){
 	require("page_apps_apis_global_controll.php");
 }
+if( $config_param2 == "sdk" ){
+	require("page_apps_sdk_controll.php");
+}
+
 if( $config_param2 == "auth" ){
 	require("page_apps_auth_controll.php");
 }

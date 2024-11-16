@@ -13,7 +13,6 @@ $ids_names = [
 ];
 
 
-
 $restore_task = false;
 $restore_status = "";
 $sres = $mongodb_con->find_one( $db_prefix . "_settings", ['_id'=>"home_app_import"] );

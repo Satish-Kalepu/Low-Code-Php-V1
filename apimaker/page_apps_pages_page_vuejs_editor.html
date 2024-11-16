@@ -1,0 +1,70 @@
+<p v-if="'vuestructure' in page__==false" style="color:red;">
+	vuestructure missing
+</p>
+<template v-else >
+	<div class="block_head" >Data</div>
+	<div class="block_content" >
+		<div v-if="'data' in page__['vuestructure']==false" style="color:red;">
+			data block missing
+		</div>
+		<div class="block_editor_div"  id="block_data" style="position:relative;" ></div>
+	</div>
+	<div class="block_head" >Mounted</div>
+	<div class="block_content" >
+		<div v-if="'mounted' in page__['vuestructure']==false" style="color:red;">
+			mounted block missing
+		</div>
+		<div class="block_editor_div"  id="block_mounted"  style="position:relative;" ></div>
+	</div>
+	<div class="block_head" >Methods</div>
+	<div class="block_content" >
+		<div v-if="'methods' in page__['vuestructure']==false" style="color:red;">
+			methods block missing
+		</div>
+		<div class="block_editor_div"  id="block_methods"  style="position:relative;" ></div>
+	</div>
+	<div class="block_head" >Template</div>
+	<div class="block_content" >
+		<div v-if="'methods' in page__['vuestructure']==false" style="color:red;">
+			template block missing
+		</div>
+		<div class="block_editor_div"  id="block_template"  style="position:relative;" ></div>
+	</div>
+
+	<div class="block_head" >Components</div>
+	<div style="border: 1px solid #aaa; padding: 10px; margin-bottom: 20px;" >
+		<div v-for="vc,vci in page__['vuestructure']['components']" style="border:1px solid #aaa; padding: 10px; ">
+			<div class="mb-1">Component Name: <input type="text" v-model="vc['name']" placeholder="Component Name" ></div>
+			<div class="mb-1">Description: <input type="text" v-model="vc['des']" placeholder="Description" ></div>
+			<div class="block_head" >Data</div>
+			<div class="block_content" >
+				<div v-if="'data' in page__['vuestructure']==false" style="color:red;">
+					data block missing
+				</div>
+				<div class="block_editor_div"  id="block_data" style="position:relative;" ></div>
+			</div>
+			<div class="block_head" >Mounted</div>
+			<div class="block_content" >
+				<div v-if="'mounted' in page__['vuestructure']==false" style="color:red;">
+					mounted block missing
+				</div>
+				<div class="block_editor_div"  id="block_mounted"  style="position:relative;" ></div>
+			</div>
+			<div class="block_head" >Methods</div>
+			<div class="block_content" >
+				<div v-if="'methods' in page__['vuestructure']==false" style="color:red;">
+					methods block missing
+				</div>
+				<div class="block_editor_div"  id="block_methods"  style="position:relative;" ></div>
+			</div>
+			<div class="block_head" >Template</div>
+			<div class="block_content" >
+				<div v-if="'methods' in page__['vuestructure']==false" style="color:red;">
+					template block missing
+				</div>
+				<div class="block_editor_div"  id="block_template"  style="position:relative;" ></div>
+			</div>
+
+	</div>
+
+</template>

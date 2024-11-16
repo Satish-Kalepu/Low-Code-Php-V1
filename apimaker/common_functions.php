@@ -375,7 +375,7 @@
 			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
 				"app_id"=>$app_id,
 			], ['projection'=>[
-				'name'=>1, "version_id"=>1, 'input-method'=>1,
+				'name'=>1, "version_id"=>1, 'input-method'=>1, "rewrite"=>1,
 			]]);
 			if( $res['data'] ){
 				foreach( $res['data'] as $i=>$j ){if( $j['name'] ){
@@ -384,6 +384,15 @@
 					// if( $j['_id'] == $home_id){
 					// 	$home_version_id = $j['version_id'];
 					// }
+					$fn = "/" . $j['name'] . "/";
+					if( $j['rewrite'] ){
+						$mappings[ $fn ] = [
+							"type"=>"page_rewrite",
+							"page"=>$j['name'],
+							"page_id"=>$j['_id'],
+							"version_id"=>$j['version_id'],
+						];
+					}
 				}}
 			}
 			$pages['home'] = ['version_id'=>$home_version_id, 't'=>'page'];

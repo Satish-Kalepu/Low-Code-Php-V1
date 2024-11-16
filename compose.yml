@@ -4,6 +4,8 @@ services:
   web:
     container_name: phpengine_app
     image: satishkalepu/amazon-apache-php82
+    environment:
+      ENGINE_MODE: docker
     ports:
       - "8888:80"
     volumes:
