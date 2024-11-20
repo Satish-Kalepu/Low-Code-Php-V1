@@ -167,6 +167,96 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 
 
 
+if( $_POST['action'] == "app_save_other_settings" ){
+
+	if( !isset($_POST['homepage']) ){
+		json_response("fail", "Incorrect data. Page settings missing.");
+	}
+
+	$homepage = $_POST['homepage'];
+
+	//print_r($m);exit;
+	if( $homepage['t'] == "page" ){
+		if( !preg_match("/^([a-f0-9]{24})\:([a-f0-9]{24})$/", $homepage['v'], $m) ){
+			json_response("fail", "Incorrect data. Incorrect format.");
+		}
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
+			'_id'=>$m[1]
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "Page not found.");
+		}
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", [
+			'_id'=>$m[2],
+			'page_id'=>$m[1]
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "Page Version not found.");
+		}
+	}else if( $homepage['t'] == "file" ){
+		if( !preg_match("/^[a-f0-9]{24}$/", $homepage['v']) ){
+			json_response("fail", "Incorrect data. Incorrect format.");
+		}
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+			'_id'=>$homepage['v']
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "File not found.");
+		}
+	}else{
+		json_response("fail", "Incorrect home page type");
+	}
+
+	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
+		'_id'=>$config_param1
+	], [
+		'settings.homepage'=>$homepage,
+		'last_updated'=>date("Y-m-d H:i:s")
+	]);
+	if( $res['status'] == "fail" ){
+		json_response( $res );
+	}
+
+	update_app_pages( $config_param1 );
+
+	event_log( "system", "app_save_other_settings", [
+		"app_id"=>$config_param1,
+	]);
+
+	json_response([
+		"status"=>"success",
+	]);
+	exit;
+}
+
+//print_r( $res );
+if( !$app['settings'] ){
+	$settings = [
+		"host"=>false,
+		"domains"=>[
+			[
+				"domain"=>"www.example.com",
+				"url"=>"http://www.example.com/path/",
+				"path"=>"/path/"
+			]
+		],
+		"keys"=>[
+			[
+				"key"=>$mongodb_con->generate_id(),
+				"ips_allowed"=>[
+					["ip"=>"*", "action"=>"Allow"],
+					["ip"=>"127.0.0.1/32", "action"=>"Allow"],
+					["ip"=>"10.10.10.0/24", "action"=>"Allow"],
+					["ip"=>"10.10.0.0/16", "action"=>"Allow"],
+					["ip"=>"10.0.0.0/16", "action"=>"Reject"]
+				],
+			]
+		],
+		"homepage"=> ['t'=>"page", 'v'=>""],
+	];
+
+	
+
 }else{
 	$settings = $app['settings'];
 }
