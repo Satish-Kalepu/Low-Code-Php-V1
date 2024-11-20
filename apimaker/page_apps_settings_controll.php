@@ -1,8 +1,8 @@
 <?php
 
 $config_cloud_enabled = false;
-if( isset($config_global_apimaker['config_cloud_enabled']) && $config_global_apimaker['config_cloud_enabled'] ){
-	$config_cloud_enabled = $config_global_apimaker['config_cloud_enabled'];
+if( isset($config_global_apimaker['config_cloud_enabled']) && $config_global_apimaker['config_cloud_enabled'] === true ){
+	$config_cloud_enabled = true;
 }
 
 $akey = pass_encrypt_static(json_encode([
@@ -165,225 +165,8 @@ if( $_POST['action'] == "app_save_custom_settings" ){
 	exit;
 }
 
-if( $_POST['action'] == "app_save_cloud_settings" ){
 
-	if( !$config_cloud_enabled ){
-		json_response("fail", "Cloud is not enabled");
-	}
 
-	$all_app_ids = [];
-	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apps", [], ['projection'=>['app'=>1] ] );
-	foreach( $res['data'] as $i=>$j ){
-		$all_app_ids[ $j['_id'] ] = $j['app'];
-	}
-
-	// $res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains" );
-	// foreach( $res['data'] as $i=>$j ){
-	// 	if( !isset($all_app_ids[ $j['app_id'] ]) ){
-	// 		$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", ['app_id'=>$j['app_id']] );
-	// 	}
-	// }
-
-	$settings = $_POST['settings'];
-
-	if( !isset($settings['cloud']) ){
-		json_response("fail", "Incorrect data. Cloud settings missing.");
-	}
-	if( gettype($settings['cloud']) != "boolean" ){
-		json_response("fail", "Incorrect cloud data");
-	}
-	if( $settings['cloud'] ){
-		if( !preg_match("/^[a-zA-Z0-9\-\.]{2,25}$/i", $settings['cloud-subdomain']) ){
-			json_response("fail", "Incorrect cloud subdomain " . $settings['cloud-subdomain'] );
-		}
-		if( isset($config_global_apimaker['config_cloud_domains']) ){
-			if( !in_array( $settings['cloud-domain'], $config_global_apimaker['config_cloud_domains'] ) ){
-				json_response("fail", "Incorrect cloud domain " . $settings['cloud-domain'] );
-			}
-		}
-		if( trim($settings['cloud-enginepath']) != "" ){
-			if( !preg_match("/^[a-z][a-zA-Z0-9\-\.\/\_\%]{2,250}$/i", $settings['cloud-enginepath']) ){
-				json_response("fail", "Incorrect cloud engine path" . $settings['cloud-enginepath'] );
-			}
-		}
-	}
-
-	$mongodb_con->delete_many( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", ['app_id'=>$j['app_id']] );
-
-	$cloud_record = false;
-	$alias_record = false;
-	if( isset($settings['cloud']) && $settings['cloud'] ){
-		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-			'_id'=>$settings['cloud-subdomain'].".".$settings['cloud-domain']
-		]);
-		if( $res['data'] ){
-			$cloud_record = true;
-			if( $res['data']['app_id'] != $config_param1 ){
-				json_response(['status'=>"fail", "error"=>"Cloud domain already in use"]);
-			}
-		}
-	}
-	if( isset($settings['alias']) && $settings['alias'] == true ){
-		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-			'_id'=>$settings['alias-domain']
-		]);
-		if( $res['data'] ){
-			$alias_record = true;
-			if( $res['data']['app_id'] != $config_param1 ){
-				json_response(['status'=>"fail", "error"=>"Alias domain already in use"]);
-			}
-		}
-	}
-
-	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
-		'_id'=>$config_param1
-	], [
-		'settings.cloud'=>$settings['cloud'],
-		'settings.cloud-subdomain'=>$settings['cloud-subdomain'],
-		'settings.cloud-domain'=>$settings['cloud-domain'],
-		'settings.cloud-enginepath'=>$settings['cloud-enginepath'],
-		'settings.alias'=>$settings['alias'],
-		'settings.alias-domain'=>$settings['alias-domain'],
-		'last_updated'=>date("Y-m-d H:i:s")
-	]);
-	//update_app_last_change_date( $config_param1 );
-
-	if( $res['status'] != "success" ){
-		json_response( $res );
-	}
-
-	if( $cloud_record ){
-		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-			'_id'=>$settings['cloud-subdomain'].".".$settings['cloud-domain']
-		], [
-			'app_id'=>$config_param1,
-		]);
-	}else{
-		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-			'_id'=>$settings['cloud-subdomain'].".".$settings['cloud-domain'],
-			'app_id'=>$config_param1,
-		]);
-	}
-	if( $settings['alias'] == true ){
-		if( $alias_record ){
-			$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-				'_id'=>$settings['alias-domain']
-			], [
-				'app_id'=>$config_param1,
-			]);
-		}else{
-			$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_cloud_domains", [
-				'_id'=>$settings['alias-domain'],
-				'app_id'=>$config_param1,
-			]);
-		}
-	}
-
-	event_log( "system", "app_save_cloud_settings", [
-		"app_id"=>$config_param1,
-	]);
-
-	update_app_pages( $config_param1 );
-
-	json_response([
-		"status"=>"success",
-	]);
-	exit;
-}
-
-if( $_POST['action'] == "app_save_other_settings" ){
-
-	if( !isset($_POST['homepage']) ){
-		json_response("fail", "Incorrect data. Page settings missing.");
-	}
-
-	$homepage = $_POST['homepage'];
-
-	//print_r($m);exit;
-	if( $homepage['t'] == "page" ){
-		if( !preg_match("/^([a-f0-9]{24})\:([a-f0-9]{24})$/", $homepage['v'], $m) ){
-			json_response("fail", "Incorrect data. Incorrect format.");
-		}
-		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
-			'_id'=>$m[1]
-		]);
-		if( !$res['data'] ){
-			json_response("fail", "Page not found.");
-		}
-		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_pages_versions", [
-			'_id'=>$m[2],
-			'page_id'=>$m[1]
-		]);
-		if( !$res['data'] ){
-			json_response("fail", "Page Version not found.");
-		}
-	}else if( $homepage['t'] == "file" ){
-		if( !preg_match("/^[a-f0-9]{24}$/", $homepage['v']) ){
-			json_response("fail", "Incorrect data. Incorrect format.");
-		}
-		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_files", [
-			'_id'=>$homepage['v']
-		]);
-		if( !$res['data'] ){
-			json_response("fail", "File not found.");
-		}
-	}else{
-		json_response("fail", "Incorrect home page type");
-	}
-
-	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", [
-		'_id'=>$config_param1
-	], [
-		'settings.homepage'=>$homepage,
-		'last_updated'=>date("Y-m-d H:i:s")
-	]);
-	if( $res['status'] == "fail" ){
-		json_response( $res );
-	}
-
-	update_app_pages( $config_param1 );
-
-	event_log( "system", "app_save_other_settings", [
-		"app_id"=>$config_param1,
-	]);
-
-	json_response([
-		"status"=>"success",
-	]);
-	exit;
-}
-
-//print_r( $res );
-if( !$app['settings'] ){
-	$settings = [
-		"host"=>false,
-		"domains"=>[
-			[
-				"domain"=>"www.example.com",
-				"url"=>"http://www.example.com/path/",
-				"path"=>"/path/"
-			]
-		],
-		"keys"=>[
-			[
-				"key"=>$mongodb_con->generate_id(),
-				"ips_allowed"=>[
-					["ip"=>"*", "action"=>"Allow"],
-					["ip"=>"127.0.0.1/32", "action"=>"Allow"],
-					["ip"=>"10.10.10.0/24", "action"=>"Allow"],
-					["ip"=>"10.10.0.0/16", "action"=>"Allow"],
-					["ip"=>"10.0.0.0/16", "action"=>"Reject"]
-				],
-			]
-		],
-		"cloud"=>false,
-		"cloud-subdomain"=>$app['app'],
-		"cloud-enginepath"=>"",
-		"cloud-domain"=>isset($config_global_apimaker['config_cloud_default_domain'])?$config_global_apimaker['config_cloud_default_domain']:"",
-		"alias"=>false,
-		"alias-domain"=>"www.example.com",
-		"homepage"=> ['t'=>"page", 'v'=>""],
-	];
 }else{
 	$settings = $app['settings'];
 }
@@ -434,9 +217,6 @@ if( $_POST['action'] == "app_settings_start_job" ){
 	$env = $_POST['env'];
 
 	if( $env['t'] == "custom" ){
-
-
-
 		$url = "http://" . $env['d'] . $env['e'] . "_api_system/tasks/";
 	}else if( $env['t'] == "cloud" ){
 		$url = $env['u'] . "_api_system/tasks/";

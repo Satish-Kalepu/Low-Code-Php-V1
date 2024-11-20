@@ -82,6 +82,7 @@ $variables = [
 	"config_mongo_authSource" 		=> ["t"=>"text", "v"=>"admin", "label"=>"DB AuthSource","preg"=>"/^[a-z0-9\.\-\_]{3,100}$/i", "m"=>false], // default is always admin
 	"config_mongo_tls" 				=> ["t"=>"boolean", "v"=>false, "label"=>"Use TLS"],  // used for aws services or mongodb atlas
 	"config_mongo_prefix"			=> ["t"=>"text", "v"=>"phpengine", "label"=>"DB Collection Prefix","preg"=>"/^[a-z][a-z0-9]{3,20}$/", "help"=>"Must be lowercase"], // [a-z] no special chars
+	"config_cloud_enabled"			=> ["t"=>"boolean", "v"=>false, "label"=>"Host on Cloud" ], // used to hose app on cloud domains
 
 	"config_session_timeout" 		=> ["t"=>"number", "v"=>86400, "label"=>"Login Session Timeout", "help"=>"Session timeout in seconds. 86400 for 24 hours."],	
 
