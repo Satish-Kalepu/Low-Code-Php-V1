@@ -1,4 +1,4 @@
-<script  src="<?=$config_global_apimaker_path ?>ace/src-noconflict/ace.js" ></script>
+<script  src="<?=$config_global_apimaker_path ?>ace/src-min/ace.js" ></script>
 <script  src="<?=$config_global_apimaker_path ?>js/beautify-html.js" ></script>
 <script  src="<?=$config_global_apimaker_path ?>js/beautify-css.js" ></script>
 <script  src="<?=$config_global_apimaker_path ?>js/beautify.js" ></script>

@@ -1,4 +1,4 @@
-<script src="<?=$config_global_apimaker_path ?>ace/src-noconflict/ace.js" ></script>
+<script src="<?=$config_global_apimaker_path ?>ace/src-min/ace.js" ></script>
 <script src="<?=$config_global_apimaker_path ?>js/beautify-html.js" ></script>
 <script src="<?=$config_global_apimaker_path ?>js/beautify-css.js" ></script>
 <script src="<?=$config_global_apimaker_path ?>js/beautify.js" ></script>
@@ -22,7 +22,7 @@
 		"mongodbv1", "mongodbv2", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
 		"mysqldbv1", "mysqlq", "mysqlp", "mysqld", "mysqls", "mysql_field",
 		"internal_table",
-		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue",
+		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue", "custom_sdk",
 	];
 
 	foreach( $components as $i=>$j ){
@@ -258,6 +258,7 @@ var app = s2_ssssssssss({
 				{
 					"group": "SDK",
 					"sub": [
+						"CustomSDK",
 						"wkHtmlToPdf",
 						"AWS",
 						"GCP",
@@ -2521,7 +2522,16 @@ var app = s2_ssssssssss({
 				if( typeof(s2_dddddegats['d']) == "object" ){
 					if( 'struct_' in s2_dddddegats['d'] ){
 						var oo = s2_dddddegats['d']['output']['v']+'';
+						this.s2_ooooooohce( s2_dddddegats['d']['struct_'] );
 						o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['struct_'] );
+						this.s2_ooooooohce( o );
+					}else if( 'data' in s2_dddddegats['d'] ){
+						if( 'struct_' in s2_dddddegats['d']['data'] ){
+							var oo = s2_dddddegats['d']['data']['output']['v']+'';
+							this.s2_ooooooohce( s2_dddddegats['d']['data']['struct_'] );
+							o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['data']['struct_'] );
+							this.s2_ooooooohce( o );
+						}
 					}
 				}
 				if( s2_dddddegats['k']['v'] == "RespondVar" ){

@@ -465,6 +465,9 @@
 							<div class="editable" data-var="d:v" data-for="stages"><div contenteditable  spellcheck="false" data-for="stages" data-type="editable" data-var="d:v" data-allow="number" >{{ s2_dddddegats['d']['v'] }}</div></div>
 							<div>Sleep in MilliSeconds. 1 Second = 1000 ms</div>
 						</template>
+						<template v-if="s2_dddddegats['k']['v']=='CustomSDK'" >
+							<custom_sdk v-bind:ref="'stage_'+s2_iiiiiegats+'_comp'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_comp'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d"  v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></custom_sdk>
+						</template>
 						<template v-if="s2_dddddegats['k']['v']=='MongoDb'" >
 							<mongodbv1 v-bind:ref="'stage_'+s2_iiiiiegats+'_comp'"  v-bind:refname="'stage_'+s2_iiiiiegats+'_comp'"  datafor="stages" v-bind:v="s2_dddddegats['d']" datavar="d"  v-bind:vars="s2_esiw_egats_srotcaf_lla[ s2_iiiiiegats ]" v-on:updated="s2_noitpo_detadpu"  ></mongodbv1>
 						</template>

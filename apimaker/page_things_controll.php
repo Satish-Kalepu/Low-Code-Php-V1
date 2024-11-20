@@ -13,7 +13,9 @@ if( !preg_match("/^[a-f0-9]{24}$/",$_POST['app_id']) ){
 	]);
 }
 
-$ress = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_apps", ["_id"=>$_POST['app_id']] );
+$db_prefix = $config_global_apimaker['config_mongo_prefix'];
+
+$ress = $mongodb_con->find_one( $db_prefix . "_apps", ["_id"=>$_POST['app_id']] );
 if( !$ress['data'] ){
 	json_response([
 		"status"=>"fail",
@@ -21,9 +23,9 @@ if( !$ress['data'] ){
 	]);
 }
 
-$config_api_databases = $config_global_apimaker['config_mongo_prefix'] . "_databases";
-$config_api_tables = $config_global_apimaker['config_mongo_prefix'] . "_tables";
-$config_tables_dynamic = $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic";
+$config_api_databases = $db_prefix . "_databases";
+$config_api_tables = $db_prefix . "_tables";
+$config_tables_dynamic = $db_prefix . "_tables_dynamic";
 
 if( $_POST['action'] == "context_load_things" ){
 	if( $_POST['thing'] == "Components" ){
@@ -166,7 +168,7 @@ if( $_POST['action'] == "context_load_things" ){
 			}
 		}
 	}else if( $_POST['thing'] == "Files" ){
-		$res= $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_files", [
+		$res= $mongodb_con->find( $db_prefix . "_files", [
 			"app_id"=>$_POST['app_id'],
 		], ['sort'=>['name'=>1,'name'=>1]]);
 		$things = [];
@@ -180,7 +182,7 @@ if( $_POST['action'] == "context_load_things" ){
 			}
 		}
 	}else if( $_POST['thing'] == "Pages" ){
-		$res= $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
+		$res= $mongodb_con->find( $db_prefix . "_pages", [
 			"app_id"=>$_POST['app_id'],
 		], ['sort'=>['name'=>1], 'projection'=>['name'=>1, 'version_id'=>1] ]);
 		//print_r( $res );exit;
@@ -196,14 +198,14 @@ if( $_POST['action'] == "context_load_things" ){
 		}
 	}else if( $_POST['thing'] == "Functions" ){
 	
-		$res= $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_functions", [
+		$res= $mongodb_con->find( $db_prefix . "_functions", [
 			"app_id"=>$_POST['app_id'],
 		], ['sort'=>['name'=>1]]);
 		$things = [];
 		if( $res['data'] ){
 			//print_pre( $res['data'] );exit;
 			foreach( $res['data'] as $sch=>$j ){
-				$res2= $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
+				$res2= $mongodb_con->find_one( $db_prefix . "_functions_versions", [
 					"_id"=>$j['version_id'],
 				], ['sort'=>['name'=>1]]);
 				if( $res2['data'] ){
@@ -220,7 +222,7 @@ if( $_POST['action'] == "context_load_things" ){
 			}
 		}
 	}else if( $_POST['thing'] == "UserRoles" ){
-		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_user_roles", [
+		$res = $mongodb_con->find( $db_prefix . "_user_roles", [
 			'app_id'=>$_POST['app_id']
 		],[
 			'sort'=>['name'=>1],
@@ -237,7 +239,7 @@ if( $_POST['action'] == "context_load_things" ){
 
 			$things = [];
 			$things[] = ["l"=>["t"=>"T", "v"=>"*"],   "i"=>["t"=>"T", "v"=>"*"]];
-			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", [
+			$res = $mongodb_con->find( $db_prefix . "_tables_dynamic", [
 				'app_id'=>$_POST['app_id']
 			],[
 				'sort'=>['table'=>1],
@@ -247,7 +249,7 @@ if( $_POST['action'] == "context_load_things" ){
 				$things[] = ["l"=>["t"=>"T", "v"=>"internal:".$j['table'] ], "i"=>["t"=>"T", "v"=>"table_dynamic:".$j['_id']] ];
 			}
 
-			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_databases", [
+			$res = $mongodb_con->find( $db_prefix . "_databases", [
 				'app_id'=>$_POST['app_id']
 			],[
 				'sort'=>['des'=>1],
@@ -255,7 +257,7 @@ if( $_POST['action'] == "context_load_things" ){
 				'projection'=>['details'=>false, 'm_i'=>false, 'user_id'=>false]
 			]);
 			foreach( $res['data'] as $i=>$j ){
-				$res2 = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables", [
+				$res2 = $mongodb_con->find( $db_prefix . "_tables", [
 					'app_id'=>$_POST['app_id'],
 					"db_id"=>$j['_id']
 				],[
@@ -269,7 +271,7 @@ if( $_POST['action'] == "context_load_things" ){
 			}
 		}
 		if( $_POST['depend'] == "apis" ){
-			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_apis", [
+			$res = $mongodb_con->find( $db_prefix . "_apis", [
 				'app_id'=>$_POST['app_id']
 			],[
 				'sort'=>['path'=>1,'name'=>1],
@@ -294,7 +296,7 @@ if( $_POST['action'] == "context_load_things" ){
 			$things[] = ["l"=>["t"=>"T", "v"=>"file:internal" ], "i"=>["t"=>"T", "v"=>"file:f0010"] ];
 		}
 		if( $_POST['depend'] == "storage" ){
-			$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_storage_vaults", [
+			$res = $mongodb_con->find( $db_prefix . "_storage_vaults", [
 				'app_id'=>$_POST['app_id']
 			],[
 				'sort'=>['des'=>1],
@@ -312,7 +314,7 @@ if( $_POST['action'] == "context_load_things" ){
 
 	}else if( $_POST['thing'] == "page_edit_tables_internal" ){
 		$things = [];
-		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables_dynamic", [
+		$res = $mongodb_con->find( $db_prefix . "_tables_dynamic", [
 			'app_id'=>$_POST['app_id']
 		],[
 			'sort'=>['table'=>1],
@@ -323,7 +325,7 @@ if( $_POST['action'] == "context_load_things" ){
 		}
 	
 	}else if( $_POST['thing'] == "page_edit_tables_external" ){
-		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_databases", [
+		$res = $mongodb_con->find( $db_prefix . "_databases", [
 			'app_id'=>$_POST['app_id']
 		],[
 			'sort'=>['des'=>1],
@@ -331,7 +333,7 @@ if( $_POST['action'] == "context_load_things" ){
 			'projection'=>['details'=>false, 'm_i'=>false, 'user_id'=>false]
 		]);
 		foreach( $res['data'] as $i=>$j ){
-			$res2 = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_tables", [
+			$res2 = $mongodb_con->find( $db_prefix . "_tables", [
 				'app_id'=>$_POST['app_id'],
 				"db_id"=>$j['_id']
 			],[
@@ -344,14 +346,14 @@ if( $_POST['action'] == "context_load_things" ){
 			}
 		}
 	}else if( $_POST['thing'] == "TaskQueue" ){
-		$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_queues", [
+		$res = $mongodb_con->find( $db_prefix . "_queues", [
 			'app_id'=>$_POST['app_id']
 		],[
 			'sort'=>['topic'=>1],
 			'limit'=>200
 		]);
 		foreach( $res['data'] as $i=>$j ){
-			$res2 = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_functions_versions", [
+			$res2 = $mongodb_con->find_one( $db_prefix . "_functions_versions", [
 				'app_id'=>$_POST['app_id'],
 				"_id"=>$j['fn_vid']
 			],[
@@ -362,6 +364,28 @@ if( $_POST['action'] == "context_load_things" ){
 					"l"=>['t'=>"T", "v"=>$j['topic']], 
 					"i"=>['t'=>"T", "v"=>$j['_id']],
 					"inputs"=>$res2['data']['engine']['input_factors']
+				];
+			}
+		}
+	
+	}else if( $_POST['thing'] == "CustomSDK" ){
+		$res = $mongodb_con->find( $db_prefix . "_sdks", [
+			'app_id'=>$_POST['app_id']
+		],[
+			'sort'=>['name'=>1, 'des'=>1, 'version_id'=>1],
+			'limit'=>200
+		]);
+		foreach( $res['data'] as $i=>$j ){
+			$res2 = $mongodb_con->find_one( $db_prefix . "_sdks_versions", [
+				'app_id'=>$_POST['app_id'],
+				"_id"=>$j['version_id']
+			]);
+			if( $res2['data'] ){
+				$things[] = [
+					"l"=>['t'=>"T", "v"=>$j['name']. ":" . $res2['data']['version']], 
+					"i"=>['t'=>"T", "v"=>$res2['data']['_id']],
+					"methods"=>['t'=>"O", "v"=>$res2['data']['methods']],
+					"version"=>['t'=>"T", "v"=>$res2['data']['version']],
 				];
 			}
 		}

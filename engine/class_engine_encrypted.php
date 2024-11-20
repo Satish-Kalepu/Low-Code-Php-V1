@@ -39,7 +39,7 @@ class api_engine{
 		"body"=>["status"=>"success"],
 		"pretty"=>false,
 	];
-	public $db_prefix = "apimaker";
+	public $s2_xxiferp_bd = "apimaker";
 
 	function __construct(){
 		global $mongodb_con;
@@ -65,7 +65,7 @@ class api_engine{
 	}
 	function execute( $s2_eeeeenigne, $s2_stupni_tset, $s2_ssssnoitpo=[] ){
 		global $config_global_engine;
-		$this->db_prefix = $config_global_engine['config_mongo_prefix'];
+		$this->s2_xxiferp_bd = $config_global_engine['config_mongo_prefix'];
 		$this->s2_ggggggggol = [];
 		$this->s2_tttttluser = [];
 		$this->s2_ssssstupni = [];
@@ -576,6 +576,47 @@ class api_engine{
 						$this->s2_ggggggggol[] = "Label not found!";
 					}
 				}
+				if( $s2_ddddegatsf['k']['v'] == "CustomSDK" ){
+					$sdk_id = $s2_ddddegatsf['d']['data']['sdk']['i']['v'];
+					$sdk = $s2_ddddegatsf['d']['data']['sdk']['l']['v'];
+					$method = $s2_ddddegatsf['d']['data']['method']['v'];
+					$inputs = $this->s2_erup_yarra_ot_etalpmet( $s2_ddddegatsf['d']['data']['inputs']['v'] );
+					//$this->s2_noitucexe_dne(200,$s2_ddddegatsf['d']['data']['inputs']['v']);
+					$output = $s2_ddddegatsf['d']['data']['output']['v'];
+					$this->s2_ggggggggol[] = $sdk_id . ":" . $sdk . ":" . $method;
+					$this->s2_ggggggggol[] = $inputs;
+					$sdk_res = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_sdks_versions", ["_id"=>$sdk_id], ['projection'=>['body'=>1]] );
+					if( !$sdk_res['data'] ){
+						$this->s2_noitucexe_dne(500,['status'=>"fail", "error"=>"SDK not found"]);break;
+					}
+					if( !$sdk_res['data']['body'] ){
+						$this->s2_noitucexe_dne(500,['status'=>"fail", "error"=>"SDK body not found"]);break;
+					}
+					$b = base64_decode($sdk_res['data']['body']);
+					if( trim($b) == "" ){
+						$this->s2_noitucexe_dne(500,['status'=>"fail", "error"=>"SDK body decode failed"]);break;
+					}
+					$b = str_replace('<'.'?'.'php', '',$b);
+					$b = str_replace('?'.'>', '',$b);
+					$classname = "sdk_".$sdk_id;
+					$b = preg_replace('/ClassName/', $classname, $b);
+					//$this->s2_noitucexe_dne(200, $b );break;
+					eval($b);
+					if( !class_exists($classname) ){
+						$this->s2_noitucexe_dne(500,['status'=>"fail", "error"=>"SDK failed to initialize"]);break;
+					}
+					try{
+						$temp_sdk = new $classname();
+						$v = get_class_methods($temp_sdk);
+					}catch(Exception $ex){
+						$this->s2_noitucexe_dne(500,['status'=>"fail", "error"=>"SDK failed to initialize ". $ex->getMessage()]);break;
+					}
+
+					$res = $temp_sdk->$method($inputs);
+					$this->s2_tcejbo_ot_tupni($res);
+
+					$this->s2_tluser_tes( $output, ["t"=>"O", "v"=>$res ] );
+				}
 				if( $s2_ddddegatsf['k']['v'] == "PushToQueue" ){
 					$val = $this->s2_eueuq_ot_hsup( $s2_ddddegatsf );
 				}
@@ -584,12 +625,12 @@ class api_engine{
 					$code = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['code'] );
 					$captcha = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['captcha'] );
 					$output = $s2_ddddegatsf['d']['output']['v'];
-					$res = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_captcha", ["_id"=>$code]);
+					$res = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_captcha", ["_id"=>$code]);
 					$verror = "";
 					$vstatus = "success";
 					if( $res['data'] ){
 						if( $res['data']['c'] == $captcha ){
-							$this->s2_nnnnnnnnoc->delete_one( $this->db_prefix . "_captcha", ["_id"=>$code]);
+							$this->s2_nnnnnnnnoc->delete_one( $this->s2_xxiferp_bd . "_captcha", ["_id"=>$code]);
 							$vstatus = "success";
 						}else{
 							$vstatus = "fail";
@@ -731,7 +772,7 @@ class api_engine{
 				if( $s2_ddddegatsf['k']['v'] == "RespondPage" ){
 					if( isset($s2_ddddegatsf['d']['page']['v']['i']['v']) ){
 						if( $s2_ddddegatsf['d']['page']['v']['i']['v'] != "" ){
-							$page_version = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_pages_versions", [
+							$page_version = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_pages_versions", [
 								"_id"=>$s2_ddddegatsf['d']['page']['v']['i']['v']
 							]);
 							if( !$page_version['data'] ){
@@ -764,7 +805,7 @@ class api_engine{
 				if( $s2_ddddegatsf['k']['v'] == "RespondFile" ){
 					if( isset($s2_ddddegatsf['d']['file']['v']['i']['v']) ){
 						if( $s2_ddddegatsf['d']['file']['v']['i']['v'] != "" ){
-							$file_version = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_files", [
+							$file_version = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_files", [
 								"_id"=>$s2_ddddegatsf['d']['file']['v']['i']['v']
 							]);
 							//print_r( $file_version );exit;
@@ -2884,6 +2925,7 @@ class api_engine{
 	}
 
 	function s2_yarra_ot_etalpmet( $v ){
+		// template to array except binary
 		$debug = false;
 		if( $debug ){
 			echo "template to array\n";
@@ -2985,8 +3027,94 @@ class api_engine{
 		if( $debug ){print_pre( $v );}
 		return $v;
 	}
+	function s2_erup_yarra_ot_etalpmet( $v ){
+		// template array with pure values, including binary
+		$debug = false;
+		if( $debug ){
+			echo "template to array\n";
+			print_pre( $v );
+		}
+		if( is_array($v) ){
+			if( array_keys($v)[0] === 0 ){
+				for($i=0;$i<sizeof($v);$i++){
+					$j = $v[ $i ];
+					if( gettype($j) == "array" ){
+						if( $j['t'] == "V" ){
+							$j = $this->s2_eeulav_teg( $j );
+						}
+						if( $j['t'] == "O" || $j['t'] == "L" ){
+							$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
+						}else if( $j['t'] == "N" ){
+							if( gettype($j['v']) == "string" ){
+								if( preg_match("/\./", $j['v']) ){
+									$v[ $i ] = (float)$j['v'];
+								}else{
+									$v[ $i ] = (int)$j['v'];
+								}
+							}else{
+								$v[ $i ] = $j['v'];
+							}
+						}else if( $j['t'] == "DT" ){
+							$v[ $i ] = $j['v']['v'] . " " . $j['v']['tz'];
+						}else if( $j['t'] == "B" ){
+							$v[ $i ] = ((!$j['v']||$j['v']==="false"||$j['v']===false||$j['v']===0)?false:true);
+						}else if( $j['t'] == "NL" ){
+							$v[ $i ] = null;
+						}else if( $j['t'] == "TS" ){
+							$v[ $i ] = $j['v']['v'];
+						}else{
+							$v[ $i ] = $j['v'];
+						}
+					}else{
+						$this->s2_ggggggggol[] = "ERROR: template_to_array: incorrect item: " . $j; 
+					}
+				}
+			}else{
+				foreach( $v as $i=>$j ){
+					//echo "Each key: " . $i . "\n";
+					if( gettype( $j ) == "array" ){
+						if( $j['t'] == "V" ){
+							$j = $this->s2_eeulav_teg( $j );
+							//print_pre($j);
+						}
+						if( $j['t'] == "O" || $j['t'] == "L" ){
+							$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
+						}else if( $j['t'] == "N" ){
+							if( gettype($j['v']) == "string" ){
+								if( preg_match("/\./", $j['v']) ){
+									$v[ $i ] = (float)$j['v'];
+								}else{
+									$v[ $i ] = (int)$j['v'];
+								}
+							}else{
+								$v[ $i ] = $j['v'];
+							}
+						}else if( $j['t'] == "B" ){
+							$v[ $i ] = ((!$j['v']||$j['v']==="false"||$j['v']===false||$j['v']===0)?false:true);
+						}else if( $j['t'] == "DT" ){
+							$v[ $i ] = $j['v']['v'] . " " . $j['v']['tz'];
+						}else if( $j['t'] == "NL" ){
+							$v[ $i ] = null;
+						}else if( $j['t'] == "TS" ){
+							$v[ $i ] = $j['v']['v'];
+						}else{
+							$v[ $i ] = $j['v'];
+						}
+					}else{
+						$this->s2_ggggggggol[] = "Error: unhandled parts " .$j;
+					}
+				}
+			}
+		}else{
+			$this->s2_ggggggggol[] = "template to array: " . gettype($v);
+		}
+		// echo "template to array returning...\n";
+		if( $debug ){print_pre( $v );}
+		return $v;
+	}
 	function s2_etutitsbus_ot_etalpmet( $v ){
 		// echo "template to array\n";
+		// for output // binary should be encoded
 		// print_pre( $v );
 		if( is_array($v) ){
 			if( array_keys($v)[0] === 0 ){
@@ -3202,7 +3330,7 @@ class api_engine{
 		//print_pre( $config_global_engine );exit;
 		//print_pre( $s2_ddddegatsf['d'] );exit;
 
-		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_databases", ['_id'=>$s2_ddddddi_bd] );
+		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) ){
 			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
 				'status'=>['t'=>"T","v"=>"fail"],
@@ -3212,7 +3340,7 @@ class api_engine{
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
-		$tres = $this->s2_nnnnnnnnoc->find_one( $this->db_prefix . "_tables", ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_tables", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) ){
 			return ['status'=>"fail", "error"=>"Database not found"];
 		}else{

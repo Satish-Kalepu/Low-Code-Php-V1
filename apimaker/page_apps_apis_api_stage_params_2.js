@@ -238,6 +238,7 @@ const s2_smarap_egats_gifnoc = {
 	"Elastic-Table": {"p":{"data": {"stage":"initiate"}}},
 	"MongoDb": {"p":{"data": {"stage":"initiate"}}},
 	"MySql": {"p":{"data": {"stage":"initiate"}}},
+	"CustomSDK": {"p":{"data": {"stage":"initiate"}}},
 	"HTTPRequest": {"p":{"data": {"stage":"initiate"}}},
 	"Create-Access-Key": {"p": {"data": {"stage":"initiate"}}},
 	"Generate-Session-Key": {"p": {"data": {"stage":"initiate"}}},
