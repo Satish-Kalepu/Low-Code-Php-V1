@@ -52,7 +52,7 @@ if( $locc > 1 ){
 }
 
 if( $file_loc == "" ){
-	$file_loc = "../../config_global_apimaker.php";
+	$file_loc = "../config_global_apimaker.php";
 }
 
 function get_timezones(){
