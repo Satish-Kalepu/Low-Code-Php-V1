@@ -27,7 +27,7 @@
 	</div>	
 
 	<div class="mid_block_div">
-		<div v-if="vshow__==false||'structure' in sdk__==false" class="mid_block_div" >Loading...</div>
+		<div v-if="vshow__==false||'raw' in sdk__==false" class="mid_block_div" >Loading...</div>
 		<template v-else >
 			<div v-show="tab=='script'"  id="editor_body" style="position:relative; height:600px; overflow:visible; line-height: 20px; font-size:1rem;" ></div>
 			<pre v-show="tab=='help'">{{ default_help }}</pre>

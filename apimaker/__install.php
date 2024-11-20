@@ -144,7 +144,7 @@ $variables = [
 		], 
 		"default_item"=>[ "t"=>"text", "v"=>"*", "validate"=>"ip"], "label"=>"Login IP WhiteList"		
 	], // empty array allows all ips. ips can be subnet ranges.
-	"config_captcha_bypass"			=> ["t"=>"text", "v"=>"", "label"=>"Captcha Bypass Code","preg"=>"/^[a-z0-9]{3,20}$/"],
+	"config_captcha_bypass"			=> ["t"=>"text", "v"=>"1234", "label"=>"Captcha Bypass Code","preg"=>"/^[a-z0-9]{3,20}$/"],
 
 	"icon_settings"=>[
 		"t"=>"object",
@@ -289,7 +289,7 @@ if( $_POST['action'] == "saveconf" ){
 		$mongodb_con = new mongodb_connection( $data['config_mongo_host'], $data['config_mongo_port'], $data['config_mongo_db'] );
 	}
 
-	$defult_engine_url = "http://".$_SERVER['HTTP_HOST'].'/engine/';
+	$defult_engine_url = $_POST['scheme']."://".$_SERVER['HTTP_HOST'].'/engine/';
 	$default_engine_key = $mongodb_con->generate_id();
 	$default_app_id = $mongodb_con->generate_id();
 
@@ -594,7 +594,7 @@ if( $_POST['action'] == "saveconf" ){
 		$enginedata = [
 			"config_engine_key" 			=> $default_engine_key,
 			"config_engine_app_id" 			=> $default_app_id,
-			"config_apimaker_endpoint_url"	=> "https://". $_SERVER['HTTP_HOST'] . $config_apimaker_path,
+			"config_apimaker_endpoint_url"	=> $_POST['scheme'] .":/"."/". $_SERVER['HTTP_HOST'] . $config_apimaker_path,
 			"config_engine_path"			=> '/engine/',
 			"config_engine_cache_interval"	=>	60, // seconds
 			"config_engine_cache_refresh_action_query_string"	=>	["cache"=>"refresh"], // seconds
@@ -860,7 +860,7 @@ if( $_POST['action'] == "saveconf" ){
 					setoption = this.setoption;
 					setstep = this.setstep;
 					this.msg = "Submitting...";
-					vpost = "action=saveconf&force_update="+this.force_update+"&config_path="+encodeURIComponent(this.config_path)+"&data="+encodeURIComponent(JSON.stringify(this.variables));
+					vpost = "action=saveconf&force_update="+this.force_update+"&scheme="+document.location.protocol+"&config_path="+encodeURIComponent(this.config_path)+"&data="+encodeURIComponent(JSON.stringify(this.variables));
 					var con = new XMLHttpRequest();
 					con.open("POST","?", true);
 					con.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");

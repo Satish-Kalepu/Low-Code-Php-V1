@@ -461,7 +461,7 @@ var app = Vue.createApp({
 			app_id: "<?=$app['_id'] ?>",
 			app__: <?=json_encode($app) ?>,
 			edit_app: {"app":"", "des":""},
-			config_cloud_enabled: <?=isset($config_global_apimaker['config_cloud_enabled'])?($config_global_apimaker['config_cloud_enabled']?"true":"false"):false ?>,
+			config_cloud_enabled: <?=isset($config_global_apimaker['config_cloud_enabled'])?($config_global_apimaker['config_cloud_enabled']?"true":"false"):"false" ?>,
 			cd: <?=isset($config_global_apimaker['config_cloud_domains'])?json_encode($config_global_apimaker['config_cloud_domains']):'[]' ?>,
 			alb_cname: "<?=$config_global_apimaker['config_cloud_alb_cname'] ?>",
 			msg1: "",err1: "",msg2: "",err2: "",msg3: "",err3: "",msg4: "",err4: "",jmsg: "",jerr: "",

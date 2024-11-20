@@ -36,6 +36,8 @@ class ClassName{
 					"output"=>["status"=>"success", "data"=>["interest"=>120] ]
 				]
 			]
+		],
+		"getGlobalVariables"=> [
 		]
 	];
 	public function _construct($inputs){
@@ -48,7 +50,7 @@ class ClassName{
 		$i = round($p*$r*$t/12,2);
 		return ['status'=>'success', 'data'=>['interest'=>$i] ];
 	}
-	function getGlobalVariables($inputs = []){
+	public function getGlobalVariables($inputs = []){
 		return ['status'=>'success', 'data'=>['t'=>'O','v'=>$GLOBALS] ];
 	}
 }
