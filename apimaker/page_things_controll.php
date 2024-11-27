@@ -389,7 +389,20 @@ if( $_POST['action'] == "context_load_things" ){
 				];
 			}
 		}
-	
+	}else if( $_POST['thing'] == "GraphDB" ){
+		$res = $mongodb_con->find( $db_prefix . "_graph_dbs", [
+			'app_id'=>$_POST['app_id'],
+			'type'=>'internal'
+		],[
+			'sort'=>['name'=>1],
+			'limit'=>200
+		]);
+		foreach( $res['data'] as $i=>$j ){
+			$things[] = [
+				"l"=>['t'=>"T", "v"=>$j['name']], 
+				"i"=>['t'=>"T", "v"=>$j['_id']],
+			];
+		}
 	}else{
 		$things = [];
 	}

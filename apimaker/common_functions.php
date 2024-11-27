@@ -560,7 +560,7 @@
 	        CURLOPT_SSL_VERIFYPEER => 0,
 	        CURLOPT_FORBID_REUSE => 1,
 	        CURLOPT_HEADER => 0,
-	        CURLOPT_TIMEOUT => 2,
+	        CURLOPT_TIMEOUT => 5,
 	        CURLOPT_RETURNTRANSFER=>1,
 	        CURLOPT_POSTFIELDS => $post_data
 	    );
@@ -602,7 +602,7 @@
 		  CURLOPT_URL => $url.$querystring,
 		  CURLOPT_HEADER => 0,
 		  CURLOPT_RETURNTRANSFER => true,
-		  CURLOPT_TIMEOUT => 2,
+		  CURLOPT_TIMEOUT => 5,
 		    CURLOPT_FRESH_CONNECT => 2,
 		    CURLOPT_SSL_VERIFYPEER => 0,
 		    CURLOPT_FORBID_REUSE => 1,

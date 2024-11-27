@@ -145,7 +145,7 @@ if( $_POST['action'] == "objects_create_database" ){
 }
 if( $_POST['action'] == "objects_delete_database" ){
 
-	if( !is_set($_POST['graph_id']) ){
+	if( !isset($_POST['graph_id']) ){
 		json_response("fail", "Need graph id");
 	}
 	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['graph_id']) ){

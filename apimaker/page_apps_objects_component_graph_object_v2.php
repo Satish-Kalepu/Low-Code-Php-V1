@@ -380,7 +380,8 @@ const graph_object_v2 =  {
 								this.data['thing']['i_of']['z_n'] = this.data['edit_z_n']+0;
 								this.data['new_field_d'] = {
 									"field": {"t":"T", "v":""}, 
-									"type":  {"t":"KV", "v":"Text", "k":"T"}
+									"type":  {"t":"KV", "v":"Text", "k":"T"},
+									"m":  {"t":"B", "v":"false"}
 								};
 								this.data['new_field']='';
 								this.check_zt_fields();

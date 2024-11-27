@@ -38,10 +38,13 @@ class ClassName{
 			]
 		],
 		"getGlobalVariables"=> [
+			"outputs"=>[
+				"globals"=>["t"=>"O", "v"=>[]]
+			]
 		]
 	];
 	public function _construct($inputs){
-		return ['status'=>'success', 'data'=>['t'=>'T', 'v'=>'AllOk'] ];
+		return ['status'=>'success', 'data'=>'AllOk'];
 	}
 	public function simpleInterest($inputs){
 		$p = $inputs['principle'];
@@ -51,6 +54,6 @@ class ClassName{
 		return ['status'=>'success', 'data'=>['interest'=>$i] ];
 	}
 	public function getGlobalVariables($inputs = []){
-		return ['status'=>'success', 'data'=>['t'=>'O','v'=>$GLOBALS] ];
+		return ['status'=>'success', 'data'=>['globals'=>$GLOBALS] ];
 	}
 }

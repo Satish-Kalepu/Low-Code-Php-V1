@@ -97,6 +97,8 @@ const object_template_create_v2 = {
 						v[ fdd+'' ] = {"t":"T", "v":""};
 					}
 					p[ fd+'' ] = [{"t":"O", "v":v}];
+				}else if( zt[ fd ]['t']['k'] == "GT" ){
+					p[ fd+'' ] = [{"t":"GT", "v":"", "i":""}];
 				}else{
 					p[ fd+'' ] = [{ "t":"T", "v":"" }];
 				}

@@ -40,7 +40,7 @@
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 10px; font-size:1.2rem;">Application</div>
-				<div style="padding:10px;">
+				<div style="padding:10px 40px;">
 					<!-- <pre>{{ settings }}</pre> -->
 
 					<div class="mb-2" >
@@ -65,7 +65,7 @@
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Custom Hosting</div>
-				<div style="padding:10px;">
+				<div style="padding:10px 40px;">
 					<p><label style="cursor: pointer;">Enable custom hosting <input type="checkbox" v-model="settings['host']" ></label></p>
 
 					<template v-if="settings['host']" >
@@ -120,7 +120,7 @@
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Other Settings</div>
-				<div style="padding:10px;">
+				<div style="padding:10px 40px;">
 					<p>Home page </p>
 					<template v-if="'homepage' in settings" >
 						<p>Type: <select class="form-select form-select-sm w-auto d-inline" v-model="settings['homepage']['t']">
@@ -155,7 +155,7 @@
 			<template v-if="host_saved&&'host' in settings" >
 			<div v-if="settings['host']===true" style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Engine</div>
-				<div style="padding:10px;">
+				<div style="padding:10px 40px;">
 
 					<template v-if="enginep" >
 						<p>Engine configuration file:</p>
@@ -176,7 +176,7 @@
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">TaskScheduler Engine</div>
-				<div style="padding:10px;">
+				<div style="padding:10px 40px;">
 
 
 						<div style="float:right;"><input type="button" class="btn btn-outline-dark btn-sm" value="View Log" v-on:click="tasks_view_log()" ></div>
@@ -196,7 +196,7 @@
 
 						<p>Last updated at: {{ settings['daemon_run_last'] }}</p>
 
-						<div style="margin:10px; border:1px solid #aaa;">
+						<div style="border:1px solid #aaa;">
 							<div style="background-color: #f8f8f8;padding:5px;">AutoStart</div>
 							<div style="padding:5px;">
 								<div>Create a cronjob in the system where you have installed your engine. </div>
@@ -215,7 +215,7 @@
 
 			<div style="border: 1px solid #999; margin-bottom: 20px; " >
 				<div style="background-color:#e8e8e8; padding: 5px 10px; font-size:1.2rem;">Other background jobs</div>
-				<div style="padding:10px;">
+				<div style="padding:10px 40px;">
 
 					<table class="table table-bordered table-striped table-sm w-auto">
 						<tbody>

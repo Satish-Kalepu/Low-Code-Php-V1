@@ -781,7 +781,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "listObjects",
 				"sort"=>"ID", // ID, label, nodes
-				"order"=>"asc",
+				"order"=>"asc", // asc, desc, dsc
 				"from"=>"",
 				"last"=>"",
 				"limit"=>100,
@@ -859,8 +859,9 @@ if( $_POST['action'] == "get_global_apis" ){
 		$j['apis']['objectCreate'] = [
 			"post"=>[
 				"action"=> "objectCreate",
-				"instance_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
-				"label"=> ["t"=>"T", "v"=>""],
+				"l"=> ["t"=>"T", "v"=>""],
+				"i_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
+				"i_t"=> ["t"=>"T", "v"=>"N"],
 			],
 			"help"=>[]
 		];
@@ -970,7 +971,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "objectInstanceUpdate",
 				"object_id"=> "",
-				"instance_of"=>[
+				"i_of"=>[
 					["t"=>"GT", "v"=>"", "i"=>""]
 				]
 			],
@@ -982,7 +983,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "objectPropertiesUpdate",
 				"object_id"=> "",
-				"properties"=> [
+				"props"=> [
 					"p1"=> [["t"=>"T","v"=>""]]
 				]
 			],
@@ -994,9 +995,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "objectHtmlUpdate",
 				"object_id"=> "",
-				"properties"=> [
-					"p1"=> [["t"=>"T","v"=>""]]
-				]
+				"body"=> "",
 			],
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
@@ -1005,10 +1004,10 @@ if( $_POST['action'] == "get_global_apis" ){
 		$j['apis']['objectNodesTruncate'] = [
 			"post"=>[
 				"action"=> "objectNodesTruncate",
-				"object_id"=> "",
+				"instance_id"=> "",
 			],
 			"help"=>[
-				"object_id"=>"Required. Unique node ID or Key",
+				"instance_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['objectDelete'] = [
@@ -1024,6 +1023,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "objectConverToDataset",
 				"object_id"=> "",
+				"label_to"=> "",
 			],
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
@@ -1033,18 +1033,30 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "objectConverToNode",
 				"object_id"=> "",
+				"primary_field"=> "",
+				"label_field"=> "",
+				"alias_field"=> "",
 			],
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
-
+		$j['apis']['objectSetIcon'] = [
+			"post"=>[
+				"action"=> "objectSetIcon",
+				"object_id"=> "",
+				"ic"=> ["t"=>"IC", "v"=>"", "it"=> ""],   //it = emoji|svg|font|flag|img|img1|img2|img3|imgf
+			],
+			"help"=>[
+				"object_id"=>"Required. Unique node ID or Key",
+			]
+		];
 		$j['apis']['objectTemplatePropertyCreate'] = [
 			"post"=>[
 				"action"=> "objectTemplatePropertyCreate",
 				"object_id"=> "",
-				"property"=>["t"=>"T", "v"=>"N"],
-				"config"=>[
+				"property"=>"",
+				"template"=>[
 					"l"=> ["t"=> "T", "v"=> "Description"],
 					"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
 					"m"=> ["t"=> "B", "v"=> "false"]
@@ -1053,15 +1065,15 @@ if( $_POST['action'] == "get_global_apis" ){
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
 				"property"=>"Required. Unique property key from the template",
-				"config"=>"An object defines configuration.\n\"l\" = Defines Label of the Property.\n\"t\" = Defines Data Type of the Property. Allowed Values are T,N,GT\n\"m\" = Defines mandatory flag. true/false."
+				"template"=>"An object defines configuration.\n\"l\" = Defines Label of the Property.\n\"t\" = Defines Data Type of the Property. Allowed Values are T,N,GT\n\"m\" = Defines mandatory flag. true/false."
 			]
 		];
 		$j['apis']['objectTemplatePropertyUpdate'] = [
 			"post"=>[
 				"action"=> "objectTemplatePropertyUpdate",
 				"object_id"=> "",
-				"property"=>["t"=>"T", "v"=>"N"],
-				"config"=>[
+				"property"=>"",
+				"template"=>[
 					"l"=> ["t"=> "T", "v"=> "Description"],
 					"t"=> ["t"=> "KV", "v"=> "Text", "k"=> "T"],
 					"m"=> ["t"=> "B", "v"=> "false"]
@@ -1070,7 +1082,7 @@ if( $_POST['action'] == "get_global_apis" ){
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
 				"property"=>"Required. Unique property key from the template",
-				"config"=>"An object defines configuration.\n\"l\" = Defines Label of the Property.\n\"t\" = Defines Data Type of the Property. Allowed Values are T,N,GT\n\"m\" = Defines mandatory flag. true/false."
+				"template"=>"An object defines configuration.\n\"l\" = Defines Label of the Property.\n\"t\" = Defines Data Type of the Property. Allowed Values are T,N,GT\n\"m\" = Defines mandatory flag. true/false."
 			]
 		];
 		$j['apis']['objectTemplatePropertyDelete'] = [
@@ -1109,7 +1121,7 @@ if( $_POST['action'] == "get_global_apis" ){
 				"action"=> "dataSetRecordCreate",
 				"object_id"=> "",
 				"record_id"=> "",
-				"properties"=> [
+				"record_properties"=> [
 					"p1"=> [["t"=>"T","v"=>""]]
 				]
 			],
@@ -1124,7 +1136,7 @@ if( $_POST['action'] == "get_global_apis" ){
 				"action"=> "dataSetRecordUpdate",
 				"object_id"=> "",
 				"record_id"=> "",
-				"properties"=> [
+				"record_properties"=> [
 					"p1"=> [["t"=>"T","v"=>""]]
 				],
 				"method"=>"Replace"

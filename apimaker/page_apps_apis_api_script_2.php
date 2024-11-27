@@ -22,7 +22,7 @@
 		"mongodbv1", "mongodbv2", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
 		"mysqldbv1", "mysqlq", "mysqlp", "mysqld", "mysqls", "mysql_field",
 		"internal_table",
-		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue", "custom_sdk",
+		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue", "custom_sdk", "graph_objects",
 	];
 
 	foreach( $components as $i=>$j ){
@@ -245,10 +245,11 @@ var app = s2_ssssssssss({
 					"sub": [
 						"MySql",
 						"MongoDb",
-						"DynamoDb",
 						"Redis",
+						"GraphObjects",
 						"MSSql",
 						"Cassandra",
+						"DynamoDb",
 						"SQLite",
 						"FireBase",
 						"FireStore",
