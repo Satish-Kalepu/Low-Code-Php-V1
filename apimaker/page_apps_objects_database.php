@@ -276,7 +276,7 @@ div.objecticoninline .objecticonimg img{ min-width:initial; min-height:initial; 
 			</div>
 		</template>
 		<template v-else-if="context_type__=='graph-thing'" >
-			<div v-if="context_thing_allow_create__" style="float:right;" class="btn btn-outline-dark btn-sm py-0" v-on:click.prevent.stop="context_change_to_graph_create__()" >Create Node</div>
+			<div v-if="context_thing_allow_create__" style="float:right;" class="btn btn-outline-dark btn-sm py-0" v-on:click.prevent.stop="context_change_to_graph_create__()" id="create_node_on_fly2" >Create Node</div>
 			<div>{{ context_thing_label__ }}</div>
 			<div><input spellcheck="false" type="text" id="contextmenu_key1" data-context="contextmenu" data-context-key="contextmenu"  class="form-control form-control-sm" v-model="context_menu_key__" v-on:keyup="context_menu_key_edit__" ></div>
 			<div class="context_menu_list__" data-context="contextmenu" >

@@ -24,7 +24,6 @@
 	$tag_settings = file_get_contents("page_apps_pages_page_html_tag_config.js");
 
 	$components = [
-		"page_databasetable","page_auth_default"
 	];
 
 	$plugins = [
@@ -131,7 +130,6 @@ var app = s__({
 				"Forms":	["Static Form", "Form", "Input","Select","TextArea","Label","FieldGroup"],
 				"Content":  ["IMG", "Figure", "Video", "Audio"],
 				"Components": ["Definition List","Accordion","Alert","Badge","Breadcrumb","Button","Button group","Card","Carousel","Collapse","Dropdown","List group","Modal","Navbar","Navs","Offcanvas","Pagination","Placeholders","Popovers","Progress","Scrollspy","Spinners","Toasts","Tooltips"],
-				"Apps": ["AuthDefault", "DatabaseTable"],
 			},
 			raw_html: `<div>Raw html content</div>`,
 			ce: false,
