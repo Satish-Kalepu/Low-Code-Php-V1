@@ -833,7 +833,7 @@ if( $_POST['action'] == "get_global_apis" ){
 		$j['apis']['getObjectNodes'] = [
 			"post"=>[
 				"action"=> "getObjectNodes",
-				"instance_id"=>"T1",
+				"object_id"=>"T1",
 				"sort"=>"id", //label,id,nodes
 				"order"=>"asc",
 				"from"=>"",
@@ -845,7 +845,7 @@ if( $_POST['action'] == "get_global_apis" ){
 				]
 			],
 			"help"=>[
-				"instance_id"=>"Required. Unique node ID or Key",
+				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
 		$j['apis']['getObjectLibrarySettings'] = [
@@ -859,9 +859,11 @@ if( $_POST['action'] == "get_global_apis" ){
 		$j['apis']['objectCreate'] = [
 			"post"=>[
 				"action"=> "objectCreate",
-				"l"=> ["t"=>"T", "v"=>""],
-				"i_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
-				"i_t"=> ["t"=>"T", "v"=>"N"],
+				"node"=>[
+					"l"=> ["t"=>"T", "v"=>""],
+					"i_of"=> ["t"=>"GT", "v"=>"", "i"=>""],
+					"i_t"=> ["t"=>"T", "v"=>"N"],
+				]
 			],
 			"help"=>[]
 		];
@@ -995,7 +997,10 @@ if( $_POST['action'] == "get_global_apis" ){
 			"post"=>[
 				"action"=> "objectHtmlUpdate",
 				"object_id"=> "",
-				"body"=> "",
+				"body"=> [
+					"html"=> "",
+					"options"=> []
+				],
 			],
 			"help"=>[
 				"object_id"=>"Required. Unique node ID or Key",
@@ -1019,9 +1024,9 @@ if( $_POST['action'] == "get_global_apis" ){
 				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
-		$j['apis']['objectConverToDataset'] = [
+		$j['apis']['objectConvertToDataset'] = [
 			"post"=>[
-				"action"=> "objectConverToDataset",
+				"action"=> "objectConvertToDataset",
 				"object_id"=> "",
 				"label_to"=> "",
 			],
@@ -1029,9 +1034,9 @@ if( $_POST['action'] == "get_global_apis" ){
 				"object_id"=>"Required. Unique node ID or Key",
 			]
 		];
-		$j['apis']['objectConverToNode'] = [
+		$j['apis']['objectConvertToNode'] = [
 			"post"=>[
-				"action"=> "objectConverToNode",
+				"action"=> "objectConvertToNode",
 				"object_id"=> "",
 				"primary_field"=> "",
 				"label_field"=> "",
@@ -1262,7 +1267,7 @@ if( $_POST['action'] == "generate_access_token" ){
 				"records"=> ["*"],
 			],
 		],
-		"ips"=>[$_SERVER['REMOTE_ADDR']."/32"],
+		"ips"=>["*"],
 		"ua"=>$_SERVER['HTTP_USER_AGENT'],
 		"updated"=>date("Y-m-d H:i:s"),
 	];

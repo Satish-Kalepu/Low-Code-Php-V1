@@ -367,7 +367,30 @@ if( $_POST['action'] == "context_load_things" ){
 				];
 			}
 		}
-	
+
+	}else if( $_POST['thing'] == "FunctionEngine" ){
+		$res = $mongodb_con->find( $db_prefix . "_functions", [
+			'app_id'=>$_POST['app_id']
+		],[
+			'sort'=>['name'=>1],
+			'limit'=>200
+		]);
+		foreach( $res['data'] as $i=>$j ){
+			$res2 = $mongodb_con->find_one( $db_prefix . "_functions_versions", [
+				"_id"=>$j['version_id']
+			],[
+				'projection'=>['engine.input_factors'=>true ]
+			]);
+			if( $res2['data'] ){
+				$things[] = [
+					"l"=>['t'=>"T", "v"=>$j['name']], 
+					"i"=>['t'=>"T", "v"=>$j['_id']],
+					"vid"=>['t'=>"T", "v"=>$j['version_id']],
+					"inputs"=>$res2['data']['engine']['input_factors']
+				];
+			}
+		}
+
 	}else if( $_POST['thing'] == "CustomSDK" ){
 		$res = $mongodb_con->find( $db_prefix . "_sdks", [
 			'app_id'=>$_POST['app_id']

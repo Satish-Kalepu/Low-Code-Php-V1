@@ -406,4 +406,218 @@ if( $_POST['action'] == 'task_queue_stop' ){
 	exit;
 }
 
+if( $_POST['action'] == 'task_crons_load' ){
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1
+	], [
+		'sort'=>[ 'des'=>1 ],
+		'projection'=>[
+			'des'=>1, 'type'=>1, 'repeat'=>1, 'onetime'=>1, 'onetime_gmt'=>1, 'active'=>1, 'fn_id'=>1, 'fn_vid'=>1, 'fn'=>1
+		]
+	]);
+	json_response($res);
+}
 
+if( $_POST['action'] == 'task_cron_activate' ){
+	if( !isset($_POST['cron_id']) ){
+		json_response("fail", "Cron ID missing");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['cron_id']) ){
+		json_response("fail", "Incorrect ID");
+	}
+	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1, "_id"=>$_POST['cron_id']
+	]);
+	if( !$res['data'] ){
+		json_response("fail", "Cron not found");
+	}
+	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1,
+			"_id"=>$_POST['cron_id']
+	], [
+		'active'=>true
+	]);
+	event_log( "system", "task_cron_activate", [
+		"app_id"=>$config_param1,
+		"cron_id"=>$_POST['cron_id'],
+	]);
+	json_response($res);
+}
+
+if( $_POST['action'] == 'task_cron_deactivate' ){
+	if( !isset($_POST['cron_id']) ){
+		json_response("fail", "Cron ID missing");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['cron_id']) ){
+		json_response("fail", "Incorrect ID");
+	}
+	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1, "_id"=>$_POST['cron_id']
+	]);
+	if( !$res['data'] ){
+		json_response("fail", "Cron not found");
+	}
+	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1,
+			"_id"=>$_POST['cron_id']
+	], [
+		'active'=>false
+	]);
+
+	event_log( "system", "task_cron_deactivate", [
+		"app_id"=>$config_param1,
+		"cron_id"=>$_POST['cron_id'],
+	]);
+
+	json_response($res);
+}
+
+if( $_POST['action'] == 'task_cron_delete' ){
+	if( !isset($_POST['cron_id']) ){
+		json_response("fail", "Cron ID missing");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['cron_id']) ){
+		json_response("fail", "Incorrect ID");
+	}
+	$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1, "_id"=>$_POST['cron_id']
+	]);
+	if( !$res['data'] ){
+		json_response("fail", "Cron not found");
+	}
+	$res = $mongodb_con->delete_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", ["app_id"=>$config_param1, "_id"=>$_POST['cron_id']] );
+
+	event_log( "system", "task_cron_delete", [
+		"app_id"=>$config_param1,
+		"cron_id"=>$_POST['cron_id'],
+	]);
+
+	json_response($res);
+}
+
+if( $_POST['action'] == 'task_cron_save' ){
+
+	if( !isset($_POST['cron']) ){
+		json_response("fail", "Missing inputs 1");
+	}
+	if( !is_array($_POST['cron']) ){
+		json_response("fail", "Missing inputs 2");
+	}
+	$cron = $_POST['cron'];
+	if( !isset($cron['type']) ||  !isset($cron['des']) || !isset($cron['onetime']) || !isset($cron['repeat']) ){
+		json_response("fail", "Missing inputs 3");
+	}
+	if( !isset($cron['repeat']['minute']) || !isset($cron['repeat']['hour']) || !isset($cron['repeat']['day']) || !isset($cron['repeat']['month']) || !isset($cron['repeat']['weekday']) ){
+		json_response("fail", "Missing inputs 4");
+	}
+	if( !is_string($cron['repeat']['minute']) || !is_string($cron['repeat']['hour']) || !is_string($cron['repeat']['day']) || !is_string($cron['repeat']['month']) || !is_string($cron['repeat']['weekday']) ){
+		json_response("fail", "Missing inputs 5");
+	}
+	if( !preg_match("/^[0-9\/\,\*]+$/", $cron['repeat']['minute']) || !preg_match("/^[0-9\/\,\*]+$/", $cron['repeat']['hour']) || !preg_match("/^[0-9\/\,\*]+$/", $cron['repeat']['day']) || !preg_match("/^[0-9\/\,\*]+$/", $cron['repeat']['month']) || !preg_match("/^[0-9\/\,\*]+$/", $cron['repeat']['weekday']) ){
+		json_response("fail", "Missing inputs 6");
+	}
+	if( !preg_match("/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}T[0-9]{2}\:[0-9]{2}$/", $cron['onetime']) ){
+		json_response("fail", "Missing inputs 7");
+	}
+	if( !preg_match("/^[0-9]{4}\-[0-9]{2}\-[0-9]{2}\ [0-9]{2}\:[0-9]{2}$/", $cron['onetime_gmt']) ){
+		json_response("fail", "Missing inputs 8");
+	}
+
+	if( !preg_match("/^[a-f0-9]{24}$/", $cron['fn_id'] ) ){
+		json_response("fail", "Function ID incorrect");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/", $cron['fn_vid'] ) ){
+		json_response("fail", "Function Version ID incorrect");
+	}
+
+	$fres = $mongodb_con->find_one( $db_prefix . "_functions_versions", [
+		'app_id'=>$config_param1,
+		'_id'=>$cron['fn_vid']
+	]);
+	if( !$fres['data'] ){
+		json_response("fail", "Function nto found");
+	}
+
+	if( $cron['type'] == "onetime" ){
+		$onetime = $cron['onetime_gmt'];
+		date_default_timezone_set("UTC");
+		$t = strtotime($onetime);
+		if( time() > $t ){
+			json_response("fail", "Schedule date/time crossed. Please set the cron in future date");
+		}
+		date_default_timezone_set($config_global_apimaker['timezone']);
+	}
+	$cron_id = $cron['_id'];
+	if( $cron_id != "new" ){
+		if( !preg_match("/^[a-f0-9]{24}$/", $cron_id) ){
+			json_response("fail", "Incorrect ID");
+		}
+	}
+	unset($cron['_id']);
+	//echo $cron_id ;exit;
+	$cron['app_id'] = $config_param1;
+	if( $cron_id == "new" ){
+		$cron['created'] = date("Y-m-d H:i:s");
+		$res = $mongodb_con->insert( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", $cron );
+		$cron_id = $res['inserted_id'];
+	}else{
+		$res = $mongodb_con->find_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+				"app_id"=>$config_param1, "_id"=>$cron_id
+		]);
+		if( !$res['data'] ){
+			json_response("fail", "Cron not found");
+		}
+		$cron['updated'] = date("Y-m-d H:i:s");
+		$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_cronjobs", [
+			"app_id"=>$config_param1, "_id"=>$cron_id
+		], $cron );
+	}
+	event_log( "system", "task_cron_save", [
+		"app_id"=>$config_param1,
+		"cron_id"=>$cron_id,
+	]);
+	json_response($res);
+	exit;
+}
+
+if( $_POST['action'] == 'task_load_cron_log' ){
+	if( !preg_match("/^[a-f0-9]{24}$/", $_POST['cron_id']) ){
+		json_response("fail", "Incorrect cron id");
+	}
+	$cond = ['cron_id'=>$_POST['cron_id']];
+	if( $_POST['keyword'] ){
+		if( preg_match("/^[a-f0-9]{24}$/", $_POST['keyword']) ){
+			$cond['$or'] = [
+				['task_id'=> $_POST['keyword']],
+				['_id'=> $mongodb_con->get_id($_POST['keyword']) ]
+			];
+		}else{
+			json_response("fail", "Incorrect task id");
+		}
+	}
+	if( $_POST['last'] ){
+		if( preg_match("/^[a-f0-9]{24}$/i", $_POST['last']) ){
+			$cond['_id'] = ['$lt'=>$_POST['last']];
+		}else{
+			json_response("fail", "Incorrect _id");
+		}
+	}
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_zlog_cron_" . $config_param1, $cond, [
+		'sort'=>['_id'=>-1], 'limit'=>100,
+		'maxTimeMS'=>10000,
+	]);
+	//print_r( $res );
+	$res['cond'] = $cond;
+	json_response($res);
+	exit;
+}
+
+
+if( $_POST['action'] == 'task_bg_load' ){
+	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_zlog_bg_". $config_param1, [
+	], [
+		'sort'=>[ '_id'=>-1 ],
+		'limit'=>100,
+	]);
+	json_response($res);
+}

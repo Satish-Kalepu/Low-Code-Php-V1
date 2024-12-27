@@ -22,7 +22,7 @@
 		"mongodbv1", "mongodbv2", "mongoq", "mongop", "mongop2", "mongod", "mongod2", "mongod3", "mongoq_field", "mongop_field",
 		"mysqldbv1", "mysqlq", "mysqlp", "mysqld", "mysqls", "mysql_field",
 		"internal_table",
-		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue", "custom_sdk", "graph_objects",
+		"httprequest", "akv1", "akgenv1", "akass", "pushtoqueue", "bgtask", "custom_sdk", "graph_objects",
 	];
 
 	foreach( $components as $i=>$j ){
@@ -144,7 +144,8 @@ var app = s2_ssssssssss({
 				"BIN": "Binary",
 				"B64": "Base64",
 				"MongoQ": "MongoDB Query",
-				"MysqlQ": "Mysql Query",				
+				"MysqlQ": "Mysql Query",
+				"GT": "Graph Thing",
 			},
 			"s2_1sepyt_atad"		: {
 				"V": "Variable",
@@ -168,6 +169,7 @@ var app = s2_ssssssssss({
 				"THL": "Thing List",
 				"MongoQ": "MongoDB Query",
 				"MysqlQ": "Mysql Query",
+				"GT": "Graph Object",
 			},
 			"s2_sepyt_tupni"		: {
 				"T": "Text",
@@ -216,6 +218,7 @@ var app = s2_ssssssssss({
 						"JumpToLabel",
 						"Sleep","SleepMs",
 						"PushToQueue",
+						"BackgroundJob",
 						"VerifyCaptcha",
 					]
 				},
@@ -308,6 +311,7 @@ var app = s2_ssssssssss({
 			s2_meti_tnerruc_unem_txetnoc: "",
 			s2_yek_unem_txetnoc: "",
 			s2_yek_dnapxe_txetnoc: "",
+			s2_yek_hcraes_tsil_txetnoc: "",
 			s2_gniht_txetnoc: "",
 			s2_tsil_gniht_txetnoc: {},
 			s2_dedaol_gniht_txetnoc: false,
@@ -885,7 +889,6 @@ var app = s2_ssssssssss({
 							this.s2_ladom_pupop_elpmis = true;
 							//this.s2_unem_txetnoc_sucof_dna_wohs();
 							this.s2_elyts_pupop_elpmis_tes();
-
 							return 0;
 						}
 					}
@@ -896,7 +899,11 @@ var app = s2_ssssssssss({
 				}
 			}
 			//console.log();
-			this.s2_ooooooohce({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
+			this.s2_ooooooohce({
+				'data_var':data_var,
+				'data_for':data_for,
+				'stage_id':stage_id
+			});
 			if( el_data_type ){
 				var t = el_data_type.getAttribute("data-type");
 				if( t == "type_pop" ){
@@ -975,9 +982,10 @@ var app = s2_ssssssssss({
 					this.s2_ravatad_txetnoc = data_var;
 					var v = this.s2_eulav_elbatide_teg({'data_var':data_var,'data_for':data_for,'stage_id':stage_id});
 					if( v === false ){console.log("event_click: value false");return false;}
-					//console.log("dropdown click: " + data_for + ": " + data_var );
+					console.log("dropdown click: " + data_for + ": " + data_var );
 					this.s2_di_egats_txetnoc = stage_id;
 					this.s2_epyt_txetnoc = el_data_type.getAttribute("data-list");
+					console.log( this.s2_epyt_txetnoc );
 					if( this.s2_epyt_txetnoc == "varsub" || this.s2_epyt_txetnoc == "plgsub" ){
 						this.s2_rof_rav_txetnoc = el_data_type.getAttribute("var-for");
 					}else{
@@ -1008,8 +1016,43 @@ var app = s2_ssssssssss({
 						}
 					}
 					this.s2_tnerap_ravatad_txetnoc = data_var_parent;
-					if( this.s2_epyt_txetnoc == "list" ){
+					if( this.s2_epyt_txetnoc == "list-kv" ){
+						this.s2_tsil_txetnoc = [];
 						var ld = el_data_type.getAttribute("data-list-values");
+						console.log( ld );
+						if( ld.match(/^base64\:[A-Za-z0-9\=\/\+]+$/) ){
+							console.log("data-list values base64");
+							console.log( ld );
+							var m = ld.match(/^base64\:([A-Za-z0-9\=\/\+]+)$/);
+							console.log( m );
+							this.s2_tsil_txetnoc = JSON.parse(atob(m[1]));
+							this.s2_ooooooohce( this.s2_tsil_txetnoc );
+						}else if( ld == "graph-node-type" ){
+							this.s2_tsil_txetnoc = [
+								{"t":"KV", "k":"N", "v":"Node"}, 
+								{"t":"KV", "k":"L", "v":"DataSet"}, 
+								{"t":"KV", "k":"D", "v":"Document"}, 
+								{"t":"KV", "k":"M", "v":"Media"}
+							];
+						}else if( ld == "graph-data-type" ){
+							var vv =[];
+							for( var v in this.s2_sepyt_atad ){
+								vv.push({
+									"t": "KV", 
+									"k": v+'', 
+									"v": this.s2_sepyt_atad[v]+''
+								});
+							}
+							this.s2_tsil_txetnoc = vv;
+							this.s2_ooooooohce( this.s2_tsil_txetnoc );
+						}else{
+							console.error( "context list kv: " + ld + ": not found");
+						}
+					}
+					if( this.s2_epyt_txetnoc == "list" ){
+						this.s2_tsil_txetnoc = [];
+						var ld = el_data_type.getAttribute("data-list-values");
+						console.log( ld );
 						if( ld == 'input-method' ){
 							this.s2_tsil_txetnoc = ["GET", "POST"];
 						}else if( ld == 'post-input-type' ){
@@ -1024,8 +1067,19 @@ var app = s2_ssssssssss({
 							}else{
 								this.s2_tsil_txetnoc = ["application/json", "application/xml"];
 							}
+						}else if( ld.match(/^base64\:[a-z0-9\=\/\+]+$/) ){
+							console.log("data-list values base64");
+							console.log( ld );
+							var m = ld.match(/^base64\:([a-z0-9\=\/\+]+)$/);
+							console.log( m );
+							this.s2_tsil_txetnoc = JSON.parse(atob(m[1]));
+							this.s2_ooooooohce( this.s2_tsil_txetnoc );
 						}else{
-							this.s2_tsil_txetnoc = ld.split(",");
+							try{
+								this.s2_tsil_txetnoc = ld.split(",");
+							}catch(e){
+								console.log( ld );
+							}
 						}
 					}
 					this.s2_unem_txetnoc_sucof_dna_wohs();
@@ -1132,6 +1186,8 @@ var app = s2_ssssssssss({
 			if( s['data_for'] == 'stages' ){
 				var ov = this.s2_rav_bus_teg(this.s2_eeeeenigne['stages'][ s['stage_id'] ], s['data_var'], v);
 				if( ov != v ){
+					// this.s2_ooooooohce( ov );
+					// this.s2_ooooooohce( v );
 					this.s2_rav_bus_tes(this.s2_eeeeenigne['stages'][ s['stage_id'] ], s['data_var'], v);
 					this.s2_yek_bus_kcehc(this.s2_eeeeenigne['stages'][ s['stage_id'] ], s['data_var'], v);
 					if( this.s2_eeeeenigne['stages'][ s['stage_id'] ]['k']['v'] == "Let" && s['data_var'] == "d:lhs" ){
@@ -1286,6 +1342,13 @@ var app = s2_ssssssssss({
 				return true;
 			}
 		},
+		s2_hctam_yek_tsil_unem_txetnoc: function(v){
+			if( this.s2_yek_unem_txetnoc == "" ){
+				return true;
+			}else if( v.toLowerCase().indexOf(this.s2_yek_unem_txetnoc.toLowerCase() ) > -1 ){
+				return true;
+			}
+		},
 		s2_thgilhgih_yek_unem_txetnoc: function(v){
 			var r = new RegExp( this.s2_yek_unem_txetnoc , "i" );
 			var c = v.match( r );
@@ -1345,26 +1408,25 @@ var app = s2_ssssssssss({
 							this.s2_ooooooohce( k + " not found in stage_vars ");
 						}
 					}
-					if( t == 'c' ){
-
-					}
-					var k = {
-						"v": k,
-						"t": t,
-						"vs": false,
-					};
+					if( t == 'c' ){}
+					var k = { "v": k, "t": t, "vs": false };
 					this.s2_egats_egnahc_egats(this.s2_di_egats_txetnoc, k, t);
 					this.s2_unem_txetnoc_edih();
 					this.s2_noitpo_detadpu();return;
-
 				}else{
 					if( t == "datatype" && this.s2_ravatad_txetnoc == "d:rhs:t" && k == "s2_fffffffftc" ){
 						this.s2_noitcnuf_ot_egats_egnahc_egats( this.s2_di_egats_txetnoc );
 						this.s2_unem_txetnoc_edih();
 						return;
 					}else{
-						if( typeof(k) == "string" || typeof(k) == "number" ){
-							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc, k );
+						if( t != 'list-kv' ){
+							if( typeof(k) == "string" || typeof(k) == "number" ){
+								this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc, k );
+							}
+						}
+						if( t == 'list-kv' ){
+							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc + ':k', k['k'] );
+							this.s2_rav_bus_egats_tes( this.s2_di_egats_txetnoc, this.s2_ravatad_txetnoc + ':v', k['v'] );
 						}
 						if( t == 'prop' ){
 							var vt = this.s2_rav_bus_egats_teg( this.s2_di_egats_txetnoc, this.s2_tnerap_ravatad_txetnoc+":t" );
@@ -2523,15 +2585,15 @@ var app = s2_ssssssssss({
 				if( typeof(s2_dddddegats['d']) == "object" ){
 					if( 'struct_' in s2_dddddegats['d'] ){
 						var oo = s2_dddddegats['d']['output']['v']+'';
-						this.s2_ooooooohce( s2_dddddegats['d']['struct_'] );
+						//this.s2_ooooooohce( s2_dddddegats['d']['struct_'] );
 						o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['struct_'] );
-						this.s2_ooooooohce( o );
+						//this.s2_ooooooohce( o );
 					}else if( 'data' in s2_dddddegats['d'] ){
 						if( 'struct_' in s2_dddddegats['d']['data'] ){
 							var oo = s2_dddddegats['d']['data']['output']['v']+'';
-							this.s2_ooooooohce( s2_dddddegats['d']['data']['struct_'] );
+							//this.s2_ooooooohce( s2_dddddegats['d']['data']['struct_'] );
 							o[ oo ] = this.s2_tupni_sa_mrof_lanif_elbairav_teg( s2_dddddegats['d']['data']['struct_'] );
-							this.s2_ooooooohce( o );
+							//this.s2_ooooooohce( o );
 						}
 					}
 				}
@@ -3561,7 +3623,13 @@ var app = s2_ssssssssss({
 							new_val=0;
 						}
 					}else if( val == "T" || val == "TT" || val == "HT" ){
-						new_val= String(this.s2_rav_bus_teg( data, data_var2));
+						var vl = this.s2_rav_bus_teg( data, data_var2);
+						if( typeof(vl) == "object" ){
+							vl = "";
+						}else{
+							vl = String(vl);
+						}
+						new_val= vl;
 					}else if( val == "TI" ){
 						new_val={"i":{"t":"T", "v":""}, "l": {"t":"T", "v":""}};
 					}else if( val == "TH" ){
@@ -3576,6 +3644,11 @@ var app = s2_ssssssssss({
 						new_val=null;
 					}else if( val == "V" ){
 						new_val={"v":"", "t": "c", "vs":false};
+					}else if( val == "GT" ){
+						new_val={
+							"v":{"t":"T", "v": "","types": "T,V"},
+							"i":{"t":"T", "v": "","types": "T,V"}
+						};
 					}else if( val == "D" ){
 						new_val="<?=date("Y-m-d") ?>";
 					}else if( val == "DT" ){

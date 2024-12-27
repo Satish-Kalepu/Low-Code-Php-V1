@@ -75,6 +75,11 @@ class mongodb_connection{
 	}
 
 	function create_collection( $collection ){
+		if( !is_string($collection) ){
+			return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+		}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+			return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+		}
 		try{
 			$res = $this->database->createCollection( $collection, [
 				"collation"=> [ "locale"=>"en_US", "strength"=> 2]
@@ -86,6 +91,11 @@ class mongodb_connection{
 	}
 
 	function drop_collection( $collection ){
+		if( !is_string($collection) ){
+			return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+		}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+			return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+		}
 		$col = $this->database->{$collection};
 		try{
 			$col->drop();
@@ -97,6 +107,11 @@ class mongodb_connection{
 	}
 
 		function insert( $collection, $insert_data, $options = [] ){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+			}
 			$col = $this->database->{$collection};
 			try{
 				if( isset($insert_data["_id"]) && is_string( $insert_data["_id"] ) ){
@@ -116,6 +131,11 @@ class mongodb_connection{
 			return false;
 		}
 		function insert_many( $collection, $insert_data, $options = [] ){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+			}
 			$col = $this->database->{$collection};
 			try{
 				foreach( $insert_data as $i=>$j ){
@@ -132,8 +152,10 @@ class mongodb_connection{
 		}
 
 		function find($collection, $condition = array(), $option = array() ){
-			if( ! is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -161,8 +183,11 @@ class mongodb_connection{
 		}
 		function find_with_key($collection, $key = "_id", $condition = array(), $option = array() ){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
+
 			if( !is_string($key) ){
 				return ["status"=>"fail","error"=>"key is required"];
 			}
@@ -195,7 +220,9 @@ class mongodb_connection{
 		}
 		function find_assoc($collection, $key = "_id", $value = "_id", $condition = array(), $option = array() ){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_string($key) ){
 				return ["status"=>"fail","error"=>"key is required"];
@@ -233,8 +260,10 @@ class mongodb_connection{
 		}
 
 		function find_one($collection, $condition = array(), $option = array() ){
-			if( ! is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -259,6 +288,11 @@ class mongodb_connection{
 		}
 
 		function count($collection, $filter = array(), $option = array() ){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+			}
 			$col = $this->database->{$collection};
 			$option["collation"]= [ "locale"=>"en_US", "strength"=> 2];
 			try{
@@ -272,7 +306,9 @@ class mongodb_connection{
 
 		function update_many($collection, $data, $condition, $ops = []){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -305,7 +341,9 @@ class mongodb_connection{
 
 		function update_one($collection, $condition, $data, $ops = []){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -340,7 +378,9 @@ class mongodb_connection{
 
 		function getnextseq($collection, $condition = array(),$data = array()){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -363,7 +403,9 @@ class mongodb_connection{
 		}
 		function increment($collection, $key = "something", $val = "val", $incr = 1){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_string($key) ){
 				return ["status"=>"fail","error"=>"key is not string"];
@@ -373,11 +415,24 @@ class mongodb_connection{
 			try{
 				$option = [
 					'upsert'=> true,
-					'new' => true,
+					//'new' => true,
 					'returnNewDocument' => true,
 					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
 					'projection'=>[$val=>true],
+					"collation"=> [ "locale"=>"en_US", "strength"=> 2]
 				];
+				// return [
+				// 	"options"=>$option,
+				// 	"c"=>[
+				// 		'_id'=>$this->get_id($key)
+				// 	],
+				// 	"d"=>[
+				// 		[
+				// 			'$set'=>['_id'=>$this->get_id($key)],
+				// 			'$inc'=>[$val=>$incr]
+				// 		]
+				// 	]
+				// ];
 				$cur =$col->findOneAndUpdate([
 					'_id'=>$this->get_id($key)
 				],[
@@ -395,7 +450,9 @@ class mongodb_connection{
 		}
 		function decrement($collection, $key = "something", $val = "val", $incr = 1){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_string($key) ){
 				return ["status"=>"fail","error"=>"key is not string"];
@@ -407,6 +464,7 @@ class mongodb_connection{
 					'upsert'=> true,
 					'new' => true,
 					'returnDocument' => MongoDB\Operation\FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+					"collation"=> [ "locale"=>"en_US", "strength"=> 2]
 				];
 				$cur =$col->findOneAndUpdate([
 					'_id'=>$this->get_id($key)
@@ -422,7 +480,9 @@ class mongodb_connection{
 		}
 		function critical_increment($collection, $key = "something", $val = "val", $incr = 1){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_string($key) ){
 				return ["status"=>"fail","error"=>"key is not string"];
@@ -448,7 +508,9 @@ class mongodb_connection{
 		}
 		function critical_decrement($collection, $key = "something", $val = "val", $incr = 1){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_string($key) ){
 				return ["status"=>"fail","error"=>"key is not string"];
@@ -474,7 +536,9 @@ class mongodb_connection{
 
 		function aggregate( $collection, $pipeline, $options = [] ){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($pipeline) ){
 				return ["status"=>"fail","error"=>"pipeline is not array"];
@@ -483,7 +547,7 @@ class mongodb_connection{
 			$options["collation"]= [ "locale"=>"en_US", "strength"=> 2];
 			try{
 				$res=$col->aggregate($pipeline, $options)->toArray();
-				return $res;
+				return ['status'=>"success", "data"=>$res];
 			}catch(Exception $ex){
 				return ["status"=>"fail","error"=>$ex->getMessage()];
 			}
@@ -492,7 +556,9 @@ class mongodb_connection{
 
 		function delete_one( $collection, $condition, $ops = [] ){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -513,7 +579,9 @@ class mongodb_connection{
 
 		function find_one_and_delete( $collection, $condition, $ops = [] ){
 			if( !is_string($collection) ){
-				return ["status"=>"fail","error"=>"collection name required"];
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
 			}
 			if( !is_array($condition) ){
 				return ["status"=>"fail","error"=>"condition is not array"];
@@ -538,6 +606,11 @@ class mongodb_connection{
 		}
 
 		function delete_many( $collection, $condition, $ops = [] ){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+			}
 			$col = $this->database->{$collection};
 			$ops["collation"]= [ "locale"=>"en_US", "strength"=> 2];
 			try{
@@ -553,6 +626,11 @@ class mongodb_connection{
 		}
 
 		function find_and_delete($collection, $condition, $ops = []){
+			if( !is_string($collection) ){
+				return ["status"=>"fail","error"=>"collection name required", "col"=>$collection];
+			}else if( !preg_match("/^[a-z][a-z0-9\-\_\.]+$/i",$collection) ){
+				return ["status"=>"fail","error"=>"collection name incorrect", "col"=>$collection];
+			}
 			$col = $this->database->{$collection};
 			$ops["collation"]= [ "locale"=>"en_US", "strength"=> 2];
 			try{

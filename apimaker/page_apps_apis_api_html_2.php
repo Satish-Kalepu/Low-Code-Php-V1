@@ -173,7 +173,24 @@
 			<div v-for="id,ii in s2_2sepyt_tupni" class="context_item" v-on:click.stop="s2_tceles_txetnoc(ii,'inputtype')" ><div style="min-width:30px;padding-right:10px;display: inline-block;" >{{ ii }}</div><div style="display: inline; color:gray;" >{{ id }}</div></div>
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='list'" >
-			<div v-for="id in s2_tsil_txetnoc" class="context_item" v-on:click.stop="s2_tceles_txetnoc(id,'')" >{{ id }}</div>
+			<div v-if="s2_tsil_txetnoc.length>10" >
+				<input type="text" class="form-control form-control-sm" placeholder="Search" v-model="s2_yek_unem_txetnoc" spellcheck="false" id="contextmenu_list_search_key1" data-context="contextmenu" >
+			</div>
+			<div style="max-height: 250px;overflow: auto;">
+				<template v-for="id in s2_tsil_txetnoc" >
+					<div v-if="s2_hctam_yek_unem_txetnoc(id)" class="context_item" v-on:click.stop="s2_tceles_txetnoc(id,'')" v-html="s2_thgilhgih_yek_unem_txetnoc(id)" ></div>
+				</template>
+			</div>
+		</template>
+		<template v-else-if="s2_epyt_txetnoc=='list-kv'" >
+			<div v-if="s2_tsil_txetnoc.length>10" >
+				<input type="text" class="form-control form-control-sm" placeholder="Search" v-model="s2_yek_unem_txetnoc" spellcheck="false" id="contextmenu_list_search_key1" data-context="contextmenu" >
+			</div>
+			<div style="max-height: 250px;overflow: auto;">
+				<template v-for="lv in s2_tsil_txetnoc" >
+					<div v-if="s2_hctam_yek_unem_txetnoc(lv['k'] + ': ' + lv['v'])" class="context_item" v-on:click.stop="s2_tceles_txetnoc(lv,'list-kv')"  v-html="s2_thgilhgih_yek_unem_txetnoc(lv['k'] + ': ' + lv['v'])" ></div>
+				</template>
+			</div>
 		</template>
 		<template v-else-if="s2_epyt_txetnoc=='list2'" >
 			<template v-if="'list2' in s2_atad_labolg" >

@@ -31,8 +31,10 @@
 	$hosting_path = "";
 
 	if( $use_encrypted ){
+		require_once("trait_objects_encrypted.php");
 		require_once("class_engine_encrypted.php");
 	}else if( file_exists("class_engine.php") ){
+		require_once("trait_objects.php");
 		require_once("class_engine.php");
 	}else{
 		if( $deployment_mode == "apache" ){

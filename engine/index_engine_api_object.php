@@ -84,8 +84,8 @@ function engine_api_object( $graph_db, $action, $post ){
 		objectHtmlUpdate  -  objects_save_object_html
 		objectNodesTruncate    - objects_nodes_empty
 		objectDelete    - objects_delete_node
-		objectConverToDataset    - objects_ops_convert_to_dataset
-		objectConverToNode    - objects_ops_convert_to_nodelist
+		objectConvertToDataset    - objects_ops_convert_to_dataset
+		objectConvertToNode    - objects_ops_convert_to_nodelist
 		objectSetIcon    -  objects_set_icon
 		objectTemplatePropertyCreate    - objects_object_add_field
 		objectTemplatePropertyUpdate    - objects_save_object_z_t
@@ -457,6 +457,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(400,["status"=>"fail", "status"=>"Instance node not found"]);
 		}
 		$instance = $res['data'];
+		$instance_id = strtoupper($instance['_id']);
 
 		if( $instance['i_t']['v'] != "N" ){
 			return json_response(400,["status"=>"fail", "error"=>"Instance is not of type Node. Sub Nodes are not allowed"]);
@@ -580,6 +581,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(400,["status"=>"fail", "status"=>"Instance node not found"]);
 		}
 		$instance = $res['data'];
+		$instance_id = strtoupper($instance['_id']);
 
 		if( $instance['l']['v'] == "Root" && $thing['l']['t'] == "GT" ){
 			return json_response(400,["status"=>"fail", "status"=>"Nodes under Root instance should not refer other nodes"]);
@@ -693,6 +695,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
 		}
 		$object = $res['data'];
+		$object_id = $post['object_id'];
 		if( !isset($post['label']) ){
 			return json_response(400, ["status"=>"fail", "error"=>"Need Label"]);
 		}else if( !is_array($post['label']) ){
@@ -975,7 +978,7 @@ function engine_api_object( $graph_db, $action, $post ){
 		if( !isset($post['body']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
 		}else if( !isset($post['body']['html']) ){
-			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 1"]);
+			return json_response(400,["status"=>"fail", "error"=>"Incorrect data 2"]);
 		}else{
 			$res = $mongodb_con->update_one( $graph_things, ['_id'=>$post['object_id']], [
 				'body'=>$post['body'],
@@ -1056,14 +1059,14 @@ function engine_api_object( $graph_db, $action, $post ){
 		$mongodb_con->increment( $graph_things, $instance_id, "cnt", -1 );
 		return json_response(200,['status'=>"success"]);
 
-	}else if( $action == "objectConverToDataset" ){ //objects_ops_convert_to_dataset
+	}else if( $action == "objectConvertToDataset" ){ //objects_ops_convert_to_dataset
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
 		if( !preg_match("/^[a-z0-9]{2,24}$/i", $post['object_id']) && !preg_match("/^[0-9]+$/i", $post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
-		$object_id = $_POST['object_id'];
+		$object_id = $post['object_id'];
 		$res = $mongodb_con->find_one( $graph_things, ['_id'=>$post['object_id']] );
 		if( !$res['data'] ){
 			return json_response(404,["status"=>"fail", "error"=>"Object not found"]);
@@ -1107,12 +1110,16 @@ function engine_api_object( $graph_db, $action, $post ){
 		array_splice($z_o, 0, 0, $np);
 		$z_n = $z_n+1;
 
+		//return json_response(200,["_id"=>$object_id]);
+
 		$ures = $mongodb_con->update_one( $graph_things, ["_id"=>$object_id], [
 			'i_t.v'=>"L",
 			"z_t.". $np=> ["key"=> $np, "l"=> ["t"=>"T", "v"=> $new_prop], "t"=> ["t"=>"KV", "k"=>"T", "v"=>"text"], "m"=> ["t"=>"B", "v"=> "true"] ],
 			"z_o"=> $z_o,
 			"z_n"=> $z_n
 		]);
+
+		//return json_response(200,$ures);
 
 		$graph_things_dataset = $graph_things . "_" . $object_id;
 
@@ -1159,7 +1166,7 @@ function engine_api_object( $graph_db, $action, $post ){
 		]);
 		return json_response(200,['status'=>"success"]);
 
-	}else if( $action == "objectConverToNode" ){ //objects_ops_convert_to_nodelist
+	}else if( $action == "objectConvertToNode" ){ //objects_ops_convert_to_nodelist
 		if( !isset($post['object_id']) ){
 			return json_response(400,["status"=>"fail", "error"=>"Object Id Invalid" ]);
 		}
@@ -1193,11 +1200,8 @@ function engine_api_object( $graph_db, $action, $post ){
 		if( !isset( $thing['z_t'][ $post['label_field'] ] ) ){
 			return json_response(400,["status"=>"fail", "error"=>"Label field not found"]);
 		}
-		if( isset($post['alias_field']) && sizeof($post['alias_field']) > 1 ){
-			return json_response(400,["status"=>"fail", "error"=>"One alias field is expected"]);
-		}
-		if( isset($post['alias_field']) && sizeof($post['alias_field']) > 0 ){
-			if( !isset( $thing['z_t'][ $post['alias_field'][0] ] ) ){
+		if( isset($post['alias_field']) && $post['alias_field']!= "" ){
+			if( !isset( $thing['z_t'][ $post['alias_field'] ] ) ){
 				return json_response(400,["status"=>"fail", "error"=>"Alias field not found"]);
 			}
 		}
@@ -1267,9 +1271,9 @@ function engine_api_object( $graph_db, $action, $post ){
 					$rec_id = $j[ "props" ][ $post['primary_field'] ][0]['v'];
 				}
 				$al = [];
-				if( sizeof($post['alias_field']) ){
-					if( isset($j[ "props" ][ $post['alias_field'][0] ]) ){
-						$al[] = $j[ "props" ][ $post['alias_field'][0] ][0];
+				if( isset($post['alias_field']) ){
+					if( isset($j[ "props" ][ $post['alias_field'] ]) ){
+						$al[] = $j[ "props" ][ $post['alias_field'] ][0];
 					}
 				}
 				$d = [
@@ -1325,7 +1329,7 @@ function engine_api_object( $graph_db, $action, $post ){
 			"from"=>"L",
 			"to"=>"N",
 		]);
-		json_response([
+		return json_response(200,[
 			"status"=>"success",
 			"success"=>$success,
 			"failed"=>$failed,

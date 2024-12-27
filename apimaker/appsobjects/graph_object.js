@@ -179,8 +179,7 @@ const graph_object =  {
 			for(var i=Number(this.v['i_of']['z_n']);i<999;i++){
 				var np = "p"+i;
 				if( np in this.edit_z_t == false ){
-					this.new_field_id = i+1;
-					break;
+					this.new_field_id = i+1;break;
 				}
 			}
 			this.new_field = np;
@@ -195,8 +194,7 @@ const graph_object =  {
 				"prop": {
 					"l": JSON.parse(JSON.stringify(this.temp['new_field'])),
 					"t": JSON.parse(JSON.stringify(this.temp['new_type'])),
-					"e": false,
-					"m": false
+					"e": false,	"m": false
 				},
 				"z_n": this.new_field_id
 			}).then(response=>{
@@ -210,8 +208,7 @@ const graph_object =  {
 								this.edit_z_t[ this.new_field ] = {
 									"l": JSON.parse(JSON.stringify(this.temp['new_field'])),
 									"t": JSON.parse(JSON.stringify(this.temp['new_type'])),
-									"e": false,
-									"m": false
+									"e": false, "m": false
 								};
 								this.edit_z_o.push( this.new_field );
 								this.v['i_of']['z_t'] = JSON.parse(JSON.stringify(this.edit_z_t));
@@ -297,6 +294,7 @@ const graph_object =  {
 			this.open_records2();
 		},
 		next_page_exists: function(){
+
 
 		},
 		open_props_edit: function(){
@@ -1026,10 +1024,7 @@ const graph_object =  {
 			</table>
 			<div v-if="z_t_msg" v-html="z_t_msg" ></div>
 			<div v-if="z_t_err" v-html="z_t_err" ></div>
-
 			<div style="height:200px;" >-</div>
-
-
 		</template>
 		<template v-else-if="tab=='records'" >
 			

@@ -72,7 +72,7 @@ if( $_POST['action'] == "objects_create_database" ){
 		return "T".$initial_id;
 	}
 
-	$things = ["Person", "Country", "State", "City", "Pincode", "Company", "Brand", "Website", "DataSet", "Product", "Place"];
+	$things = ["Person", "Country", "State", "City", "Pincode", "Company", "Brand", "Website", "DataSet", "Product", "Place", "Articles"];
 	$datasets = [
 		"Article Images"=>[
 			"z_t"=>[ 

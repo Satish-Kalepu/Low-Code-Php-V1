@@ -2,7 +2,12 @@
 
 //phpinfo();exit;
 
+
+
 class api_engine{
+
+	use engine_graph_objects;
+
 	public $s2_nnnnnnnnoc = false;
 	public $s2_ggggggggol = [];
 	public $s2_ggggol_bus = [];
@@ -617,8 +622,14 @@ class api_engine{
 
 					$this->s2_tluser_tes( $output, ["t"=>"O", "v"=>$res ] );
 				}
+				if( $s2_ddddegatsf['k']['v'] == "GraphObjects" ){
+					$res = $this->s2_tcejbo_hparg($s2_ddddegatsf);
+				}
 				if( $s2_ddddegatsf['k']['v'] == "PushToQueue" ){
 					$val = $this->s2_eueuq_ot_hsup( $s2_ddddegatsf );
+				}
+				if( $s2_ddddegatsf['k']['v'] == "BackgroundJob" ){
+					$val = $this->s2_boj_dnuorgkcab( $s2_ddddegatsf );
 				}
 				if( $s2_ddddegatsf['k']['v'] == "VerifyCaptcha" ){
 					//$this->s2_eueuq_ot_hsup( $s2_ddddegatsf );
@@ -1128,10 +1139,9 @@ class api_engine{
 			$_c = ["v"=>date("Y-m-d H:i:s"), "t"=> "DT", "tz"=> "UTC+00:00"];
 		}
 		if( $s2_ddddegatsf['fn'] == "Get Timestamp" ){
-			$_ct = "TS";
+			$_ct = "N";
 			$_c = time();
 		}
-
 		if( $s2_ddddegatsf['fn'] == "Set Timezone" ){
 			$_ct = "B";
 			$t = $_fn_inputs["p1"]['v'];
@@ -2947,7 +2957,36 @@ class api_engine{
 							}
 						}
 						if( $j['t'] == "O" || $j['t'] == "L" ){
-							$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
+							if( isset($j['expand']) || isset($j['fixed']) ){
+								if( $j['t'] == "O" ){
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										if( isset($jj['key']) && isset($jj['value']) ){
+											$key = $this->s2_eulav_erup_teg( $jj['key'] );
+											$value = $this->s2_seulav_ot_etalpmet( $jj['value'] );
+											$vv[ $key ] = $this->s2_eulav_erup_teg( $jj );
+										}else{
+											$vv[ $ii ] = $this->s2_eulav_erup_teg( $jj );
+										}
+									}
+								}else{
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										$vv[] = $this->s2_eulav_erup_teg( $jj );
+									}
+								}
+								$v[ $i ] = $vv;
+							}else{
+								$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
+							}
+						}else if( $j['t'] == "OG" ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$_k = $this->s2_eulav_erup_teg( $jj['key'] );
+								$_v = $this->s2_eeulav_teg( $jj['value'] );
+								$vv[ $_k ] = $_v;
+							}
+							$v[ $i ] = $vv;
 						}else if( $j['t'] == "N" ){
 							if( gettype($j['v']) == "string" ){
 								if( preg_match("/\./", $j['v']) ){
@@ -2958,6 +2997,18 @@ class api_engine{
 							}else{
 								$v[ $i ] = $j['v'];
 							}
+						}else if( $j['t'] == "GT" ){
+							$v[ $i ] = [
+								"t"=>"GT",
+								"i"=>$this->s2_eulav_erup_teg( $j['v']['i'] ),
+								"v"=>$this->s2_eulav_erup_teg( $j['v']['v'] )
+							];
+						}else if( $j['t'] == "KV" ){
+							$v[ $i ] = [
+								"t"=>"KV",
+								"k"=>$j['k'],
+								"v"=>$j['v']
+							];
 						}else if( $j['t'] == "DT" ){
 							$v[ $i ] = $j['v']['v'] . " " . $j['v']['tz'];
 						}else if( $j['t'] == "B" ){
@@ -2989,7 +3040,37 @@ class api_engine{
 							}
 						}
 						if( $j['t'] == "O" || $j['t'] == "L" ){
-							$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
+							if( isset($j['expand']) || isset($j['fixed']) ){
+								if( $j['t'] == "O" ){
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										echo "<pre>";print_r( $j['v'] );echo "</pre>";
+										if( isset($jj['key']) && isset($jj['value']) ){
+											$key = $this->s2_eulav_erup_teg( $jj['key'] );
+											$value = $this->s2_seulav_ot_etalpmet( $jj['value'] );
+											$vv[ $key ] = $this->s2_eulav_erup_teg( $jj );
+										}else{
+											$vv[ $ii ] = $this->s2_eulav_erup_teg( $jj );
+										}
+									}
+								}else{
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										$vv[] = $this->s2_eulav_erup_teg( $jj );
+									}
+								}
+								$v[ $i ] = $vv;
+							}else{
+								$v[ $i ] = $this->s2_yarra_ot_etalpmet( $j['v'] );
+							}
+						}else if( $j['t'] == "OG" ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$_k = $this->s2_eulav_erup_teg( $jj['key'] );
+								$_v = $this->s2_eeulav_teg( $jj['value'] );
+								$vv[ $_k ] = $_v;
+							}
+							$v[ $i ] = $vv;
 						}else if( $j['t'] == "N" ){
 							if( gettype($j['v']) == "string" ){
 								if( preg_match("/\./", $j['v']) ){
@@ -3000,6 +3081,18 @@ class api_engine{
 							}else{
 								$v[ $i ] = $j['v'];
 							}
+						}else if( $j['t'] == "GT" ){
+							$v[ $i ] = [
+								"t"=>"GT",
+								"i"=>$this->s2_eulav_erup_teg( $j['v']['i'] ),
+								"v"=>$this->s2_eulav_erup_teg( $j['v']['v'] )
+							];
+						}else if( $j['t'] == "KV" ){
+							$v[ $i ] = [
+								"t"=>"KV",
+								"k"=>$j['k'],
+								"v"=>$j['v']
+							];
 						}else if( $j['t'] == "B" ){
 							$v[ $i ] = ((!$j['v']||$j['v']==="false"||$j['v']===false||$j['v']===0)?false:true);
 						}else if( $j['t'] == "DT" ){
@@ -3155,6 +3248,181 @@ class api_engine{
 							if( $this->isBinary($v[ $i ]['v']) ){
 								$v[ $i ]['v'] = "Binary Stripped";
 							}
+						}
+					}else{
+						$this->s2_ggggggggol[] = "ERROR: template_to_substitute: incorrect item: " . $j; 
+					}
+				}
+			}
+		}else{
+			$this->s2_ggggggggol[] = "template_to_substitute: " . gettype($v);
+		}
+		// echo "template to array returning...\n";
+		// print_pre( $v );
+		return $v;
+	}
+	function s2_seulav_ot_etalpmet( $v ){
+		// echo "template to substituted variables\n";
+		if( is_array($v) ){
+			if( array_keys($v)[0] === 0 ){
+				for($i=0;$i<sizeof($v);$i++){
+					$j = $v[ $i ];
+					if( gettype($j) == "array" ){
+						unset($j['types']);
+						if( $j['t'] == "V" ){
+							$v[ $i ] = $this->s2_eeulav_teg( $j );
+						}else if( $j['t'] == "GT" ){
+							$v[ $i ] = [
+								"t"=>"GT",
+								"i"=>$this->s2_eulav_erup_teg( $j['v']['i'] ),
+								"v"=>$this->s2_eulav_erup_teg( $j['v']['v'] )
+							];
+						}else if( $j['t'] == "O" && isset($j['expand']) ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$key = $this->s2_eulav_erup_teg( $jj['key'] );
+								$value = $this->s2_seulav_ot_etalpmet( $jj['value']['v'] );
+								$vv[ $key ] = $value;
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "O" && isset($j['fixed']) ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$value = $this->s2_seulav_ot_etalpmet( $jj );
+								$vv[ $ii ] = $value;
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "O" ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$vv[ $ii ] = $this->s2_eeulav_teg( $jj );
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "L" && isset($j['expand']) ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$value = $this->s2_seulav_ot_etalpmet( $jj['value']['v'] );
+								$vv[] = $value;
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "L" ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$vv[] = $this->s2_eeulav_teg( $jj );
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "O" || $j['t'] == "L" ){
+							//$v[ $i ]['v'] = $this->s2_seulav_ot_etalpmet( $j['v'] );
+							if( isset($j['expand']) || isset($j['fixed']) ){
+								if( $j['t'] == "O" ){
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										//$vv[ $ii ] = $this->s2_seulav_ot_etalpmet( $jj );
+										if( isset($jj['key']) && isset($jj['value']) ){
+											$key = $this->s2_eulav_erup_teg( $jj['key'] );
+											$value = $this->s2_seulav_ot_etalpmet( $jj['value'] );
+											$vv[ $key ] = $this->s2_seulav_ot_etalpmet( $jj['value'] );
+										}else{
+											$vv[ $ii ] = $this->s2_eulav_erup_teg( $jj );
+										}
+									}
+								}else{
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										$vv[] = $this->s2_seulav_ot_etalpmet( $jj );
+									}
+								}
+								$v[ $i ] = $vv;
+							}else{
+								$v[ $i ] = $this->s2_seulav_ot_etalpmet( $j['v'] );
+							}
+						}else{
+							$v[ $i ] = $j;
+						}
+					}else{
+						$this->s2_ggggggggol[] = "ERROR: template_to_substitute: incorrect item: " . $j; 
+					}
+				}
+			}else if( isset($v['t']) && isset($v['v']) ){
+				if( $v['t'] == "KV" || $v['t'] == "GT" ){
+
+				}else{
+					$v = $this->s2_eeulav_teg($v);
+				}
+				//print_pre( $v );
+			}else{
+				foreach( $v as $i=>$j ){
+					//echo "Each key: " . $i . "\n";
+					if( gettype($j) == "array" ){
+						unset($j['types']);
+						if( $j['t'] == "V" ){
+							$v[ $i ] = $this->s2_eeulav_teg( $j );
+						}else if( $j['t'] == "GT" ){
+							$v[ $i ] = [
+								"t"=>"GT",
+								"i"=>$this->s2_eulav_erup_teg( $j['v']['i'] ),
+								"v"=>$this->s2_eulav_erup_teg( $j['v']['v'] )
+							];
+						}else if( $j['t'] == "O" && isset($j['expand']) ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$key = $this->s2_eulav_erup_teg( $jj['key'] );
+								$value = $this->s2_seulav_ot_etalpmet( $jj['value']['v'] );
+								$vv[ $key ] = $value;
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "O" && isset($j['fixed']) ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$value = $this->s2_seulav_ot_etalpmet( $jj );
+								$vv[ $ii ] = $value;
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "O" ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$vv[ $ii ] = $this->s2_eeulav_teg( $jj );
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "L" && isset($j['expand']) ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$value = $this->s2_seulav_ot_etalpmet( $jj['value']['v'] );
+								$vv[] = $value;
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "L" ){
+							$vv = [];
+							foreach( $j['v'] as $ii=>$jj ){
+								$vv[] = $this->s2_eeulav_teg( $jj );
+							}
+							$v[ $i ] = $vv;
+						}else if( $j['t'] == "O" || $j['t'] == "L" ){
+							if( isset($j['expand']) || isset($j['fixed']) ){
+								if( $j['t'] == "O" ){
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										//$vv[ $ii ] = $this->s2_seulav_ot_etalpmet( $jj );
+										if( isset($jj['key']) && isset($jj['value']) ){
+											$key = $this->s2_eulav_erup_teg( $jj['key'] );
+											$value = $this->s2_seulav_ot_etalpmet( $jj['value'] );
+											$vv[ $key ] = $this->s2_seulav_ot_etalpmet( $jj['value'] );
+										}else{
+											$vv[ $ii ] = $this->s2_eulav_erup_teg( $jj );
+										}
+									}
+								}else{
+									$vv = [];
+									foreach( $j['v'] as $ii=>$jj ){
+										$vv[] = $this->s2_seulav_ot_etalpmet( $jj );
+									}
+								}
+								$v[ $i ] = $vv;
+							}else{
+								$v[ $i ] = $this->s2_seulav_ot_etalpmet( $j['v'] );
+							}
+						}else{
+							$v[ $i ] = $j;
 						}
 					}else{
 						$this->s2_ggggggggol[] = "ERROR: template_to_substitute: incorrect item: " . $j; 
@@ -3500,7 +3768,7 @@ class api_engine{
 			$s2_yyyyyyreuq = $s2_ddddegatsf['d']['data']['query']['v'];
 		}
 
-		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables_dynamic", ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_tables_dynamic", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) ){
 			//return ['status'=>"fail", "error"=>"Database not found"];
 			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
@@ -3512,7 +3780,7 @@ class api_engine{
 			$s2_eeeeeelbat = $tres['data'];
 		}
 
-		$s2_eman_elbat = $config_global_engine['config_mongo_prefix'] . "_dt_" . $s2_eeeeeelbat['_id'];
+		$s2_eman_elbat = $this->s2_xxiferp_bd . "_dt_" . $s2_eeeeeelbat['_id'];
 		//echo $s2_eman_elbat;exit;
 
 		if( $s2_ttttttttca == "Insert" || $s2_ttttttttca == "InsertOne" ){
@@ -3626,6 +3894,140 @@ class api_engine{
 		}
 		return true;
 	}
+	function s2_tcejbo_hparg( $s2_ddddegatsf ){
+		global $config_global_engine;
+
+		$s2_ddddddi_bd = $s2_ddddegatsf['d']['data']['db']['i']['v'];
+		$s2_eeeeman_bd = $s2_ddddegatsf['d']['data']['db']['l']['v'];
+		$s2_nnnnnoitca = $s2_ddddegatsf['d']['data']['action']['v'];
+		$s2_ssssstupni = $this->s2_seulav_ot_etalpmet( $s2_ddddegatsf['d']['data']['inputs']['v'] );
+		$output = $s2_ddddegatsf['d']['data']['output']['v'];
+
+		// $this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+		// 	'status'=>['t'=>"T","v"=>"fail"],
+		// 	"error"=>['t'=>"T","v"=>$s2_ddddegatsf['d']['data'] ]
+		// ]] );
+		// return false;
+		//$s2_ssssstupni = $this->s2_seulav_ot_etalpmet( $s2_ddddegatsf['d']['data']['inputs']['v']['template']['v'] );
+		// $this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+		// 	'status'=>['t'=>"T","v"=>"fail"],
+		// 	"error"=>['t'=>"T","v"=>$s2_ssssstupni ]
+		// ]] );
+		// return false;
+
+		if( $s2_nnnnnoitca == "keywordSearch" || $s2_nnnnnoitca == "listObjects" ){
+			$s2_ssssstupni = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['data']['inputs']['v'] );
+		}
+		if( $s2_nnnnnoitca == "objectCreate" ){
+			$s2_ssssstupni = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['data']['inputs']['v'] );
+			$s2_ssssstupni = [
+				"node"=>[
+					'l'=>['t'=>"T", "v"=>$s2_ssssstupni['label']],
+					'i_of'=>$s2_ssssstupni['instance_of'],
+					'i_t'=>['t'=>"T", "v"=>$s2_ssssstupni['type']['k']],
+				]
+			];
+		}
+		if( $s2_nnnnnoitca == "objectCreateWithTemplate" ){
+			$s2_ssssstupni = $this->s2_yarra_ot_etalpmet( $s2_ddddegatsf['d']['data']['inputs']['v'] );
+			$props = [];
+			foreach( $s2_ssssstupni['properties'] as $i=>$j ){
+				foreach( $j['v'] as $ii=>$jj ){
+					unset($j['v'][ $ii ]['types']);
+				}
+				if( !preg_match("/^p[0-9]+$/", $i) ){
+					$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+						'status'=>['t'=>"T","v"=>"fail"],
+						"error"=>['t'=>"T","v"=>"Property `" . $i . "` not allowed" ]
+					]] );
+					return false;
+				}
+				if( isset($props[ $i ]) ){
+					$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+						'status'=>['t'=>"T","v"=>"fail"],
+						"error"=>['t'=>"T","v"=>"Property `" . $i . "` repeated" ]
+					]] );
+					return false;
+				}
+				$props[ $i ] = $j['v'];
+			}
+
+			$z_t = [];
+			$z_o = [];
+			$z_n = 1;
+			foreach( $s2_ssssstupni['template'] as $i=>$j ){
+				if( !preg_match("/^p[0-9]+$/", $i) ){
+					$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+						'status'=>['t'=>"T","v"=>"fail"],
+						"error"=>['t'=>"T","v"=>"Template Field `" . $i . "` not allowed" ]
+					]] );
+					return false;
+				}
+				if( isset($z_t[ $i ]) ){
+					$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+						'status'=>['t'=>"T","v"=>"fail"],
+						"error"=>['t'=>"T","v"=>"Template Field `" . $i . "` repeated" ]
+					]] );
+					return false;
+				}
+				preg_match("/^p([0-9]+)$/", $i, $mm);
+				if( (int)$mm[1] > $z_n ){
+					$z_n = (int)$mm[1];
+				}
+				foreach( $j['v'] as $ii=>$jj ){
+					unset($j['v'][ $ii ]['types']);
+				}
+				$z_t[ $i ] = [
+					"name"=>$j['v']['name'],
+					"type"=>$j['v']['type'],
+					"e"=>false,
+					"m"=>['t'=>"B","v"=>false],
+				];
+				$z_o[] = $i;
+			}
+			$z_n++;
+			$s2_ssssstupni = [
+				'thing'=>[
+					'l'=>['t'=>"T", "v"=>$s2_ssssstupni['label']],
+					'i_of'=>$s2_ssssstupni['instance_of'],
+					'i_t'=>['t'=>"T", "v"=>$s2_ssssstupni['type']['k']],
+					'props'=>$props,
+					"z_t"=>$z_t,
+					"z_o"=>$z_o,
+					"z_n"=>$z_n,
+				]
+			];
+		}
+		// $this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+		// 	'status'=>['t'=>"T","v"=>"fail"],
+		// 	"error"=>['t'=>"T","v"=>$s2_ssssstupni ]
+		// ]] );
+		// return false;
+
+		$tres = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_graph_dbs", ['app_id'=>$this->s2_dddddi_ppa, '_id'=>$s2_ddddddi_bd] );
+		if( !isset($tres['data']) ){
+			//return ['status'=>"fail", "error"=>"Database not found"];
+			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
+				'status'=>['t'=>"T","v"=>"fail"],
+				"error"=>['t'=>"T","v"=>"GraphDB not found"]
+			]] );
+
+			return false;
+		}else{
+			$db = $tres['data'];
+		}
+
+		$this->s2_dddi_hparg = $db['_id'];
+		$this->s2_sgniht_hparg = $this->s2_xxiferp_bd . "_graph_" . $db['_id'] . "_things";
+		$this->s2_sdrowyek_hparg = $this->s2_xxiferp_bd . "_graph_" . $db['_id'] . "_keywords";
+
+		$res = $this->graph_object_execute( $db, $s2_nnnnnoitca, $s2_ssssstupni );
+
+		$this->s2_tcejbo_ot_tupni($res);
+
+		$this->s2_tluser_tes( $output, ['t'=>'O','v'=>$res] );
+		return true;
+	}
 
 	function s2_gnirts_ot_etalpmet_erehw_lqsym($con, $v ){
 		$vv = [];
@@ -3706,7 +4108,7 @@ class api_engine{
 		}else{
 			$s2_eeeeeerehw = $s2_ddddegatsf['d']['data']['where']['v'];
 		}
-		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_databases", ['_id'=>$s2_ddddddi_bd] );
+		$s2_sssssserbd = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_databases", ['_id'=>$s2_ddddddi_bd] );
 		if( !isset($s2_sssssserbd['data']) || !$s2_sssssserbd['data'] ){
 			//return ['status'=>"fail", "error"=>"Database not found"];
 			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
@@ -3717,7 +4119,7 @@ class api_engine{
 		}else{
 			$db = $s2_sssssserbd['data'];
 		}
-		$tres = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_tables", ['_id'=>$s2_dddi_elbat] );
+		$tres = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_tables", ['_id'=>$s2_dddi_elbat] );
 		if( !isset($tres['data']) || !$tres['data'] ){
 			$this->s2_tluser_tes( $output, ['t'=>'O','v'=>[
 				'status'=>['t'=>"T","v"=>"fail"],
@@ -4062,7 +4464,7 @@ class api_engine{
 			$inputs[ $i ] = $this->s2_eeulav_teg( $j );
 		}
 		$return = $d['fn']['v']['return'];
-		$s2_sssssssser = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_functions_versions", ['_id'=>$fn] );
+		$s2_sssssssser = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_functions_versions", ['_id'=>$fn] );
 		if( !isset($s2_sssssssser['data']) || !$s2_sssssssser['data'] ){
 			return ['status'=>"fail", "error"=>"Function: ".$fnl." not found"];
 		}else{
@@ -4171,7 +4573,7 @@ class api_engine{
 
 		//print_r( $key );exit;
 
-		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
+		$res = $this->s2_nnnnnnnnoc->insert( $this->s2_xxiferp_bd . "_user_keys", $key );
 		if( $res['status'] == "success" ){
 			$res = [
 				"status"=>"success",
@@ -4189,7 +4591,7 @@ class api_engine{
 		if( !preg_match("/^[a-f0-9]{24}$/", $ak) ){
 			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"generate session key: access key invalid format"] );return ;
 		}
-		$key_res = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_user_keys", ["app_id"=>$this->s2_dddddi_ppa, "_id"=>$ak] );
+		$key_res = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_user_keys", ["app_id"=>$this->s2_dddddi_ppa, "_id"=>$ak] );
 		if( !$key_res['data'] ){
 			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"generate session key: authentication access key not found"] );return ;
 		}
@@ -4243,7 +4645,7 @@ class api_engine{
 		$key['t'] = "uk";
 		$key['updated']= date("Y-m-d H:i:s");
 
-		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
+		$res = $this->s2_nnnnnnnnoc->insert( $this->s2_xxiferp_bd . "_user_keys", $key );
 		if( $res['status'] == "success" ){
 			$res = [
 				"status"=>"success",
@@ -4260,7 +4662,7 @@ class api_engine{
 		if( !preg_match("/^[a-f0-9]{24}$/", $role_id) ){
 			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"assume session key: Role ID missing or Invalid"] );return ;
 		}
-		$key_res = $this->s2_nnnnnnnnoc->find_one( $config_global_engine['config_mongo_prefix'] . "_user_roles", ["app_id"=>$this->s2_dddddi_ppa, "_id"=>$role_id] );
+		$key_res = $this->s2_nnnnnnnnoc->find_one( $this->s2_xxiferp_bd . "_user_roles", ["app_id"=>$this->s2_dddddi_ppa, "_id"=>$role_id] );
 		if( !$key_res['data'] ){
 			$this->s2_noitucexe_dne( 500, ["status"=>"fail", "error"=>"generate session key: authentication access key not found"] );return ;
 		}
@@ -4318,7 +4720,7 @@ class api_engine{
 		$key['t'] = "uk";
 		$key['updated']= date("Y-m-d H:i:s");
 
-		$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_user_keys", $key );
+		$res = $this->s2_nnnnnnnnoc->insert( $this->s2_xxiferp_bd . "_user_keys", $key );
 		if( $res['status'] == "success" ){
 			$res = [
 				"status"=>"success",
@@ -4333,9 +4735,8 @@ class api_engine{
 		$queue_id = $s2_ddddegatsf['d']['queue']['v']['i']['v'];
 		$output = $s2_ddddegatsf['d']['output']['v'];
 		if( $queue_id ){
-
 			$task_id = $this->generate_task_queue_id();
-			$res = $this->s2_nnnnnnnnoc->insert( $config_global_engine['config_mongo_prefix'] . "_zd_queue_".$queue_id, [
+			$res = $this->s2_nnnnnnnnoc->insert( $this->s2_xxiferp_bd . "_zd_queue_".$queue_id, [
 				'_id'=>$task_id,
 				'id'=>$task_id,
 				'data'=>$this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['inputs'] ),
@@ -4357,6 +4758,76 @@ class api_engine{
 		$this->s2_tcejbo_ot_tupni($res);
 		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
 	}
+	function s2_boj_dnuorgkcab( $s2_ddddegatsf ){
+		global $config_global_engine;
+		$fn_id  = $s2_ddddegatsf['d']['function']['v']['i']['v'];
+		$fn  = $s2_ddddegatsf['d']['function']['v']['l']['v'];
+		$fn_vid  = $s2_ddddegatsf['d']['function']['v']['vid']['v'];
+		$output = $s2_ddddegatsf['d']['output']['v'];
+
+		$inputs = $this->s2_eulav_erup_teg( $s2_ddddegatsf['d']['inputs'] );
+
+		if( $fn_id ){
+
+			$background_task_id = $this->s2_nnnnnnnnoc->generate_id();
+
+			$d = [
+				"_id"=>$background_task_id,
+				"fn"=>[
+					"fn_vid"=>$fn_vid,
+					"fn_id"=>$fn_id,
+					"fn"=>$fn
+				],
+				"inputs"=>$inputs,
+				"start"=>date("Y-m-d H:i:s"),
+				"status"=>"Running"
+			];
+			if( $this->s2_eeeeenigne['type'] == "api" ){
+				$d["source"]=[
+					"type"=>"api",
+					"api_id"=>$this->s2_eeeeenigne['api_id'],
+					"api_vid"=>$this->s2_eeeeenigne['_id'],
+					"des"=>$this->s2_eeeeenigne['name'],
+				];
+			}
+			if( $this->s2_eeeeenigne['type'] == "function" ){
+				$d["source"]=[
+					"type"=>"fn",
+					"fn_id"=>$this->s2_eeeeenigne['function_id'],
+					"fn_vid"=>$this->s2_eeeeenigne['_id'],
+					"des"=>$this->s2_eeeeenigne['name'],
+				];
+			}
+			$bg_res = $this->s2_nnnnnnnnoc->insert( $this->s2_xxiferp_bd  . "_zlog_bg_" . $this->s2_dddddi_ppa, $d);
+
+			$lfn = $this->s2_dddddi_ppa . '.background.log';
+			if( file_exists($lfn) ){
+				$s = filesize($lfn);
+				if( $s > (1024*1024) ){
+					unlink($lfn);
+				}
+			}
+
+			exec('php task_worker_background.php '. $this->s2_dddddi_ppa . ' ' . $background_task_id . ' ' . $fn_vid . ' >> ' . $lfn . ' &', $eoutput);
+
+			if( $bg_res['status'] == "success" ){
+				$res = [
+					"status"=>"success",
+					"background_task_id"=>$background_task_id
+				];
+			}else{
+				$res = $bg_res;
+			}
+
+		}else{
+			$res = [
+				"status"=>"fail",
+				"error"=>"Function info missing"
+			];
+		}
+		$this->s2_tcejbo_ot_tupni($res);
+		$this->s2_tluser_tes( $output, ['t'=>'O', 'v'=>$res ] );
+	}
 
 	function generate_task_queue_id($delay=0){
 		if( gettype($delay) != "integer" ){
@@ -4372,3 +4843,105 @@ class api_engine{
 }
 
 function s2_aaaaaaaotb($v){return base64_decode($v);}
+
+
+
+
+
+
+$v = json_decode('{
+        "t": "O",
+        "v": {
+          "object_id": {
+            "t": "T",
+            "v": "T17T25",
+            "types": "T,V"
+          },
+          "props": {
+            "t": "O",
+            "expand": true,
+            "v": [
+              {
+                "key": {
+                  "t": "T",
+                  "v": "p1"
+                },
+                "value": {
+                  "t": "L",
+                  "v": [
+                    {
+                      "t": "T",
+                      "v": "tttt",
+                      "types": "T,V"
+                    },
+                    {
+                      "t": "T",
+                      "v": "xxx",
+                      "types": "T,V"
+                    }
+                  ],
+                  "expand": true,
+                  "template": {
+                    "t": "T",
+                    "v": "",
+                    "types": "T,V"
+                  }
+                }
+              },
+              {
+                "key": {
+                  "t": "T",
+                  "v": "p2"
+                },
+                "value": {
+                  "t": "L",
+                  "v": [
+                    {
+                      "t": "T",
+                      "v": "dfsfsxx",
+                      "types": "T,V"
+                    }
+                  ],
+                  "expand": true,
+                  "template": {
+                    "t": "T",
+                    "v": "",
+                    "types": "T,V"
+                  }
+                }
+              }
+            ],
+            "template": {
+              "key": {
+                "t": "T",
+                "v": "p1"
+              },
+              "value": {
+                "t": "L",
+                "v": [
+                  {
+                    "t": "T",
+                    "v": "",
+                    "types": "T,V"
+                  }
+                ],
+                "expand": true,
+                "template": {
+                  "t": "T",
+                  "v": "",
+                  "types": "T,V"
+                }
+              }
+            }
+          }
+        }
+      }', true);
+
+
+// $en = new api_engine();
+// echo "<pre>";print_r( $v );echo "</pre>";
+// $v = $en->s2_seulav_ot_etalpmet($v['v']);
+// echo "<pre>";print_r( $v );echo "</pre>";
+// exit;
+
+

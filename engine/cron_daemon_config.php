@@ -132,8 +132,10 @@ $db_prefix = $config_global_engine[ "config_mongo_prefix" ];
 $use_encrypted=true;
 $request_log_id= "";
 if( $use_encrypted ){
+	require_once("trait_objects_encrypted.php");
 	require_once("class_engine_encrypted.php");
 }else if( file_exists("class_engine.php") ){
+	require_once("trait_objects.php");
 	require_once("class_engine.php");
 }else{
 	logit("error", ["error"=>"Engine file missing"] );

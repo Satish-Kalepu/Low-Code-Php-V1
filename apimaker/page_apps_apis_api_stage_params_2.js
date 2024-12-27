@@ -117,6 +117,18 @@ const s2_smarap_egats_gifnoc = {
 			"struct_": {"t":"O", "v": { "status": {"t":"T", "v":"success"},"error": {"t":"T", "v":""}, "queue_id": {"t":"T", "v":""} }}
 		}
 	},
+	"BackgroundJob": {
+		"p": {
+			"function": {"t":"TH","v":{"i":{"t":"T", "v":""}, "l":{"t":"T", "v":""}},"th":"Function"},
+			"inputs": {"t":"O","v":{}},
+			"output": {"t":"T","v":"bgStatus"},
+			"struct_": {"t":"O", "v": { 
+				"status": {"t":"T", "v":"success"},
+				"error": {"t":"T", "v":""}, 
+				"background_task_id": {"t":"T", "v":""} 
+			}}
+		}
+	},
 	"Respond": {
 		"p": {"t":"O", "v":{
 			"status": {"t":"T", "v": "success", "k":"status"},
