@@ -10,6 +10,107 @@ $akey = pass_encrypt_static(json_encode([
 	"app_id"=>$config_param1,
 ]), "abcdefgh");
 
+$config_settings_credential_type_names = [
+	"simple" => "Standard",
+	"aws_cloud" => "AWS Cloud",
+	"google_cloud" => "Google Cloud",
+	"rabbitmq" => "RabbitMQ",
+	"sendgrid" => "SendGrid",
+	"rsa_key" => "OpenSSL RSA Private Key",
+	"ssl_public" => "SSL Public Certificate",
+	"ssl_private" => "SSL Private Certificate",
+	"ssl_bundle" => "SSL Bundle"
+];
+
+
+$config_settings_credential_types = [
+	"simple"=> [
+		"username"=> [
+			"label"=> "Username",
+			"type"=> "text",
+			"value"=> "",
+			"encrypt"=> false,
+			"regexp"=> "/^[a-z0-9\.\-\_]{5,100}$/i"
+		],
+		"password"=> [
+			"label"=> "Password",
+			"type"=> "text",
+			"value"=> "",
+			"encrypt"=> true
+		]
+	],
+	"aws_cloud"=> [
+		"access_key"=> [
+			"label"=> "Access Key",
+			"type"=> "text",
+			"value"=> "",
+			"encrypt"=> false,
+			"regexp"=> "/^[A-Z0-9]{20}$/"
+		],
+		"secret"=> [
+			"label"=> "Secret",
+			"type"=> "text",
+			"value"=> "",
+			"encrypt"=> true,
+			"regexp"=> "/^[A-Za-z0-9\;\/\+\=\/]{40,150}$/"
+		],
+		"region"=> [
+			"label"=> "Region",
+			"type"=> "text",
+			"value"=> "",
+			"encrypt"=> false,
+			"regexp"=> "/^[a-z0-9\-]{5,25}$/"
+		]
+	],
+	"rsa_key"=> [
+		"username"=> [
+			"label"=> "Username",
+			"type"=> "text",
+			"value"=> "",
+			"encrypt"=> false,
+			"regexp"=> "/^[a-z0-9\.\-\_]{5,100}$/i",
+			"regexp"=> "/^[a-z0-9\.\-\_\/\=\+\;\r\n\ ]{100,2048}$/i"
+		],
+		"use_username"=> [
+			"label"=> "Use Username",
+			"type"=> "checkbox",
+			"value"=> true,
+			"encrypt"=> false,
+			"regexp"=> "/^[a-z0-9\.\-\_\/\=\+\;\r\n\ ]{100,2048}$/i"
+		],
+		"key"=> [
+			"label"=> "Key",
+			"type"=> "multiline",
+			"value"=> "",
+			"encrypt"=> true,
+			"regexp"=> "/^[a-z0-9\.\-\_\/\=\+\;\r\n\ ]{100,2048}$/i"
+		]
+	],
+	"ssl_bundle"=> [
+		"public"=> [
+			"label"=> "Public certificate",
+			"type"=> "multiline",
+			"value"=> "",
+			"encrypt"=> false,
+			"regexp"=> "/^[a-z0-9\.\-\_\/\=\+\;\r\n\ ]{100,2048}$/i"
+		],
+		"chain"=> [
+			"label"=> "Intermediate chain",
+			"type"=> "multiline",
+			"value"=> "",
+			"encrypt"=> false,
+			"regexp"=> "/^[a-z0-9\.\-\_\/\=\+\;\r\n\ ]{100,2048}$/i"
+		],
+		"private"=> [
+			"label"=> "Private Key",
+			"type"=> "multiline",
+			"value"=> "",
+			"encrypt"=> true,
+			"regexp"=> "/^[a-z0-9\.\-\_\/\=\+\;\r\n\ ]{100,2048}$/i"
+		]
+	]
+];
+
 
 if( $_POST['action'] == "get_new_key" ){
 	json_response([
@@ -43,8 +144,7 @@ if( $_POST['action'] == "app_update_name" ){
 	$res = $mongodb_con->update_one( $config_global_apimaker['config_mongo_prefix'] . "_apps",[
 		'_id'=>$config_param1
 	],[
-		'app'=>$name,
-		'des'=>$des,
+		'app'=>$name,'des'=>$des,
 	]);
 
 	event_log( "system", "app_update_name", [
@@ -63,9 +163,7 @@ if( $_POST['action'] == "settings_load_pages" ){
 	$res = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_pages", [
 		'app_id'=>$config_param1
 	],[
-		'sort'=>['name'=>1],
-		'limit'=>200,
-		'projection'=>['version_id'=>1,'name'=>1]
+		'sort'=>['name'=>1], 'limit'=>200, 'projection'=>['version_id'=>1,'name'=>1]
 	]);
 	$res2 = $mongodb_con->find( $config_global_apimaker['config_mongo_prefix'] . "_files", [
 		'app_id'=>$config_param1
@@ -376,6 +474,142 @@ if( $_POST['action'] == 'settings_load_tasks_log' ){
 }
 
 
+if( $_POST['action'] == 'settings_load_background_job_log' ){
+	$cond = [];
+	if( $_POST['last'] ){
+		if( preg_match("/^[a-f0-9]{24}$/i", $_POST['last']) ){
+			$cond['_id'] = ['$lt'=>$_POST['last']];
+		}else{
+			json_response("fail", "Incorrect _id");
+		}
+	}
+	$res = $mongodb_con->find( $background_jobs[ $_POST['logtype'] ]['table'], $cond, [
+		'sort'=>['_id'=>-1], 
+		'limit'=>100,
+		'maxTimeMS'=>10000,
+	]);
+	//print_r( $res );
+	json_response($res);
+	exit;
+}
+
+if( $_POST['action'] == 'app_settings_save_credentials' ){
+
+	if( !isset($_POST['cred_id']) ){
+		json_response("fail", "Cred ID missing");
+	}
+	if( !preg_match("/^([a-f0-9]{24}|new)$/i", $_POST['cred_id']) ){
+		json_response("fail", "Cred ID Incorrect");
+	}
+	if( !isset($_POST['data']) ){
+		json_response("fail", "Data Missing 1");
+	}
+	if( !isset($_POST['data']['name']) || !isset($_POST['data']['des']) || !isset($_POST['data']['type']) || !isset($_POST['data']['environment']) || !isset($_POST['data']['values']) ){
+		json_response("fail", "Data Missing 2");
+	}
+	if( !preg_match("/^[a-z0-9\.\-\_]{2,50}$/i", $_POST['data']['name']) ){
+		json_response("fail", "Data Missing 22");
+	}
+	if( !preg_match("/^[a-z0-9\.\-\_\,\(\)\!\ ]{5,100}$/i", $_POST['data']['des']) ){
+		json_response("fail", "Data Missing 3 ");
+	}
+	if( !isset($config_settings_credential_types[ $_POST['data']['type'] ]) ){
+		json_response("fail", "Template not implemented");
+	}
+	if( !in_array($_POST['data']['environment'], ["prod", "stage1", "stage2", "dev1", "dev2"]) ){
+		json_response("fail", "Envronment not implemented");
+	}
+	if( !is_array($_POST['data']['values']) ){
+		json_response("fail", "Values incorrect");
+	}
+
+	$cred = [];
+	foreach( $config_settings_credential_types[ $_POST['data']['type'] ] as $fd=>$fv ){
+		if( !isset($_POST['data']['values'][ $fd ]) ){
+			json_response("fail", "Field: " . $fv['label'] . " Missing");
+		}
+		if( preg_match("/^Encrypted\:/", $_POST['data']['values'][ $fd ]['value']) ){
+			if( !preg_match("/^Encrypted\:[a-zA-Z0-9\-\_\=\+\;\:\,\.\/\?\!\@\%\*\(\)]+/", $_POST['data']['values'][ $fd ]['value']) ){
+				json_response("fail", "Field: " . $fv['label'] . " Encrypted cipher corrupted");
+			}
+		}else if( isset($fv['regexp']) ){
+			if( !preg_match($fv['regexp'], $_POST['data']['values'][ $fd ]['value']) ){
+				json_response("fail", "Field: " . $fv['label'] . " Value not accepted");
+			}
+		}
+		if( isset($fv['encrypt']) && $fv['encrypt'] ){
+			if( preg_match("/^Encrypted\:/", $_POST['data']['values'][ $fd ]['value']) ){
+				$cred[ $fd ] = $_POST['data']['values'][ $fd ]['value'];
+			}else{
+				$cred[ $fd ] = "Encrypted:".pass_encrypt_static( $_POST['data']['values'][ $fd ]['value'], $config_param1 . "abcdef" );
+			}
+		}else{
+			$cred[ $fd ] = $_POST['data']['values'][ $fd ]['value'];
+		}
+	}
+
+	if( $_POST['cred_id'] != "new" ){
+		$cred_id = $_POST['cred_id'];
+		if( !preg_match("/^[a-f0-9]{24}$/i", $_POST['cred_id']) ){
+			json_response("fail", "Incorrect ID");
+		}
+		if( isset($app['creds']) ){
+			if( !isset($app['creds'][ $cred_id ]) ){
+				json_response("fail", "Cred Record not found");
+			}
+		}else{
+			json_response("fail", "Cred Record not found");
+		}
+	}else{
+		$cred_id = $mongodb_con->generate_id();
+	}
+
+	if( isset($app['creds']) ){
+		if( sizeof($app['creds']) > 10 ){
+			json_response("fail", "Limit of 10 credentials per app reached.");
+		}
+	}
+
+	$d = [
+		"creds.". $cred_id => [
+			"name"=> $_POST['data']['name'],
+			"des"=> $_POST['data']['des'],
+			"type"=> $_POST['data']['type'],
+			"environment"=> $_POST['data']['environment'],
+			"values"=> $cred,
+			"date"=>date("Y-m-d H:i:s")
+		]
+	];
+	//print_r( $d );exit;
+	$res = $mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$config_param1], $d);
+	//print_r( $res );
+	event_log( "system", "app_update_credential", [
+		"app_id"=>$config_param1,
+		"cred_id"=>$cred_id
+	]);
+	$res['values'] = $cred;
+	json_response($res);
+	exit;
+}
+if( $_POST['action'] == 'app_settings_delete_credentials' ){
+	if( !isset($_POST['cred_id']) ){
+		json_response("fail", "Cred ID missing");
+	}
+	if( !preg_match("/^[a-f0-9]{24}$/i", $_POST['cred_id']) ){
+		json_response("fail", "Cred ID Incorrect");
+	}
+	$cred_id = $_POST['cred_id'];
+	$res = $mongodb_con->update_one( $db_prefix . "_apps", ["_id"=>$config_param1], [
+		'$unset'=>['creds.'. $cred_id=>1]
+	]);
+	event_log( "system", "app_delete_credential", [
+		"app_id"=>$config_param1,
+		"cred_id"=>$cred_id
+	]);
+	json_response($res);
+	exit;
+}
+
 $background_jobs = [];
 $graph_res = $mongodb_con->find( $db_prefix . "_graph_dbs", ["app_id"=>$config_param1], ['sort'=>['name'=>1] ] );
 foreach( $graph_res['data'] as $i=>$j ){
@@ -423,21 +657,4 @@ if( $daemon_run_last == 0 ){
 $settings['daemon_run_last'] = $daemon_run_last;
 $settings['daemon_run_status'] = $daemon_run_status;
 
-if( $_POST['action'] == 'settings_load_background_job_log' ){
-	$cond = [];
-	if( $_POST['last'] ){
-		if( preg_match("/^[a-f0-9]{24}$/i", $_POST['last']) ){
-			$cond['_id'] = ['$lt'=>$_POST['last']];
-		}else{
-			json_response("fail", "Incorrect _id");
-		}
-	}
-	$res = $mongodb_con->find( $background_jobs[ $_POST['logtype'] ]['table'], $cond, [
-		'sort'=>['_id'=>-1], 
-		'limit'=>100,
-		'maxTimeMS'=>10000,
-	]);
-	//print_r( $res );
-	json_response($res);
-	exit;
-}
+

@@ -20,16 +20,16 @@
 
 			<ul class="nav nav-tabs">
 				<li class="nav-item">
-					<a v-bind:class="{'nav-link':true,'active':tab=='queue'}" v-on:click="open_tab('queue')" href="#">Queues</a>
+					<a v-bind:class="{'nav-link':true,'active':tab=='queue'}" v-on:click="open_link('queue')" href="#">Queues</a>
 				</li>
 				<li class="nav-item">
-					<a v-bind:class="{'nav-link':true,'active':tab=='active'}" v-on:click="open_tab('active')"  href="#">Active Tasks</a>
+					<a v-bind:class="{'nav-link':true,'active':tab=='active'}" v-on:click="open_link('active')"  href="#">Active Tasks</a>
 				</li>
 				<li class="nav-item">
-					<a v-bind:class="{'nav-link':true,'active':tab=='background'}" v-on:click="open_tab('background')" href="#">Background Jobs</a>
+					<a v-bind:class="{'nav-link':true,'active':tab=='bg'}" v-on:click="open_link('bg')" href="#">Background Jobs</a>
 				</li>
 				<li class="nav-item">
-					<a v-bind:class="{'nav-link':true,'active':tab=='crons'}" v-on:click="open_tab('crons')" >Cron Jobs</a>
+					<a v-bind:class="{'nav-link':true,'active':tab=='cron'}" v-on:click="open_link('cron')" >Cron Jobs</a>
 				</li>
 			</ul>
 			<div>&nbsp;</div>
@@ -47,7 +47,7 @@
 
 					<table class="table table-bordered table-sm w-auto" >
 						<tr>
-							<td>#<td>Topic</td><td>Function</td><td>Type</td>
+							<td>#<td>Topic</td><td>Function</td><td>Processor</td>
 							<td>Queue</td><td>Success</td><td>Fail</td>
 							<td>Workers</td>
 							<td>Action</td><td>&nbsp;</td>
@@ -74,18 +74,41 @@
 					</table>
 					<p><div class="btn btn-outline-dark btn-sm" v-on:click="show_internal_add" >Add Queue</div></p>
 
-					<p style="border-bottom:1px solid #ccc; background-color:#f0f0f0;">External Queues</p>
+					<div style="border-bottom:1px solid #ccc;line-height: 30px; padding:5px; margin-bottom: 10px; background-color:#f0f0f0;">External Queues</div>
 
 					<table class="table table-bordered table-sm w-auto" >
 						<tr>
-							<td>Topic</td><td>Type</td><td>Queue</td><td>Processed</td><td>Total</td>
+							<td>#<td>Topic</td><td>System</td><td>Function</td><td>Processor</td>
+							<td>Queue</td><td>Success</td><td>Fail</td>
+							<td>Workers</td>
+							<td>Action</td><td>&nbsp;</td>
+						</tr>
+						<tr v-for="d,di in settings['external']">
+							<td><div class="vid">#<pre class="vid">{{d['_id']}}</pre></div></td>
+							<td nowrap>{{ d['topic'] }}</td>
+							<td nowrap>{{ d['system'] }}</td>
+							<td nowrap><a v-bind:href="path+'functions/'+d['fn_id']+'/'+d['fn_vid']" >{{ d['fn'] }}</a></td>
+							<td nowrap>{{ d['type']=='s'?'Single Thread':'Multi Threaded' }}</td>
+							<td nowrap align="center"><div style="min-width: 50px; display: inline-block;">{{ d['queue'] }} </div> <div title="Click to Delete Queue" class="btn btn-outline-dark btn-sm me-2" v-on:click="flush_queue(di)" ><i class="fa-solid fa-trash"></i></div></td>
+							<td nowrap align="center" class="text-success"><span v-if="'processed' in d" >{{ d['success'] }}</span></td>
+							<td nowrap align="center" class="text-danger"><span v-if="'processed' in d" >{{ d['fail'] }}</span></td>
+							<td nowrap align="center" class="text-danger"><span v-if="'workers' in d" ><span v-if="typeof(d['workers'])=='object'" >{{ Object.keys(d['workers']).length }}</span></span></td>
+							<td nowrap>
+								<div v-if="'started' in d==false" title="Click to Start Worker nodes" class="btn btn-outline-success btn-sm me-2" v-on:click="start_internal_queue(di)" ><i class="fa-solid fa-play"></i></div>
+								<div v-else title="Click to Stop Worker nodes" class="btn btn-outline-danger btn-sm me-2" v-on:click="pause_queue(di)" ><i class="fa-solid fa-pause"></i></div>
+								<div title="Click to view log" class="btn btn-outline-dark btn-sm me-2" v-on:click="view_log(di)" ><i class="fa-solid fa-eye"></i></div>
+							</td>
+							<td nowrap>
+								<div title="Click to Edit" class="btn btn-outline-dark btn-sm me-2" v-on:click="edit_internal_queue(di)" ><i class="fa-solid fa-edit"></i></div>
+								<div title="Click to delete queue" class="btn btn-outline-danger btn-sm me-2" v-on:click="delete_internal_queue(di)"  ><i class="fa-solid fa-trash"></i></div>
+							</td>
 						</tr>
 					</table>
 
 					<p><div class="btn btn-outline-dark btn-sm" v-on:click="show_external_add" >Add Queue</div></p>
 
 				</div>
-				<div v-if="tab=='crons'" >
+				<div v-if="tab=='cron'" >
 					<div style="border-bottom:1px solid #ccc;line-height: 30px; padding:5px; margin-bottom: 10px;  background-color:#f0f0f0;">CronJobs</div>
 
 					<table class="table table-bordered table-sm w-auto" >
@@ -116,7 +139,7 @@
 					<p><div class="btn btn-outline-dark btn-sm" v-on:click="show_cron_edit('new')" >Add Cron</div></p>
 				</div>
 
-				<div v-if="tab=='background'" >
+				<div v-if="tab=='bg'" >
 					<div style="border-bottom:1px solid #ccc;line-height: 30px; padding:5px; margin-bottom: 10px; background-color:#f0f0f0;">Background Jobs</div>
 					<table class="table table-bordered table-sm w-auto" >
 						<tr>
@@ -134,7 +157,7 @@
 							<td nowrap>
 								<span v-if="'source' in d" >
 									<span v-if="d['source']['type']=='cron'" >
-										Cron: <a v-if="'id' in d['source']"    v-bind:href="path+'tasks/crons/'+d['source']['id']" >{{ d['source']['des'] }}</a>
+										Cron: <a v-if="'id' in d['source']"    v-bind:href="path+'tasks/cron/'+d['source']['id']" >{{ d['source']['des'] }}</a>
 									</span>
 									<span v-else-if="d['source']['type']=='fn'" >
 										<span v-if="'fn_id' in d['source']&&'des' in d['source']" >
@@ -351,6 +374,228 @@
 		  </div>
 		</div>
 
+
+
+		<div class="modal fade" id="start_queue_external_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Start External Task Queue Worker</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+		      	<template v-if="external_queue_index>-1" >
+					<p>Select Execution Environment: </p>
+					<p><select v-model="qei" class="form-select form-select-sm w-auto" >
+						<option value="-1" >Select environment</option>
+						<template v-for="d,i in test_environments" ><option v-if="d['t']!='cloud-alias'" v-bind:value="i" >{{ d['u'] }}</option></template>
+					</select></p>
+					<div v-if="settings['external'][ external_queue_index ]['type']=='s'">
+						<p>Single worker mode</p>
+						<input type="button" value="Start Worker" class="btn btn-outline-dark btn-sm" v-on:click="start_external_queue2('single')" >
+					</div>
+					<div v-else-if="settings['external'][ external_queue_index ]['type']=='m'">
+						<p>Multi worker mode</p>
+						<input type="button" value="Start Single Worker" class="btn btn-outline-dark btn-sm me-3" v-on:click="start_external_queue2('single')" >
+						<input type="button" value="Start All Workers" class="btn btn-outline-dark btn-sm" v-on:click="start_external_queue2('all')" >
+					</div>
+		      	</template>
+
+				<div v-if="smsg" class="alert alert-primary" >{{ smsg }}</div>
+				<div v-if="serr" class="alert alert-danger" >{{ serr }}</div>		      	
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="external_queue_log_modal" tabindex="-1" >
+		  <div class="modal-dialog modal-lg modal-xl">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">External Queue Log</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+		      	<div style="height: 40px; display: flex; column-gap:10px;">
+		      		<div>
+		      			<div title="Refresh" v-on:click="load_external_queue_log()"  class="btn btn-outline-dark btn-sm" ><i class="fa-solid fa-arrows-rotate"></i></div>
+		      		</div>
+		      		<div>
+		      			<div style="display:flex; column-gap: 5px;">
+		      				<span>Task ID: </span>
+			      			<input type="text" class="form-control form-control-sm w-auto" v-model="queue_log_keyword" placeholder="Search Task">
+			      			<input type="button" class="btn btn-outline-dark btn-sm" value="Search" v-on:click="load_external_queue_log()">
+			      			<input v-if="external_log.length>=100" type="button" class="btn btn-outline-dark btn-sm" value="Next" v-on:click="load_external_queue_next()">
+		      			</div>
+		      		</div>
+		      		<div>
+						<div v-if="qlmsg" class="alert alert-primary py-0" >{{ qlmsg }}</div>
+						<div v-if="qlerr" class="alert alert-danger py-0" >{{ qlerr }}</div>
+					</div>
+		      	</div>
+
+
+				<div style="overflow: auto; height: 500px;">
+					<table class="table table-bordered table-striped table-sm w-auto" >
+						<tbody>
+							<tr style="position: sticky; top:0px; background-color: white;">
+								<td>#</td>
+								<td>Thread</td>
+								<td>Date</td>
+								<td>Event</td>
+								<td>TaskId</td>
+								<td>Info</td>
+							</tr>
+							<tr v-for="d,i in external_log">
+								<td><div class="mongoid" ><div>{{ d['_id'] }}</div><span>#</span></div></td>
+								<td><span v-if="'tid' in d" >{{ d['tid'] }}</span></td>
+								<td nowrap>{{ d['date'] }}</td>
+								<td nowrap>{{ d['event'] }}</td>
+								<td nowrap><span v-if="'task_id' in d" >{{ d['task_id'] }}</td>
+								<td>
+									 <template v-for="dd,ii in d" ><div v-if="ii!='task_id'&&ii!='tid'&&ii!='_id'&&ii!='event'&&ii!='date'&&ii!='m_i'" style="white-space: nowrap;" >{{ ii }}: {{ dd }}</div></template>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<!-- <pre>{{ external_log }}</pre> -->
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+		<div class="modal fade" id="external_queue" tabindex="-1" >
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">Save External Queue</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body" >
+
+				<table class="table table-bordered table-sm">
+					<tr>
+						<td>Topic</td>
+						<td><input type="text" v-model="new_external_queue['topic']" class="form-control form-control-sm" placeholder="topicname"></td>
+					</tr>
+					<tr>
+						<td>System</td>
+						<td>
+							<select v-model="new_external_queue['system']" class="form-select form-select-sm w-auto" v-on:change="external_queue_select_system" >
+								<option value="">Select Message Broker</option>
+								<option value="awssqs">AWS SQS</option>
+								<option value="awssns">AWS SNS</option>
+								<option value="rabbitmq">RabbitMQ</option>
+							</select>
+						</td>
+					</tr>
+					<template v-if="new_external_queue['system'] in external_queue_types" >
+						<template v-if="new_external_queue['system'] in new_external_queue" >
+							<tr>
+								<td>{{ external_queue_types[ new_external_queue['system'] ]['label'] }}</td>
+								<td>
+									<template v-if="new_external_queue['system'] in new_external_queue" >
+										<table class="table table-bordered table-sm">
+											<tr v-for="vd,vf in external_queue_types[ new_external_queue['system'] ]['fields']">
+												<td>{{ vd['label'] }}</td>
+												<td><input type="text" v-model="new_external_queue[ new_external_queue['system'] ][vf]" class="form-control form-control-sm" v-bind:placeholder="vd['label']"></td>
+											</tr>
+										</table>
+									</template>
+									<div v-else>Template not found</div>
+									<!-- <pre>{{ new_external_queue[ new_external_queue['system'] ] }}</pre> -->
+								</td>
+							</tr>
+						</template>
+						<tr v-else ><td colspan="2">Template not defined</td></tr>
+					</template>
+					<tr v-else ><td colspan="2">Template not defined</td></tr>
+					<tr>
+						<td>Auth Type</td>
+						<td>
+							<div style="display:flex; column-gap:10px;">
+								<div>
+									<select v-model="new_external_queue['authtype']" class="form-select form-select-sm w-auto" v-on:change="external_select_authtype()" >
+										<option value="stored">Stored Credentials</option>
+										<option value="profile">System Profile</option>
+										<option value="env">Environment Variable</option>
+									</select>
+								</div>
+								<div>
+									<div v-if="new_external_queue['authtype']=='stored'" style="display:flex; column-gap:10px;" >
+										<select v-model="new_external_queue['cred']['cred_id']" class="form-select form-select-sm w-auto" style="width:calc( 100% - 30px )" v-on:change="external_select_cred()" >
+											<option value="">Select Stored Credential</option>
+											<option v-for="vd,vi in creds" v-bind:value="vd['cred_id']" >{{ vd['name'] + " - " + vd['type'] }}</option>
+											<option v-if="new_external_queue['cred']['cred_id']" v-bind:value="new_external_queue['cred']['cred_id']" >{{ new_external_queue['cred']['name'] }}</option>
+										</select>
+										<div style="width:25px; height: 25px; cursor:pointer; border: 1px solid #ccc; " v-on:click="load_stored_creds()" >
+											<svg viewBox="0 0 64 64" fill="currentcolor">
+												<path d="m54,32c0,12.15-9.85,22-22,22s-22-9.85-22-22,9.85-22,22-22h2.26l-5.76-5.76,4.24-4.24,13,13-13,13-4.24-4.24,5.76-5.76h-2.26c-8.84,0-16,7.16-16,16s7.16,16,16,16,16-7.16,16-16h6Z" />
+											</svg>
+										</div>
+									</div>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td>Type</td>
+						<td>
+							<select v-model="new_external_queue['type']" class="form-select form-select-sm w-auto" >
+								<option value="s">Single Thread</option>
+								<option value="m">Multi Threaded</option>
+							</select>
+							<div class="text-secondary">Single thread serve as FIFO (first in first out). Multi threaded serve in best effort ordering in separate processes</div>
+						</td>
+					</tr>
+					<tr v-if="new_external_queue['type']=='m'">
+						<td>Threads</td>
+						<td><input type="number" v-model="new_external_queue['con']" class="form-control form-control-sm w-auto d-inline" > Consumers<div class="text-secondary" >Max 5 threads</div></td>
+					</tr>
+					<tr>
+						<td>Function</td>
+						<td>
+							<select v-model="new_external_queue['fn_id']" class="form-select form-select-sm w-auto" v-on:change="external_selected_function()" >
+								<option value="">Select function</option>
+								<option v-for="v,i in functions" v-bind:value="v['_id']" >{{ v['name'] }}</option>
+								<option v-if="new_external_queue['fn_id']!=''" v-bind:value="new_external_queue['fn_id']" >{{ new_external_queue['fn'] }}</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td nowrap>Timeout</td>
+						<td><input type="number" v-model="new_external_queue['wait']" class="form-control form-control-sm w-auto d-inline" > Seconds <div class="text-secondary" >Execution timeout for each item. Max 60 seconds</div></td>
+					</tr>
+					<tr>
+						<td nowrap>Retry</td>
+						<td><input type="number" v-model="new_external_queue['retry']" class="form-control form-control-sm w-auto d-inline" ><div class="text-secondary" >Retry on fail. max 3</div></td>
+					</tr>
+					<tr>
+						<td nowrap>Log Retention</td>
+						<td><input type="number" v-model="new_external_queue['ret']" class="form-control form-control-sm w-auto d-inline" > Days <div class="text-secondary" >Max 5 days</div></td>
+					</tr>
+					<tr>
+						<td></td>
+						<td><input type="button" class="btn btn-outline-dark btn-sm" value="Save Queue" v-on:click="save_external_queue" ></td>
+					</tr>
+				</table>
+				<div v-if="'_id' in new_external_queue">Restart Queue for picking up new changes</div>
+				<div v-if="exmsg" class="alert alert-primary" >{{ exmsg }}</div>
+				<div v-if="exerr" class="alert alert-danger" >{{ exerr }}</div>
+				<!-- <pre>{{ new_external_queue }}</pre> -->
+
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+
+
+
 		<div class="modal fade" id="cron_edit_popup" tabindex="-1" >
 		  <div class="modal-dialog modal-lg">
 		    <div class="modal-content">
@@ -515,7 +760,7 @@
 								<td><div class="mongoid" ><div>{{ d['_id'] }}</div><span>#</span></div></td>
 								<td nowrap>{{ d['date'] }}</td>
 								<td nowrap>
-									<span v-if="'task_id' in d" ><a v-bind:href="path+'tasks/background/'+d['task_id']" target="_blank" >{{ d['task_id'] }}</a></span>
+									<span v-if="'task_id' in d" ><a v-bind:href="path+'tasks/bg/'+d['task_id']" target="_blank" >{{ d['task_id'] }}</a></span>
 								</td>
 								<td>
 									 -
@@ -524,7 +769,7 @@
 						</tbody>
 					</table>
 				</div>
-				<!-- <pre>{{ internal_log }}</pre> -->
+				<!-- <pre>{{ external_log }}</pre> -->
 
 		      </div>
 		    </div>
@@ -538,28 +783,21 @@ var app = Vue.createApp({
 		"data": function(){
 			return {
 				"path": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/",
-				"taskpath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks/",
+				"taskpath": "<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks",
 				"test_environments": <?=json_encode($test_environments) ?>,
 				"app_id" : "<?=$app['_id'] ?>",
 				"settings": {'internal':[],'external':[]},
 				"smsg": "", "serr":"",
 				"msg": "", "err":"",
-				"ipmsg": "", "iperr":"",
 				"qlmsg": "", "qlerr":"",
 				"kmsg": "", "kerr":"",
+				
+				"ipmsg": "", "iperr":"",
 				"internal_queue_log_popup": false,
 				"internal_queue_id": "",
 				"internal_queue_index": -1,
 				"internal_log": [],
-				"queue_log_keyword": "",
-				"start_queue_popup": false,	
-				"qei": -1,
-				"keyword": "",
-				"token": "",
-				"saved": <?=($saved?"true":"false") ?>,
-				"functions": [], popup: false, vip: false,
-				"tab": "queue",
-				"new_queue": {
+				"new_queue_template": {
 					"type": "s",
 					"topic": "",
 					"des": "",
@@ -571,6 +809,42 @@ var app = Vue.createApp({
 					"wait": 10,
 					"fn": "","fn_id": "","fn_vid": "",
 				},
+				"new_queue":{},
+
+				"external_queue_types": <?=json_encode($external_queue_types) ?>,
+				"exmsg": "", "exerr":"",
+				"external_queue_log_popup": false,
+				"external_queue_id": "",
+				"external_queue_index": -1,
+				"external_log": [],
+				"new_external_queue_template": {
+					"source": "", //awssqs,awssns,rabbitmq,
+					"authtype": "stored", //saved, profile, environment
+					"profile": "",
+					"type":"s", //single thread,multi thread
+					"cred":{"cred_id":"","name":""},
+					"topic": "",
+					"des": "",
+					"timeout": 30,
+					"ret": 1,
+					"delay": 0,
+					"con": 2,
+					"retry": 0,
+					"wait": 10,
+					"fn": "","fn_id": "","fn_vid": "",
+				},
+				"new_external_queue": {},
+				"creds":[],
+				
+				"queue_log_keyword": "",
+				"start_queue_popup": false,	
+				"qei": -1,
+				"keyword": "",
+				"token": "",
+				"saved": <?=($saved?"true":"false") ?>,
+				"functions": [], popup: false, vip: false,
+				"tab": "queue",
+				
 				cronerr: "",cronerr2: "",
 				cronmsg: "",
 				cronloadmsg: "", cronloaderr: "",
@@ -607,12 +881,15 @@ var app = Vue.createApp({
 			this.load_functions();
 		},
 		methods: {
+			open_link: function(t){
+				this.$router.push(this.taskpath + '/'+t);
+			},
 			open_tab: function(t){
 				this.tab = t;
-				if( t == 'crons' ){
+				if( t == 'cron' ){
 					this.crons_load();
 				}
-				if( t == 'background' ){
+				if( t == 'bg' ){
 					this.bgtasks_load();
 				}
 			},
@@ -754,11 +1031,7 @@ var app = Vue.createApp({
 			},
 			show_internal_add: function(){
 				this.iperr = "";this.ipmsg = "";
-				this.new_queue = {
-					"type": "s", "topic": "", "des": "",
-					"timeout": 30, "ret": 1, "delay": 0, "con": 2,
-					"retry": 0, "wait": 10,"fn": "","fn_id": "","fn_vid": "",
-				};
+				this.new_queue = JSON.parse(JSON.stringify(this.new_queue_template));
 				this.vip = new bootstrap.Modal(document.getElementById('internal_queue'));
 				this.vip.show();
 			},
@@ -860,6 +1133,320 @@ var app = Vue.createApp({
 						}
 					}else{
 						this.iperr = "error:"+response.message + " " + error.response['data'].substr(0,200);
+					}
+				});
+			},
+			/* --------------------------------------- */
+
+			view_log: function(di){
+				this.queue_log_keyword = "";
+				this.external_queue_id = this.settings['external'][ di ]['_id'];
+				this.external_queue_log_popup = new bootstrap.Modal( document.getElementById('external_queue_log_modal') );
+				this.external_queue_log_popup.show();
+				this.load_external_queue_log();
+			},
+			load_external_queue_log: function(){
+				this.qlmsg = "Loading...";
+				this.external_log = [];
+				this.qlerr = "";
+				axios.post("?", {
+					"action":"task_load_external_queue_log", 
+					"queue_id":this.external_queue_id,
+					"task_id": this.queue_log_keyword,
+				}).then(response=>{
+					this.qlmsg = "";
+					if( 'status' in response.data ){
+						if( response.data['status']=="success"){
+							this.external_log=response.data['data'];
+						}else{
+							this.qlerr = response.data['error'];
+						}
+					}else{
+						this.qlerr = ( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					this.qlerr = ("Error: "+error.message);
+				});
+			},
+			load_external_queue_next: function(){
+				this.qlmsg = "Loading...";
+				var last = this.external_log[ this.external_log.length-1 ]['_id'];
+				this.external_log = [];
+				this.qlerr = "";
+				axios.post("?", {
+					"action":"task_load_external_queue_log", 
+					"queue_id":this.external_queue_id,
+					"task_id": this.queue_log_keyword,
+					"last": last
+				}).then(response=>{
+					this.qlmsg = "";
+					if( 'status' in response.data ){
+						if( response.data['status']=="success"){
+							this.external_log=response.data['data'];
+						}else{
+							this.qlerr = response.data['error'];
+						}
+					}else{
+						this.qlerr = ( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					this.qlerr = ("Error: "+error.message);
+				});
+			},
+			start_external_queue: function(di){
+				this.serr = "";
+				this.smsg = "";
+				this.external_queue_id = this.settings['external'][ di ]['_id'];
+				this.external_queue_index = di;
+				this.start_queue_popup = new bootstrap.Modal( document.getElementById('start_queue_external_modal') );
+				this.start_queue_popup.show();
+			},
+			start_external_queue2: function(vmode){
+				this.serr = "";
+				if( Number(this.qei) == -1 ){
+					this.serr = "Select workder node";return;
+				}
+				this.smsg = "Starting working node";
+				axios.post("?", {
+					"action":"task_queue_external_start",
+					"queue_id":this.external_queue_id,
+					"env": this.test_environments[ Number(this.qei) ],
+					"mode": vmode,
+				}).then(response=>{
+					this.smsg = "";
+					if( 'status' in response.data ){
+						if( response.data['status']=="success"){
+							this.settings['external'][ this.external_queue_index ]['started']=true;
+							this.smsg = "Success";
+							setTimeout(this.load_queues,3000);setTimeout(this.load_queues,10000);
+						}else{
+							this.serr = (response.data['error']);
+						}
+					}else{
+						this.serr = ( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					this.serr = ("Error: "+error.message);
+				});
+			},
+			pause_external_queue: function(vi){
+				axios.post("?", {"action":"task_queue_external_stop","queue_id":this.settings['external'][ vi ]['_id']}).then(response=>{
+					if( 'status' in response.data ){
+						if( response.data['status']=="success"){
+							delete(this.settings['external'][ vi ]['started']);
+							alert("Queue stopped");
+							setTimeout(this.load_queues,3000);setTimeout(this.load_queues,10000);
+						}else{
+							alert(response.data['error']);
+						}
+					}else{
+						alert( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					alert("Error: "+error.message);
+				});
+			},
+			flush_external_queue: function(vi){
+				axios.post("?", {"action":"task_queue_external_flush","queue_id":this.settings['external'][ vi ]['_id']}).then(response=>{
+					if( 'status' in response.data ){
+						if( response.data['status']=="success"){
+							alert("Queue flushed");
+							setTimeout(this.load_queues,3000);setTimeout(this.load_queues,10000);
+						}else{
+							alert(response.data['error']);
+						}
+					}else{
+						alert( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					alert("Error: "+error.message);
+				});
+			},
+
+			external_queue_select_system: function(){
+				if( this.new_external_queue["system"] in this.external_queue_types ){
+					var v = this.external_queue_types[ this.new_external_queue["system"] ]['fields'];
+					var vv = {};
+					for( var i in v ){
+						vv[ i ] = "";
+					}
+					this.new_external_queue[ this.new_external_queue["system"] ] = vv;
+				}else{
+					this.new_external_queue[ this.new_external_queue["system"] ] = {};
+				}
+			},
+
+			external_selected_function: function(){
+				for(var i=0;i<this.functions.length;i++){
+					if( this.functions[i]['_id'] == this.new_external_queue['fn_id'] ){
+						this.new_external_queue['fn'] = this.functions[i]['name']+'';
+						this.new_external_queue['fn_vid'] = this.functions[i]['version_id']+'';
+					}
+				}
+			},
+			external_select_authtype: function(){
+				if( this.new_external_queue['authtype'] == "stored" ){
+					this.load_stored_creds();
+				}
+			},
+			external_select_cred: function(){
+				for( var i=0;i<this.creds.length;i++){
+					if( this.new_external_queue['cred']['cred_id']  == this.creds[i]['cred_id'] ){
+						this.new_external_queue['cred']['name'] = this.creds[i]['name'];
+					}
+				}
+			},
+			load_stored_creds: function(){
+				axios.post("?", {"action":"task_load_creds"}).then(response=>{
+					if( 'status' in response.data ){
+						if( response.data['status']=="success" ){
+							this.creds = response.data['data'];
+						}else{
+							alert(response.data['error']);
+						}
+					}else{
+						alert( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					alert("Error: "+error.message);
+				});
+			},
+			show_external_add: function(){
+				this.exerr = "";this.exmsg = "";
+				this.external_queue_id = "new";
+				this.new_external_queue = JSON.parse(JSON.stringify(this.new_external_queue_template));
+				this.vip = new bootstrap.Modal( document.getElementById('external_queue') );
+				this.vip.show();
+			},
+			edit_external_queue: function(di){
+				this.exerr = "";this.exmsg = "";
+				this.new_external_queue = JSON.parse(JSON.stringify(this.settings['external'][di]));
+				this.vip = new bootstrap.Modal(document.getElementById('external_queue'));
+				this.vip.show();
+			},
+			delete_external_queue: function(di){
+				if( confirm("Are you sure to delete topic?\nAny pending tasks in the queue will get discorded.") ){
+					axios.post("?", {
+						"action": "task_external_queue_delete", "queue_id": this.settings['external'][di]['_id']
+					}).then(response=>{
+						if( response.status == 200 ){
+							if( typeof(response.data) == "object" ){
+								if( 'status' in response.data ){
+									if( response.data['status'] == "success" ){
+										alert("Queue Deleted successfully");
+										this.load_queues();
+									}else{
+										alert(response.data['error']);
+									}
+								}else{
+									alert("Invalid response");
+								}
+							}else{
+								alert("Incorrect response");
+							}
+						}else{
+							alert("http:"+response.status);
+						}
+					}).catch(error=>{
+						if( typeof(error.response.data) == "object" ){
+							if( 'error' in error.response['data'] ){
+								alert("error:"+error.response['data']['error']);
+							}else{
+								alert("error:"+response.message + "\n " + JSON.stringify(error.response['data']).substr(0,200));
+							}
+						}else{
+							alert("error:"+response.message + "\n " + error.response['data'].substr(0,200));
+						}
+					});
+				}
+			},
+			save_external_queue: function(){
+				this.exerr = "";
+				this.exmsg = "";
+				this.new_external_queue['topic'] = this.new_external_queue['topic'].toLowerCase().trim();
+				if( this.new_external_queue['topic'].match(/^[a-z0-9\.\-\_]{2,20}$/) == null ){
+					this.exerr = "Queue name should be: [a-z0-9\.\-\_]{2,25}";return false;
+				}
+				if( this.new_external_queue['system'] == "" ){
+					this.exerr = "Queue system required";return false;
+				}
+				if( this.new_external_queue['system'] in this.new_external_queue == false ){
+					this.exerr = "Something wrong";return false;
+				}
+				if( this.new_external_queue['system'] in this.external_queue_types == false ){
+					this.exerr = "Something wrong 2";return false;
+				}
+				for( var vf in this.external_queue_types[ this.new_external_queue['system'] ]['fields'] ){
+					console.log( vf );
+					var vd = this.external_queue_types[ this.new_external_queue['system'] ]['fields'][vf];
+					if( vf in this.new_external_queue[ this.new_external_queue['system'] ] == false ){
+						this.exerr = "Field: " + vd['label'] + " not found";return false;
+					}
+					var val = this.new_external_queue[ this.new_external_queue['system'] ][ vf ]['value']+'';
+					console.log( 'x'+val+'x' );
+					if( val.match(/^[a-z0-9\!\@\%\^\*\(\)\_\-\+\=\,\.\:\;]{2,250}$/i) == null ){
+						this.exerr = "Field: " + vd['label'] + " incorrect value";return false;
+					}
+				}
+				if( this.new_external_queue['authtype'] == "" ){
+					this.exerr = "Need Authentication type";return false;
+				}
+				if( this.new_external_queue['authtype'] == "stored" ){
+					if( this.new_external_queue['cred']['cred_id'] == "" || this.new_external_queue['cred']['name'] == "" ){
+						this.exerr = "Need Credentials";return false;
+					}
+				}
+				if( this.new_external_queue['fn'] =="" ){
+					this.exerr = "Need function";return false;
+				}
+				if( this.new_external_queue['type'] =='s' ){
+					this.new_external_queue['con'] = 1;
+				}else if( Number(this.new_external_queue['con']) < 1 || Number(this.new_external_queue['con']) > 5 ){
+					this.new_external_queue['con'] = 2; alert("Threads corrected"); return false;
+				}
+				if( Number(this.new_external_queue['ret']) < 1 || Number(this.new_external_queue['ret']) > 5 ){
+					this.new_external_queue['ret'] = 1;alert("Retention period corrected");return false;
+				}
+				if( Number(this.new_external_queue['wait']) < 5 || Number(this.new_external_queue['wait']) > 60 ){
+					this.new_external_queue['wait'] = 10;alert("Timeout corrected");return false;
+				}
+				if( Number(this.new_external_queue['retry']) > 3 ){
+					this.new_external_queue['retry'] = 0;alert("Retry corrected");return false;
+				}
+				axios.post("?", {
+					"action": "save_task_queue_external", 
+					"queue": this.new_external_queue,
+					"queue_id": this.external_queue_id
+				}).then(response=>{
+					this.exmsg = "";
+					if( response.status == 200 ){
+						if( typeof(response.data) == "object" ){
+							if( 'status' in response.data ){
+								if( response.data['status'] == "success" ){
+									this.exmsg = "Updated successfully";
+									this.load_queues();
+									setTimeout(function(v){v.vip.hide();v.exmsg="";},2000,this);
+								}else{
+									this.exerr = response.data['error'];
+								}
+							}else{
+								this.exerr = "Invalid response";
+							}
+						}else{
+							this.exerr = "Incorrect response";
+						}
+					}else{
+						this.exerr = "http:"+response.status;
+					}
+				}).catch(error=>{
+					if( typeof(error.response.data) == "object" ){
+						if( 'error' in error.response['data'] ){
+							this.exerr = "error:"+error.response['data']['error'];
+						}else{
+							this.exerr = "error:"+response.message + " " + JSON.stringify(error.response['data']).substr(0,200);
+						}
+					}else{
+						this.exerr = "error:"+response.message + " " + error.response['data'].substr(0,200);
 					}
 				});
 			},
@@ -1584,6 +2171,26 @@ var app = Vue.createApp({
 					this.bgloaderr = this.get_http_error__(error);
 				});
 			},
+
+
+			load_aws_credentail_profiles: function(){
+				axios.post("?", {
+					"action":"load_aws_credential_profiles", 
+				}).then(response=>{
+					if( 'status' in response.data ){
+						if( response.data['status']=="success"){
+							this.bgtasks = response.data['data'];
+						}else{
+							this.bgloaderr = response.data['error'];
+						}
+					}else{
+						this.bgloaderr = ( "Error: incorrect response" );
+					}
+				}).catch(error=>{
+					this.bgloaderr = this.get_http_error__(error);
+				});
+			},
+
 			get_http_error__: function(e){
 				if( typeof(e) == "object" ){
 					if( 'status' in e ){
@@ -1613,6 +2220,50 @@ var app = Vue.createApp({
 				}
 			},
 
+
+
+
 		}
-}).mount("#app");
+});
+
+const component_default = {
+	template: `<div>-</div>`
+};
+
+const routes = [
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks/queue/', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks/active/', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks/bg/', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks/cron/', component: component_default  },
+	{ path: '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks/cron/:cron_id', component: component_default  },
+];
+
+const router = VueRouter.createRouter({
+	history: VueRouter.createWebHistory(), routes
+});
+
+router.beforeEach((to,from)=>{
+	console.log( to );
+	var vpath = to.path.replace( '<?=$config_global_apimaker_path ?>apps/<?=$app['_id'] ?>/tasks', '');
+	vpath = vpath.substr(1,9999);
+	var x = vpath.split(/\//g);
+	console.log( x );
+	//to.path
+
+	if( x[0] == "" || x[0] == 'queue' ){
+		router.app_object.open_tab('queue');
+	}else{
+		router.app_object.open_tab(x[0]);
+	}
+});
+router.afterEach((to, from) => {
+});
+
+app.use(router);
+var app1 = app.mount("#app");
+router.app_object = app1;
+
+
+
 </script>
