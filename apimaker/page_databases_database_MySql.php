@@ -276,7 +276,7 @@ var app = Vue.createApp({
 				return vdata__;
 			},
 			delete_table:function(vid){
-				if( confirm("Are You Sure to Delete Table") ){
+				if( confirm("Are You Sure to Delete Table\n\nEven though you delete a table if the table exists in destination database. it will get reflected with different table_id!!") ){
 					vd__ = {
 						"action"		: "delete_table",
 						"table_id"			: vid,

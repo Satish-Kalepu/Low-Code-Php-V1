@@ -146,7 +146,7 @@ var app = Vue.createApp({
 				}else{return false; }
 			},
 	        delete_database:function(vid){
-	        	if(confirm("Are You Sure to Delete Database") ){
+	        	if(confirm("Are you sure to UnLink database") ){
 					vpost_data = {
 						"action"	: "delete_database",
 						"db_id"		: vid,
@@ -155,7 +155,7 @@ var app = Vue.createApp({
 						if(response.data['status'] == "success"){
 							document.location.reload();
 						}else{
-							alert( response.data['details'] );
+							alert( response.data['error'] );
 						}
 					});
 				}

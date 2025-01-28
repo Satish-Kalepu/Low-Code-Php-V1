@@ -37,6 +37,7 @@
 							<td align="right">Indexes</td>
 							<td align="right">IndexSize</td>
 							<td>Capped</td>
+							<td>-</td>
 						</tr>
 					</thead>
 					<tbody>
@@ -49,6 +50,7 @@
 							<td align="right">-</td>
 							<td align="right"><b>{{ size_format(tot['indexSize']) }}</b></td>
 							<td align="center">-</td>
+							<td></td>
 						</tr>
 						<tr v-for="d in tables">
 							<td><a v-bind:href="dbpath+'table/'+d['_id']+'/manage'" >{{ d['collection'] }}</a></td>
@@ -59,6 +61,7 @@
 							<td align="right">{{ d['nindexes'] }}</td>
 							<td align="right">{{ size_format(d['totalIndexSize']) }}</td>
 							<td align="center">{{ (d['capped']?"Capped":"") }}</td>
+							<td><div><input type="button" class="btn btn-outline-danger btn-sm" value="X" v-on:click="delete_table(d['_id'])" ></div></td>
 						</tr>
 					</tbody>
 					</table>
@@ -204,7 +207,7 @@ var app = Vue.createApp({
 				return vdata__;
 			},
 			delete_table:function(vid){
-				if( confirm("Are You Sure to Delete Table") ){
+				if( confirm("Are You Sure to Delete Table?\n\nEven though you delete a table if the table exists in destination database, it will get reflected with different table_id!!") ){
 					vd__ = {
 						"action"		: "delete_table",
 						"db_id"			: this.tables[ vid ]['db_id'],

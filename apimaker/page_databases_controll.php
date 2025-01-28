@@ -172,8 +172,8 @@ if( $_POST['action'] == "update_database" ){
 						json_response("fail","Database description already use!");
 					}else{
 						$update_cond = ["_id"=> $_POST["db_id"]  ];
-						$res = $mongodb_con->update_one($config_api_databases,$update_cond,$insert_data);
-						if( !$res ){
+						$res_update = $mongodb_con->update_one($config_api_databases,$update_cond,$insert_data);
+						if( !$res_update ){
 							json_response("fail","Server Error");
 						}else{
 
@@ -181,8 +181,24 @@ if( $_POST['action'] == "update_database" ){
 								"app_id"=>$config_param1,
 								"db_id"=>$_POST['db_id'],
 							]);
+							$res_delete = ['ok'=>'ok'];
+							if( $db['engine'] == "MySql" || $db['engine'] == "MongoDb" ){
+								if( $db['details']['database'] != $_POST['details']['database'] ){
+									$res_delete = $mongodb_con->delete_many( $config_api_tables, [
+										"app_id"=>$config_param1,
+										'db_id'=>$_POST['db_id'],
+									] );
+									if( $res_delete['status'] != "success" ){
+										json_response($res_delete);
+									}
+									event_log( "system", "database_tables_truncate", [
+										"app_id"=>$config_param1,
+										'db_id'=>$_POST['db_id'], 
+									]);
+								}
+							}
 
-							json_response("success","ok");
+							json_response("success",$res_delete);
 						}
 					}
 				}
@@ -213,16 +229,24 @@ if( $_POST['action'] == "test_database" ){
 	exit;
 }
 
+//echo $config_api_tables;
+//print_r( $_POST );exit;
+
 if( $_POST['action'] == 'delete_table' ){
-	$db_res = $mongodb_con->find_one($config_api_tables,['db_id'=>$_POST["db_id"], '_id'=>$_POST["table_id"] ],[]);
+	$db_res = $mongodb_con->find_one($config_api_tables,['db_id'=>$config_param3, '_id'=>$_POST["table_id"] ],[]);
 	if( !$db_res ){
 		json_response("fail", "Database not found!");
 	}else{
-		$status = $mongodb_con->delete_one( $config_api_tables, ["_id"=>$_POST["table_id"]] );
+		$status = $mongodb_con->delete_one( $config_api_tables, [
+			"app_id"=>$config_param1,
+			'db_id'=>$config_param3, 
+			"_id"=>$_POST["table_id"]
+		] );
 
 		event_log( "system", "database_table_delete", [
 			"app_id"=>$config_param1,
-			'db_id'=>$_POST["db_id"], 'table_id'=>$_POST["table_id"]
+			'db_id'=>$config_param3, 
+			'table_id'=>$_POST["table_id"]
 		]);
 
 		json_response("success","Deleted Successfully");
@@ -238,17 +262,20 @@ if( $_POST['action'] == "delete_database" ){
 		$db = $db_res;
 		$tables_res = $mongodb_con->find($config_api_tables,["app_id"=>$app['_id'], "db_id"=>$_POST["db_id"]],[]);
 		if( $tables_res['data'] ){
-			json_response("fail","Delete respective tables before deleting the database!");
-		}else{
-			$del_rec = $mongodb_con->delete_one($config_api_databases, ["app_id"=>$app['_id'], "_id"=>$_POST["db_id"]] );
-		
-			event_log( "system", "database_delete", [
+			event_log( "system", "database_truncate", [
 				"app_id"=>$config_param1,
 				'db_id'=>$_POST["db_id"]
 			]);
-
-			json_response($del_rec);exit;
+			$mongodb_con->delete_many($config_api_tables, ["app_id"=>$app['_id'], "db_id"=>$_POST["db_id"]] );
 		}
+		$del_rec = $mongodb_con->delete_one($config_api_databases, ["app_id"=>$app['_id'], "_id"=>$_POST["db_id"]] );
+	
+		event_log( "system", "database_delete", [
+			"app_id"=>$config_param1,
+			'db_id'=>$_POST["db_id"]
+		]);
+
+		json_response($del_rec);exit;
 	}
 	exit;
 }
